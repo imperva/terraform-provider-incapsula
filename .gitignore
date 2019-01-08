@@ -1,0 +1,6 @@
+.DS_Store
+terraform.tfplan
+terraform.tfstate
+./*.tfstate
+.terraform/
+terraform-provider-incapsula
