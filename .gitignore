@@ -1,6 +1,6 @@
 .DS_Store
-terraform.tfplan
-terraform.tfstate
-./*.tfstate
-.terraform/
+examples/terraform.tfplan
+examples/terraform.tfstate
+examples/.terraform/
+examples/*.tfstate
 terraform-provider-incapsula
