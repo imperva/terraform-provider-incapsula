@@ -5,9 +5,14 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 )
 
+var baseURL string
 var descriptions map[string]string
 
 func init() {
+	// Storing this in the provider rather than making it configurable
+	// This endpoint is unlikely to change in the near future and will be augmented for testing
+	baseURL = "https://my.incapsula.com/api/prov/v1"
+
 	descriptions = map[string]string{
 		"api_id": "The API identifier for API operations. You can retrieve this\n" +
 			"from the Incapsula management console.",
@@ -19,8 +24,9 @@ func init() {
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	config := Config{
-		APIID:  d.Get("api_id").(string),
-		APIKey: d.Get("api_key").(string),
+		APIID:   d.Get("api_id").(string),
+		APIKey:  d.Get("api_key").(string),
+		BaseURL: baseURL,
 	}
 
 	return config.Client()

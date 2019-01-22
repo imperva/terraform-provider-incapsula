@@ -12,14 +12,21 @@ import (
 
 // Client represents an internal client that brokers calls to the Incapsula API
 type Client struct {
-	Config *Config
+	config     *Config
+	httpClient *http.Client
+}
+
+// NewClient creates a new client with the provided configuration
+func NewClient(config *Config) *Client {
+	client := &http.Client{}
+	return &Client{config: config, httpClient: client}
 }
 
 // Endpoints (unexported consts)
-const endpointAccount = "https://my.incapsula.com/api/prov/v1/account"
-const endpointSiteAdd = "https://my.incapsula.com/api/prov/v1/sites/add"
-const endpointSiteDelete = "https://my.incapsula.com/api/prov/v1/sites/delete"
-const endpointSiteStatus = "https://my.incapsula.com/api/prov/v1/sites/status"
+const endpointAccount = "account"
+const endpointSiteAdd = "sites/add"
+const endpointSiteDelete = "sites/delete"
+const endpointSiteStatus = "sites/status"
 
 // DNSRecord contains the relevant DNS information for the Incapsula managed site
 type DNSRecord struct {
@@ -53,9 +60,9 @@ func (c *Client) Verify() error {
 	log.Println("[INFO] Checking API credentials against Incapsula API")
 
 	// Post form to Incapsula
-	resp, err := http.PostForm(endpointAccount, url.Values{
-		"api_id":  {c.Config.APIID},
-		"api_key": {c.Config.APIKey},
+	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccount), url.Values{
+		"api_id":  {c.config.APIID},
+		"api_key": {c.config.APIKey},
 	})
 	if err != nil {
 		return fmt.Errorf("Error checking account: %s", err)
@@ -88,9 +95,9 @@ func (c *Client) AddSite(domain, accountID, refID, sendSiteSetupEmails, siteIP, 
 	log.Printf("[INFO] Adding Incapsula site for domain: %s\n", domain)
 
 	// Post form to Incapsula
-	resp, err := http.PostForm(endpointSiteAdd, url.Values{
-		"api_id":                 {c.Config.APIID},
-		"api_key":                {c.Config.APIKey},
+	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteAdd), url.Values{
+		"api_id":                 {c.config.APIID},
+		"api_key":                {c.config.APIKey},
 		"domain":                 {domain},
 		"account_id":             {accountID},
 		"ref_id":                 {refID},
@@ -131,9 +138,9 @@ func (c *Client) SiteStatus(domain string, siteID int) (*SiteStatusResponse, err
 	log.Printf("[INFO] Getting Incapsula site status for domain: %s (site id: %d)\n", domain, siteID)
 
 	// Post form to Incapsula
-	resp, err := http.PostForm(endpointSiteStatus, url.Values{
-		"api_id":  {c.Config.APIID},
-		"api_key": {c.Config.APIKey},
+	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteStatus), url.Values{
+		"api_id":  {c.config.APIID},
+		"api_key": {c.config.APIKey},
 		"site_id": {strconv.Itoa(siteID)},
 	})
 	if err != nil {
@@ -174,9 +181,9 @@ func (c *Client) DeleteSite(domain string, siteID int) error {
 	log.Printf("[INFO] Deleting Incapsula site for domain: %s (site id: %d)\n", domain, siteID)
 
 	// Post form to Incapsula
-	resp, err := http.PostForm(endpointSiteDelete, url.Values{
-		"api_id":  {c.Config.APIID},
-		"api_key": {c.Config.APIKey},
+	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteDelete), url.Values{
+		"api_id":  {c.config.APIID},
+		"api_key": {c.config.APIKey},
 		"site_id": {strconv.Itoa(siteID)},
 	})
 	if err != nil {
