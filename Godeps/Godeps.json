@@ -208,6 +208,11 @@
 			"Rev": "3c1074078d32d767e08ab2c8564867292da86926"
 		},
 		{
+			"ImportPath": "github.com/fatih/color",
+			"Comment": "v1.7.0-5-g3f9d52f",
+			"Rev": "3f9d52f7176a6927daacff70a3e8d1dc2025c53e"
+		},
+		{
 			"ImportPath": "github.com/golang/protobuf/proto",
 			"Comment": "v1.2.0-40-g347cf4a",
 			"Rev": "347cf4a86c1cb8d262994d8ef5924d4576c5b331"
@@ -591,6 +596,11 @@
 			"Rev": "c2b33e8439af944379acbdd9c3a5fe0bc44bd8a5"
 		},
 		{
+			"ImportPath": "github.com/mattn/go-colorable",
+			"Comment": "v0.0.9-14-gefa5899",
+			"Rev": "efa589957cd060542a26d2dd7832fd6a6c6c3ade"
+		},
+		{
 			"ImportPath": "github.com/mattn/go-isatty",
 			"Comment": "v0.0.4-6-g3fb116b",
 			"Rev": "3fb116b820352b7f0c281308a4d6250c22d94e27"
@@ -845,6 +855,11 @@
 			"Rev": "ec9c18c8c6dda21490f4840e9c9946d883fd3037"
 		},
 		{
+			"ImportPath": "google.golang.org/grpc/binarylog/grpc_binarylog_v1",
+			"Comment": "v1.2.0-803-gec9c18c",
+			"Rev": "ec9c18c8c6dda21490f4840e9c9946d883fd3037"
+		},
+		{
 			"ImportPath": "google.golang.org/grpc/codes",
 			"Comment": "v1.2.0-803-gec9c18c",
 			"Rev": "ec9c18c8c6dda21490f4840e9c9946d883fd3037"
@@ -856,6 +871,11 @@
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/credentials",
+			"Comment": "v1.2.0-803-gec9c18c",
+			"Rev": "ec9c18c8c6dda21490f4840e9c9946d883fd3037"
+		},
+		{
+			"ImportPath": "google.golang.org/grpc/credentials/internal",
 			"Comment": "v1.2.0-803-gec9c18c",
 			"Rev": "ec9c18c8c6dda21490f4840e9c9946d883fd3037"
 		},
@@ -895,6 +915,11 @@
 			"Rev": "ec9c18c8c6dda21490f4840e9c9946d883fd3037"
 		},
 		{
+			"ImportPath": "google.golang.org/grpc/internal/binarylog",
+			"Comment": "v1.2.0-803-gec9c18c",
+			"Rev": "ec9c18c8c6dda21490f4840e9c9946d883fd3037"
+		},
+		{
 			"ImportPath": "google.golang.org/grpc/internal/channelz",
 			"Comment": "v1.2.0-803-gec9c18c",
 			"Rev": "ec9c18c8c6dda21490f4840e9c9946d883fd3037"
@@ -906,6 +931,16 @@
 		},
 		{
 			"ImportPath": "google.golang.org/grpc/internal/grpcrand",
+			"Comment": "v1.2.0-803-gec9c18c",
+			"Rev": "ec9c18c8c6dda21490f4840e9c9946d883fd3037"
+		},
+		{
+			"ImportPath": "google.golang.org/grpc/internal/grpcsync",
+			"Comment": "v1.2.0-803-gec9c18c",
+			"Rev": "ec9c18c8c6dda21490f4840e9c9946d883fd3037"
+		},
+		{
+			"ImportPath": "google.golang.org/grpc/internal/syscall",
 			"Comment": "v1.2.0-803-gec9c18c",
 			"Rev": "ec9c18c8c6dda21490f4840e9c9946d883fd3037"
 		},

@@ -23,9 +23,12 @@ func init() {
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
+	apiID := d.Get("api_id").(string)
+	apiKey := d.Get("api_key").(string)
+
 	config := Config{
-		APIID:   d.Get("api_id").(string),
-		APIKey:  d.Get("api_key").(string),
+		APIID:   apiID,
+		APIKey:  apiKey,
 		BaseURL: baseURL,
 	}
 
