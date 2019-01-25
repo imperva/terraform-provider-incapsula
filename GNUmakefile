@@ -13,5 +13,8 @@ test:
 testacc:
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
+testcov: 
+	test -coverprofile=c.out && go tool cover -html=incapsula/c.out
+
 install: 
 	go install

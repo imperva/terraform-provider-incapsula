@@ -3,4 +3,5 @@ examples/terraform.tfplan
 examples/terraform.tfstate
 examples/.terraform/
 examples/*.tfstate
+incapsula/c.out
 terraform-provider-incapsula
