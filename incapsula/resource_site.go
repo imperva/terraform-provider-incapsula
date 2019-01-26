@@ -100,7 +100,7 @@ func resourceSite() *schema.Resource {
 }
 
 func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
-	client := m.(Client)
+	client := m.(*Client)
 
 	domain := d.Get("domain").(string)
 
@@ -128,7 +128,7 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
-	client := m.(Client)
+	client := m.(*Client)
 
 	domain := d.Get("domain").(string)
 	siteID := d.Get("site_id").(int)
@@ -162,7 +162,7 @@ func resourceSiteUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceSiteDelete(d *schema.ResourceData, m interface{}) error {
-	client := m.(Client)
+	client := m.(*Client)
 
 	domain := d.Get("domain").(string)
 	siteID := d.Get("site_id").(int)
