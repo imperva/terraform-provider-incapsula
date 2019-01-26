@@ -183,7 +183,7 @@ be returned when creating the session.
     // from assumed role.
     svc := s3.New(sess)
 
-To setup assume role outside of a session see the stscreds.AssumeRoleProvider
+To setup assume role outside of a session see the stscrds.AssumeRoleProvider
 documentation.
 
 Environment Variables

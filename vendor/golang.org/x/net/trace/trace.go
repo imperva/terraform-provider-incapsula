@@ -60,7 +60,7 @@ The /debug/events HTTP endpoint organizes the event logs by family and
 by time since the last error.  The expanded view displays recent log
 entries and the log's call stack.
 */
-package trace
+package trace // import "golang.org/x/net/trace"
 
 import (
 	"bytes"
@@ -85,12 +85,6 @@ import (
 // DebugUseAfterFinish controls whether to debug uses of Trace values after finishing.
 // FOR DEBUGGING ONLY. This will slow down the program.
 var DebugUseAfterFinish = false
-
-// HTTP ServeMux paths.
-const (
-	debugRequestsPath = "/debug/requests"
-	debugEventsPath   = "/debug/events"
-)
 
 // AuthRequest determines whether a specific request is permitted to load the
 // /debug/requests or /debug/events pages.
@@ -118,8 +112,8 @@ var AuthRequest = func(req *http.Request) (any, sensitive bool) {
 }
 
 func init() {
-	_, pat := http.DefaultServeMux.Handler(&http.Request{URL: &url.URL{Path: debugRequestsPath}})
-	if pat == debugRequestsPath {
+	_, pat := http.DefaultServeMux.Handler(&http.Request{URL: &url.URL{Path: "/debug/requests"}})
+	if pat != "" {
 		panic("/debug/requests is already registered. You may have two independent copies of " +
 			"golang.org/x/net/trace in your binary, trying to maintain separate state. This may " +
 			"involve a vendored copy of golang.org/x/net/trace.")
@@ -127,8 +121,8 @@ func init() {
 
 	// TODO(jbd): Serve Traces from /debug/traces in the future?
 	// There is no requirement for a request to be present to have traces.
-	http.HandleFunc(debugRequestsPath, Traces)
-	http.HandleFunc(debugEventsPath, Events)
+	http.HandleFunc("/debug/requests", Traces)
+	http.HandleFunc("/debug/events", Events)
 }
 
 // NewContext returns a copy of the parent context
