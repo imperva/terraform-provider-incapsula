@@ -10,19 +10,21 @@ var descriptions map[string]string
 
 func init() {
 	// Storing this in the provider rather than making it configurable
-	// This endpoint is unlikely to change in the near future and will be augmented for testing
+	// This endpoint is unlikely to change in the near future
 	baseURL = "https://my.incapsula.com/api/prov/v1"
 
 	descriptions = map[string]string{
 		"api_id": "The API identifier for API operations. You can retrieve this\n" +
-			"from the Incapsula management console.",
+			"from the Incapsula management console. Can be set via INCAPSULA_API_ID " +
+			"environment variable.",
 
 		"api_key": "The API key for API operations. You can retrieve this\n" +
-			"from the Incapsula management console.",
+			"from the Incapsula management console. Can be set via INCAPSULA_API_KEY " +
+			"environment variable.",
 	}
 }
 
-func providerConfigure(d *schema.ResourceData) (interface{}, error) {
+func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	apiID := d.Get("api_id").(string)
 	apiKey := d.Get("api_key").(string)
 
@@ -41,12 +43,14 @@ func Provider() terraform.ResourceProvider {
 		Schema: map[string]*schema.Schema{
 			"api_id": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("INCAPSULA_API_ID", ""),
 				Description: descriptions["api_id"],
 			},
 			"api_key": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("INCAPSULA_API_KEY", ""),
 				Description: descriptions["api_key"],
 			},
 		},
@@ -55,6 +59,6 @@ func Provider() terraform.ResourceProvider {
 			"incapsula_site": resourceSite(),
 		},
 
-		ConfigureFunc: providerConfigure,
+		ConfigureFunc: configureProvider,
 	}
 }
