@@ -43,6 +43,7 @@ type SiteAddResponse struct {
 
 // SiteStatusResponse contains the relevant site information when getting an Incapsula managed site's status
 type SiteStatusResponse struct {
+	Domain           string      `json:"domain"`
 	SiteCreationDate int         `json:"site_creation_date"`
 	DNS              []DNSRecord `json:"dns"`
 	Res              int         `json:"res"`
