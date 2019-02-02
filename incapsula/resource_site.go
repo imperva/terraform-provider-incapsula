@@ -6,8 +6,6 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
-const incapAddSiteURL = "https://my.incapsula.com/api/prov/v1/sites/add"
-
 func resourceSite() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceSiteCreate,
