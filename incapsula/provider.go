@@ -56,7 +56,8 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"incapsula_site": resourceSite(),
+			"incapsula_site":              resourceSite(),
+			"incapsula_acl_security_rule": resourceACLSecurityRule(),
 		},
 
 		ConfigureFunc: configureProvider,
