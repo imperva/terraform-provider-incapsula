@@ -1,6 +1,8 @@
 package incapsula
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -12,6 +14,24 @@ func resourceACLSecurityRule() *schema.Resource {
 		Read:   resourceACLSecurityRuleRead,
 		Update: resourceACLSecurityRuleUpdate,
 		Delete: resourceACLSecurityRuleDelete,
+		Importer: &schema.ResourceImporter{
+			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				idSlice := strings.Split(d.Id(), "/")
+				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id/rule_id", d.Id())
+				}
+
+				siteID, err := strconv.Atoi(idSlice[0])
+				ruleID := idSlice[1]
+				if err != nil {
+					return nil, err
+				}
+
+				d.Set("site_id", siteID)
+				d.Set("rule_id", ruleID)
+				return []*schema.ResourceData{d}, nil
+			},
+		},
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
@@ -28,19 +48,22 @@ func resourceACLSecurityRule() *schema.Resource {
 
 			// Optional Arguments
 			"countries": &schema.Schema{
-				Description: "A comma separated list of country codes.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:      "A comma separated list of country codes.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
 			"ips": &schema.Schema{
-				Description: "A comma separated list of IPs or IP ranges, e.g: 192.168.1.1, 192.168.1.1-192.168.1.100 or 192.168.1.1/24.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:      "A comma separated list of IPs or IP ranges, e.g: 192.168.1.1, 192.168.1.1-192.168.1.100 or 192.168.1.1/24.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
 			"urls": &schema.Schema{
-				Description: "A comma separated list of resource paths.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:      "A comma separated list of resource paths.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
 			"url_patterns": &schema.Schema{
 				Description: "The patterns should be in accordance with the matching urls sent by the urls parameter. Options: CONTAINS | EQUALS | PREFIX | SUFFIX | NOT_EQUALS | NOT_CONTAIN | NOT_PREFIX | NOT_SUFFIX",

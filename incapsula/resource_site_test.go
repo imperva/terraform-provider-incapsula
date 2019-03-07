@@ -28,6 +28,24 @@ func TestAccIncapsulaSite_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIncapsulaSite_ImportBasic(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIncapsulaSiteDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIncapsulaSiteConfig_basic(testAccDomain),
+			},
+			{
+				ResourceName:      "incapsula_site.testacc-terraform-site",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckIncapsulaSiteDestroy(state *terraform.State) error {
 	client := testAccProvider.Meta().(*Client)
 
