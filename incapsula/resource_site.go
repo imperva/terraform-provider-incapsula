@@ -12,6 +12,9 @@ func resourceSite() *schema.Resource {
 		Read:   resourceSiteRead,
 		Update: resourceSiteUpdate,
 		Delete: resourceSiteDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
@@ -59,12 +62,6 @@ func resourceSite() *schema.Resource {
 			},
 
 			// Computed Attributes
-			// NOTE: Site ID will also be used for the ID
-			"site_id": &schema.Schema{
-				Description: "Numeric identifier of the site to operate on.",
-				Type:        schema.TypeInt,
-				Computed:    true,
-			},
 			"site_creation_date": &schema.Schema{
 				Description: "Numeric representation of the site creation date.",
 				Type:        schema.TypeInt,
@@ -119,7 +116,6 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 
 	// Set the Site ID
 	d.SetId(strconv.Itoa(siteAddResponse.SiteID))
-	d.Set("site_id", siteAddResponse.SiteID)
 
 	// Set the rest of the state from the resource read
 	return resourceSiteRead(d, m)
@@ -129,7 +125,7 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	domain := d.Get("domain").(string)
-	siteID := d.Get("site_id").(int)
+	siteID, _ := strconv.Atoi(d.Id())
 
 	siteStatusResponse, err := client.SiteStatus(domain, siteID)
 
@@ -137,19 +133,22 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	// Set the Site Creation Date
 	d.Set("site_creation_date", siteStatusResponse.SiteCreationDate)
+	d.Set("domain", siteStatusResponse.Domain)
 
 	// Set the DNS information
+	dnsARecordValues := make([]string, 0)
 	for _, entry := range siteStatusResponse.DNS {
 		if entry.SetTypeTo == "CNAME" && len(entry.SetDataTo) > 0 {
 			d.Set("dns_cname_record_name", entry.DNSRecordName)
 			d.Set("dns_cname_record_value", entry.SetDataTo[0])
-		} else {
+		}
+		if entry.SetTypeTo == "A" {
 			d.Set("dns_a_record_name", entry.DNSRecordName)
-			d.Set("dns_a_record_value", entry.SetDataTo)
+			dnsARecordValues = append(dnsARecordValues, entry.SetDataTo...)
 		}
 	}
+	d.Set("dns_a_record_value", dnsARecordValues)
 
 	return nil
 }
@@ -163,7 +162,7 @@ func resourceSiteDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	domain := d.Get("domain").(string)
-	siteID := d.Get("site_id").(int)
+	siteID, _ := strconv.Atoi(d.Id())
 
 	err := client.DeleteSite(domain, siteID)
 
