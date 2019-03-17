@@ -22,6 +22,7 @@ func resourceSite() *schema.Resource {
 				Description: "The domain name of the site. For example: www.example.com, hello.example.com, example.com.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 
 			// Optional Arguments
