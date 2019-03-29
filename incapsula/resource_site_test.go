@@ -17,7 +17,7 @@ func TestAccIncapsulaSite_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIncapsulaSiteDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIncapsulaSiteConfig_basic(testAccDomain),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiteExists("incapsula_site.testacc-terraform-site"),
