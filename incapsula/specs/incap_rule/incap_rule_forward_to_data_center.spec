@@ -9,7 +9,7 @@ name=Sample Rule Forward to Data Center ADR *
 dc_id=int *
 action=RULE_ACTION_FORWARD_TO_DC *
 allow_caching=false | true
-filter= Full-URL == ""/someurl"""
+filter= Full-URL == "/someurl"
 
 Read
 /api/prov/v1/sites/incapRules/list

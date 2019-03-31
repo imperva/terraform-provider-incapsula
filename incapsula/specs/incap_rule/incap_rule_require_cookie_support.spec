@@ -12,7 +12,7 @@ filter= Full-URL == "/someurl"
 Read
 /api/prov/v1/sites/incapRules/list
 include_ad_rules=No *
-include_incap_rules=Yes *"
+include_incap_rules=Yes *
 
 Update
 /api/prov/v1/sites/incapRules/edit

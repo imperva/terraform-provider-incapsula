@@ -35,11 +35,6 @@ func resourceIncapRule() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
-			"site_id": {
-				Description: "Numeric identifier of the site to operate on.",
-				Type:        schema.TypeInt,
-				Required:    true,
-			},
 			"enabled": {
 				Description: "todo",
 				Type:        schema.TypeString,
@@ -57,6 +52,11 @@ func resourceIncapRule() *schema.Resource {
 			},
 
 			// Optional Arguments
+			"site_id": {
+				Description: "Numeric identifier of the site to operate on.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+			},
 			"action": {
 				Description: "todo",
 				Type:        schema.TypeString,
@@ -72,6 +72,41 @@ func resourceIncapRule() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 			},
+			"allow_caching": {
+				Description: "todo",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"dc_id": {
+				Description: "todo",
+				Type:        schema.TypeInt,
+				Optional:    true,
+			},
+			"from": {
+				Description: "todo",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"to": {
+				Description: "todo",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"response_code": {
+				Description: "todo",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"add_missing": {
+				Description: "todo",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"rewrite_name": {
+				Description: "todo",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -81,12 +116,19 @@ func resourceIncapRuleCreate(d *schema.ResourceData, m interface{}) error {
 
 	_, err := client.AddIncapRule(
 		d.Get("site_id").(int),
+		d.Get("rule_id").(int),
+		d.Get("dc_id").(int),
 		d.Get("enabled").(string),
 		d.Get("priority").(string),
 		d.Get("name").(string),
 		d.Get("action").(string),
 		d.Get("filter").(string),
-		d.Get("rule_id").(int),
+		d.Get("allow_caching").(string),
+		d.Get("response_code").(string),
+		d.Get("from").(string),
+		d.Get("to").(string),
+		d.Get("add_missing").(string),
+		d.Get("rewrite_name").(string),
 	)
 
 	if err != nil {

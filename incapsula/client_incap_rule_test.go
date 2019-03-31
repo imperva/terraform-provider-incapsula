@@ -17,7 +17,9 @@ func TestClientAddIncapRuleBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := 42
-	addIncapRuleResponse, err := client.AddIncapRule(siteID, "", "", "", "", "")
+	ruleID := 420
+	dcID := 411
+	addIncapRuleResponse, err := client.AddIncapRule(siteID, ruleID, dcID, "", "", "", "", "", "", "", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -41,7 +43,9 @@ func TestClientAddIncapRuleBadJSON(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 42
-	addIncapRuleResponse, err := client.AddIncapRule(siteID, "", "", "", "", "")
+	ruleID := 420
+	dcID := 411
+	addIncapRuleResponse, err := client.AddIncapRule(siteID, ruleID, dcID, "", "", "", "", "", "", "", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -65,7 +69,9 @@ func TestClientAddIncapRuleInvalidRule(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 42
-	addIncapRuleResponse, err := client.AddIncapRule(siteID, "", "", "", "", "")
+	ruleID := 420
+	dcID := 411
+	addIncapRuleResponse, err := client.AddIncapRule(siteID, ruleID, dcID, "", "", "", "", "", "", "", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -88,16 +94,15 @@ func TestClientAddIncapRuleValidRule(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	ruleID := 42
-	addIncapRuleResponse, err := client.AddIncapRule(ruleID, "", "", "", "", "")
+	siteID := 42
+	ruleID := 420
+	dcID := 411
+	addIncapRuleResponse, err := client.AddIncapRule(siteID, ruleID, dcID, "", "", "", "", "", "", "", "", "", "", "")
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
 	if addIncapRuleResponse == nil {
 		t.Errorf("Should not have received a nil addIncapRuleResponse instance")
-	}
-	if addIncapRuleResponse.RuleID != 123 {
-		t.Errorf("Rule ID doesn't match")
 	}
 	if addIncapRuleResponse.Res != 0 {
 		t.Errorf("Response code doesn't match")
@@ -293,9 +298,6 @@ func TestClientEditIncapRuleValidRule(t *testing.T) {
 	if editIncapRuleResponse == nil {
 		t.Errorf("Should not have received a nil editIncapRuleResponse instance")
 	}
-	if editIncapRuleResponse.RuleID != 123 {
-		t.Errorf("Rule ID doesn't match")
-	}
 	// todo: test response properties
 	if editIncapRuleResponse.Res != 0 {
 		t.Errorf("Response code doesn't match")
@@ -314,7 +316,7 @@ func TestClientDeleteIncapRuleBadConnection(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error deleting incap rule (rule id: %d)", ruleID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error deleting incap rule (rule_id: %d)", ruleID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 }
@@ -335,7 +337,7 @@ func TestClientDeleteIncapRuleBadJSON(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing delete incap rule JSON response (rule id: %d)", ruleID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing delete incap rule JSON response (rule_id: %d)", ruleID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
 }
@@ -356,7 +358,7 @@ func TestClientDeleteIncapRuleInvalidRule(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when deleting incap rule (rule id: %d)", ruleID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when deleting incap rule (rule_id: %d)", ruleID)) {
 		t.Errorf("Should have received a bad site error, got: %s", err)
 	}
 }

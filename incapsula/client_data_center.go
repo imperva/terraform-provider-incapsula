@@ -118,7 +118,7 @@ func (c *Client) ListDataCenters(siteID int) (*DataCenterListResponse, error) {
 
 // EditDataCenter edits the Incapsula incap rule
 func (c *Client) EditDataCenter(dcID int, name, isStandby, isContent string) (*DataCenterEditResponse, error) {
-	log.Printf("[INFO] Editing Incapsula data center for dcID: %d\n", name, dcID)
+	log.Printf("[INFO] Editing Incapsula data center for dcID: %d\n", dcID)
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterEdit), url.Values{

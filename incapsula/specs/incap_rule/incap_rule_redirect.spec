@@ -10,7 +10,7 @@ name=Sample Rule Redirect ADR *
 action=RULE_ACTION_REDIRECT *
 from=https://site1.com/url1
 to=https://site2.com/url2 *
-filter= AnyHeaderValue == ""testval""
+filter= AnyHeaderValue == "testval"
 
 Read
 /api/prov/v1/sites/incapRules/list

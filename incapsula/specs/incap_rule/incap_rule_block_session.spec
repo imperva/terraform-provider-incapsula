@@ -8,7 +8,7 @@ enabled=true | false *
 priority=1 *
 name=Sample Rule Block Request IncapRule *
 action=RULE_ACTION_BLOCK *
-filter= Full-URL == ""/someurl"""
+filter= Full-URL == "/someurl"
 
 Read
 /api/prov/v1/sites/incapRules/list
