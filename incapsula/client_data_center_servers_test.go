@@ -202,12 +202,12 @@ func TestClientListDataCenterServersValidRequest(t *testing.T) {
 func TestClientEditDataCenterServersBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	serverID := 411
+	serverID := "411"
 	editDataCenterResponse, err := client.EditDataCenterServers(serverID, "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error editing data center server for serverID: %d: ", serverID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error editing data center server for serverID: %s: ", serverID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 	if editDataCenterResponse != nil {
@@ -226,12 +226,12 @@ func TestClientEditDataCenterServersBadJSON(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	serverID := 411
+	serverID := "411"
 	editDataCenterResponse, err := client.EditDataCenterServers(serverID, "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing edit data center server JSON response for serverID %d", serverID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing edit data center server JSON response for serverID %s", serverID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
 	if editDataCenterResponse != nil {
@@ -250,12 +250,12 @@ func TestClientEditDataCenterServersInvalidRule(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	serverID := 411
+	serverID := "411"
 	editDataCenterResponse, err := client.EditDataCenterServers(serverID, "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when editing data center server for serverID %d", serverID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when editing data center server for serverID %s", serverID)) {
 		t.Errorf("Should have received a bad site error, got: %s", err)
 	}
 	if editDataCenterResponse != nil {
@@ -274,7 +274,7 @@ func TestClientEditDataCenterServersValidRule(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	serverID := 411
+	serverID := "411"
 	editDataCenterResponse, err := client.EditDataCenterServers(serverID, "", "", "")
 	if err != nil {
 		t.Errorf("Should not have received an error")

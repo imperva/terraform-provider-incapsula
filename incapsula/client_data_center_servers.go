@@ -18,6 +18,7 @@ const endpointDataCenterServersDelete = "sites/dataCenters/servers/delete"
 // todo: get data center servers responses
 // DataCenterServersAddResponse contains todo
 type DataCenterServersAddResponse struct {
+	ServerID   int    `json:"server_id"`
 	Res        int    `json:"res"`
 	ResMessage string `json:"res_message"`
 }
@@ -115,20 +116,20 @@ func (c *Client) ListDataCenterServers(siteID int) (*DataCenterServersListRespon
 }
 
 // EditDataCenterServers edits the Incapsula incap rule
-func (c *Client) EditDataCenterServers(serverID int, serverAddress, isStandby, isContent string) (*DataCenterServersEditResponse, error) {
-	log.Printf("[INFO] Editing Incapsula data center servers for serverID: %d\n", serverID)
+func (c *Client) EditDataCenterServers(serverID, serverAddress, isStandby, isContent string) (*DataCenterServersEditResponse, error) {
+	log.Printf("[INFO] Editing Incapsula data center servers for serverID: %s\n", serverID)
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServersEdit), url.Values{
 		"api_id":         {c.config.APIID},
 		"api_key":        {c.config.APIKey},
-		"server_id":      {strconv.Itoa(serverID)},
+		"server_id":      {serverID},
 		"server_address": {serverAddress},
 		"is_standby":     {isStandby},
 		"is_content":     {isContent},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Error editing data center server for serverID: %d: %s", serverID, err)
+		return nil, fmt.Errorf("Error editing data center server for serverID: %s: %s", serverID, err)
 	}
 
 	// Read the body
@@ -142,12 +143,12 @@ func (c *Client) EditDataCenterServers(serverID int, serverAddress, isStandby, i
 	var dataCenterServersEditResponse DataCenterServersEditResponse
 	err = json.Unmarshal([]byte(responseBody), &dataCenterServersEditResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing edit data center server JSON response for serverID %d: %s", serverID, err)
+		return nil, fmt.Errorf("Error parsing edit data center server JSON response for serverID %s: %s", serverID, err)
 	}
 
 	// Look at the response status code from Incapsula
 	if dataCenterServersEditResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when editing data center server for serverID %d: %s", serverID, string(responseBody))
+		return nil, fmt.Errorf("Error from Incapsula service when editing data center server for serverID %s: %s", serverID, string(responseBody))
 	}
 
 	return &dataCenterServersEditResponse, nil

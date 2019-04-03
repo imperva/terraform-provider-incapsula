@@ -224,7 +224,7 @@ func (c *Client) EditIncapRule(siteID int, enabled, priority, name, action, filt
 }
 
 // DeleteIncapRule deletes a site currently managed by Incapsula
-func (c *Client) DeleteIncapRule(ruleID int) error {
+func (c *Client) DeleteIncapRule(ruleID string) error {
 	// Specifically shaded this struct, no need to share across funcs or export
 	// We only care about the response code and possibly the message
 	type IncapRuleDeleteResponse struct {
@@ -232,16 +232,16 @@ func (c *Client) DeleteIncapRule(ruleID int) error {
 		ResMessage string `json:"res_message"`
 	}
 
-	log.Printf("[INFO] Deleting Incapsula incap rule (rule_id: %d)\n", ruleID)
+	log.Printf("[INFO] Deleting Incapsula incap rule (rule_id: %s)\n", ruleID)
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointIncapRuleDelete), url.Values{
 		"api_id":  {c.config.APIID},
 		"api_key": {c.config.APIKey},
-		"rule_id": {strconv.Itoa(ruleID)},
+		"rule_id": {ruleID},
 	})
 	if err != nil {
-		return fmt.Errorf("Error deleting incap rule (rule_id: %d): %s", ruleID, err)
+		return fmt.Errorf("Error deleting incap rule (rule_id: %s): %s", ruleID, err)
 	}
 
 	// Read the body
@@ -255,12 +255,12 @@ func (c *Client) DeleteIncapRule(ruleID int) error {
 	var incapRuleDeleteResponse IncapRuleDeleteResponse
 	err = json.Unmarshal([]byte(responseBody), &incapRuleDeleteResponse)
 	if err != nil {
-		return fmt.Errorf("Error parsing delete incap rule JSON response (rule_id: %d): %s", ruleID, err)
+		return fmt.Errorf("Error parsing delete incap rule JSON response (rule_id: %s): %s", ruleID, err)
 	}
 
 	// Look at the response status code from Incapsula
 	if incapRuleDeleteResponse.Res != 0 {
-		return fmt.Errorf("Error from Incapsula service when deleting incap rule (rule_id: %d): %s", ruleID, string(responseBody))
+		return fmt.Errorf("Error from Incapsula service when deleting incap rule (rule_id: %s): %s", ruleID, string(responseBody))
 	}
 
 	return nil

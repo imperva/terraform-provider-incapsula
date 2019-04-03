@@ -18,17 +18,17 @@ func resourceDataCenter() *schema.Resource {
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				idSlice := strings.Split(d.Id(), "/")
 				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
-					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id/rule_id", d.Id())
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id/dc_id", d.Id())
 				}
 
 				siteID, err := strconv.Atoi(idSlice[0])
-				ruleID := idSlice[1]
 				if err != nil {
 					return nil, err
 				}
+				dcID := idSlice[1]
 
 				d.Set("site_id", siteID)
-				d.Set("rule_id", ruleID)
+				d.SetId(dcID)
 				return []*schema.ResourceData{d}, nil
 			},
 		},
@@ -69,7 +69,7 @@ func resourceDataCenter() *schema.Resource {
 func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	_, err := client.AddDataCenter(
+	dataCenterAddResponse, err := client.AddDataCenter(
 		d.Get("site_id").(int),
 		d.Get("name").(string),
 		d.Get("server_address").(string),
@@ -81,8 +81,8 @@ func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	// Set the rule ID
-	d.SetId(d.Get("dc_id").(string))
+	// Set the dc ID
+	d.SetId(strconv.Itoa(dataCenterAddResponse.DcID))
 
 	return resourceDataCenterRead(d, m)
 }
@@ -123,7 +123,7 @@ func resourceDataCenterUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceDataCenterDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	err := client.DeleteDataCenter(d.Get("dc_id").(int))
+	err := client.DeleteDataCenter(d.Id())
 
 	if err != nil {
 		return err

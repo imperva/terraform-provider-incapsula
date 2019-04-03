@@ -28,7 +28,7 @@ func resourceIncapRule() *schema.Resource {
 				}
 
 				d.Set("site_id", siteID)
-				d.Set("rule_id", ruleID)
+				d.SetId(ruleID)
 				return []*schema.ResourceData{d}, nil
 			},
 		},
@@ -65,11 +65,6 @@ func resourceIncapRule() *schema.Resource {
 			"filter": {
 				Description: "todo",
 				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"rule_id": {
-				Description: "todo",
-				Type:        schema.TypeInt,
 				Optional:    true,
 			},
 			"allow_caching": {
@@ -116,7 +111,7 @@ func resourceIncapRuleCreate(d *schema.ResourceData, m interface{}) error {
 
 	_, err := client.AddIncapRule(
 		d.Get("site_id").(int),
-		d.Get("rule_id").(int),
+		d.Id(),
 		d.Get("dc_id").(int),
 		d.Get("enabled").(string),
 		d.Get("priority").(string),
@@ -168,9 +163,7 @@ func resourceIncapRuleDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	// Implement delete by clearing out the rule configuration
-	err := client.DeleteIncapRule(
-		d.Get("rule_id").(int),
-	)
+	err := client.DeleteIncapRule(d.Id())
 
 	if err != nil {
 		return err

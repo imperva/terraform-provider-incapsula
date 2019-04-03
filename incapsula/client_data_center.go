@@ -18,6 +18,7 @@ const endpointDataCenterDelete = "sites/dataCenters/delete"
 // todo: get data center responses
 // DataCenterAddResponse contains todo
 type DataCenterAddResponse struct {
+	DcID       int    `json:"dc_id"`
 	Res        int    `json:"res"`
 	ResMessage string `json:"res_message"`
 }
@@ -156,7 +157,7 @@ func (c *Client) EditDataCenter(dcID int, name, isStandby, isContent string) (*D
 }
 
 // DeleteDataCenter deletes a site currently managed by Incapsula
-func (c *Client) DeleteDataCenter(dcID int) error {
+func (c *Client) DeleteDataCenter(dcID string) error {
 	// Specifically shaded this struct, no need to share across funcs or export
 	// We only care about the response code and possibly the message
 	type DataCenterDeleteResponse struct {
@@ -164,16 +165,16 @@ func (c *Client) DeleteDataCenter(dcID int) error {
 		ResMessage string `json:"res_message"`
 	}
 
-	log.Printf("[INFO] Deleting Incapsula data center id: %d)\n", dcID)
+	log.Printf("[INFO] Deleting Incapsula data center id: %s)\n", dcID)
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterDelete), url.Values{
 		"api_id":  {c.config.APIID},
 		"api_key": {c.config.APIKey},
-		"dc_id":   {strconv.Itoa(dcID)},
+		"dc_id":   {dcID},
 	})
 	if err != nil {
-		return fmt.Errorf("Error deleting data center (dc_id: %d): %s", dcID, err)
+		return fmt.Errorf("Error deleting data center (dc_id: %s): %s", dcID, err)
 	}
 
 	// Read the body
@@ -187,12 +188,12 @@ func (c *Client) DeleteDataCenter(dcID int) error {
 	var dataCenterDeleteResponse DataCenterDeleteResponse
 	err = json.Unmarshal([]byte(responseBody), &dataCenterDeleteResponse)
 	if err != nil {
-		return fmt.Errorf("Error parsing delete data center JSON response (dc_id: %d): %s", dcID, err)
+		return fmt.Errorf("Error parsing delete data center JSON response (dc_id: %s): %s", dcID, err)
 	}
 
 	// Look at the response status code from Incapsula
 	if dataCenterDeleteResponse.Res != 0 {
-		return fmt.Errorf("Error from Incapsula service when deleting data center (dc_id: %d): %s", dcID, string(responseBody))
+		return fmt.Errorf("Error from Incapsula service when deleting data center (dc_id: %s): %s", dcID, string(responseBody))
 	}
 
 	return nil
