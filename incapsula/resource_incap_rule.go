@@ -110,9 +110,9 @@ func resourceIncapRuleCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	_, err := client.AddIncapRule(
-		d.Get("site_id").(int),
 		d.Id(),
-		d.Get("dc_id").(int),
+		d.Get("site_id").(string),
+		d.Get("dc_id").(string),
 		d.Get("enabled").(string),
 		d.Get("priority").(string),
 		d.Get("name").(string),

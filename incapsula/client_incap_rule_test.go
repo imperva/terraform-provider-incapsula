@@ -16,14 +16,13 @@ import (
 func TestClientAddIncapRuleBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	siteID := 42
-	ruleID := 420
-	dcID := 411
-	addIncapRuleResponse, err := client.AddIncapRule(siteID, ruleID, dcID, "", "", "", "", "", "", "", "", "", "", "")
+	siteID := "42"
+	dcID := "43"
+	addIncapRuleResponse, err := client.AddIncapRule(dcID, siteID, "", "", "", "", "", "", "", "", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding incap rule for siteID %d", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding incap rule for siteID %s", siteID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 	if addIncapRuleResponse != nil {
@@ -43,9 +42,7 @@ func TestClientAddIncapRuleBadJSON(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 42
-	ruleID := 420
-	dcID := 411
-	addIncapRuleResponse, err := client.AddIncapRule(siteID, ruleID, dcID, "", "", "", "", "", "", "", "", "", "", "")
+	addIncapRuleResponse, err := client.AddIncapRule("", "", "", "", "", "", "", "", "", "", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -69,9 +66,7 @@ func TestClientAddIncapRuleInvalidRule(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 42
-	ruleID := 420
-	dcID := 411
-	addIncapRuleResponse, err := client.AddIncapRule(siteID, ruleID, dcID, "", "", "", "", "", "", "", "", "", "", "")
+	addIncapRuleResponse, err := client.AddIncapRule("", "", "", "", "", "", "", "", "", "", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -94,10 +89,7 @@ func TestClientAddIncapRuleValidRule(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := 42
-	ruleID := 420
-	dcID := 411
-	addIncapRuleResponse, err := client.AddIncapRule(siteID, ruleID, dcID, "", "", "", "", "", "", "", "", "", "", "")
+	addIncapRuleResponse, err := client.AddIncapRule("", "", "", "", "", "", "", "", "", "", "", "", "", "")
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
@@ -311,12 +303,12 @@ func TestClientEditIncapRuleValidRule(t *testing.T) {
 func TestClientDeleteIncapRuleBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	ruleID := 42
+	ruleID := "42"
 	err := client.DeleteIncapRule(ruleID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error deleting incap rule (rule_id: %d)", ruleID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error deleting incap rule (rule_id: %s)", ruleID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 }
@@ -332,12 +324,12 @@ func TestClientDeleteIncapRuleBadJSON(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	ruleID := 42
+	ruleID := "42"
 	err := client.DeleteIncapRule(ruleID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing delete incap rule JSON response (rule_id: %d)", ruleID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing delete incap rule JSON response (rule_id: %s)", ruleID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
 }
@@ -353,12 +345,12 @@ func TestClientDeleteIncapRuleInvalidRule(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	ruleID := 42
+	ruleID := "42"
 	err := client.DeleteIncapRule(ruleID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when deleting incap rule (rule_id: %d)", ruleID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when deleting incap rule (rule_id: %s)", ruleID)) {
 		t.Errorf("Should have received a bad site error, got: %s", err)
 	}
 }
@@ -374,7 +366,7 @@ func TestClientDeleteIncapRuleValidSite(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	ruleID := 42
+	ruleID := "42"
 	err := client.DeleteIncapRule(ruleID)
 	if err != nil {
 		t.Errorf("Should not have received an error")

@@ -82,7 +82,7 @@ func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// Set the dc ID
-	d.SetId(strconv.Itoa(dataCenterAddResponse.DcID))
+	d.SetId(strconv.Itoa(dataCenterAddResponse.DataCenterID))
 
 	return resourceDataCenterRead(d, m)
 }
@@ -91,8 +91,7 @@ func resourceDataCenterRead(d *schema.ResourceData, m interface{}) error {
 	// Implement by reading the SiteResponse for the site
 	client := m.(*Client)
 
-	siteStatusResponse, err := client.ListDataCenters(d.Get("site_id").(int))
-	d.Set("todo", siteStatusResponse)
+	_, err := client.ListDataCenters(d.Get("site_id").(int))
 
 	if err != nil {
 		return err

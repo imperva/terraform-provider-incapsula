@@ -57,8 +57,8 @@ type IncapRuleDeleteResponse struct {
 }
 
 // AddIncapRule adds an incap rule to be managed by Incapsula
-func (c *Client) AddIncapRule(siteID, ruleID, dcID int, enabled, priority, name, action, filter, allowCaching, responseCode, from, to, addMissing, rewriteName string) (*IncapRuleAddResponse, error) {
-	log.Printf("[INFO] Adding Incapsula incap rule for siteID: %d\n", siteID)
+func (c *Client) AddIncapRule(dcID, siteID, ruleID, enabled, priority, name, action, filter, allowCaching, responseCode, from, to, addMissing, rewriteName string) (*IncapRuleAddResponse, error) {
+	log.Printf("[INFO] Adding Incapsula incap rule for siteID: %s\n", siteID)
 
 	// Base URL values
 	values := url.Values{
@@ -85,21 +85,21 @@ func (c *Client) AddIncapRule(siteID, ruleID, dcID int, enabled, priority, name,
 	case actionRetry:
 		fallthrough
 	case actionIntrusiveHtml:
-		values.Add("site_id", strconv.Itoa(siteID))
+		values.Add("site_id", siteID)
 		values.Add("priority", priority)
 	case actionDeleteCookie:
 		fallthrough
 	case actionDeleteHeader:
 		fallthrough
 	case actionRewriteUrl:
-		values.Add("rule_id", strconv.Itoa(ruleID))
+		values.Add("rule_id", ruleID)
 	case actionFwdToDataCenter:
-		values.Add("site_id", strconv.Itoa(siteID))
+		values.Add("site_id", siteID)
 		values.Add("priority", priority)
-		values.Add("dc_id", strconv.Itoa(dcID))
+		values.Add("dc_id", dcID)
 		values.Add("allow_caching", allowCaching)
 	case actionRedirect:
-		values.Add("site_id", strconv.Itoa(siteID))
+		values.Add("site_id", siteID)
 		values.Add("priority", priority)
 		values.Add("response_code", responseCode)
 		values.Add("from", from)
@@ -107,7 +107,7 @@ func (c *Client) AddIncapRule(siteID, ruleID, dcID int, enabled, priority, name,
 	case actionRewriteCookie:
 		fallthrough
 	case actionRewriteHeader:
-		values.Add("site_id", strconv.Itoa(siteID))
+		values.Add("site_id", siteID)
 		values.Add("priority", priority)
 		values.Add("add_missing", addMissing)
 		values.Add("from", from)
@@ -119,7 +119,7 @@ func (c *Client) AddIncapRule(siteID, ruleID, dcID int, enabled, priority, name,
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointIncapRuleAdd), values)
 	if err != nil {
-		return nil, fmt.Errorf("Error from Incapsula service when adding incap rule for siteID %d: %s", siteID, err)
+		return nil, fmt.Errorf("Error from Incapsula service when adding incap rule for siteID %s: %s", siteID, err)
 	}
 
 	// Read the body
@@ -133,12 +133,12 @@ func (c *Client) AddIncapRule(siteID, ruleID, dcID int, enabled, priority, name,
 	var incapRuleAddResponse IncapRuleAddResponse
 	err = json.Unmarshal([]byte(responseBody), &incapRuleAddResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing add incap rule JSON response for siteID %d: %s", siteID, err)
+		return nil, fmt.Errorf("Error parsing add incap rule JSON response for siteID %s: %s", siteID, err)
 	}
 
 	// Look at the response status code from Incapsula
 	if incapRuleAddResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when adding incap rule for siteID %d: %s", siteID, string(responseBody))
+		return nil, fmt.Errorf("Error from Incapsula service when adding incap rule for siteID %s: %s", siteID, string(responseBody))
 	}
 
 	return &incapRuleAddResponse, nil

@@ -1,13 +1,13 @@
 # Provider information, like api_id and api_key can be specified here
 # or as environment variables: INCAPSULA_API_ID and INCAPSULA_API_KEY
 provider "incapsula" {
-  api_id = "foo"
-  api_key = "bar"
+  api_id = "31228"
+  api_key = "35ca97fd-979b-4ba2-b8b6-3be2e7fd3889"
 }
 
 # Site information
 resource "incapsula_site" "example-site" {
-  domain = "examplesite.com"
+  domain = "foobar.com"
 }
 
 ####################################################################
@@ -15,10 +15,10 @@ resource "incapsula_site" "example-site" {
 ####################################################################
 
 # Data Centers
-resource "incapsula_data_center" "example-data_center" {
+resource "incapsula_data_center" "example-data-center" {
   site_id = "${incapsula_site.example-site.id}"
   name = "Example data center"
-  server_address = "192.168.1.10"
+  server_address = "8.8.4.4"
   is_standby = "yes"
   is_content = "yes"
   depends_on = ["incapsula_site.example-site"]
@@ -26,8 +26,8 @@ resource "incapsula_data_center" "example-data_center" {
 
 # Data Center Servers
 resource "incapsula_data_center_servers" "example-data_center_servers" {
-  dc_id = "${incapsula_data_center.example-data_center.id}"
-  server_address = "192.168.2.10"
+  dc_id = "${incapsula_data_center.example-data-center.id}"
+  server_address = "8.8.8.8"
   is_standby = "yes"
   depends_on = ["incapsula_site.example-site", "incapsula_data_center.example-data_center"]
 }

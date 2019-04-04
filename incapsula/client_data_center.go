@@ -16,17 +16,28 @@ const endpointDataCenterEdit = "sites/dataCenters/edit"
 const endpointDataCenterDelete = "sites/dataCenters/delete"
 
 // todo: get data center responses
-// DataCenterAddResponse contains todo
+// DataCenterAddResponse contains id of data center
 type DataCenterAddResponse struct {
-	DcID       int    `json:"dc_id"`
-	Res        int    `json:"res"`
-	ResMessage string `json:"res_message"`
+	Res          int    `json:"res"`
+	Status       string `json:"status"`
+	DataCenterID int    `json:"datacenter_id"`
 }
 
-// DataCenterListResponse contains todo
+// DataCenterListResponse contains list of data centers
 type DataCenterListResponse struct {
-	Res        int    `json:"res"`
-	ResMessage string `json:"res_message"`
+	Res int `json:"res"`
+	DCs []struct {
+		ID      string `json:"id"`
+		Enabled string `json:"enabled"`
+		Servers []struct {
+			ID        string `json:"id"`
+			Enabled   string `json:"enabled"`
+			Address   string `json:"address"`
+			IsStandBy string `json:"isStandby"`
+		} `json:"servers"`
+		Name        string `json:"name"`
+		ContentOnly string `json:"contentOnly"`
+	} `json:"DCs"`
 }
 
 // DataCenterEditResponse contains todo
@@ -121,15 +132,26 @@ func (c *Client) ListDataCenters(siteID int) (*DataCenterListResponse, error) {
 func (c *Client) EditDataCenter(dcID int, name, isStandby, isContent string) (*DataCenterEditResponse, error) {
 	log.Printf("[INFO] Editing Incapsula data center for dcID: %d\n", dcID)
 
+	values := url.Values{
+		"api_id":  {c.config.APIID},
+		"api_key": {c.config.APIKey},
+		"dc_id":   {strconv.Itoa(dcID)},
+	}
+
+	if name != "" {
+		values.Add("name", name)
+	}
+
+	if isStandby != "" {
+		values.Add("is_standby", isStandby)
+	}
+
+	if isContent != "" {
+		values.Add("is_content", isContent)
+	}
+
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterEdit), url.Values{
-		"api_id":     {c.config.APIID},
-		"api_key":    {c.config.APIKey},
-		"dc_id":      {strconv.Itoa(dcID)},
-		"name":       {name},
-		"is_standby": {isStandby},
-		"is_content": {isContent},
-	})
+	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterEdit), values)
 	if err != nil {
 		return nil, fmt.Errorf("Error editing data center  for dcID: %d: %s", dcID, err)
 	}
