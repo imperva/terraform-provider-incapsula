@@ -1,13 +1,13 @@
 # Provider information, like api_id and api_key can be specified here
 # or as environment variables: INCAPSULA_API_ID and INCAPSULA_API_KEY
 provider "incapsula" {
-  api_id = "foo"
-  api_key = "bar"
+  api_id = "31228"
+  api_key = "35ca97fd-979b-4ba2-b8b6-3be2e7fd3889"
 }
 
 # Site information
 resource "incapsula_site" "example-site" {
-  domain = "examplesite.com"
+  domain = "foobar.com"
 }
 
 //####################################################################
