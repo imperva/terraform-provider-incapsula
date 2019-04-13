@@ -54,7 +54,7 @@ func resourceIncapRule() *schema.Resource {
 			// Optional Arguments
 			"site_id": {
 				Description: "Numeric identifier of the site to operate on.",
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"action": {
@@ -74,7 +74,7 @@ func resourceIncapRule() *schema.Resource {
 			},
 			"dc_id": {
 				Description: "todo",
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"from": {
@@ -106,32 +106,38 @@ func resourceIncapRule() *schema.Resource {
 	}
 }
 
+func getStringValue(key interface{}) string {
+	if key == nil {
+		return ""
+	}
+	return key.(string)
+}
+
 func resourceIncapRuleCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	_, err := client.AddIncapRule(
-		d.Get("site_id").(int),
-		d.Id(),
-		d.Get("dc_id").(int),
-		d.Get("enabled").(string),
-		d.Get("priority").(string),
-		d.Get("name").(string),
-		d.Get("action").(string),
-		d.Get("filter").(string),
-		d.Get("allow_caching").(string),
-		d.Get("response_code").(string),
-		d.Get("from").(string),
-		d.Get("to").(string),
-		d.Get("add_missing").(string),
-		d.Get("rewrite_name").(string),
+	addIncapRuleResponse, err := client.AddIncapRule(
+		getStringValue(d.Get("enabled")),
+		getStringValue(d.Get("name")),
+		getStringValue(d.Get("action")),
+		getStringValue(d.Get("filter")),
+		getStringValue(d.Get("site_id")),
+		getStringValue(d.Get("priority")),
+		getStringValue(d.Id()),
+		getStringValue(d.Get("dc_id")),
+		getStringValue(d.Get("allow_caching")),
+		getStringValue(d.Get("response_code")),
+		getStringValue(d.Get("from")),
+		getStringValue(d.Get("to")),
+		getStringValue(d.Get("add_missing")),
+		getStringValue(d.Get("rewrite_name")),
 	)
 
 	if err != nil {
 		return err
 	}
 
-	// Set the rule ID
-	d.SetId(d.Get("rule_id").(string))
+	d.SetId(addIncapRuleResponse.RuleID)
 
 	return resourceIncapRuleRead(d, m)
 }
@@ -140,17 +146,61 @@ func resourceIncapRuleRead(d *schema.ResourceData, m interface{}) error {
 	// Implement by reading the SiteResponse for the site
 	client := m.(*Client)
 
+	var includeAdRules = ""
+	var includeIncapRules = ""
+	switch action := getStringValue(d.Get("action")); action {
+	case "":
+		return nil
+	case actionAlert:
+		fallthrough
+	case actionBlockIP:
+		fallthrough
+	case actionBlockRequest:
+		fallthrough
+	case actionBlockSession:
+		fallthrough
+	case actionCaptcha:
+		fallthrough
+	case actionRetry:
+		fallthrough
+	case actionIntrusiveHtml:
+		includeAdRules = "No"
+		includeIncapRules = "Yes"
+	case actionDeleteCookie:
+		fallthrough
+	case actionDeleteHeader:
+		fallthrough
+	case actionFwdToDataCenter:
+		fallthrough
+	case actionRedirect:
+		fallthrough
+	case actionRewriteCookie:
+		fallthrough
+	case actionRewriteHeader:
+		fallthrough
+	case actionRewriteUrl:
+		includeAdRules = "Yes"
+		includeIncapRules = "No"
+	}
+
 	listIncapRulesResponse, err := client.ListIncapRules(
-		d.Get("include_ad_rules").(string),
-		d.Get("include_incap_rules").(string),
+		d.Get("site_id").(string),
+		includeAdRules,
+		includeIncapRules,
 	)
-	d.Set("todo", listIncapRulesResponse)
+
+	for _, incapRule := range listIncapRulesResponse.IncapRules.All {
+		ruleID := d.Id()
+		if incapRule.ID == ruleID {
+			d.Set("include_ad_rules", includeAdRules)
+			d.Set("include_incap_rules", includeIncapRules)
+			break
+		}
+	}
 
 	if err != nil {
 		return err
 	}
-
-	// todo: what is the response
 
 	return nil
 }

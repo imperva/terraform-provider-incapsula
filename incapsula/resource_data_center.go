@@ -35,29 +35,29 @@ func resourceDataCenter() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
-			"site_id": &schema.Schema{
+			"site_id": {
 				Description: "Numeric identifier of the site to operate on.",
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Description: "todo",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"server_address": &schema.Schema{
+			"server_address": {
 				Description: "todo",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
 
 			// Optional Arguments
-			"is_standby": &schema.Schema{
+			"is_standby": {
 				Description: "todo",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"is_content": &schema.Schema{
+			"is_content": {
 				Description: "todo",
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -70,7 +70,7 @@ func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	dataCenterAddResponse, err := client.AddDataCenter(
-		d.Get("site_id").(int),
+		d.Get("site_id").(string),
 		d.Get("name").(string),
 		d.Get("server_address").(string),
 		d.Get("is_standby").(string),
@@ -82,23 +82,26 @@ func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// Set the dc ID
-	d.SetId(strconv.Itoa(dataCenterAddResponse.DcID))
+	d.SetId(dataCenterAddResponse.DataCenterID)
 
 	return resourceDataCenterRead(d, m)
 }
 
 func resourceDataCenterRead(d *schema.ResourceData, m interface{}) error {
-	// Implement by reading the SiteResponse for the site
+	// Implement by reading the ListDataCentersResponse for the data center
 	client := m.(*Client)
 
-	siteStatusResponse, err := client.ListDataCenters(d.Get("site_id").(int))
-	d.Set("todo", siteStatusResponse)
-
+	listDataCentersResponse, err := client.ListDataCenters(d.Get("site_id").(string))
 	if err != nil {
 		return err
 	}
 
-	// todo: review response
+	for _, dataCenter := range listDataCentersResponse.DCs {
+		if dataCenter.Name == d.Get("name").(string) {
+			d.Set("enabled", dataCenter.Enabled)
+			d.Set("is_content", dataCenter.ContentOnly)
+		}
+	}
 
 	return nil
 }

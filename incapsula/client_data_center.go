@@ -16,17 +16,27 @@ const endpointDataCenterEdit = "sites/dataCenters/edit"
 const endpointDataCenterDelete = "sites/dataCenters/delete"
 
 // todo: get data center responses
-// DataCenterAddResponse contains todo
+// DataCenterAddResponse contains id of data center
 type DataCenterAddResponse struct {
-	DcID       int    `json:"dc_id"`
-	Res        int    `json:"res"`
-	ResMessage string `json:"res_message"`
+	Res          string `json:"res"`
+	DataCenterID string `json:"datacenter_id"`
 }
 
-// DataCenterListResponse contains todo
+// DataCenterListResponse contains list of data centers
 type DataCenterListResponse struct {
-	Res        int    `json:"res"`
-	ResMessage string `json:"res_message"`
+	Res string `json:"res"`
+	DCs []struct {
+		ID      string `json:"id"`
+		Enabled string `json:"enabled"`
+		Servers []struct {
+			ID        string `json:"id"`
+			Enabled   string `json:"enabled"`
+			Address   string `json:"address"`
+			IsStandBy string `json:"isStandby"`
+		} `json:"servers"`
+		Name        string `json:"name"`
+		ContentOnly string `json:"contentOnly"`
+	} `json:"DCs"`
 }
 
 // DataCenterEditResponse contains todo
@@ -42,21 +52,21 @@ type DataCenterDeleteResponse struct {
 }
 
 // AddDataCenter adds an incap rule to be managed by Incapsula
-func (c *Client) AddDataCenter(siteID int, name string, serverAddress string, isStandby string, isContent string) (*DataCenterAddResponse, error) {
-	log.Printf("[INFO] Adding Incapsula data center for siteID: %d\n", siteID)
+func (c *Client) AddDataCenter(siteID, name, serverAddress, isStandby, isContent string) (*DataCenterAddResponse, error) {
+	log.Printf("[INFO] Adding Incapsula data center for siteID: %s\n", siteID)
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterAdd), url.Values{
 		"api_id":         {c.config.APIID},
 		"api_key":        {c.config.APIKey},
-		"site_id":        {strconv.Itoa(siteID)},
+		"site_id":        {siteID},
 		"name":           {name},
 		"server_address": {serverAddress},
 		"is_standby":     {isStandby},
 		"is_content":     {isContent},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Error from Incapsula service when adding data center for siteID %d: %s", siteID, err)
+		return nil, fmt.Errorf("Error from Incapsula service when adding data center for siteID %s: %s", siteID, err)
 	}
 
 	// Read the body
@@ -70,29 +80,29 @@ func (c *Client) AddDataCenter(siteID int, name string, serverAddress string, is
 	var dataCenterAddResponse DataCenterAddResponse
 	err = json.Unmarshal([]byte(responseBody), &dataCenterAddResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing add data center JSON response for siteID %d: %s", siteID, err)
+		return nil, fmt.Errorf("Error parsing add data center JSON response for siteID %s: %s\nresponse: %s", siteID, err, string(responseBody))
 	}
 
 	// Look at the response status code from Incapsula
-	if dataCenterAddResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when adding data center for siteID %d: %s", siteID, string(responseBody))
+	if dataCenterAddResponse.Res != "0" {
+		return nil, fmt.Errorf("Error from Incapsula service when adding data center for siteID %s: %s", siteID, string(responseBody))
 	}
 
 	return &dataCenterAddResponse, nil
 }
 
-// DataCenterList gets the Incapsula list of incap rules
-func (c *Client) ListDataCenters(siteID int) (*DataCenterListResponse, error) {
-	log.Printf("[INFO] Getting Incapsula data centers (site_id: %d)\n", siteID)
+// DataCenterList gets the Incapsula list of data centers
+func (c *Client) ListDataCenters(siteID string) (*DataCenterListResponse, error) {
+	log.Printf("[INFO] Getting Incapsula data centers (site_id: %s)\n", siteID)
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterList), url.Values{
 		"api_id":  {c.config.APIID},
 		"api_key": {c.config.APIKey},
-		"site_id": {strconv.Itoa(siteID)},
+		"site_id": {siteID},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Error getting data centers (site_id: %d): %s", siteID, err)
+		return nil, fmt.Errorf("Error getting data centers for siteID %s: %s", siteID, err)
 	}
 
 	// Read the body
@@ -103,33 +113,44 @@ func (c *Client) ListDataCenters(siteID int) (*DataCenterListResponse, error) {
 	log.Printf("[DEBUG] Incapsula data centers JSON response: %s\n", string(responseBody))
 
 	// Parse the JSON
-	var incapRuleListResponse DataCenterListResponse
-	err = json.Unmarshal([]byte(responseBody), &incapRuleListResponse)
+	var dataCenterListResponse DataCenterListResponse
+	err = json.Unmarshal([]byte(responseBody), &dataCenterListResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing data centers list JSON response (site_id: %d): %s", siteID, err)
+		return nil, fmt.Errorf("Error parsing data centers list JSON response for siteID: %s %s\nresponse: %s", siteID, err, string(responseBody))
 	}
 
 	// Look at the response status code from Incapsula
-	if incapRuleListResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when getting data centers list (site_id: %d): %s", siteID, string(responseBody))
+	if dataCenterListResponse.Res != "0" {
+		return nil, fmt.Errorf("Error from Incapsula service when getting data centers list (site_id: %s): %s", siteID, string(responseBody))
 	}
 
-	return &incapRuleListResponse, nil
+	return &dataCenterListResponse, nil
 }
 
 // EditDataCenter edits the Incapsula incap rule
 func (c *Client) EditDataCenter(dcID int, name, isStandby, isContent string) (*DataCenterEditResponse, error) {
 	log.Printf("[INFO] Editing Incapsula data center for dcID: %d\n", dcID)
 
+	values := url.Values{
+		"api_id":  {c.config.APIID},
+		"api_key": {c.config.APIKey},
+		"dc_id":   {strconv.Itoa(dcID)},
+	}
+
+	if name != "" {
+		values.Add("name", name)
+	}
+
+	if isStandby != "" {
+		values.Add("is_standby", isStandby)
+	}
+
+	if isContent != "" {
+		values.Add("is_content", isContent)
+	}
+
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterEdit), url.Values{
-		"api_id":     {c.config.APIID},
-		"api_key":    {c.config.APIKey},
-		"dc_id":      {strconv.Itoa(dcID)},
-		"name":       {name},
-		"is_standby": {isStandby},
-		"is_content": {isContent},
-	})
+	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterEdit), values)
 	if err != nil {
 		return nil, fmt.Errorf("Error editing data center  for dcID: %d: %s", dcID, err)
 	}

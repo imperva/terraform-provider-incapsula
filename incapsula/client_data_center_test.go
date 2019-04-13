@@ -16,12 +16,12 @@ import (
 func TestClientAddDataCenterBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	siteID := 42
+	siteID := "42"
 	addDataCenterResponse, err := client.AddDataCenter(siteID, "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding data center for siteID %d", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding data center for siteID %s", siteID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 	if addDataCenterResponse != nil {
@@ -40,12 +40,12 @@ func TestClientAddDataCenterBadJSON(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := 42
+	siteID := "42"
 	addDataCenterResponse, err := client.AddDataCenter(siteID, "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing add data center JSON response for siteID %d", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing add data center JSON response for siteID %s", siteID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
 	if addDataCenterResponse != nil {
@@ -58,18 +58,18 @@ func TestClientAddDataCenterInvalidRule(t *testing.T) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterAdd) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterAdd, req.URL.String())
 		}
-		rw.Write([]byte(`{"rule_id":0,"res":1}`))
+		rw.Write([]byte(`{"rule_id":"0","res":"1"}`))
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := 42
+	siteID := "42"
 	addDataCenterResponse, err := client.AddDataCenter(siteID, "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding data center for siteID %d", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding data center for siteID %s", siteID)) {
 		t.Errorf("Should have received a bad incap rule error, got: %s", err)
 	}
 	if addDataCenterResponse != nil {
@@ -82,13 +82,13 @@ func TestClientAddDataCenterValidRule(t *testing.T) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterAdd) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterAdd, req.URL.String())
 		}
-		rw.Write([]byte(`{"rule_id":123,"res":0}`))
+		rw.Write([]byte(`{"rule_id":"123","res":"0"}`))
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := 42
+	siteID := "42"
 	addDataCenterResponse, err := client.AddDataCenter(siteID, "", "", "", "")
 	if err != nil {
 		t.Errorf("Should not have received an error")
@@ -96,7 +96,7 @@ func TestClientAddDataCenterValidRule(t *testing.T) {
 	if addDataCenterResponse == nil {
 		t.Errorf("Should not have received a nil addDataCenterResponse instance")
 	}
-	if addDataCenterResponse.Res != 0 {
+	if addDataCenterResponse.Res != "0" {
 		t.Errorf("Response code doesn't match")
 	}
 }
@@ -108,12 +108,12 @@ func TestClientAddDataCenterValidRule(t *testing.T) {
 func TestClientListDataCentersBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	siteID := 42
+	siteID := "42"
 	listDataCentersResponse, err := client.ListDataCenters(siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error getting data centers (site_id: %d", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error getting data centers for siteID %s", siteID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 	if listDataCentersResponse != nil {
@@ -132,12 +132,12 @@ func TestClientListDataCentersBadJSON(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := 42
+	siteID := "42"
 	listDataCentersResponse, err := client.ListDataCenters(siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing data centers list JSON response (site_id: %d", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing data centers list JSON response for siteID: %s", siteID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
 	if listDataCentersResponse != nil {
@@ -150,18 +150,18 @@ func TestClientListDataCentersInvalidRequest(t *testing.T) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterList) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterList, req.URL.String())
 		}
-		rw.Write([]byte(`{"res":1,"res_message":"fail"}`))
+		rw.Write([]byte(`{"res":"1","res_message":"fail"}`))
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := 42
+	siteID := "42"
 	listDataCentersResponse, err := client.ListDataCenters(siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when getting data centers list (site_id: %d", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when getting data centers list (site_id: %s", siteID)) {
 		t.Errorf("Should have received a bad site error, got: %s", err)
 	}
 	if listDataCentersResponse != nil {
@@ -174,14 +174,13 @@ func TestClientListDataCentersValidRequest(t *testing.T) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterList) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterList, req.URL.String())
 		}
-		// todo: what is response
-		rw.Write([]byte(`{"foo":1527885500000, "bar":[], "res":0}`))
+		rw.Write([]byte(`{"res":"0"}`))
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := 42
+	siteID := "42"
 	listDataCentersResponse, err := client.ListDataCenters(siteID)
 	if err != nil {
 		t.Errorf("Should not have received an error")
@@ -190,7 +189,7 @@ func TestClientListDataCentersValidRequest(t *testing.T) {
 		t.Errorf("Should not have received a nil listDataCentersResponse instance")
 	}
 	// todo: test response properties
-	if listDataCentersResponse.Res != 0 {
+	if listDataCentersResponse.Res != "0" {
 		t.Errorf("Response code doesn't match")
 	}
 }

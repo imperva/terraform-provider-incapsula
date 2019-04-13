@@ -1,4 +1,3 @@
-todo: this looks like a bad copy paste error
 Rule - Block Request (IncapRule)
 
 Create
@@ -7,7 +6,7 @@ site_id=int *
 enabled=true | false *
 priority=1 *
 name=Sample Rule Block Request IncapRule *
-action=RULE_ACTION_BLOCK *
+action=RULE_ACTION_BLOCK_SESSION *
 filter= Full-URL == "/someurl"
 
 Read
@@ -21,7 +20,7 @@ site_id=int *
 enabled=true | false *
 priority=1 *
 name=Sample Rule Block Request IncapRule *
-action=RULE_ACTION_BLOCK *
+action=RULE_ACTION_BLOCK_SESSION *
 filter= Full-URL == ""/someurl""
 rule_id=int *
 

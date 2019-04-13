@@ -18,8 +18,8 @@ const endpointIncapRuleDelete = "sites/incapRules/delete"
 // Incap Action Enumerations
 const actionAlert = "RULE_ACTION_ALERT"
 const actionBlockIP = "RULE_ACTION_BLOCK_IP"
-const actionBlockRequest = "RULE_ACTION_BLOCK_R" // todo: verify if copy paste error
-const actionBlockSession = "RULE_ACTION_BLOCK_S"
+const actionBlockRequest = "RULE_ACTION_BLOCK"
+const actionBlockSession = "RULE_ACTION_BLOCK_SESSION"
 const actionDeleteCookie = "RULE_ACTION_DELETE_COOKIE"
 const actionDeleteHeader = "RULE_ACTION_DELETE_HEADER"
 const actionFwdToDataCenter = "RULE_ACTION_FORWARD_TO_DC"
@@ -31,17 +31,26 @@ const actionRewriteCookie = "RULE_ACTION_REWRITE_COOKIE"
 const actionRewriteHeader = "RULE_ACTION_REWRITE_HEADER"
 const actionRewriteUrl = "RULE_ACTION_REWRITE_URL"
 
-// todo: get incap rule responses
-// IncapRuleAddResponse contains todo
+// IncapRuleAddResponse contains id of rule
 type IncapRuleAddResponse struct {
-	Res        int    `json:"res"`
-	ResMessage string `json:"res_message"`
+	Res    string `json:"res"`
+	RuleID string `json:"rule_id"`
 }
 
-// IncapRuleListResponse contains todo
+// IncapRuleListResponse contains rate rules, incap rules, and delivery rules
 type IncapRuleListResponse struct {
-	Res        int    `json:"res"`
-	ResMessage string `json:"res_message"`
+	Res        string   `json:"res"`
+	RateRules  struct{} `json:"rate_rules"`
+	IncapRules struct {
+		All []struct {
+			ID      string `json:"id"`
+			Enabled string `json:"enabled"`
+			Name    string `json:"name"`
+			Action  string `json:"action"`
+			Filter  string `json:"filter"`
+		} `json:"All"`
+	} `json:"incap_rules"`
+	DeliveryRules struct{} `json:"delivery_rules"`
 }
 
 // IncapRuleEditResponse contains todo
@@ -57,8 +66,8 @@ type IncapRuleDeleteResponse struct {
 }
 
 // AddIncapRule adds an incap rule to be managed by Incapsula
-func (c *Client) AddIncapRule(siteID, ruleID, dcID int, enabled, priority, name, action, filter, allowCaching, responseCode, from, to, addMissing, rewriteName string) (*IncapRuleAddResponse, error) {
-	log.Printf("[INFO] Adding Incapsula incap rule for siteID: %d\n", siteID)
+func (c *Client) AddIncapRule(enabled, name, action, filter, siteID, priority, ruleID, dcID, allowCaching, responseCode, from, to, addMissing, rewriteName string) (*IncapRuleAddResponse, error) {
+	log.Printf("[INFO] Adding Incapsula incap rule for siteID: %s\n", siteID)
 
 	// Base URL values
 	values := url.Values{
@@ -85,21 +94,21 @@ func (c *Client) AddIncapRule(siteID, ruleID, dcID int, enabled, priority, name,
 	case actionRetry:
 		fallthrough
 	case actionIntrusiveHtml:
-		values.Add("site_id", strconv.Itoa(siteID))
+		values.Add("site_id", siteID)
 		values.Add("priority", priority)
 	case actionDeleteCookie:
 		fallthrough
 	case actionDeleteHeader:
 		fallthrough
 	case actionRewriteUrl:
-		values.Add("rule_id", strconv.Itoa(ruleID))
+		values.Add("rule_id", ruleID)
 	case actionFwdToDataCenter:
-		values.Add("site_id", strconv.Itoa(siteID))
+		values.Add("site_id", siteID)
 		values.Add("priority", priority)
-		values.Add("dc_id", strconv.Itoa(dcID))
+		values.Add("dc_id", dcID)
 		values.Add("allow_caching", allowCaching)
 	case actionRedirect:
-		values.Add("site_id", strconv.Itoa(siteID))
+		values.Add("site_id", siteID)
 		values.Add("priority", priority)
 		values.Add("response_code", responseCode)
 		values.Add("from", from)
@@ -107,7 +116,7 @@ func (c *Client) AddIncapRule(siteID, ruleID, dcID int, enabled, priority, name,
 	case actionRewriteCookie:
 		fallthrough
 	case actionRewriteHeader:
-		values.Add("site_id", strconv.Itoa(siteID))
+		values.Add("site_id", siteID)
 		values.Add("priority", priority)
 		values.Add("add_missing", addMissing)
 		values.Add("from", from)
@@ -119,7 +128,7 @@ func (c *Client) AddIncapRule(siteID, ruleID, dcID int, enabled, priority, name,
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointIncapRuleAdd), values)
 	if err != nil {
-		return nil, fmt.Errorf("Error from Incapsula service when adding incap rule for siteID %d: %s", siteID, err)
+		return nil, fmt.Errorf("Error from Incapsula service when adding incap rule for siteID %s: %s", siteID, err)
 	}
 
 	// Read the body
@@ -133,25 +142,26 @@ func (c *Client) AddIncapRule(siteID, ruleID, dcID int, enabled, priority, name,
 	var incapRuleAddResponse IncapRuleAddResponse
 	err = json.Unmarshal([]byte(responseBody), &incapRuleAddResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing add incap rule JSON response for siteID %d: %s", siteID, err)
+		return nil, fmt.Errorf("Error parsing add incap rule JSON response for siteID %s: %s\nresponse: %s", siteID, err, string(responseBody))
 	}
 
 	// Look at the response status code from Incapsula
-	if incapRuleAddResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when adding incap rule for siteID %d: %s", siteID, string(responseBody))
+	if incapRuleAddResponse.Res != "0" {
+		return nil, fmt.Errorf("Error from Incapsula service when adding incap rule for siteID %s: %s", siteID, string(responseBody))
 	}
 
 	return &incapRuleAddResponse, nil
 }
 
 // IncapRuleList gets the Incapsula list of incap rules
-func (c *Client) ListIncapRules(includeAdRules, includeIncapRules string) (*IncapRuleListResponse, error) {
+func (c *Client) ListIncapRules(siteID, includeAdRules, includeIncapRules string) (*IncapRuleListResponse, error) {
 	log.Printf("[INFO] Getting Incapsula incaprules (include_ad_rules: %s, include_incap_rules: %s)\n", includeAdRules, includeIncapRules)
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointIncapRuleList), url.Values{
 		"api_id":              {c.config.APIID},
 		"api_key":             {c.config.APIKey},
+		"site_id":             {siteID},
 		"include_ad_rules":    {includeAdRules},
 		"include_incap_rules": {includeIncapRules},
 	})
@@ -174,7 +184,7 @@ func (c *Client) ListIncapRules(includeAdRules, includeIncapRules string) (*Inca
 	}
 
 	// Look at the response status code from Incapsula
-	if incapRuleListResponse.Res != 0 {
+	if incapRuleListResponse.Res != "0" {
 		return nil, fmt.Errorf("Error from Incapsula service when getting incap rule list (include_ad_rules: %s, include_incap_rules: %s): %s", includeAdRules, includeIncapRules, string(responseBody))
 	}
 
