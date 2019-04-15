@@ -2,6 +2,7 @@ package incapsula
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -77,9 +78,13 @@ func resourceACLSecurityRule() *schema.Resource {
 func resourceACLSecurityRuleCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
+	ruleID := d.Get("rule_id").(string)
+
+	log.Printf("[INFO] Creating Incapsula ACL Rule for id: %s\n", ruleID)
+
 	_, err := client.ConfigureACLSecurityRule(
 		d.Get("site_id").(int),
-		d.Get("rule_id").(string),
+		ruleID,
 		d.Get("countries").(string),
 		d.Get("ips").(string),
 		d.Get("urls").(string),
@@ -87,11 +92,14 @@ func resourceACLSecurityRuleCreate(d *schema.ResourceData, m interface{}) error 
 	)
 
 	if err != nil {
+		log.Printf("[ERROR] Could not create Incapsula ACL Rule for id: %s, %s\n", ruleID, err)
 		return err
 	}
 
 	// Set the rule ID
 	d.SetId(d.Get("rule_id").(string))
+
+	log.Printf("[INFO] Created Incapsula ACL Rule for id: %s\n", ruleID)
 
 	return resourceACLSecurityRuleRead(d, m)
 }
@@ -100,9 +108,14 @@ func resourceACLSecurityRuleRead(d *schema.ResourceData, m interface{}) error {
 	// Implement by reading the SiteResponse for the site
 	client := m.(*Client)
 
+	ruleID := d.Get("rule_id").(string)
+
+	log.Printf("[INFO] Reading Incapsula ACL Rule for id: %s\n", ruleID)
+
 	siteStatusResponse, err := client.SiteStatus("acl-rule-read", d.Get("site_id").(int))
 
 	if err != nil {
+		log.Printf("[ERROR] Could not read Incapsula ACL Rule for id: %s, %s\n", ruleID, err)
 		return err
 	}
 
@@ -131,6 +144,8 @@ func resourceACLSecurityRuleRead(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
+	log.Printf("[INFO] Read Incapsula ACL Rule for id: %s\n", ruleID)
+
 	return nil
 }
 
@@ -142,10 +157,14 @@ func resourceACLSecurityRuleUpdate(d *schema.ResourceData, m interface{}) error 
 func resourceACLSecurityRuleDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
+	ruleID := d.Get("rule_id").(string)
+
+	log.Printf("[INFO] Deleting Incapsula ACL Rule for id: %s\n", ruleID)
+
 	// Implement delete by clearing out the rule configuration
 	_, err := client.ConfigureACLSecurityRule(
 		d.Get("site_id").(int),
-		d.Get("rule_id").(string),
+		ruleID,
 		"", // countries
 		"", // ips
 		"", // urls
@@ -153,12 +172,15 @@ func resourceACLSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 	)
 
 	if err != nil {
+		log.Printf("[ERROR] Could not delete Incapsula ACL Rule for id: %s, %s\n", ruleID, err)
 		return err
 	}
 
 	// Set the ID to empty
 	// Implicitly clears the resource
 	d.SetId("")
+
+	log.Printf("[INFO] Deleted Incapsula ACL Rule for id: %s\n", ruleID)
 
 	return nil
 }
