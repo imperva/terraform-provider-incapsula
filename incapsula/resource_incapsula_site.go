@@ -1,6 +1,7 @@
 package incapsula
 
 import (
+	"log"
 	"strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -22,6 +23,7 @@ func resourceSite() *schema.Resource {
 				Description: "The domain name of the site. For example: www.example.com, hello.example.com, example.com.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 
 			// Optional Arguments
@@ -51,7 +53,7 @@ func resourceSite() *schema.Resource {
 				Optional:    true,
 			},
 			"log_level": &schema.Schema{
-				Description: "Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Sets the log reporting level for the site. Options are full, security, none and default.",
+				Description: "Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Sets the log reporting level for the site. Options are full, security, none, and default.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
@@ -144,6 +146,8 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 
 	domain := d.Get("domain").(string)
 
+	log.Printf("[INFO] Creating Incapsula site for domain: %s\n", domain)
+
 	siteAddResponse, err := client.AddSite(
 		domain,
 		"",
@@ -156,11 +160,14 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 	)
 
 	if err != nil {
+		log.Printf("[ERROR] Could not create Incapsula site for domain: %s, %s\n", domain, err)
 		return err
 	}
 
 	// Set the Site ID
 	d.SetId(strconv.Itoa(siteAddResponse.SiteID))
+
+	log.Printf("[INFO] Created Incapsula site for domain: %s\n", domain)
 
 	// Set the rest of the state from the resource read
 	return resourceSiteRead(d, m)
@@ -172,9 +179,12 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	domain := d.Get("domain").(string)
 	siteID, _ := strconv.Atoi(d.Id())
 
+	log.Printf("[INFO] Reading Incapsula site for domain: %s\n", domain)
+
 	siteStatusResponse, err := client.SiteStatus(domain, siteID)
 
 	if err != nil {
+		log.Printf("[ERROR] Could not read Incapsula site for domain: %s, %s\n", domain, err)
 		return err
 	}
 
@@ -195,6 +205,8 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 	d.Set("dns_a_record_value", dnsARecordValues)
+
+	log.Printf("[INFO] Read Incapsula site for domain: %s\n", domain)
 
 	return nil
 }
@@ -314,15 +326,20 @@ func resourceSiteDelete(d *schema.ResourceData, m interface{}) error {
 	domain := d.Get("domain").(string)
 	siteID, _ := strconv.Atoi(d.Id())
 
+	log.Printf("[INFO] Deleting Incapsula site for domain: %s\n", domain)
+
 	err := client.DeleteSite(domain, siteID)
 
 	if err != nil {
+		log.Printf("[ERROR] Could not delete Incapsula site for domain: %s, %s\n", domain, err)
 		return err
 	}
 
 	// Set the ID to empty
 	// Implicitly clears the resource
 	d.SetId("")
+
+	log.Printf("[INFO] Deleted Incapsula site for domain: %s\n", domain)
 
 	return nil
 }
