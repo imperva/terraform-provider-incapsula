@@ -27,7 +27,7 @@ func resourceSite() *schema.Resource {
 			// Optional Arguments
 			"account_id": &schema.Schema{
 				Description: "Numeric identifier of the account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.",
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Optional:    true,
 			},
 			"ref_id": &schema.Schema{
@@ -57,6 +57,51 @@ func resourceSite() *schema.Resource {
 			},
 			"logs_account_id": &schema.Schema{
 				Description: "Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"site_id": &schema.Schema{
+				Description: "Numeric identifier of the site.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+			},
+			"active": &schema.Schema{
+				Description: "active or bypass.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"domain_validation": &schema.Schema{
+				Description: "email or html or dns.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"approver": &schema.Schema{
+				Description: "my.approver@email.com (some approver email address).",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"ignore_ssl": &schema.Schema{
+				Description: "true or empty string.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"acceleration_level": &schema.Schema{
+				Description: "none | standard | aggressive.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"seal_location": &schema.Schema{
+				Description: "api.seal_location.bottom_left | api.seal_location.none | api.seal_location.right_bottom | api.seal_location.right | api.seal_location.left | api.seal_location.bottom_right | api.seal_location.bottom.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"domain_redirect_to_full": &schema.Schema{
+				Description: "true or empty string.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"remove_ssl": &schema.Schema{
+				Description: "true or empty string.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
@@ -101,7 +146,7 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 
 	siteAddResponse, err := client.AddSite(
 		domain,
-		d.Get("account_id").(string),
+		"",
 		d.Get("ref_id").(string),
 		d.Get("send_site_setup_emails").(string),
 		d.Get("site_ip").(string),
@@ -135,6 +180,7 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 
 	d.Set("site_creation_date", siteStatusResponse.SiteCreationDate)
 	d.Set("domain", siteStatusResponse.Domain)
+	d.Set("account_id", siteStatusResponse.AccountID)
 
 	// Set the DNS information
 	dnsARecordValues := make([]string, 0)
@@ -154,8 +200,112 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceSiteUpdate(d *schema.ResourceData, m interface{}) error {
-	// Not implemented
-	return nil
+	client := m.(*Client)
+
+	siteID := d.Get("site_id").(int)
+
+	if active := d.Get("active").(string); active != "" {
+		_, err := client.UpdateSiteActive(
+			siteID,
+			active,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	if siteIP := d.Get("site_ip").(string); siteIP != "" {
+		_, err := client.UpdateSiteSiteIP(
+			siteID,
+			siteIP,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	if domainValidation := d.Get("domain_validation").(string); domainValidation != "" {
+		_, err := client.UpdateSiteDomainValidation(
+			siteID,
+			domainValidation,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	if approver := d.Get("approver").(string); approver != "" {
+		_, err := client.UpdateSiteApprover(
+			siteID,
+			approver,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	if ignoreSSL := d.Get("ignore_ssl").(string); ignoreSSL != "" {
+		_, err := client.UpdateSiteIgnoreSSL(
+			siteID,
+			ignoreSSL,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	if accelerationLevel := d.Get("acceleration_level").(string); accelerationLevel != "" {
+		_, err := client.UpdateSiteAccelerationLevel(
+			siteID,
+			accelerationLevel,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	if sealLocation := d.Get("seal_location").(string); sealLocation != "" {
+		_, err := client.UpdateSiteSealLocation(
+			siteID,
+			sealLocation,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	if domainRedirectToFull := d.Get("domain_redirect_to_full").(string); domainRedirectToFull != "" {
+		_, err := client.UpdateSiteDomainRedirectToFull(
+			siteID,
+			domainRedirectToFull,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	if removeSSL := d.Get("remove_ssl").(string); removeSSL != "" {
+		_, err := client.UpdateSiteRemoveSSL(
+			siteID,
+			removeSSL,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	if refID := d.Get("ref_id").(string); refID != "" {
+		_, err := client.UpdateSiteRefID(
+			siteID,
+			refID,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Set the rest of the state from the resource read
+	return resourceSiteRead(d, m)
 }
 
 func resourceSiteDelete(d *schema.ResourceData, m interface{}) error {
