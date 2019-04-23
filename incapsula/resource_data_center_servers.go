@@ -121,15 +121,13 @@ func resourceDataCenterServersUpdate(d *schema.ResourceData, m interface{}) erro
 }
 
 func resourceDataCenterServersDelete(d *schema.ResourceData, m interface{}) error {
-	// todo: review delete data center servers
-	//   not able to delete
-	//client := m.(*Client)
-	//serverID, _ := strconv.Atoi(d.Id())
-	//err := client.DeleteDataCenterServers(serverID)
-	//
-	//if err != nil {
-	//	return err
-	//}
+	client := m.(*Client)
+	serverID, _ := strconv.Atoi(d.Id())
+	err := client.DeleteDataCenterServers(serverID)
+
+	if err != nil {
+		return err
+	}
 
 	// Set the ID to empty
 	// Implicitly clears the resource

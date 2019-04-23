@@ -35,11 +35,6 @@ func resourceIncapRule() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
-			"enabled": {
-				Description: "Is enabled",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
 			"priority": {
 				Description: "The priority",
 				Type:        schema.TypeString,
@@ -50,12 +45,18 @@ func resourceIncapRule() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-
-			// Optional Arguments
 			"site_id": {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeString,
+				Required:    true,
+			},
+
+			// Optional Arguments
+			"enabled": {
+				Description: "Is enabled",
+				Type:        schema.TypeString,
 				Optional:    true,
+				Default:     "true",
 			},
 			"action": {
 				Description: "The action",

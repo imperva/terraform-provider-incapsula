@@ -52,6 +52,12 @@ func resourceDataCenter() *schema.Resource {
 			},
 
 			// Optional Arguments
+			"is_enabled": {
+				Description: "Is enabled",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "yes",
+			},
 			"is_standby": {
 				Description: "Is standby",
 				Type:        schema.TypeString,
@@ -124,15 +130,13 @@ func resourceDataCenterUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceDataCenterDelete(d *schema.ResourceData, m interface{}) error {
-	// todo: review delete data center
-	//   not able to delete
-	//client := m.(*Client)
+	client := m.(*Client)
 
-	//err := client.DeleteDataCenter(d.Id())
-	//
-	//if err != nil {
-	//	return err
-	//}
+	err := client.DeleteDataCenter(d.Id())
+
+	if err != nil {
+		return err
+	}
 
 	// Set the ID to empty
 	// Implicitly clears the resource

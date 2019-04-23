@@ -62,11 +62,6 @@ func resourceSite() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"site_id": &schema.Schema{
-				Description: "Numeric identifier of the site.",
-				Type:        schema.TypeInt,
-				Optional:    true,
-			},
 			"active": &schema.Schema{
 				Description: "active or bypass.",
 				Type:        schema.TypeString,
@@ -214,7 +209,7 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 func resourceSiteUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	siteID := d.Get("site_id").(int)
+	siteID, _ := strconv.Atoi(d.Id())
 
 	if active := d.Get("active").(string); active != "" {
 		_, err := client.UpdateSiteActive(
