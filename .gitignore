@@ -5,3 +5,6 @@ examples/.terraform/
 examples/*.tfstate*
 incapsula/c.out
 terraform-provider-incapsula
+
+.idea/
+.tmp/

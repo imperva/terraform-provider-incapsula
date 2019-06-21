@@ -70,6 +70,11 @@ func resourceACLSecurityRule() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"client_apps": &schema.Schema{
+				Description: "The client apps",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 		},
 	}
 }

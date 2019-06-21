@@ -10,6 +10,7 @@ import (
 )
 
 const testAccDomain = "www.examplesite.com"
+const siteResourceName = "incapsula_site.testacc-terraform-site"
 
 func TestAccIncapsulaSite_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -17,11 +18,11 @@ func TestAccIncapsulaSite_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIncapsulaSiteDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckIncapsulaSiteConfig_basic(testAccDomain),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckIncapsulaSiteExists("incapsula_site.testacc-terraform-site"),
-					resource.TestCheckResourceAttr("incapsula_site.testacc-terraform-site", "domain", testAccDomain),
+					testCheckIncapsulaSiteExists(siteResourceName),
+					resource.TestCheckResourceAttr(siteResourceName, "domain", testAccDomain),
 				),
 			},
 		},
