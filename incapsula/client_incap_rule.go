@@ -33,7 +33,7 @@ const actionRewriteUrl = "RULE_ACTION_REWRITE_URL"
 
 // IncapRuleAddResponse contains id of rule
 type IncapRuleAddResponse struct {
-	Res    string `json:"res"`
+	Res    int    `json:"res"`
 	RuleID string `json:"rule_id"`
 }
 
