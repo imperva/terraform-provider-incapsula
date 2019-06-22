@@ -33,7 +33,7 @@ const actionRewriteUrl = "RULE_ACTION_REWRITE_URL"
 
 // IncapRuleAddResponse contains id of rule
 type IncapRuleAddResponse struct {
-	Res    int    `json:"res"`
+	Res    string `json:"res"`
 	RuleID string `json:"rule_id"`
 }
 
@@ -140,7 +140,7 @@ func (c *Client) AddIncapRule(enabled, name, action, filter, siteID, priority, r
 	}
 
 	// Look at the response status code from Incapsula
-	if incapRuleAddResponse.Res != 0 {
+	if incapRuleAddResponse.Res != "0" {
 		return nil, fmt.Errorf("Error from Incapsula service when adding incap rule for siteID %s: %s", siteID, string(responseBody))
 	}
 
