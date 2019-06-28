@@ -29,7 +29,7 @@ func resourceSite() *schema.Resource {
 			// Optional Arguments
 			"account_id": &schema.Schema{
 				Description: "Numeric identifier of the account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.",
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"ref_id": &schema.Schema{
@@ -145,7 +145,7 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 
 	siteAddResponse, err := client.AddSite(
 		domain,
-		"",
+		d.Get("account_id").(string),
 		d.Get("ref_id").(string),
 		d.Get("send_site_setup_emails").(string),
 		d.Get("site_ip").(string),

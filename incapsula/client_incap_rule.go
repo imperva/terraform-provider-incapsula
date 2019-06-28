@@ -65,6 +65,7 @@ func (c *Client) AddIncapRule(enabled, name, action, filter, siteID, priority, r
 
 	// Base URL values
 	values := url.Values{
+		"site_id": {siteID},
 		"api_id":  {c.config.APIID},
 		"api_key": {c.config.APIKey},
 		"enabled": {enabled},
