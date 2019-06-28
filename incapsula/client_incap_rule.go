@@ -33,8 +33,8 @@ const actionRewriteUrl = "RULE_ACTION_REWRITE_URL"
 
 // IncapRuleAddResponse contains id of rule
 type IncapRuleAddResponse struct {
-	Res    string `json:"res"`
-	RuleID string `json:"rule_id"`
+	Res    interface{} `json:"res"`
+	RuleID string      `json:"rule_id"`
 }
 
 // IncapRuleListResponse contains rate rules, incap rules, and delivery rules
@@ -71,6 +71,7 @@ func (c *Client) AddIncapRule(enabled, name, action, filter, siteID, priority, r
 		"name":    {name},
 		"action":  {action},
 		"filter":  {filter},
+		"site_id": {siteID},
 	}
 
 	// Additional URL values for specific action types
@@ -139,8 +140,18 @@ func (c *Client) AddIncapRule(enabled, name, action, filter, siteID, priority, r
 		return nil, fmt.Errorf("Error parsing add incap rule JSON response for siteID %s: %s\nresponse: %s", siteID, err, string(responseBody))
 	}
 
+	// Res can sometimes oscillate between a string and number
+	// We need to add safeguards for this inside the provider
+	var resString string
+
+	if resNumber, ok := incapRuleAddResponse.Res.(float64); ok {
+		resString = fmt.Sprintf("%f", resNumber)
+	} else {
+		resString = incapRuleAddResponse.Res.(string)
+	}
+
 	// Look at the response status code from Incapsula
-	if incapRuleAddResponse.Res != "0" {
+	if resString != "0" {
 		return nil, fmt.Errorf("Error from Incapsula service when adding incap rule for siteID %s: %s", siteID, string(responseBody))
 	}
 
