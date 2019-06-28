@@ -30,7 +30,7 @@ resource "incapsula_site" "example-site" {
 
 The following arguments are supported:
 
-* `domain` - (Required) The domain name of the site. For example: www.example.com, hello.example.com, example.com.
+* `domain` - (Required) The fully qualified domain name of the site. For example: www.example.com, hello.example.com.
 * `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `send_site_setup_emails` - (Optional) If this value is false, end users will not get emails about the add site process such as DNS instructions and SSL setup.
 * `site_ip` - (Optional) The web server IP/CNAME.
