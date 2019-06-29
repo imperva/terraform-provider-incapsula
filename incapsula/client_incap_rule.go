@@ -145,7 +145,7 @@ func (c *Client) AddIncapRule(enabled, name, action, filter, siteID, priority, r
 	var resString string
 
 	if resNumber, ok := incapRuleAddResponse.Res.(float64); ok {
-		resString = fmt.Sprintf("%f", resNumber)
+		resString = fmt.Sprintf("%d", int(resNumber))
 	} else {
 		resString = incapRuleAddResponse.Res.(string)
 	}
