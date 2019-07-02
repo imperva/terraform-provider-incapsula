@@ -72,7 +72,6 @@ func (c *Client) AddIncapRule(enabled, name, action, filter, siteID, priority, r
 		"name":    {name},
 		"action":  {action},
 		"filter":  {filter},
-		"site_id": {siteID},
 	}
 
 	// Additional URL values for specific action types
