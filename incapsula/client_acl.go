@@ -19,7 +19,7 @@ const blacklistedIPs = "api.acl.blacklisted_ips"
 const whitelistedIPs = "api.acl.whitelisted_ips"
 
 // ConfigureACLSecurityRule adds an ACL rule
-func (c *Client) ConfigureACLSecurityRule(siteID int, ruleID, countries, ips, urls, urlPatterns string) (*SiteStatusResponse, error) {
+func (c *Client) ConfigureACLSecurityRule(siteID int, ruleID, continents, countries, ips, urls, urlPatterns string) (*SiteStatusResponse, error) {
 	log.Printf("[INFO] Configuring Incapsula ACL rule id: %s for site id: %d\n", ruleID, siteID)
 
 	// Base URL values
@@ -32,7 +32,12 @@ func (c *Client) ConfigureACLSecurityRule(siteID int, ruleID, countries, ips, ur
 
 	// Additional URL values for specific rule ids
 	if ruleID == blacklistedCountries {
-		values.Add("countries", countries)
+		if countries != "" {
+			values.Add("countries", countries)
+		}
+		if continents != "" {
+			values.Add("continents", continents)
+		}
 	} else if ruleID == blacklistedURLs {
 		values.Add("urls", urls)
 		values.Add("url_patterns", urlPatterns)

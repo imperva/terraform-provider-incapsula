@@ -48,6 +48,12 @@ func resourceACLSecurityRule() *schema.Resource {
 			},
 
 			// Optional Arguments
+			"continents": &schema.Schema{
+				Description:      "A comma separated list of continents codes.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressEquivalentStringDiffs,
+			},
 			"countries": &schema.Schema{
 				Description:      "A comma separated list of country codes.",
 				Type:             schema.TypeString,
@@ -89,6 +95,7 @@ func resourceACLSecurityRuleCreate(d *schema.ResourceData, m interface{}) error 
 	_, err := client.ConfigureACLSecurityRule(
 		d.Get("site_id").(int),
 		ruleID,
+		d.Get("continents").(string),
 		d.Get("countries").(string),
 		d.Get("ips").(string),
 		d.Get("urls").(string),
@@ -130,6 +137,7 @@ func resourceACLSecurityRuleRead(d *schema.ResourceData, m interface{}) error {
 			switch entry.ID {
 			case blacklistedCountries:
 				d.Set("countries", strings.Join(entry.Geo.Countries, ","))
+				d.Set("continents", strings.Join(entry.Geo.Continents, ","))
 			case blacklistedURLs:
 				urls := make([]string, 0)
 				urlPatterns := make([]string, 0)
@@ -170,9 +178,10 @@ func resourceACLSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 		d.Get("site_id").(int),
 		ruleID,
 		"", // countries
+		"", // contenents
 		"", // ips
 		"", // urls
-		"", // url_patterns
+		"", // urls
 	)
 
 	if err != nil {

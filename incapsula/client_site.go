@@ -72,7 +72,8 @@ type SiteStatusResponse struct {
 				ID   string   `json:"id"`
 				Name string   `json:"name"`
 				Geo  struct {
-					Countries []string `json:"countries"`
+					Countries  []string `json:"countries"`
+					Continents []string `json:"continents"`
 				} `json:"geo,omitempty"`
 				Urls []struct {
 					Value   string `json:"value"`
