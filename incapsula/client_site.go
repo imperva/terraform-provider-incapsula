@@ -324,7 +324,8 @@ func (c *Client) UpdateSiteActive(siteID int, active string) (*SiteUpdateRespons
 		"api_id":  {c.config.APIID},
 		"api_key": {c.config.APIKey},
 		"site_id": {strconv.Itoa(siteID)},
-		"active":  {active},
+		"param":   {"active"},
+		"value":   {active},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
@@ -360,7 +361,8 @@ func (c *Client) UpdateSiteSiteIP(siteID int, siteIP string) (*SiteUpdateRespons
 		"api_id":  {c.config.APIID},
 		"api_key": {c.config.APIKey},
 		"site_id": {strconv.Itoa(siteID)},
-		"site_ip": {siteIP},
+		"param":   {"site_ip"},
+		"value":   {siteIP},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
@@ -393,10 +395,11 @@ func (c *Client) UpdateSiteDomainValidation(siteID int, domainValidation string)
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":            {c.config.APIID},
-		"api_key":           {c.config.APIKey},
-		"site_id":           {strconv.Itoa(siteID)},
-		"domain_validation": {domainValidation},
+		"api_id":  {c.config.APIID},
+		"api_key": {c.config.APIKey},
+		"site_id": {strconv.Itoa(siteID)},
+		"param":   {"domain_validation"},
+		"value":   {domainValidation},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
@@ -429,10 +432,11 @@ func (c *Client) UpdateSiteApprover(siteID int, approver string) (*SiteUpdateRes
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":   {c.config.APIID},
-		"api_key":  {c.config.APIKey},
-		"site_id":  {strconv.Itoa(siteID)},
-		"approver": {approver},
+		"api_id":  {c.config.APIID},
+		"api_key": {c.config.APIKey},
+		"site_id": {strconv.Itoa(siteID)},
+		"param":   {"approver"},
+		"value":   {approver},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
@@ -465,10 +469,11 @@ func (c *Client) UpdateSiteIgnoreSSL(siteID int, ignoreSSL string) (*SiteUpdateR
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":     {c.config.APIID},
-		"api_key":    {c.config.APIKey},
-		"site_id":    {strconv.Itoa(siteID)},
-		"ignore_ssl": {ignoreSSL},
+		"api_id":  {c.config.APIID},
+		"api_key": {c.config.APIKey},
+		"site_id": {strconv.Itoa(siteID)},
+		"param":   {"ignore_ssl"},
+		"value":   {ignoreSSL},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
@@ -501,10 +506,11 @@ func (c *Client) UpdateSiteAccelerationLevel(siteID int, accelerationLevel strin
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":             {c.config.APIID},
-		"api_key":            {c.config.APIKey},
-		"site_id":            {strconv.Itoa(siteID)},
-		"acceleration_level": {accelerationLevel},
+		"api_id":  {c.config.APIID},
+		"api_key": {c.config.APIKey},
+		"site_id": {strconv.Itoa(siteID)},
+		"param":   {"acceleration_level"},
+		"value":   {accelerationLevel},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
@@ -537,10 +543,11 @@ func (c *Client) UpdateSiteSealLocation(siteID int, sealLocation string) (*SiteU
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":        {c.config.APIID},
-		"api_key":       {c.config.APIKey},
-		"site_id":       {strconv.Itoa(siteID)},
-		"seal_location": {sealLocation},
+		"api_id":  {c.config.APIID},
+		"api_key": {c.config.APIKey},
+		"site_id": {strconv.Itoa(siteID)},
+		"param":   {"seal_location"},
+		"value":   {sealLocation},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
@@ -573,10 +580,11 @@ func (c *Client) UpdateSiteDomainRedirectToFull(siteID int, domainRedirectToFull
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":                  {c.config.APIID},
-		"api_key":                 {c.config.APIKey},
-		"site_id":                 {strconv.Itoa(siteID)},
-		"domain_redirect_to_full": {domainRedirectToFull},
+		"api_id":  {c.config.APIID},
+		"api_key": {c.config.APIKey},
+		"site_id": {strconv.Itoa(siteID)},
+		"param":   {"domain_redirect_to_full"},
+		"value":   {domainRedirectToFull},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
@@ -609,10 +617,11 @@ func (c *Client) UpdateSiteRemoveSSL(siteID int, removeSSL string) (*SiteUpdateR
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":     {c.config.APIID},
-		"api_key":    {c.config.APIKey},
-		"site_id":    {strconv.Itoa(siteID)},
-		"remove_ssl": {removeSSL},
+		"api_id":  {c.config.APIID},
+		"api_key": {c.config.APIKey},
+		"site_id": {strconv.Itoa(siteID)},
+		"param":   {"remove_ssl"},
+		"value":   {removeSSL},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
@@ -648,7 +657,8 @@ func (c *Client) UpdateSiteRefID(siteID int, refID string) (*SiteUpdateResponse,
 		"api_id":  {c.config.APIID},
 		"api_key": {c.config.APIKey},
 		"site_id": {strconv.Itoa(siteID)},
-		"ref_id":  {refID},
+		"param":   {"ref_id"},
+		"value":   {refID},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)

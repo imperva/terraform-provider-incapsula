@@ -20,7 +20,7 @@ func resourceSite() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
 			"domain": &schema.Schema{
-				Description: "The domain name of the site. For example: www.example.com, hello.example.com, example.com.",
+				Description: "The fully qualified domain name of the site. For example: www.example.com, hello.example.com.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
