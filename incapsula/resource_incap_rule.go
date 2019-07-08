@@ -207,7 +207,30 @@ func resourceIncapRuleRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceIncapRuleUpdate(d *schema.ResourceData, m interface{}) error {
-	return resourceIncapRuleCreate(d, m)
+	client := m.(*Client)
+
+	_, err := client.EditIncapRule(
+		getStringValue(d.Get("enabled")),
+		getStringValue(d.Get("name")),
+		getStringValue(d.Get("action")),
+		getStringValue(d.Get("filter")),
+		getStringValue(d.Get("site_id")),
+		getStringValue(d.Get("priority")),
+		getStringValue(d.Id()),
+		getStringValue(d.Get("dc_id")),
+		getStringValue(d.Get("allow_caching")),
+		getStringValue(d.Get("response_code")),
+		getStringValue(d.Get("from")),
+		getStringValue(d.Get("to")),
+		getStringValue(d.Get("add_missing")),
+		getStringValue(d.Get("rewrite_name")),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func resourceIncapRuleDelete(d *schema.ResourceData, m interface{}) error {

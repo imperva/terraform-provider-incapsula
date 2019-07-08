@@ -214,12 +214,13 @@ func TestClientEditIncapRuleBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	name := "foo"
-	siteID, ruleID := 42, 42
-	editIncapRuleResponse, err := client.EditIncapRule(siteID, "", "", name, "", "", ruleID)
+	siteID, ruleID := "42", "42"
+	editIncapRuleResponse, err := client.EditIncapRule("", name, "", "", siteID, "", ruleID, "", "", "", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error editing incap rule name: %s for siteID: %d: ", name, siteID)) {
+
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error editing incap rule name: %s for siteID: %s: ", name, siteID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 	if editIncapRuleResponse != nil {
@@ -239,12 +240,12 @@ func TestClientEditIncapRuleBadJSON(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	name := "foo"
-	siteID, ruleID := 42, 42
-	editIncapRuleResponse, err := client.EditIncapRule(siteID, "", "", name, "", "", ruleID)
+	siteID, ruleID := "42", "42"
+	editIncapRuleResponse, err := client.EditIncapRule("", name, "", "", siteID, "", ruleID, "", "", "", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing edit incap rule JSON response for siteID %d", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing edit incap rule JSON response for siteID %s", siteID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
 	if editIncapRuleResponse != nil {
@@ -257,19 +258,19 @@ func TestClientEditIncapRuleInvalidRule(t *testing.T) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointIncapRuleEdit) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointIncapRuleEdit, req.URL.String())
 		}
-		rw.Write([]byte(`{"rule_id":0,"res":"1"}`))
+		rw.Write([]byte(`{"rule_id":0,"res":1}`))
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	name := "foo"
-	siteID, ruleID := 42, 42
-	editIncapRuleResponse, err := client.EditIncapRule(siteID, "", "", name, "", "", ruleID)
+	siteID, ruleID := "42", "42"
+	editIncapRuleResponse, err := client.EditIncapRule("", name, "", "", siteID, "", ruleID, "", "", "", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when editing incap rule for siteID %d, ruleID: %d", siteID, ruleID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when editing incap rule for siteID %s, ruleID: %s", siteID, ruleID)) {
 		t.Errorf("Should have received a bad site error, got: %s", err)
 	}
 	if editIncapRuleResponse != nil {
@@ -282,15 +283,15 @@ func TestClientEditIncapRuleValidRule(t *testing.T) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointIncapRuleEdit) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointIncapRuleEdit, req.URL.String())
 		}
-		rw.Write([]byte(`{"rule_id":123,"res":"0"}`))
+		rw.Write([]byte(`{"rule_id":123,"res":0}`))
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	name := "foo"
-	siteID, ruleID := 42, 42
-	editIncapRuleResponse, err := client.EditIncapRule(siteID, "", "", name, "", "", ruleID)
+	siteID, ruleID := "42", "42"
+	editIncapRuleResponse, err := client.EditIncapRule("", name, "", "", siteID, "", ruleID, "", "", "", "", "", "", "")
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
@@ -298,7 +299,7 @@ func TestClientEditIncapRuleValidRule(t *testing.T) {
 		t.Errorf("Should not have received a nil editIncapRuleResponse instance")
 	}
 
-	if editIncapRuleResponse.Res != "0" {
+	if editIncapRuleResponse.Res != 0 {
 		t.Errorf("Response code doesn't match")
 	}
 }

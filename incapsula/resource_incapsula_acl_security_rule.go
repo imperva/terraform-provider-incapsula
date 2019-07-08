@@ -49,36 +49,39 @@ func resourceACLSecurityRule() *schema.Resource {
 
 			// Optional Arguments
 			"continents": &schema.Schema{
-				Description:      "A comma separated list of continents codes.",
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: suppressEquivalentStringDiffs,
+				Description: "A comma separated list of continents codes.",
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
 			},
 			"countries": &schema.Schema{
-				Description:      "A comma separated list of country codes.",
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: suppressEquivalentStringDiffs,
+				Description: "A list of country codes.",
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
 			},
 			"ips": &schema.Schema{
-				Description:      "A comma separated list of IPs or IP ranges, e.g: 192.168.1.1, 192.168.1.1-192.168.1.100 or 192.168.1.1/24.",
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: suppressEquivalentStringDiffs,
+				Description: "A list of IPs or IP ranges, e.g: [192.168.1.1] or [192.168.1.1-192.168.1.100] or [192.168.1.1/24].",
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
 			},
 			"urls": &schema.Schema{
 				Description: "A comma separated list of resource paths. NOTE: this is a 1:1 list with url_patterns e.q:  urls = \"Test,/Values\" url_patterns = \"CONTAINS,PREFIX\"",
-				Type:        schema.TypeString,
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 			},
 			"url_patterns": &schema.Schema{
 				Description: "The patterns should be in accordance with the matching urls sent by the urls parameter. Options: CONTAINS | EQUALS | PREFIX | SUFFIX | NOT_EQUALS | NOT_CONTAIN | NOT_PREFIX | NOT_SUFFIX",
-				Type:        schema.TypeString,
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 			},
 			"client_apps": &schema.Schema{
 				Description: "The client apps",
-				Type:        schema.TypeString,
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 			},
 		},
@@ -95,11 +98,11 @@ func resourceACLSecurityRuleCreate(d *schema.ResourceData, m interface{}) error 
 	_, err := client.ConfigureACLSecurityRule(
 		d.Get("site_id").(int),
 		ruleID,
-		d.Get("continents").(string),
-		d.Get("countries").(string),
-		d.Get("ips").(string),
-		d.Get("urls").(string),
-		d.Get("url_patterns").(string),
+		strings.Join(convertStringArr(d.Get("continents").([]interface{})), ","),
+		strings.Join(convertStringArr(d.Get("countries").([]interface{})), ","),
+		strings.Join(convertStringArr(d.Get("ips").([]interface{})), ","),
+		strings.Join(convertStringArr(d.Get("urls").([]interface{})), ","),
+		strings.Join(convertStringArr(d.Get("url_patterns").([]interface{})), ","),
 	)
 
 	if err != nil {

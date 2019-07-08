@@ -38,40 +38,40 @@ resource "incapsula_data_center_servers" "example-data-center-servers" {
 resource "incapsula_acl_security_rule" "example-global-blacklist-country-rule" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.acl.blacklisted_countries"
-  countries = "AI,AN"
+  countries = ["AI","AN"]
 }
 
 # Security Rule: Blacklist IP
 resource "incapsula_acl_security_rule" "example-global-blacklist-ip-rule" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.acl.blacklisted_ips"
-  ips = "192.168.1.1,192.168.1.2"
+  ips = ["192.168.1.1","192.168.1.2"]
 }
 
 # Security Rule: Blacklist IP Exception
 resource "incapsula_acl_security_rule" "example-global-blacklist-ip-rule_exception" {
   rule_id = "api.acl.blacklisted_ips"
   site_id = "${incapsula_site.example-site.id}"
-  ips = "192.168.1.1,192.168.1.2"
-  urls = "/myurl,/myurl2"
-  url_patterns = "EQUALS,CONTAINS"
-  countries = "JM,US"
-  client_apps= "488,123"
+  ips = ["192.168.1.1","192.168.1.2"]
+  urls = ["/myurl","/myurl2"]
+  url_patterns = ["EQUALS","CONTAINS"]
+  countries = ["JM","US"]
+  client_apps= ["488","123"]
 }
 
 # Security Rule: URL
 resource "incapsula_acl_security_rule" "example-global-blacklist-url-rule" {
   rule_id = "api.acl.blacklisted_urls"
   site_id = "${incapsula_site.example-site.id}"
-  url_patterns = "CONTAINS,EQUALS"
-  urls = "/alpha,/bravo"
+  url_patterns = ["CONTAINS","EQUALS"]
+  urls = ["/alpha","/bravo"]
 }
 
 # Security Rule: Whitelist IP
 resource "incapsula_acl_security_rule" "example-global-whitelist-ip-rule" {
   rule_id = "api.acl.whitelisted_ips"
   site_id = "${incapsula_site.example-site.id}"
-  ips = "192.168.1.3,192.168.1.4"
+  ips = ["192.168.1.3","192.168.1.4"]
 }
 
 ####################################################################
