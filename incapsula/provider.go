@@ -61,6 +61,7 @@ func Provider() terraform.ResourceProvider {
 			"incapsula_incap_rule":          resourceIncapRule(),
 			"incapsula_data_center":         resourceDataCenter(),
 			"incapsula_data_center_servers": resourceDataCenterServers(),
+			"incapsula_custom_certificate":  resourceCertificate(),
 		},
 
 		ConfigureFunc: configureProvider,
