@@ -17,7 +17,7 @@ func TestClientConfigureACLSecurityRuleBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID, ruleID := 42, "42"
-	configureACLSecurityRuleResponse, err := client.ConfigureACLSecurityRule(siteID, ruleID, "", "", "", "")
+	configureACLSecurityRuleResponse, err := client.ConfigureACLSecurityRule(siteID, ruleID, "", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -41,7 +41,7 @@ func TestClientConfigureACLSecurityRuleBadJSON(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID, ruleID := 42, "42"
-	configureACLSecurityRuleResponse, err := client.ConfigureACLSecurityRule(siteID, ruleID, "", "", "", "")
+	configureACLSecurityRuleResponse, err := client.ConfigureACLSecurityRule(siteID, ruleID, "", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -65,7 +65,7 @@ func TestClientConfigureACLSecurityRuleInvalidSite(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID, ruleID := 42, "42"
-	configureACLSecurityRuleResponse, err := client.ConfigureACLSecurityRule(siteID, ruleID, "", "", "", "")
+	configureACLSecurityRuleResponse, err := client.ConfigureACLSecurityRule(siteID, ruleID, "", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -89,7 +89,7 @@ func TestClientConfigureACLSecurityRuleValidSite(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID, ruleID := 42, "42"
-	configureACLSecurityRuleResponse, err := client.ConfigureACLSecurityRule(siteID, ruleID, "", "", "", "")
+	configureACLSecurityRuleResponse, err := client.ConfigureACLSecurityRule(siteID, ruleID, "", "", "", "", "")
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}

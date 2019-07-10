@@ -124,7 +124,7 @@ func testAccStateCertificateID(s *terraform.State) (string, error) {
 }
 
 func testAccCheckIncapsulaCertificateDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*Client)
+	//client := testAccProvider.Meta().(*Client)
 
 	for _, res := range state.RootModule().Resources {
 		if res.Type != "incapsula_site" {
@@ -136,7 +136,7 @@ func testAccCheckIncapsulaCertificateDestroy(state *terraform.State) error {
 			return fmt.Errorf("Incapsula site ID does not exist")
 		}
 
-		err := nil
+		err := "nil"
 		// TODO: Update function to look for cert details on site object from ListCertificates when fix is in place in API
 		//listCertificatesResponse, err := client.ListCertificates(siteID)
 		//for _, dc := range listCertificatesResponse.Res {
@@ -144,7 +144,7 @@ func testAccCheckIncapsulaCertificateDestroy(state *terraform.State) error {
 		//		return fmt.Errorf("Incapsula data center: %s (site_id: %s) still exists", certificateName, siteID)
 		//	}
 		//}
-		if err == nil {
+		if err == "nil" {
 			return fmt.Errorf("Incapsula site for domain: %s (site id: %s) still exists", testAccDomain, siteID)
 		}
 	}
@@ -161,7 +161,7 @@ func testCheckIncapsulaCertificateExists(name string) resource.TestCheckFunc {
 
 // All variations of good and bad certificate configs
 func testAccCheckIncapsulaCustomCertificateGoodConfig() string {
-	return testAccCheckIncapsulaSiteConfig_basic(testAccDomain) + fmt.Sprintf(`
+	return testAccCheckIncapsulaSiteConfig_basic(testAccDomain) + fmt.Sprintf("%s%s%s", `
 resource "incapsula_custom_certificate" "custom-certificate" {
   site_id = "${incapsula_site.example-site.id}"
   certificate = "-----BEGIN CERTIFICATE-----\nMIIDgjCCAmoCCQCk3MsAS5x+UjANBgkqhkiG9w0BAQsFADCBgjELMAkGA1UEBhMC\nVVMxCzAJBgNVBAgMAkNBMRIwEAYDVQQHDAlTYW4gRGllZ28xCzAJBgNVBAoMAlNF\nMQswCQYDVQQLDAJTRTEZMBcGA1UEAwwQZGFzaC5iZWVyLmNlbnRlcjEdMBsGCSqG\nSIb3DQEJARYOYmFAaW1wZXJ2YS5jb20wHhcNMTkwNzA4MTU0MjQ0WhcNMjAwNzA3\nMTU0MjQ0WjCBgjELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMRIwEAYDVQQHDAlT\nYW4gRGllZ28xCzAJBgNVBAoMAlNFMQswCQYDVQQLDAJTRTEZMBcGA1UEAwwQZGFz\naC5iZWVyLmNlbnRlcjEdMBsGCSqGSIb3DQEJARYOYmFAaW1wZXJ2YS5jb20wggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCj0rYKUhVtNKQ/oKZdCfxvLKhQ\nLbCNsOt94afUZCbM93/TYj7kHQaapJ6s9snPjN6dvRKo/0h+qx1DhPRSDGgONdHe\n2plv6M7h2gNhBF2853/GZLdNzO9GBHDI6VB9bFJpQvqBl+Cy7nkPQ8dsPpE945lW\nsQ7KMakikp1oJrFHmfalNMo+VQgOKPNc3jUlgmSNEwk3Cf607DqdZUS/O4XSx+d0\n5kRg3hmrjDxDyTwG2gQDJBGkdZ87HUqd5NC7KlrY5xuLkloq4Rt1wqRdwGJsUdq6\nkC8lPmikw2i3peTUu03T3OiZxBpKK6gNMcKe3uA3zSPdoY/mDY2uWCBSY/OLAgMB\nAAEwDQYJKoZIhvcNAQELBQADggEBABfNZcItHdsSpfp8h+1EP5BnRuoKj+l42EI5\nE9dVlqdOZ25+V5Ee899sn2Nj8h+/zVU3+IDO2abUPrDd2xZHaHdf0p69htSwFTHs\nEwUdPUUsKRSys7fVP1clHcKWswTcoWIzQiPZsDMoOQw/pzN05cXSzdo8wSWuEeBK\ncqRNd5BKPeeXbFa4i5TFzT/+pl8V075k16tzHSbT7QDk5fuZWYv/2jImw/lgS/nx\nDWtlprrgG6AX1FzovDs/NnNq/e7vZtn8sdOoO2pCSVymNvctNLV2tFcS8sPQDl5M\nIpnZa3kktAegjsCln1JvD0AFigXrF8wjK+FKGI8SPJfbTQ149+A=\n-----END CERTIFICATE-----"
@@ -172,7 +172,7 @@ resource "incapsula_custom_certificate" "custom-certificate" {
 }
 
 func testAccCheckIncapsulaCustomCertificateBadKey() string {
-	return testAccCheckIncapsulaSiteConfig_basic(testAccDomain) + fmt.Sprintf(`
+	return testAccCheckIncapsulaSiteConfig_basic(testAccDomain) + fmt.Sprintf("%s%s%s", `
 resource "incapsula_custom_certificate" "custom-certificate" {
   site_id = "${incapsula_site.example-site.id}"
   certificate = "-----BEGIN CERTIFICATE-----\nMIIDgjCCAmoCCQCk3MsAS5x+UjANBgkqhkiG9w0BAQsFADCBgjELMAkGA1UEBhMC\nVVMxCzAJBgNVBAgMAkNBMRIwEAYDVQQHDAlTYW4gRGllZ28xCzAJBgNVBAoMAlNF\nMQswCQYDVQQLDAJTRTEZMBcGA1UEAwwQZGFzaC5iZWVyLmNlbnRlcjEdMBsGCSqG\nSIb3DQEJARYOYmFAaW1wZXJ2YS5jb20wHhcNMTkwNzA4MTU0MjQ0WhcNMjAwNzA3\nMTU0MjQ0WjCBgjELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMRIwEAYDVQQHDAlT\nYW4gRGllZ28xCzAJBgNVBAoMAlNFMQswCQYDVQQLDAJTRTEZMBcGA1UEAwwQZGFz\naC5iZWVyLmNlbnRlcjEdMBsGCSqGSIb3DQEJARYOYmFAaW1wZXJ2YS5jb20wggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCj0rYKUhVtNKQ/oKZdCfxvLKhQ\nLbCNsOt94afUZCbM93/TYj7kHQaapJ6s9snPjN6dvRKo/0h+qx1DhPRSDGgONdHe\n2plv6M7h2gNhBF2853/GZLdNzO9GBHDI6VB9bFJpQvqBl+Cy7nkPQ8dsPpE945lW\nsQ7KMakikp1oJrFHmfalNMo+VQgOKPNc3jUlgmSNEwk3Cf607DqdZUS/O4XSx+d0\n5kRg3hmrjDxDyTwG2gQDJBGkdZ87HUqd5NC7KlrY5xuLkloq4Rt1wqRdwGJsUdq6\nkC8lPmikw2i3peTUu03T3OiZxBpKK6gNMcKe3uA3zSPdoY/mDY2uWCBSY/OLAgMB\nAAEwDQYJKoZIhvcNAQELBQADggEBABfNZcItHdsSpfp8h+1EP5BnRuoKj+l42EI5\nE9dVlqdOZ25+V5Ee899sn2Nj8h+/zVU3+IDO2abUPrDd2xZHaHdf0p69htSwFTHs\nEwUdPUUsKRSys7fVP1clHcKWswTcoWIzQiPZsDMoOQw/pzN05cXSzdo8wSWuEeBK\ncqRNd5BKPeeXbFa4i5TFzT/+pl8V075k16tzHSbT7QDk5fuZWYv/2jImw/lgS/nx\nDWtlprrgG6AX1FzovDs/NnNq/e7vZtn8sdOoO2pCSVymNvctNLV2tFcS8sPQDl5M\nIpnZa3kktAegjsCln1JvD0AFigXrF8wjK+FKGI8SPJfbTQ149+A=\n-----END CERTIFICATE-----"
@@ -183,7 +183,7 @@ resource "incapsula_custom_certificate" "custom-certificate" {
 }
 
 func testAccCheckIncapsulaCustomCertificateBadCertificate() string {
-	return testAccCheckIncapsulaSiteConfig_basic(testAccDomain) + fmt.Sprintf(`
+	return testAccCheckIncapsulaSiteConfig_basic(testAccDomain) + fmt.Sprintf("%s%s%s", `
 resource "incapsula_custom_certificate" "custom-certificate" {
   site_id = "${incapsula_site.example-site.id}"
   certificate = "some bad value"
@@ -194,7 +194,7 @@ resource "incapsula_custom_certificate" "custom-certificate" {
 }
 
 func testAccCheckIncapsulaCustomCertificateBadPassphrase() string {
-	return testAccCheckIncapsulaSiteConfig_basic(testAccDomain) + fmt.Sprintf(`
+	return testAccCheckIncapsulaSiteConfig_basic(testAccDomain) + fmt.Sprintf("%s%s%s", `
 resource "incapsula_custom_certificate" "custom-certificate" {
   site_id = "${incapsula_site.example-site.id}"
   certificate = "-----BEGIN CERTIFICATE-----\nMIIDgjCCAmoCCQCk3MsAS5x+UjANBgkqhkiG9w0BAQsFADCBgjELMAkGA1UEBhMC\nVVMxCzAJBgNVBAgMAkNBMRIwEAYDVQQHDAlTYW4gRGllZ28xCzAJBgNVBAoMAlNF\nMQswCQYDVQQLDAJTRTEZMBcGA1UEAwwQZGFzaC5iZWVyLmNlbnRlcjEdMBsGCSqG\nSIb3DQEJARYOYmFAaW1wZXJ2YS5jb20wHhcNMTkwNzA4MTU0MjQ0WhcNMjAwNzA3\nMTU0MjQ0WjCBgjELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMRIwEAYDVQQHDAlT\nYW4gRGllZ28xCzAJBgNVBAoMAlNFMQswCQYDVQQLDAJTRTEZMBcGA1UEAwwQZGFz\naC5iZWVyLmNlbnRlcjEdMBsGCSqGSIb3DQEJARYOYmFAaW1wZXJ2YS5jb20wggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCj0rYKUhVtNKQ/oKZdCfxvLKhQ\nLbCNsOt94afUZCbM93/TYj7kHQaapJ6s9snPjN6dvRKo/0h+qx1DhPRSDGgONdHe\n2plv6M7h2gNhBF2853/GZLdNzO9GBHDI6VB9bFJpQvqBl+Cy7nkPQ8dsPpE945lW\nsQ7KMakikp1oJrFHmfalNMo+VQgOKPNc3jUlgmSNEwk3Cf607DqdZUS/O4XSx+d0\n5kRg3hmrjDxDyTwG2gQDJBGkdZ87HUqd5NC7KlrY5xuLkloq4Rt1wqRdwGJsUdq6\nkC8lPmikw2i3peTUu03T3OiZxBpKK6gNMcKe3uA3zSPdoY/mDY2uWCBSY/OLAgMB\nAAEwDQYJKoZIhvcNAQELBQADggEBABfNZcItHdsSpfp8h+1EP5BnRuoKj+l42EI5\nE9dVlqdOZ25+V5Ee899sn2Nj8h+/zVU3+IDO2abUPrDd2xZHaHdf0p69htSwFTHs\nEwUdPUUsKRSys7fVP1clHcKWswTcoWIzQiPZsDMoOQw/pzN05cXSzdo8wSWuEeBK\ncqRNd5BKPeeXbFa4i5TFzT/+pl8V075k16tzHSbT7QDk5fuZWYv/2jImw/lgS/nx\nDWtlprrgG6AX1FzovDs/NnNq/e7vZtn8sdOoO2pCSVymNvctNLV2tFcS8sPQDl5M\nIpnZa3kktAegjsCln1JvD0AFigXrF8wjK+FKGI8SPJfbTQ149+A=\n-----END CERTIFICATE-----"

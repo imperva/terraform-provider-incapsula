@@ -38,7 +38,8 @@ func (c *Client) AddCertificate(site_id, certificate, private_key, passphrase st
 	b64_certificate := b64.StdEncoding.EncodeToString([]byte(strings.TrimSpace(certificate)))
 	b64_private_key := b64.StdEncoding.EncodeToString([]byte(strings.TrimSpace(private_key)))
 
-	log.Printf("[INFO] Adding custom certificate for site_id: %s\n base_64 certificate: %s\n base_64 private_key: %s", site_id, b64_certificate, b64_private_key)
+	//log.Printf("[INFO] Adding custom certificate for site_id: %s\n base_64 certificate: %s\n base_64 private_key: %s", site_id, b64_certificate, b64_private_key)
+	log.Printf("[INFO] Adding custom certificate for site_id: %s", site_id)
 
 	// Post to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointCertificateAdd), url.Values{
@@ -50,7 +51,7 @@ func (c *Client) AddCertificate(site_id, certificate, private_key, passphrase st
 		"passphrase":  {passphrase},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Error from Incapsula service when adding cutsom certificate for site_id %s: %s", site_id, err)
+		return nil, fmt.Errorf("Error from Incapsula service when adding custom certificate for site_id %s: %s", site_id, err)
 	}
 
 	// Read the body
@@ -58,7 +59,7 @@ func (c *Client) AddCertificate(site_id, certificate, private_key, passphrase st
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
 	// Dump JSON
-	log.Printf("[DEBUG] Incapsula add cutsom certificate JSON response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] Incapsula add custom certificate JSON response: %s\n", string(responseBody))
 
 	// Parse the JSON
 	var certificateAddResponse CertificateAddResponse
@@ -69,7 +70,7 @@ func (c *Client) AddCertificate(site_id, certificate, private_key, passphrase st
 
 	// Look at the response status code from Incapsula
 	if certificateAddResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when adding cutsom certificate for site_id %s: %s", site_id, string(responseBody))
+		return nil, fmt.Errorf("Error from Incapsula service when adding custom certificate for site_id %s: %s", site_id, string(responseBody))
 	}
 
 	return &certificateAddResponse, nil
@@ -94,7 +95,7 @@ func (c *Client) ListCertificates(site_id string) (*CertificateListResponse, err
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
 	// Dump JSON
-	log.Printf("[DEBUG] Incapsula data centers JSON response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] Incapsula list certificate (site status) JSON response: %s\n", string(responseBody))
 
 	// Parse the JSON
 	var certificateListResponse CertificateListResponse
@@ -105,7 +106,7 @@ func (c *Client) ListCertificates(site_id string) (*CertificateListResponse, err
 
 	// Look at the response status code from Incapsula
 	if certificateListResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when getting custom certificates list for site_id (site_id: %s): %s", site_id, string(responseBody))
+		return nil, fmt.Errorf("Error from Incapsula service when getting custom certificates list for site_id %s: %s", site_id, string(responseBody))
 	}
 
 	return &certificateListResponse, nil
@@ -116,7 +117,7 @@ func (c *Client) EditCertificate(site_id, certificate, private_key, passphrase s
 	b64_certificate := b64.StdEncoding.EncodeToString([]byte(strings.TrimSpace(certificate)))
 	b64_private_key := b64.StdEncoding.EncodeToString([]byte(strings.TrimSpace(private_key)))
 
-	log.Printf("[INFO] Editing custom certificate for Incapsula site_id: %d\n", site_id)
+	log.Printf("[INFO] Editing custom certificate for Incapsula site_id: %s\n", site_id)
 
 	values := url.Values{
 		"api_id":      {c.config.APIID},
@@ -135,7 +136,7 @@ func (c *Client) EditCertificate(site_id, certificate, private_key, passphrase s
 	// Post to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointCertificateEdit), values)
 	if err != nil {
-		return nil, fmt.Errorf("Error editing custom certificate for site site_id: %d: %s", site_id, err)
+		return nil, fmt.Errorf("Error editing custom certificate for site site_id: %s: %s", site_id, err)
 	}
 
 	// Read the body
@@ -149,12 +150,12 @@ func (c *Client) EditCertificate(site_id, certificate, private_key, passphrase s
 	var certificateEditResponse CertificateEditResponse
 	err = json.Unmarshal([]byte(responseBody), &certificateEditResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing edit custom certificarte JSON response for (site_id %d: %s)", site_id, err)
+		return nil, fmt.Errorf("Error parsing edit custom certificarte JSON response for (site_id %s: %s)", site_id, err)
 	}
 
 	// Look at the response status code from Incapsula
 	if certificateEditResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when editing custom certificarte for site_id %d: %s", site_id, string(responseBody))
+		return nil, fmt.Errorf("Error from Incapsula service when editing custom certificarte for site_id %s: %s", site_id, string(responseBody))
 	}
 
 	return &certificateEditResponse, nil
@@ -186,7 +187,7 @@ func (c *Client) DeleteCertificate(site_id string) error {
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
 	// Dump JSON
-	log.Printf("[DEBUG] Incapsula delete custom certificate JSON response: (site_id %d: %s)\n", site_id, string(responseBody))
+	log.Printf("[DEBUG] Incapsula delete custom certificate JSON response: (site_id %s: %s)\n", site_id, string(responseBody))
 
 	// Parse the JSON
 	var certificateDeleteResponse CertificateDeleteResponse
@@ -210,5 +211,5 @@ func (c *Client) DeleteCertificate(site_id string) error {
 		return nil
 	}
 
-	return fmt.Errorf("Error from Incapsula service when deleting custom certificate for site: (site_id %d: %s)\n", site_id, string(responseBody))
+	return fmt.Errorf("Error from Incapsula service when deleting custom certificate for site: (site_id %s: %s)\n", site_id, string(responseBody))
 }
