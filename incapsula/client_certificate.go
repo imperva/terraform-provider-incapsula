@@ -136,7 +136,7 @@ func (c *Client) EditCertificate(site_id, certificate, private_key, passphrase s
 	// Post to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointCertificateEdit), values)
 	if err != nil {
-		return nil, fmt.Errorf("Error editing custom certificate for site site_id: %s: %s", site_id, err)
+		return nil, fmt.Errorf("Error editing custom certificate for site_id: %s: %s", site_id, err)
 	}
 
 	// Read the body
@@ -150,7 +150,7 @@ func (c *Client) EditCertificate(site_id, certificate, private_key, passphrase s
 	var certificateEditResponse CertificateEditResponse
 	err = json.Unmarshal([]byte(responseBody), &certificateEditResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing edit custom certificarte JSON response for (site_id %s: %s)", site_id, err)
+		return nil, fmt.Errorf("Error parsing edit custom certificarte JSON response for site_id: %s: %s)", site_id, err)
 	}
 
 	// Look at the response status code from Incapsula
@@ -170,7 +170,7 @@ func (c *Client) DeleteCertificate(site_id string) error {
 		ResMessage string      `json:"res_message"`
 	}
 
-	log.Printf("[INFO] Deleting Incapsula custom certificate for site (site_id: %s)\n", site_id)
+	log.Printf("[INFO] Deleting Incapsula custom certificate for site_id: %s\n", site_id)
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointCertificateDelete), url.Values{
@@ -179,7 +179,7 @@ func (c *Client) DeleteCertificate(site_id string) error {
 		"site_id": {site_id},
 	})
 	if err != nil {
-		return fmt.Errorf("Error deleting custom certificate for site (site_id: %s) %s", site_id, err)
+		return fmt.Errorf("Error deleting custom certificate for site_id: %s %s", site_id, err)
 	}
 
 	// Read the body
@@ -187,13 +187,13 @@ func (c *Client) DeleteCertificate(site_id string) error {
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
 	// Dump JSON
-	log.Printf("[DEBUG] Incapsula delete custom certificate JSON response: (site_id %s: %s)\n", site_id, string(responseBody))
+	log.Printf("[DEBUG] Incapsula delete custom certificate JSON response for site_id %s: %s\n", site_id, string(responseBody))
 
 	// Parse the JSON
 	var certificateDeleteResponse CertificateDeleteResponse
 	err = json.Unmarshal([]byte(responseBody), &certificateDeleteResponse)
 	if err != nil {
-		return fmt.Errorf("Error deleting custom certificate for site (site_id: %s) %s", site_id, err)
+		return fmt.Errorf("Error deleting custom certificate for site_id: %s %s", site_id, err)
 	}
 
 	// Res can sometimes oscillate between a string and number
@@ -211,5 +211,5 @@ func (c *Client) DeleteCertificate(site_id string) error {
 		return nil
 	}
 
-	return fmt.Errorf("Error from Incapsula service when deleting custom certificate for site: (site_id %s: %s)\n", site_id, string(responseBody))
+	return fmt.Errorf("Error from Incapsula service when deleting custom certificate for site_id %s %s\n", site_id, string(responseBody))
 }

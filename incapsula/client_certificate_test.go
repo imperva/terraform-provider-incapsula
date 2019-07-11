@@ -2,6 +2,7 @@ package incapsula
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -14,6 +15,8 @@ import (
 ////////////////////////////////////////////////////////////////
 
 func TestClientAddCertificateBadConnection(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	log.Printf("[DEBUG] Running test client_certificate_test.TestClientAddCertificateBadConnection")
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteId := "1234"
@@ -30,6 +33,8 @@ func TestClientAddCertificateBadConnection(t *testing.T) {
 }
 
 func TestClientAddCertificateBadJSON(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	log.Printf("[DEBUG] Running test Running test client_certificate_test.TestClientAddCertificateBadJSON")
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointCertificateAdd) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointCertificateAdd, req.URL.String())
@@ -54,6 +59,8 @@ func TestClientAddCertificateBadJSON(t *testing.T) {
 }
 
 func TestClientAddCertificateInvalidRule(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	log.Printf("[DEBUG] Running test client_certificate_test.TestClientAddCertificateBadJSON")
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointCertificateAdd) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointCertificateAdd, req.URL.String())
@@ -78,6 +85,8 @@ func TestClientAddCertificateInvalidRule(t *testing.T) {
 }
 
 func TestClientAddCertificateValidRule(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	log.Printf("[DEBUG] Running test client_certificate_test.TestClientAddCertificateValidRule")
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointCertificateAdd) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointCertificateAdd, req.URL.String())
@@ -109,6 +118,8 @@ func TestClientAddCertificateValidRule(t *testing.T) {
 ////////////////////////////////////////////////////////////////
 
 func TestClientListCertificatesBadConnection(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	log.Printf("[DEBUG] Running test client_certificate_test.TestClientListCertificatesBadConnection")
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "1234"
@@ -125,6 +136,8 @@ func TestClientListCertificatesBadConnection(t *testing.T) {
 }
 
 func TestClientListCertificatesBadJSON(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	log.Printf("[DEBUG] Running test client_certificate_test.TestClientListCertificatesBadJSON")
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointCertificateList) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointCertificateList, req.URL.String())
@@ -149,6 +162,8 @@ func TestClientListCertificatesBadJSON(t *testing.T) {
 }
 
 func TestClientListCertificatesInvalidRequest(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	log.Printf("[DEBUG] Running test client_certificate_test.TestClientListCertificatesInvalidRequest")
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointCertificateList) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointCertificateList, req.URL.String())
@@ -203,6 +218,8 @@ func TestClientListCertificatesInvalidRequest(t *testing.T) {
 ////////////////////////////////////////////////////////////////
 
 func TestClientEditCertificateBadConnection(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	log.Printf("[DEBUG] Running test client_certificate_test.TestClientEditCertificateBadConnection")
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "1234"
@@ -213,7 +230,7 @@ func TestClientEditCertificateBadConnection(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error editing custom certificate for siteID: %s", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error editing custom certificate for site_id: %s", siteID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 	if editCertificateResponse != nil {
@@ -222,6 +239,8 @@ func TestClientEditCertificateBadConnection(t *testing.T) {
 }
 
 func TestClientEditCertificateBadJSON(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	log.Printf("[DEBUG] Running test client_certificate_test.TestClientEditCertificateBadJSON")
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointCertificateEdit) {
 			t.Errorf("Should have hit /%s endpoint. Got: %s", endpointCertificateEdit, req.URL.String())
@@ -240,7 +259,7 @@ func TestClientEditCertificateBadJSON(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing edit custom certificate JSON response for siteID: %s", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing edit custom certificarte JSON response for site_id: %s", siteID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
 	if editCertificateResponse != nil {
@@ -276,6 +295,8 @@ func TestClientEditCertificateBadJSON(t *testing.T) {
 //}
 
 func TestClientEditCertificateValidRule(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	log.Printf("[DEBUG] Running test client_certificate_test.TestClientEditCertificateValidRule")
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointCertificateEdit) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointCertificateEdit, req.URL.String())
@@ -308,6 +329,8 @@ func TestClientEditCertificateValidRule(t *testing.T) {
 ////////////////////////////////////////////////////////////////
 
 func TestClientDeleteCertificateBadConnection(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	log.Printf("[DEBUG] Running test client_certificate_test.TestClientDeleteCertificateBadConnection")
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "1234"
@@ -315,12 +338,14 @@ func TestClientDeleteCertificateBadConnection(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error deleting custom certificate (site_id: %s)", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error deleting custom certificate for site_id: %s", siteID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 }
 
 func TestClientDeleteCertificateBadJSON(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	log.Printf("[DEBUG] Running test client_certificate_test.TestClientDeleteCertificateBadJSON")
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointCertificateDelete) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointCertificateDelete, req.URL.String())
@@ -336,17 +361,19 @@ func TestClientDeleteCertificateBadJSON(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing delete custom certificate JSON response (site_id: %s)", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error deleting custom certificate for site_id: %s", siteID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
 }
 
-func TestClientDeleteCertificateInvalidRule(t *testing.T) {
+func TestClientDeleteCertificateInvalidSiteID(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	log.Printf("[DEBUG] Running test client_certificate_test.TestClientDeleteCertificateInvalidSiteID")
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointCertificateDelete) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointCertificateDelete, req.URL.String())
 		}
-		rw.Write([]byte(`{"res":"1","res_message":"fail"}`))
+		rw.Write([]byte(`{"res":9413,"res_message":"Unknown/unauthorized site_id","debug_info":{"id-info":"13008","site_id":"1234"}}`))
 	}))
 	defer server.Close()
 
@@ -357,12 +384,14 @@ func TestClientDeleteCertificateInvalidRule(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when deleting custom certificate (site_id: %s)", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when deleting custom certificate for site_id %s", siteID)) {
 		t.Errorf("Should have received a bad site error, got: %s", err)
 	}
 }
 
 func TestClientDeleteCertificateValidSite(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	log.Printf("[DEBUG]Running test client_certificate_test.TestClientDeleteCertificateValidSite")
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointCertificateDelete) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointCertificateDelete, req.URL.String())
