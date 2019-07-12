@@ -11,146 +11,309 @@ provider "incapsula" {
 }
 
 resource "incapsula_site" "example-site" {
+  ####################################################################
+  # # The first 6 parameters listed below are designated for initially creating the site in Incapsula.
+  ####################################################################
   domain = "mojo.beer.center" //Good for adding site and in response object
   account_id = "2398" //Good for adding site and in response object
   ref_id = "666" //Good for adding and updating site and in response object
   send_site_setup_emails = "true" //Good for adding site, not availble in site onject
   site_ip = "75.80.36.61" //Good for adding and updating site and in response object
   force_ssl = "true" //Good for adding site and in response object
-  //naked_domain_san = "false" //TODO: Not available in TF site resource
-  //wildcard_san = "false" //TODO: Not available in TF site resource
-  //log_level = "full" //TODO: Fails with "reason": "Logs are not supported due to feature restrictions"
-  //logs_account_id = "1034421" //TODO: Fails with "reason": "The provided logs_account_id invalid"
+
+  # # The following 4 parameters are not able to be implemented for TF
+  # naked_domain_san = "false" //TODO: Not available in TF site resource
+  # wildcard_san = "false" //TODO: Not available in TF site resource
+  # log_level = "full" //TODO: Fails with "reason": "Logs are not supported due to feature restrictions"
+  # logs_account_id = "1034421" //TODO: Fails with "reason": "The provided logs_account_id invalid"
 
   ####################################################################
-  # For updating the site ONLY!!!!
-  # Available to modify after the site is created...
-  #TODO: This entire site update part needs to have logic applied resource; one failure will return out of the resource_incapsula_site.go.resourceSiteUpdate function...
+  # # The remaining following parameters below are designated for updating the site after it has been created.
+  # # TODO: This entire site update part needs to have logic applied resource; one failure will return out of the resource_incapsula_site.go.resourceSiteUpdate function...
   ####################################################################
-  # active = "bypass" //Good for updating site and in response object
-  domain_validation = "dns" //TODO: This call fails after being set by Imperva and cannnot be changed. Default is DNS; call will error on HTML and pass on EMAIL but no change.
-    //Error from Incapsula service when updating site for siteID 12608430:
-    //{"res":1,"res_message":"Unexpected error","debug_info":{"id-info":"13007","domain_html":"An error occured while trying to modify site\u0027s domain validation"}}
-  //approver = "joesph.moore@gmail.com" //TOD: This call fails when trying to apply on update.
-    //Error from Incapsula service when updating site for siteID 12608430:
-    //{"res":4202,"res_message":"Domain_email invalid","debug_info":{"approver":"approver email value is not a valid email value from the site\u0027s domain_emails","id-info":"13007"}}
-  # ignore_ssl = "true" ////Good for updating site and in response object statusEnum key from pending-select-approver to pending_ssl_approval TODO: How to handle this in state
-  # acceleration_level = "none" //Good for updating site and in response object
-  # seal_location = "api.seal_location.bottom_right" //Good for updating site and in response object
+  # active = "bypass" # active | bypass //Good for updating site and in response object
+  # ignore_ssl = "true" //Good for updating site and in response object statusEnum key from pending-select-approver to pending_ssl_approval
+  # acceleration_level = "none"  # off | standard | advanced //Good for updating site and in response object
+  # seal_location = "api.seal_location.bottom_right"  //Good for updating site and in response object
   # domain_redirect_to_full = "true" //TODO: Good for updating site but not shown in reponse or in UI
-  remove_ssl = "false" //Good for updating site and in response object
+  # remove_ssl = "false"
+  # approver = "your@email.com" //TODO: This call fails when trying to apply on update.
+      //Error from Incapsula service when updating site for siteID 12608430:
+      //{"res":4202,"res_message":"Domain_email invalid","debug_info":{"approver":"approver email value is not a valid email value from the site\u0027s domain_emails","id-info":"13007"}}
+  # domain_validation = "dns" //TODO: This call fails after being set by Imperva and cannnot be changed. Default is DNS; call will error on HTML and pass on EMAIL but no change.
+      //Error from Incapsula service when updating site for siteID 12608430:
+      //{"res":1,"res_message":"Unexpected error","debug_info":{"id-info":"13007","domain_html":"An error occured while trying to modify site\u0027s domain validation"}}
 }
 
 ####################################################################
 # Custom Certificates
 ####################################################################
-variable "certificate" {
-  default = "-----BEGIN CERTIFICATE-----\nMIIDgjCCAmoCCQCk3MsAS5x+UjANBgkqhkiG9w0BAQsFADCBgjELMAkGA1UEBhMC\nVVMxCzAJBgNVBAgMAkNBMRIwEAYDVQQHDAlTYW4gRGllZ28xCzAJBgNVBAoMAlNF\nMQswCQYDVQQLDAJTRTEZMBcGA1UEAwwQZGFzaC5iZWVyLmNlbnRlcjEdMBsGCSqG\nSIb3DQEJARYOYmFAaW1wZXJ2YS5jb20wHhcNMTkwNzA4MTU0MjQ0WhcNMjAwNzA3\nMTU0MjQ0WjCBgjELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAkNBMRIwEAYDVQQHDAlT\nYW4gRGllZ28xCzAJBgNVBAoMAlNFMQswCQYDVQQLDAJTRTEZMBcGA1UEAwwQZGFz\naC5iZWVyLmNlbnRlcjEdMBsGCSqGSIb3DQEJARYOYmFAaW1wZXJ2YS5jb20wggEi\nMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCj0rYKUhVtNKQ/oKZdCfxvLKhQ\nLbCNsOt94afUZCbM93/TYj7kHQaapJ6s9snPjN6dvRKo/0h+qx1DhPRSDGgONdHe\n2plv6M7h2gNhBF2853/GZLdNzO9GBHDI6VB9bFJpQvqBl+Cy7nkPQ8dsPpE945lW\nsQ7KMakikp1oJrFHmfalNMo+VQgOKPNc3jUlgmSNEwk3Cf607DqdZUS/O4XSx+d0\n5kRg3hmrjDxDyTwG2gQDJBGkdZ87HUqd5NC7KlrY5xuLkloq4Rt1wqRdwGJsUdq6\nkC8lPmikw2i3peTUu03T3OiZxBpKK6gNMcKe3uA3zSPdoY/mDY2uWCBSY/OLAgMB\nAAEwDQYJKoZIhvcNAQELBQADggEBABfNZcItHdsSpfp8h+1EP5BnRuoKj+l42EI5\nE9dVlqdOZ25+V5Ee899sn2Nj8h+/zVU3+IDO2abUPrDd2xZHaHdf0p69htSwFTHs\nEwUdPUUsKRSys7fVP1clHcKWswTcoWIzQiPZsDMoOQw/pzN05cXSzdo8wSWuEeBK\ncqRNd5BKPeeXbFa4i5TFzT/+pl8V075k16tzHSbT7QDk5fuZWYv/2jImw/lgS/nx\nDWtlprrgG6AX1FzovDs/NnNq/e7vZtn8sdOoO2pCSVymNvctNLV2tFcS8sPQDl5M\nIpnZa3kktAegjsCln1JvD0AFigXrF8wjK+FKGI8SPJfbTQ149+A=\n-----END CERTIFICATE-----"
-}
-variable "private_key" {
-  default = "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCj0rYKUhVtNKQ/\noKZdCfxvLKhQLbCNsOt94afUZCbM93/TYj7kHQaapJ6s9snPjN6dvRKo/0h+qx1D\nhPRSDGgONdHe2plv6M7h2gNhBF2853/GZLdNzO9GBHDI6VB9bFJpQvqBl+Cy7nkP\nQ8dsPpE945lWsQ7KMakikp1oJrFHmfalNMo+VQgOKPNc3jUlgmSNEwk3Cf607Dqd\nZUS/O4XSx+d05kRg3hmrjDxDyTwG2gQDJBGkdZ87HUqd5NC7KlrY5xuLkloq4Rt1\nwqRdwGJsUdq6kC8lPmikw2i3peTUu03T3OiZxBpKK6gNMcKe3uA3zSPdoY/mDY2u\nWCBSY/OLAgMBAAECggEAfDPprkNzWTta95594vYKO+OYrEknnRUwRV0LF/ziae2P\nLR1EX0AeXKpIXwwwDzpXITJS7mu1c8uZwTIQ5g/f6D4nopULVYwlJZhbjXd49hpx\nhmGfk8227te5BqnVS3IPvRx5vjz+r8obYFZb4JZDGa/v9okAlI04FS0hR/Bl4ckD\naIsztf4R+AO2dP6BxYZGIwcq3jkbf0BdyQpkw4Ds7pdKbSa+PsobseyI2NqR2ryX\n4HH4b89HZj8lfiniIN3tPV6uIvpPS6jJklLKy6zdkIFOng/OGwxXomGkrk9ZjBHm\nJx5yA5YfwPidyt80wO9/26wClXYidfKQC8mDN21owQKBgQDPQbNr/sGiI2QzTOpb\nYTx0FWzWMnn9N2XiQm5rcr9kM5WsXh+anlqP54MeXDGZ2f6L8+aGrghZ/78WbG9J\nDbtEc7qTSRw5LFRglqn32a3ppHToEzOVxsA3g/OBJT5lJJwGMTdeKEXtLMmkm/sz\n1ClFnYJ1I8rNcueI9936odDWKwKBgQDKWgGwWTbqVa3wVIOFvluxolQzo6TEBFbf\nQTJo7byO2iRZvhrZUUk8539Uz2px0Ilzxx61CszhNWDVNwgqsN7FtuzXuCwz9GzU\nyBWkzPKGzvK12aFMYoj/cPbcRfMpYWNoK/YfEKfTRkJJfrJSbWP2XlyEr69te8s7\nB/zxOtUIIQKBgEjoJcOhtF/i70aUkgRfKjLzrnuS+hK3QCHdmJY3oVgQRWCDI77y\nYY0ptZgielhStRZqT/eklM+EBaZPsr4SFIQ56bISD9mU3IG1vkivzFvaPD2/M3BG\noCtnQWt2vII75J7RBVcb9609ChnbvPw4b+RLSi8GzjqDZytpdi7KaXpNAoGAS2Ym\nYvObRs4ONhMHvvojaJk4DtXXO0Lyq9W7VuXe8MvP57CyiG+FfrAz/gIbg7VUwlNb\n2dHgbbpaDpim7mFhYQK8VdVGg0V8l/zGM9Y6OIk8Xw5sz+2XZrdNBN77sFudkt9u\nojyujEcNxBz1jUk9iju29aoREBakr6ZWVfy6DIECgYEAtXxrOsbMsbHhVGqgeGXy\nhLXIltR+7NIUaxpLHhYCMzK9SbyZvx/Hd6m34oTw9ws+tHFpeCyiVU+wQgmx0ARD\ncDLKOPIHTGYhq/H8Oc6/Dzfxs1L/hH34mw5u7hVtAaA+q8iaRGVZ797dTVSxw4U0\nRm+BCDRhDcvaG7qpvFj8T6k=\n-----END PRIVATE KEY-----"
-}
-
-variable "passphrase" {
-  default = "webco123"
-}
-
 resource "incapsula_custom_certificate" "custom-certificate" {
+   site_id = "${incapsula_site.example-site.id}"
+   certificate = "${file("path/to/your/cert.crt")}"
+   private_key = "${file("path/to/your/private_key.key")}"
+   passphrase = "yourpassphrase"
+}
+
+
+####################################################################
+# Data Center
+####################################################################
+
+resource "incapsula_data_center" "example-data-center-test" {
   site_id = "${incapsula_site.example-site.id}"
-  certificate = "${var.certificate}"
-  private_key = "${var.private_key}"
-  passphrase = "${var.passphrase}"
+  name = "Example data center test"
+  server_address = "8.8.4.8"
+  is_content = "yes"
 }
 
-####################################################################
-# Security Rules
-####################################################################
-
-# Security Rule: Country
-# resource "incapsula_acl_security_rule" "example-global-blacklist-country-rule" {
-#   site_id = "${incapsula_site.example-site.id}"
-#   rule_id = "api.acl.blacklisted_countries"
-#   countries = "AI,AN"
-#   //continents = "SA"
-#   depends_on = ["incapsula_site.example-site"]
-# }
-#
-# # Security Rule: Country IP Exception
-# //resource "incapsula_acl_security_rule" "example-global-blacklist-country-rule_exception" {
-# //  rule_id = "api.acl.blacklisted_countries"
-# //  site_id = "${incapsula_site.example-site.id}"
-# //  ips = "192.168.1.1,192.168.1.2"
-# //  urls = "/myurl,/myurl2"
-# //  url_patterns = "EQUALS,CONTAINS"
-# //  countries = "JM,US"
-# //  client_apps= "488,123"
-# //  depends_on = ["incapsula_site.example-site", "incapsula_acl_security_rule.example-global-blacklist-country-rule"]
-# //}
-#
-# # Security Rule: Blacklist IP
-# resource "incapsula_acl_security_rule" "example-global-blacklist-ip-rule" {
-#   site_id = "${incapsula_site.example-site.id}"
-#   rule_id = "api.acl.blacklisted_ips"
-#   ips = "192.168.1.0/24"
-#   depends_on = ["incapsula_site.example-site"]
-# }
-#
-# # Security Rule: Blacklist IP Exception
-# //resource "incapsula_acl_security_rule" "example-global-blacklist-ip-rule_exception" {
-# //  rule_id = "api.acl.blacklisted_ips"
-# //  site_id = "${incapsula_site.example-site.id}"
-# //  ips = "192.168.1.1,192.168.1.2"
-# //  urls = "/myurl,/myurl2"
-# //  url_patterns = "EQUALS,CONTAINS"
-# //  countries = "JM,US"
-# //  client_apps= "488,123"
-# //  depends_on = ["incapsula_site.example-site", "incapsula_acl_security_rule.example-global-blacklist-ip-rule"]
-# //}
-#
-# # Security Rule: URL
-# resource "incapsula_acl_security_rule" "example-global-blacklist-url-rule" {
-#   rule_id = "api.acl.blacklisted_urls"
-#   site_id = "${incapsula_site.example-site.id}"
-#   url_patterns = "CONTAINS,EQUALS"
-#   urls = "/alpha,/bravo"
-#   depends_on = ["incapsula_site.example-site"]
-# }
-#
-# # Security Rule: Whitelist IP
-# resource "incapsula_acl_security_rule" "example-global-whitelist-ip-rule" {
-#   rule_id = "api.acl.whitelisted_ips"
-#   site_id = "${incapsula_site.example-site.id}"
-#   ips = "192.168.1.3,192.168.1.4"
-#   depends_on = ["incapsula_site.example-site"]
-# }
-#
-# ####################################################################
-# # Incap Rules
-# ####################################################################
-#
-# # Incap Rule: Alert
-# resource "incapsula_incap_rule" "example-incap-rule-alert" {
-#   priority = "1"
-#   name = "Example incap rule alert"
-#   site_id = "${incapsula_site.example-site.id}"
-#   action = "RULE_ACTION_ALERT"
-#   filter = "Full-URL == \"/someurl\""
-#   depends_on = ["incapsula_site.example-site"]
-# }
-
-//resource "aws_route53_record" "dash_record" {
-//  depends_on = ["incapsula_site.dash_api"]
-//  name = "dash.${data.aws_route53_zone.zone.name}"
-//  type = "CNAME"
-//  zone_id = "${data.aws_route53_zone.zone.zone_id}"
-//  ttl = "180"
-//  records = ["${incapsula_site.dash_api.dns_cname_record_value}"]
-//}
-//
-//output "incap_ald_url" {
-//  value = "${aws_route53_record.dash_record.fqdn}"
-//}
-
-output "incap_siteID" {
-  value = "${incapsula_site.example-site.id}"
+resource "incapsula_data_center" "example-data-center" {
+  site_id = "${incapsula_site.example-site.id}"
+  name = "Example data center"
+  server_address = "8.8.4.4"
+  is_content = "yes"
 }
+
+Data Center Servers
+resource "incapsula_data_center_servers" "example-data-center-servers" {
+  dc_id = "${incapsula_data_center.example-data-center.id}"
+  site_id = "${incapsula_site.example-site.id}"
+  server_address = "4.4.4.4"
+  is_standby = "no"
+}
+
+# ###################################################################
+# Security Rules (WAF)
+# ###################################################################
+
+resource "incapsula_waf_security_rule" "example-waf-backdoor-rule" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.backdoor"
+  security_rule_action = "api.threats.action.quarantine_url" # (api.threats.action.quarantine_url (default) | api.threats.action.alert | api.threats.action.disabled | api.threats.action.quarantine_url)
+}
+
+resource "incapsula_waf_security_rule" "example-waf-cross-site-scripting-rule" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.cross_site_scripting"
+  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
+}
+
+resource "incapsula_waf_security_rule" "example-waf-illegal-resource-rule" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.illegal_resource_access"
+  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
+}
+
+resource "incapsula_waf_security_rule" "example-waf-remote-file-inclusion-rule" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.remote_file_inclusion"
+  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
+}
+
+resource "incapsula_waf_security_rule" "example-waf-sql-injection-rule" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.sql_injection"
+  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
+}
+
+resource "incapsula_waf_security_rule" "example-waf-bot-access-control-rule" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.bot_access_control"
+  block_bad_bots = "true" # true | false (optional, default: true)
+  challenge_suspected_bots = "true" # true | false (optional, default: true)
+}
+
+resource "incapsula_waf_security_rule" "example-waf-ddos-rule" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.ddos"
+  activation_mode = "api.threats.ddos.activation_mode.on" # (api.threats.ddos.activation_mode.auto | api.threats.ddos.activation_mode.off | api.threats.ddos.activation_mode.on)
+  ddos_traffic_threshold = "5000" # valid values are 10, 20, 50, 100, 200, 500, 750, 1000, 2000, 3000, 4000, 5000
+}
+
+# ###################################################################
+# Security Rules (ACLs)
+# ###################################################################
+
+Security Rule: Country
+resource "incapsula_acl_security_rule" "example-global-blacklist-country-rule" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.acl.blacklisted_countries"
+  countries = "AI,AN"
+}
+
+Security Rule: Blacklist IP
+resource "incapsula_acl_security_rule" "example-global-blacklist-ip-rule" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.acl.blacklisted_ips"
+  ips = "192.168.1.1,192.168.1.2"
+}
+
+Security Rule: Blacklist IP Exception
+resource "incapsula_acl_security_rule" "example-global-blacklist-ip-rule_exception" {
+  rule_id = "api.acl.blacklisted_ips"
+  site_id = "${incapsula_site.example-site.id}"
+  ips = "192.168.1.1,192.168.1.2"
+  urls = "/myurl,/myurl2"
+  url_patterns = "EQUALS,CONTAINS"
+  countries = "JM,US"
+  client_apps= "488,123"
+}
+
+Security Rule: URL
+resource "incapsula_acl_security_rule" "example-global-blacklist-url-rule" {
+  rule_id = "api.acl.blacklisted_urls"
+  site_id = "${incapsula_site.example-site.id}"
+  url_patterns = "CONTAINS,EQUALS"
+  urls = "/alpha,/bravo"
+}
+
+Security Rule: Whitelist IP
+resource "incapsula_acl_security_rule" "example-global-whitelist-ip-rule" {
+  rule_id = "api.acl.whitelisted_ips"
+  site_id = "${incapsula_site.example-site.id}"
+  ips = "192.168.1.3,192.168.1.4"
+}
+
+# ###################################################################
+# Incap Rules
+# ###################################################################
+
+Incap Rule: Alert
+resource "incapsula_incap_rule" "example-incap-rule-alert" {
+  priority = "1"
+  name = "Example incap rule alert"
+  site_id = "${incapsula_site.example-site.id}"
+  action = "RULE_ACTION_ALERT"
+  filter = "Full-URL == \"/someurl\""
+}
+
+Incap Rule: Require javascript support
+resource "incapsula_incap_rule" "example-incap-rule-require-js-support" {
+  priority = "1"
+  name = "Example incap rule require javascript support 3"
+  site_id = "${incapsula_site.example-site.id}"
+  action = "RULE_ACTION_INTRUSIVE_HTML"
+  filter = "Full-URL == \"/someurl\""
+}
+
+Incap Rule: Block IP
+resource "incapsula_incap_rule" "example-incap-rule-block-ip" {
+  priority = "1"
+  name = "Example incap rule block ip"
+  site_id = "${incapsula_site.example-site.id}"
+  action = "RULE_ACTION_BLOCK_IP"
+  filter = "Full-URL == \"/someurl\""
+}
+
+Incap Rule: Block Request
+resource "incapsula_incap_rule" "example-incap-rule-block-request" {
+  priority = "1"
+  name = "Example incap rule block request"
+  site_id = "${incapsula_site.example-site.id}"
+  action = "RULE_ACTION_BLOCK"
+  filter = "Full-URL == \"/someurl\""
+}
+
+Incap Rule: Block Session
+resource "incapsula_incap_rule" "example-incap-rule-block-session" {
+  priority = "1"
+  name = "Example incap rule block session"
+  site_id = "${incapsula_site.example-site.id}"
+  action = "RULE_ACTION_BLOCK_USER"
+  filter = "Full-URL == \"/someurl\""
+}
+
+Incap Rule: Delete Cookie (ADR)
+resource "incapsula_incap_rule" "example-incap-rule-delete-cookie" {
+  priority = "1"
+  name = "Example incap rule delete cookie"
+  site_id = "${incapsula_site.example-site.id}"
+  action = "RULE_ACTION_DELETE_COOKIE"
+  filter = "Full-URL == \"/someurl\""
+  rewrite_name = "my_test_header"
+}
+
+Incap Rule: Delete Header (ADR)
+resource "incapsula_incap_rule" "example-incap-rule-delete-header" {
+  priority = "1"
+  name = "Example incap rule delete header"
+  site_id = "${incapsula_site.example-site.id}"
+  action = "RULE_ACTION_DELETE_HEADER"
+  filter = "Full-URL == \"/someurl\""
+  rewrite_name = "my_test_header"
+}
+
+Incap Rule: Forward to Data Center (ADR)
+resource "incapsula_incap_rule" "example-incap-rule-fwd-to-data-center" {
+  priority = "1"
+  name = "Example incap rule forward to data center"
+  site_id = "${incapsula_site.example-site.id}"
+  action = "RULE_ACTION_FORWARD_TO_DC"
+  filter = "Full-URL == \"/someurl\""
+  dc_id = "${incapsula_data_center.example-data-center.id}"
+  allow_caching = "false"
+}
+
+Incap Rule: Redirect (ADR)
+resource "incapsula_incap_rule" "example-incap-rule-redirect" {
+  priority = "1"
+  name = "Example incap rule redirect"
+  site_id = "${incapsula_site.example-site.id}"
+  action = "RULE_ACTION_REDIRECT"
+  filter = "Full-URL == \"/someurl\""
+  response_code = "302"
+  from = "https://site1.com/url1"
+  to = "https://site2.com/url2"
+}
+
+Incap Rule: Require Cookie Support (IncapRule)
+resource "incapsula_incap_rule" "example-incap-rule-require-cookie-support" {
+  priority = "1"
+  name = "Example incap rule require cookie support"
+  site_id = "${incapsula_site.example-site.id}"
+  action = "RULE_ACTION_RETRY"
+  filter = "Full-URL == \"/someurl\""
+}
+
+Incap Rule: Rewrite Cookie (ADR)
+resource "incapsula_incap_rule" "example-incap-rule-rewrite-cookie" {
+  priority = "18"
+  name = "Example incap rule rewrite cookie"
+  site_id = "${incapsula_site.example-site.id}"
+  action = "RULE_ACTION_REWRITE_COOKIE"
+  filter = "Full-URL == \"/someurl\""
+  add_missing = "true"
+  from = "some_optional_value"
+  to = "some_new_value"
+  allow_caching = "false"
+  rewrite_name = "my_cookie_name"
+}
+
+Incap Rule: Rewrite Header (ADR)
+resource "incapsula_incap_rule" "example-incap-rule-rewrite-header" {
+  priority = "17"
+  name = "Example incap rule rewrite header"
+  site_id = "${incapsula_site.example-site.id}"
+  action = "RULE_ACTION_REWRITE_HEADER"
+  filter = "Full-URL == \"/someurl\""
+  add_missing = "true"
+  from = "some_optional_value"
+  to = "some_new_value"
+  allow_caching = "false"
+  rewrite_name = "my_test_header"
+}
+
+Incap Rule: Rewrite URL (ADR)
+resource "incapsula_incap_rule" "example-incap-rule-rewrite-url" {
+  priority = "1"
+  name = "ExampleRewriteURL"
+  site_id = "${incapsula_site.example-site.id}"
+  action = "RULE_ACTION_REWRITE_URL"
+  filter = "Full-URL == \"/someurl\""
+  add_missing = "true"
+  from = "*"
+  to = "/redirect"
+  allow_caching = "false"
+  rewrite_name = "my_test_header"
+}
+
