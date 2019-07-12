@@ -1,48 +1,29 @@
 
-variable "id" {
-  default = ""
-}
-variable "key" {
-  default = ""
-}
 provider "incapsula" {
-  api_id = "${var.id}"
-  api_key = "${var.key}"
+  api_id = "your_api_id"
+  api_key = "your_api_key"
 }
 
 resource "incapsula_site" "example-site" {
   ####################################################################
   # # The first 6 parameters listed below are designated for initially creating the site in Incapsula.
   ####################################################################
-  domain = "mojo.beer.center" //Good for adding site and in response object
-  account_id = "2398" //Good for adding site and in response object
-  ref_id = "666" //Good for adding and updating site and in response object
-  send_site_setup_emails = "true" //Good for adding site, not availble in site onject
-  site_ip = "75.80.36.61" //Good for adding and updating site and in response object
-  force_ssl = "true" //Good for adding site and in response object
-
-  # # The following 4 parameters are not able to be implemented for TF
-  # naked_domain_san = "false" //TODO: Not available in TF site resource
-  # wildcard_san = "false" //TODO: Not available in TF site resource
-  # log_level = "full" //TODO: Fails with "reason": "Logs are not supported due to feature restrictions"
-  # logs_account_id = "1034421" //TODO: Fails with "reason": "The provided logs_account_id invalid"
+  domain = ""
+  account_id = "1234"
+  ref_id = "123456"
+  send_site_setup_emails = "true"
+  site_ip = "10.10.10.11"
+  force_ssl = "true"
 
   ####################################################################
   # # The remaining following parameters below are designated for updating the site after it has been created.
-  # # TODO: This entire site update part needs to have logic applied resource; one failure will return out of the resource_incapsula_site.go.resourceSiteUpdate function...
   ####################################################################
-  # active = "bypass" # active | bypass //Good for updating site and in response object
-  # ignore_ssl = "true" //Good for updating site and in response object statusEnum key from pending-select-approver to pending_ssl_approval
-  # acceleration_level = "none"  # off | standard | advanced //Good for updating site and in response object
-  # seal_location = "api.seal_location.bottom_right"  //Good for updating site and in response object
-  # domain_redirect_to_full = "true" //TODO: Good for updating site but not shown in reponse or in UI
-  # remove_ssl = "false"
-  # approver = "your@email.com" //TODO: This call fails when trying to apply on update.
-      //Error from Incapsula service when updating site for siteID 12608430:
-      //{"res":4202,"res_message":"Domain_email invalid","debug_info":{"approver":"approver email value is not a valid email value from the site\u0027s domain_emails","id-info":"13007"}}
-  # domain_validation = "dns" //TODO: This call fails after being set by Imperva and cannnot be changed. Default is DNS; call will error on HTML and pass on EMAIL but no change.
-      //Error from Incapsula service when updating site for siteID 12608430:
-      //{"res":1,"res_message":"Unexpected error","debug_info":{"id-info":"13007","domain_html":"An error occured while trying to modify site\u0027s domain validation"}}
+  active = "bypass" # active | bypass
+  ignore_ssl = "true"
+  acceleration_level = "none"  # off | standard | advanced
+  seal_location = "api.seal_location.bottom_right"
+  domain_redirect_to_full = "true"
+  remove_ssl = "false"
 }
 
 ####################################################################
@@ -54,7 +35,6 @@ resource "incapsula_custom_certificate" "custom-certificate" {
    private_key = "${file("path/to/your/private_key.key")}"
    passphrase = "yourpassphrase"
 }
-
 
 ####################################################################
 # Data Center
