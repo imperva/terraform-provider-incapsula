@@ -20,7 +20,7 @@ func testAccCheckCertificateUpload_goodConfig(t *testing.T) {
 			{
 				Config: testAccCheckIncapsulaCustomCertificateGoodConfig(),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckIncapsulaDataCenterExists(certificateResourceName),
+					testCheckIncapsulaCertificateExists(certificateResourceName),
 					resource.TestCheckResourceAttr(certificateResourceName, "name", certificateName),
 				),
 			},
@@ -43,7 +43,7 @@ func testAccCheckCertificateUpload_badKey(t *testing.T) {
 			{
 				Config: testAccCheckIncapsulaCustomCertificateBadKey(),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckIncapsulaDataCenterExists(certificateResourceName),
+					testCheckIncapsulaCertificateExists(certificateResourceName),
 					resource.TestCheckResourceAttr(certificateResourceName, "name", certificateName),
 				),
 			},
@@ -66,7 +66,7 @@ func testAccCheckCertificateUpload_badCertificate(t *testing.T) {
 			{
 				Config: testAccCheckIncapsulaCustomCertificateBadCertificate(),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckIncapsulaDataCenterExists(certificateResourceName),
+					testCheckIncapsulaCertificateExists(certificateResourceName),
 					resource.TestCheckResourceAttr(certificateResourceName, "name", certificateName),
 				),
 			},
@@ -89,7 +89,7 @@ func testAccCheckCertificateUpload_badPassphrase(t *testing.T) {
 			{
 				Config: testAccCheckIncapsulaCustomCertificateBadPassphrase(),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckIncapsulaDataCenterExists(certificateResourceName),
+					testCheckIncapsulaCertificateExists(certificateResourceName),
 					resource.TestCheckResourceAttr(certificateResourceName, "name", certificateName),
 				),
 			},
@@ -141,7 +141,7 @@ func testAccCheckIncapsulaCertificateDestroy(state *terraform.State) error {
 		//listCertificatesResponse, err := client.ListCertificates(siteID)
 		//for _, dc := range listCertificatesResponse.Res {
 		//	if dc.Name == certificateName {
-		//		return fmt.Errorf("Incapsula data center: %s (site_id: %s) still exists", certificateName, siteID)
+		//		return fmt.Errorf("Incapsula custom certificate: %s (site_id: %s) still exists", certificateName, siteID)
 		//	}
 		//}
 		if err == "nil" {
