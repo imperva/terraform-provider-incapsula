@@ -59,6 +59,7 @@ func resourceCertificateCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	// TODO: Setting this to arbitrary value as there is only one cert for each site.
 	d.SetId("12345")
 
 	return resourceCertificateRead(d, m)
@@ -69,7 +70,7 @@ func resourceCertificateRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	site_id := d.Get("site_id").(string)
-	//siteStatusResponse, err := client.ListCertificates(site_id)
+
 	_, err := client.ListCertificates(site_id)
 
 	if err != nil {
