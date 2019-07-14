@@ -1,7 +1,7 @@
 package incapsula
 
 import (
-	b64 "encoding/base64"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -35,8 +35,8 @@ type CertificateEditResponse struct {
 
 // AddCertificate adds a custom SSL certificate to a site in Incapsula
 func (c *Client) AddCertificate(site_id, certificate, private_key, passphrase string) (*CertificateAddResponse, error) {
-	b64_certificate := b64.StdEncoding.EncodeToString([]byte(strings.TrimSpace(certificate)))
-	b64_private_key := b64.StdEncoding.EncodeToString([]byte(strings.TrimSpace(private_key)))
+	b64_certificate := base64.StdEncoding.EncodeToString([]byte(strings.TrimSpace(certificate)))
+	b64_private_key := base64.StdEncoding.EncodeToString([]byte(strings.TrimSpace(private_key)))
 
 	//log.Printf("[INFO] Adding custom certificate for site_id: %s\n base_64 certificate: %s\n base_64 private_key: %s", site_id, b64_certificate, b64_private_key)
 	log.Printf("[INFO] Adding custom certificate for site_id: %s", site_id)
@@ -114,8 +114,8 @@ func (c *Client) ListCertificates(site_id string) (*CertificateListResponse, err
 
 // EditCertificate updates the custom certifiacte on an Incapsula site
 func (c *Client) EditCertificate(site_id, certificate, private_key, passphrase string) (*CertificateEditResponse, error) {
-	b64_certificate := b64.StdEncoding.EncodeToString([]byte(strings.TrimSpace(certificate)))
-	b64_private_key := b64.StdEncoding.EncodeToString([]byte(strings.TrimSpace(private_key)))
+	b64_certificate := base64.StdEncoding.EncodeToString([]byte(strings.TrimSpace(certificate)))
+	b64_private_key := base64.StdEncoding.EncodeToString([]byte(strings.TrimSpace(private_key)))
 
 	log.Printf("[INFO] Editing custom certificate for Incapsula site_id: %s\n", site_id)
 
@@ -125,13 +125,11 @@ func (c *Client) EditCertificate(site_id, certificate, private_key, passphrase s
 		"site_id":     {site_id},
 		"certificate": {b64_certificate},
 		"private_key": {b64_private_key},
-		"passphrase":  {passphrase},
 	}
 
-	// TODO: If optional passsphrase defined, add
-	//if passphrase != "" {
-	//	values.Add("passphrase", passphrase)
-	//}
+	if passphrase != "" {
+		values.Add("passphrase", passphrase)
+	}
 
 	// Post to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointCertificateEdit), values)
