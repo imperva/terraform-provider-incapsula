@@ -3,6 +3,7 @@ package incapsula
 import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/terraform"
 	"log"
 	"strconv"
 	"strings"
@@ -182,7 +183,6 @@ func resourceWAFSecurityRuleRead(d *schema.ResourceData, m interface{}) error {
 				d.Set("action", entry.Action)
 			case ddosRuleId:
 				d.Set("activation_mode", entry.ActivationMode)
-				d.Set("activation_mode_text", entry.ActivationModeText)
 				d.Set("ddos_traffic_threshold", entry.DdosTrafficThreshold)
 			case botAccessControlRuleId:
 				d.Set("block_bad_bots", entry.BlockBadBots)
@@ -200,6 +200,26 @@ func resourceWAFSecurityRuleRead(d *schema.ResourceData, m interface{}) error {
 func resourceWAFSecurityRuleUpdate(d *schema.ResourceData, m interface{}) error {
 	// This is the same as create
 	return resourceWAFSecurityRuleCreate(d, m)
+}
+
+func testAccStateWAFSecurityRuleID(s *terraform.State) (string, error) {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "incapsula_waf_security_rule" {
+			continue
+		}
+
+		ruleID, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return "", fmt.Errorf("Error parsing ID %v to int", rs.Primary.ID)
+		}
+		siteID, err := strconv.Atoi(rs.Primary.Attributes["site_id"])
+		if err != nil {
+			return "", fmt.Errorf("Error parsing site_id %v to int", rs.Primary.Attributes["site_id"])
+		}
+		return fmt.Sprintf("%d/%d", siteID, ruleID), nil
+	}
+
+	return "", fmt.Errorf("Error finding site_id")
 }
 
 func resourceWAFSecurityRuleDelete(d *schema.ResourceData, m interface{}) error {

@@ -44,12 +44,14 @@ func (c *Client) ConfigureWAFSecurityRule(siteID int, ruleID, security_rule_acti
 		values.Add("block_bad_bots", block_bad_bots)
 		values.Add("challenge_suspected_bots", challenge_suspected_bots)
 		log.Printf("[INFO] Configuring Incapsula WAF rule id (%s) with block_bad_bots (%s) and challenge_suspected_bots (%s) for site id (%d)\n", ruleID, block_bad_bots, challenge_suspected_bots, siteID)
+	} else {
+		return nil, fmt.Errorf("Error - invalid WAF security rule rule_id (%s)", ruleID)
 	}
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointWAFRuleConfigure), values)
 	if err != nil {
-		return nil, fmt.Errorf("Error adding WAF for rule id %s and site id %d", ruleID, siteID)
+		return nil, fmt.Errorf("Error configuring WAF security rule rule_id (%s) for site_id (%d)", ruleID, siteID)
 	}
 
 	// Read the body
@@ -57,18 +59,18 @@ func (c *Client) ConfigureWAFSecurityRule(siteID int, ruleID, security_rule_acti
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
 	// Dump JSON
-	log.Printf("[DEBUG] Incapsula add WAF rule JSON response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] Incapsula configure WAF security rule JSON response: %s\n", string(responseBody))
 
 	// Parse the JSON
 	var siteStatusResponse SiteStatusResponse
 	err = json.Unmarshal([]byte(responseBody), &siteStatusResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing add WAF rule JSON response for rule id %s and site id %d", ruleID, siteID)
+		return nil, fmt.Errorf("Error parsing configure WAF rule JSON response for rule_id (%s) and site_id (%d)", ruleID, siteID)
 	}
 
 	// Look at the response status code from Incapsula
 	if siteStatusResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when adding WAF rule for rule id %s and site id %d: %s", ruleID, siteID, string(responseBody))
+		return nil, fmt.Errorf("Error from Incapsula service when adding WAF rule for rule_id (%s) and site_id (%d): %s", ruleID, siteID, string(responseBody))
 	}
 
 	return &siteStatusResponse, nil
