@@ -54,7 +54,7 @@ resource "incapsula_data_center" "example-data-center" {
   is_content = "yes"
 }
 
-Data Center Servers
+# Data Center Servers
 resource "incapsula_data_center_servers" "example-data-center-servers" {
   dc_id = "${incapsula_data_center.example-data-center.id}"
   site_id = "${incapsula_site.example-site.id}"
@@ -63,7 +63,7 @@ resource "incapsula_data_center_servers" "example-data-center-servers" {
 }
 
 # ###################################################################
-# Security Rules (WAF)
+# # Security Rules (WAF)
 # ###################################################################
 
 resource "incapsula_waf_security_rule" "example-waf-backdoor-rule" {
@@ -111,24 +111,24 @@ resource "incapsula_waf_security_rule" "example-waf-ddos-rule" {
 }
 
 # ###################################################################
-# Security Rules (ACLs)
+# # Security Rules (ACLs)
 # ###################################################################
 
-Security Rule: Country
+# Security Rule: Country
 resource "incapsula_acl_security_rule" "example-global-blacklist-country-rule" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.acl.blacklisted_countries"
   countries = "AI,AN"
 }
 
-Security Rule: Blacklist IP
+# Security Rule: Blacklist IP
 resource "incapsula_acl_security_rule" "example-global-blacklist-ip-rule" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.acl.blacklisted_ips"
   ips = "192.168.1.1,192.168.1.2"
 }
 
-Security Rule: Blacklist IP Exception
+# Security Rule: Blacklist IP Exception
 resource "incapsula_acl_security_rule" "example-global-blacklist-ip-rule_exception" {
   rule_id = "api.acl.blacklisted_ips"
   site_id = "${incapsula_site.example-site.id}"
@@ -139,7 +139,7 @@ resource "incapsula_acl_security_rule" "example-global-blacklist-ip-rule_excepti
   client_apps= "488,123"
 }
 
-Security Rule: URL
+# Security Rule: URL
 resource "incapsula_acl_security_rule" "example-global-blacklist-url-rule" {
   rule_id = "api.acl.blacklisted_urls"
   site_id = "${incapsula_site.example-site.id}"
@@ -147,7 +147,7 @@ resource "incapsula_acl_security_rule" "example-global-blacklist-url-rule" {
   urls = "/alpha,/bravo"
 }
 
-Security Rule: Whitelist IP
+# Security Rule: Whitelist IP
 resource "incapsula_acl_security_rule" "example-global-whitelist-ip-rule" {
   rule_id = "api.acl.whitelisted_ips"
   site_id = "${incapsula_site.example-site.id}"
@@ -155,10 +155,10 @@ resource "incapsula_acl_security_rule" "example-global-whitelist-ip-rule" {
 }
 
 # ###################################################################
-# Incap Rules
+# # Incap Rules
 # ###################################################################
 
-Incap Rule: Alert
+# Incap Rule: Alert
 resource "incapsula_incap_rule" "example-incap-rule-alert" {
   priority = "1"
   name = "Example incap rule alert"
@@ -167,7 +167,7 @@ resource "incapsula_incap_rule" "example-incap-rule-alert" {
   filter = "Full-URL == \"/someurl\""
 }
 
-Incap Rule: Require javascript support
+# Incap Rule: Require javascript support
 resource "incapsula_incap_rule" "example-incap-rule-require-js-support" {
   priority = "1"
   name = "Example incap rule require javascript support 3"
@@ -176,7 +176,7 @@ resource "incapsula_incap_rule" "example-incap-rule-require-js-support" {
   filter = "Full-URL == \"/someurl\""
 }
 
-Incap Rule: Block IP
+# Incap Rule: Block IP
 resource "incapsula_incap_rule" "example-incap-rule-block-ip" {
   priority = "1"
   name = "Example incap rule block ip"
@@ -185,7 +185,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-ip" {
   filter = "Full-URL == \"/someurl\""
 }
 
-Incap Rule: Block Request
+# Incap Rule: Block Request
 resource "incapsula_incap_rule" "example-incap-rule-block-request" {
   priority = "1"
   name = "Example incap rule block request"
@@ -194,7 +194,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-request" {
   filter = "Full-URL == \"/someurl\""
 }
 
-Incap Rule: Block Session
+# Incap Rule: Block Session
 resource "incapsula_incap_rule" "example-incap-rule-block-session" {
   priority = "1"
   name = "Example incap rule block session"
@@ -203,7 +203,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-session" {
   filter = "Full-URL == \"/someurl\""
 }
 
-Incap Rule: Delete Cookie (ADR)
+# Incap Rule: Delete Cookie (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-delete-cookie" {
   priority = "1"
   name = "Example incap rule delete cookie"
@@ -213,7 +213,7 @@ resource "incapsula_incap_rule" "example-incap-rule-delete-cookie" {
   rewrite_name = "my_test_header"
 }
 
-Incap Rule: Delete Header (ADR)
+# Incap Rule: Delete Header (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-delete-header" {
   priority = "1"
   name = "Example incap rule delete header"
@@ -223,7 +223,7 @@ resource "incapsula_incap_rule" "example-incap-rule-delete-header" {
   rewrite_name = "my_test_header"
 }
 
-Incap Rule: Forward to Data Center (ADR)
+# Incap Rule: Forward to Data Center (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-fwd-to-data-center" {
   priority = "1"
   name = "Example incap rule forward to data center"
@@ -234,7 +234,7 @@ resource "incapsula_incap_rule" "example-incap-rule-fwd-to-data-center" {
   allow_caching = "false"
 }
 
-Incap Rule: Redirect (ADR)
+# Incap Rule: Redirect (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-redirect" {
   priority = "1"
   name = "Example incap rule redirect"
@@ -246,7 +246,7 @@ resource "incapsula_incap_rule" "example-incap-rule-redirect" {
   to = "https://site2.com/url2"
 }
 
-Incap Rule: Require Cookie Support (IncapRule)
+# Incap Rule: Require Cookie Support (IncapRule)
 resource "incapsula_incap_rule" "example-incap-rule-require-cookie-support" {
   priority = "1"
   name = "Example incap rule require cookie support"
@@ -255,7 +255,7 @@ resource "incapsula_incap_rule" "example-incap-rule-require-cookie-support" {
   filter = "Full-URL == \"/someurl\""
 }
 
-Incap Rule: Rewrite Cookie (ADR)
+# Incap Rule: Rewrite Cookie (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-rewrite-cookie" {
   priority = "18"
   name = "Example incap rule rewrite cookie"
@@ -269,7 +269,7 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-cookie" {
   rewrite_name = "my_cookie_name"
 }
 
-Incap Rule: Rewrite Header (ADR)
+# Incap Rule: Rewrite Header (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-rewrite-header" {
   priority = "17"
   name = "Example incap rule rewrite header"
@@ -283,7 +283,7 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-header" {
   rewrite_name = "my_test_header"
 }
 
-Incap Rule: Rewrite URL (ADR)
+# Incap Rule: Rewrite URL (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-rewrite-url" {
   priority = "1"
   name = "ExampleRewriteURL"
@@ -296,4 +296,3 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-url" {
   allow_caching = "false"
   rewrite_name = "my_test_header"
 }
-

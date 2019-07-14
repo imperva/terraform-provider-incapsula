@@ -1,15 +1,15 @@
 
 provider "incapsula" {
-  api_id = "yourid"
-  api_key = "yourkey"
+  api_id = "your_api_id"
+  api_key = "your_api_key"
 }
 
 variable "site_id" {
-  default = "yoursiteidhere"
+  default = "your_site_id_here"
 }
 
 ####################################################################
-# Data Center
+# Data Centers
 ####################################################################
 
 resource "incapsula_data_center" "example-data-center-test" {

@@ -1,7 +1,7 @@
 
 provider "incapsula" {
-  api_id = "yourid"
-  api_key = "yourkey"
+  api_id = "your_api_id"
+  api_key = "your_api_key"
 }
 
 resource "incapsula_site" "example-site" {
