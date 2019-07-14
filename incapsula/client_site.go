@@ -64,6 +64,25 @@ type SiteStatusResponse struct {
 				ActivationMode         string `json:"activation_mode,omitempty"`
 				ActivationModeText     string `json:"activation_mode_text,omitempty"`
 				DdosTrafficThreshold   int    `json:"ddos_traffic_threshold,omitempty"`
+				Exceptions             []struct {
+					Values []struct {
+						ID   string   `json:"id"`
+						Name string   `json:"name"`
+						Ips  []string `json:"ips,omitempty"`
+						Urls []struct {
+							Value   string `json:"value"`
+							Pattern string `json:"pattern"`
+						} `json:"urls,omitempty"`
+						Geo struct {
+							Countries  []string `json:"countries"`
+							Continents []string `json:"continents"`
+						} `json:"geo,omitempty"`
+						ClientApps     []string `json:"client_apps,omitempty"`
+						ClientAppTypes []string `json:"client_app_types,omitempty"`
+						Parameters     []string `json:"parameters,omitempty"`
+					} `json:"values"`
+					ID string `json:"id"`
+				} `json:"exceptions"`
 			} `json:"rules"`
 		} `json:"waf"`
 		Acls struct {
@@ -79,6 +98,25 @@ type SiteStatusResponse struct {
 					Value   string `json:"value"`
 					Pattern string `json:"pattern"`
 				} `json:"urls,omitempty"`
+				Exceptions []struct {
+					Values []struct {
+						ID   string   `json:"id"`
+						Name string   `json:"name"`
+						Ips  []string `json:"ips,omitempty"`
+						Urls []struct {
+							Value   string `json:"value"`
+							Pattern string `json:"pattern"`
+						} `json:"urls,omitempty"`
+						Geo struct {
+							Countries  []string `json:"countries"`
+							Continents []string `json:"continents"`
+						} `json:"geo,omitempty"`
+						ClientApps     []string `json:"client_apps,omitempty"`
+						ClientAppTypes []string `json:"client_app_types,omitempty"`
+						Parameters     []string `json:"parameters,omitempty"`
+					} `json:"values"`
+					ID string `json:"id"`
+				} `json:"exceptions"`
 			} `json:"rules"`
 		} `json:"acls"`
 	} `json:"security"`
@@ -150,10 +188,9 @@ type SiteStatusResponse struct {
 }
 
 // AddSite adds a site to be managed by Incapsula
-func (c *Client) AddSite(domain, accountID, refID, sendSiteSetupEmails, siteIP, forceSSL, logLevel, logsAccountID string) (*SiteAddResponse, error) {
+func (c *Client) AddSite(domain, accountID, refID, sendSiteSetupEmails, siteIP, forceSSL string) (*SiteAddResponse, error) {
 	log.Printf("[INFO] Adding Incapsula site for domain: %s\n", domain)
 
-	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteAdd), url.Values{
 		"api_id":                 {c.config.APIID},
 		"api_key":                {c.config.APIKey},
@@ -163,8 +200,6 @@ func (c *Client) AddSite(domain, accountID, refID, sendSiteSetupEmails, siteIP, 
 		"send_site_setup_emails": {sendSiteSetupEmails},
 		"site_ip":                {siteIP},
 		"force_ssl":              {forceSSL},
-		"log_level":              {logLevel},
-		"logs_account_id":        {logsAccountID},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error adding site for domain %s: %s", domain, err)
@@ -228,28 +263,19 @@ func (c *Client) SiteStatus(domain string, siteID int) (*SiteStatusResponse, err
 	return &siteStatusResponse, nil
 }
 
-func (c *Client) UpdateSite(siteID int, active, siteIP, domainValidation, approver, ignoreSSL, accelerationLevel,
-	sealLocation, domainRedirectToFull, removeSSL, refID string) (*SiteUpdateResponse, error) {
-	log.Printf("[INFO] Updating Incapsula site for siteID: %d\n", siteID)
+func (c *Client) UpdateSite(siteID, param, value string) (*SiteUpdateResponse, error) {
+	log.Printf("[INFO] Updating Incapsula site for siteID: %s\n", siteID)
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":                  {c.config.APIID},
-		"api_key":                 {c.config.APIKey},
-		"site_id":                 {strconv.Itoa(siteID)},
-		"active":                  {active},
-		"site_ip":                 {siteIP},
-		"domain_validation":       {domainValidation},
-		"approver":                {approver},
-		"ignore_ssl":              {ignoreSSL},
-		"acceleration_level":      {accelerationLevel},
-		"seal_location":           {sealLocation},
-		"domain_redirect_to_full": {domainRedirectToFull},
-		"remove_ssl":              {removeSSL},
-		"ref_id":                  {refID},
+		"api_id":  {c.config.APIID},
+		"api_key": {c.config.APIKey},
+		"site_id": {siteID},
+		"param":   {param},
+		"value":   {value},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
+		return nil, fmt.Errorf("Error updating param (%s) with value (%s) on site_id: %s: %s", param, value, siteID, err)
 	}
 
 	// Read the body
@@ -263,12 +289,12 @@ func (c *Client) UpdateSite(siteID int, active, siteIP, domainValidation, approv
 	var siteUpdateResponse SiteUpdateResponse
 	err = json.Unmarshal([]byte(responseBody), &siteUpdateResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing update site JSON response for siteID %d: %s", siteID, err)
+		return nil, fmt.Errorf("Error parsing update site JSON response for siteID %s: %s", siteID, err)
 	}
 
 	// Look at the response status code from Incapsula
 	if siteUpdateResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when updating site for siteID %d: %s", siteID, string(responseBody))
+		return nil, fmt.Errorf("Error from Incapsula service when updating site for siteID %s: %s", siteID, string(responseBody))
 	}
 
 	return &siteUpdateResponse, nil
@@ -315,374 +341,4 @@ func (c *Client) DeleteSite(domain string, siteID int) error {
 	}
 
 	return nil
-}
-
-func (c *Client) UpdateSiteActive(siteID int, active string) (*SiteUpdateResponse, error) {
-	log.Printf("[INFO] Updating Incapsula site for siteID: %d (active: %s)\n", siteID, active)
-
-	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-		"site_id": {strconv.Itoa(siteID)},
-		"param":   {"active"},
-		"value":   {active},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
-	}
-
-	// Read the body
-	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
-
-	// Dump JSON
-	log.Printf("[DEBUG] Incapsula update site JSON response: %s\n", string(responseBody))
-
-	// Parse the JSON
-	var siteUpdateResponse SiteUpdateResponse
-	err = json.Unmarshal([]byte(responseBody), &siteUpdateResponse)
-	if err != nil {
-		return nil, fmt.Errorf("Error parsing update site JSON response for siteID %d: %s", siteID, err)
-	}
-
-	// Look at the response status code from Incapsula
-	if siteUpdateResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when updating site for siteID %d: %s", siteID, string(responseBody))
-	}
-
-	return &siteUpdateResponse, nil
-}
-
-func (c *Client) UpdateSiteSiteIP(siteID int, siteIP string) (*SiteUpdateResponse, error) {
-	log.Printf("[INFO] Updating Incapsula site for siteID: %d (site_ip: %s)\n", siteID, siteIP)
-
-	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-		"site_id": {strconv.Itoa(siteID)},
-		"param":   {"site_ip"},
-		"value":   {siteIP},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
-	}
-
-	// Read the body
-	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
-
-	// Dump JSON
-	log.Printf("[DEBUG] Incapsula update site JSON response: %s\n", string(responseBody))
-
-	// Parse the JSON
-	var siteUpdateResponse SiteUpdateResponse
-	err = json.Unmarshal([]byte(responseBody), &siteUpdateResponse)
-	if err != nil {
-		return nil, fmt.Errorf("Error parsing update site JSON response for siteID %d: %s", siteID, err)
-	}
-
-	// Look at the response status code from Incapsula
-	if siteUpdateResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when updating site for siteID %d: %s", siteID, string(responseBody))
-	}
-
-	return &siteUpdateResponse, nil
-}
-
-func (c *Client) UpdateSiteDomainValidation(siteID int, domainValidation string) (*SiteUpdateResponse, error) {
-	log.Printf("[INFO] Updating Incapsula site for siteID: %d (domain_validation: %s)\n", siteID, domainValidation)
-
-	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-		"site_id": {strconv.Itoa(siteID)},
-		"param":   {"domain_validation"},
-		"value":   {domainValidation},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
-	}
-
-	// Read the body
-	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
-
-	// Dump JSON
-	log.Printf("[DEBUG] Incapsula update site JSON response: %s\n", string(responseBody))
-
-	// Parse the JSON
-	var siteUpdateResponse SiteUpdateResponse
-	err = json.Unmarshal([]byte(responseBody), &siteUpdateResponse)
-	if err != nil {
-		return nil, fmt.Errorf("Error parsing update site JSON response for siteID %d: %s", siteID, err)
-	}
-
-	// Look at the response status code from Incapsula
-	if siteUpdateResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when updating site for siteID %d: %s", siteID, string(responseBody))
-	}
-
-	return &siteUpdateResponse, nil
-}
-
-func (c *Client) UpdateSiteApprover(siteID int, approver string) (*SiteUpdateResponse, error) {
-	log.Printf("[INFO] Updating Incapsula site for siteID: %d (approver: %s)\n", siteID, approver)
-
-	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-		"site_id": {strconv.Itoa(siteID)},
-		"param":   {"approver"},
-		"value":   {approver},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
-	}
-
-	// Read the body
-	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
-
-	// Dump JSON
-	log.Printf("[DEBUG] Incapsula update site JSON response: %s\n", string(responseBody))
-
-	// Parse the JSON
-	var siteUpdateResponse SiteUpdateResponse
-	err = json.Unmarshal([]byte(responseBody), &siteUpdateResponse)
-	if err != nil {
-		return nil, fmt.Errorf("Error parsing update site JSON response for siteID %d: %s", siteID, err)
-	}
-
-	// Look at the response status code from Incapsula
-	if siteUpdateResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when updating site for siteID %d: %s", siteID, string(responseBody))
-	}
-
-	return &siteUpdateResponse, nil
-}
-
-func (c *Client) UpdateSiteIgnoreSSL(siteID int, ignoreSSL string) (*SiteUpdateResponse, error) {
-	log.Printf("[INFO] Updating Incapsula site for siteID: %d (ignore_ssl: %s)\n", siteID, ignoreSSL)
-
-	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-		"site_id": {strconv.Itoa(siteID)},
-		"param":   {"ignore_ssl"},
-		"value":   {ignoreSSL},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
-	}
-
-	// Read the body
-	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
-
-	// Dump JSON
-	log.Printf("[DEBUG] Incapsula update site JSON response: %s\n", string(responseBody))
-
-	// Parse the JSON
-	var siteUpdateResponse SiteUpdateResponse
-	err = json.Unmarshal([]byte(responseBody), &siteUpdateResponse)
-	if err != nil {
-		return nil, fmt.Errorf("Error parsing update site JSON response for siteID %d: %s", siteID, err)
-	}
-
-	// Look at the response status code from Incapsula
-	if siteUpdateResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when updating site for siteID %d: %s", siteID, string(responseBody))
-	}
-
-	return &siteUpdateResponse, nil
-}
-
-func (c *Client) UpdateSiteAccelerationLevel(siteID int, accelerationLevel string) (*SiteUpdateResponse, error) {
-	log.Printf("[INFO] Updating Incapsula site for siteID: %d (acceleration_level: %s)\n", siteID, accelerationLevel)
-
-	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-		"site_id": {strconv.Itoa(siteID)},
-		"param":   {"acceleration_level"},
-		"value":   {accelerationLevel},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
-	}
-
-	// Read the body
-	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
-
-	// Dump JSON
-	log.Printf("[DEBUG] Incapsula update site JSON response: %s\n", string(responseBody))
-
-	// Parse the JSON
-	var siteUpdateResponse SiteUpdateResponse
-	err = json.Unmarshal([]byte(responseBody), &siteUpdateResponse)
-	if err != nil {
-		return nil, fmt.Errorf("Error parsing update site JSON response for siteID %d: %s", siteID, err)
-	}
-
-	// Look at the response status code from Incapsula
-	if siteUpdateResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when updating site for siteID %d: %s", siteID, string(responseBody))
-	}
-
-	return &siteUpdateResponse, nil
-}
-
-func (c *Client) UpdateSiteSealLocation(siteID int, sealLocation string) (*SiteUpdateResponse, error) {
-	log.Printf("[INFO] Updating Incapsula site for siteID: %d (seal_location: %s)\n", siteID, sealLocation)
-
-	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-		"site_id": {strconv.Itoa(siteID)},
-		"param":   {"seal_location"},
-		"value":   {sealLocation},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
-	}
-
-	// Read the body
-	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
-
-	// Dump JSON
-	log.Printf("[DEBUG] Incapsula update site JSON response: %s\n", string(responseBody))
-
-	// Parse the JSON
-	var siteUpdateResponse SiteUpdateResponse
-	err = json.Unmarshal([]byte(responseBody), &siteUpdateResponse)
-	if err != nil {
-		return nil, fmt.Errorf("Error parsing update site JSON response for siteID %d: %s", siteID, err)
-	}
-
-	// Look at the response status code from Incapsula
-	if siteUpdateResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when updating site for siteID %d: %s", siteID, string(responseBody))
-	}
-
-	return &siteUpdateResponse, nil
-}
-
-func (c *Client) UpdateSiteDomainRedirectToFull(siteID int, domainRedirectToFull string) (*SiteUpdateResponse, error) {
-	log.Printf("[INFO] Updating Incapsula site for siteID: %d (domain_redirect_to_full: %s)\n", siteID, domainRedirectToFull)
-
-	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-		"site_id": {strconv.Itoa(siteID)},
-		"param":   {"domain_redirect_to_full"},
-		"value":   {domainRedirectToFull},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
-	}
-
-	// Read the body
-	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
-
-	// Dump JSON
-	log.Printf("[DEBUG] Incapsula update site JSON response: %s\n", string(responseBody))
-
-	// Parse the JSON
-	var siteUpdateResponse SiteUpdateResponse
-	err = json.Unmarshal([]byte(responseBody), &siteUpdateResponse)
-	if err != nil {
-		return nil, fmt.Errorf("Error parsing update site JSON response for siteID %d: %s", siteID, err)
-	}
-
-	// Look at the response status code from Incapsula
-	if siteUpdateResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when updating site for siteID %d: %s", siteID, string(responseBody))
-	}
-
-	return &siteUpdateResponse, nil
-}
-
-func (c *Client) UpdateSiteRemoveSSL(siteID int, removeSSL string) (*SiteUpdateResponse, error) {
-	log.Printf("[INFO] Updating Incapsula site for siteID: %d (remove_ssl: %s)\n", siteID, removeSSL)
-
-	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-		"site_id": {strconv.Itoa(siteID)},
-		"param":   {"remove_ssl"},
-		"value":   {removeSSL},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
-	}
-
-	// Read the body
-	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
-
-	// Dump JSON
-	log.Printf("[DEBUG] Incapsula update site JSON response: %s\n", string(responseBody))
-
-	// Parse the JSON
-	var siteUpdateResponse SiteUpdateResponse
-	err = json.Unmarshal([]byte(responseBody), &siteUpdateResponse)
-	if err != nil {
-		return nil, fmt.Errorf("Error parsing update site JSON response for siteID %d: %s", siteID, err)
-	}
-
-	// Look at the response status code from Incapsula
-	if siteUpdateResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when updating site for siteID %d: %s", siteID, string(responseBody))
-	}
-
-	return &siteUpdateResponse, nil
-}
-
-func (c *Client) UpdateSiteRefID(siteID int, refID string) (*SiteUpdateResponse, error) {
-	log.Printf("[INFO] Updating Incapsula site for siteID: %d (ref_id: %s)\n", siteID, refID)
-
-	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-		"site_id": {strconv.Itoa(siteID)},
-		"param":   {"ref_id"},
-		"value":   {refID},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Error updating site for siteID: %d: %s", siteID, err)
-	}
-
-	// Read the body
-	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
-
-	// Dump JSON
-	log.Printf("[DEBUG] Incapsula update site JSON response: %s\n", string(responseBody))
-
-	// Parse the JSON
-	var siteUpdateResponse SiteUpdateResponse
-	err = json.Unmarshal([]byte(responseBody), &siteUpdateResponse)
-	if err != nil {
-		return nil, fmt.Errorf("Error parsing update site JSON response for siteID %d: %s", siteID, err)
-	}
-
-	// Look at the response status code from Incapsula
-	if siteUpdateResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when updating site for siteID %d: %s", siteID, string(responseBody))
-	}
-
-	return &siteUpdateResponse, nil
 }
