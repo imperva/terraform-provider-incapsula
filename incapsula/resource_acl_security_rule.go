@@ -178,7 +178,7 @@ func resourceACLSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 		d.Get("site_id").(int),
 		ruleID,
 		"", // countries
-		"", // contenents
+		"", // continents
 		"", // ips
 		"", // urls
 		"", // urls
