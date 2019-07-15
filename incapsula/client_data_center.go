@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/url"
-	"strconv"
 )
 
 // Endpoints (unexported consts)
@@ -35,6 +34,7 @@ type DataCenterListResponse struct {
 		} `json:"servers"`
 		Name        string `json:"name"`
 		ContentOnly string `json:"contentOnly"`
+		IsActive    string `json:"isActive"`
 	} `json:"DCs"`
 }
 
@@ -121,13 +121,13 @@ func (c *Client) ListDataCenters(siteID string) (*DataCenterListResponse, error)
 }
 
 // EditDataCenter edits the Incapsula incap rule
-func (c *Client) EditDataCenter(dcID int, name, isStandby, isContent string) (*DataCenterEditResponse, error) {
-	log.Printf("[INFO] Editing Incapsula data center for dcID: %d\n", dcID)
+func (c *Client) EditDataCenter(dcID, name, isStandby, isContent, isEnabled string) (*DataCenterEditResponse, error) {
+	log.Printf("[INFO] Editing Incapsula data center for dcID: %s\n", dcID)
 
 	values := url.Values{
 		"api_id":  {c.config.APIID},
 		"api_key": {c.config.APIKey},
-		"dc_id":   {strconv.Itoa(dcID)},
+		"dc_id":   {dcID},
 	}
 
 	if name != "" {
@@ -142,10 +142,14 @@ func (c *Client) EditDataCenter(dcID int, name, isStandby, isContent string) (*D
 		values.Add("is_content", isContent)
 	}
 
+	if isEnabled != "" {
+		values.Add("is_enabled", isEnabled)
+	}
+
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterEdit), values)
 	if err != nil {
-		return nil, fmt.Errorf("Error editing data center  for dcID: %d: %s", dcID, err)
+		return nil, fmt.Errorf("Error editing data center  for dcID: %s: %s", dcID, err)
 	}
 
 	// Read the body
@@ -159,12 +163,12 @@ func (c *Client) EditDataCenter(dcID int, name, isStandby, isContent string) (*D
 	var dataCenterEditResponse DataCenterEditResponse
 	err = json.Unmarshal([]byte(responseBody), &dataCenterEditResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing edit dta center JSON response for dcID %d: %s", dcID, err)
+		return nil, fmt.Errorf("Error parsing edit dta center JSON response for dcID %s: %s", dcID, err)
 	}
 
 	// Look at the response status code from Incapsula
 	if dataCenterEditResponse.Res != "0" {
-		return nil, fmt.Errorf("Error from Incapsula service when editing data center for dcID %d: %s", dcID, string(responseBody))
+		return nil, fmt.Errorf("Error from Incapsula service when editing data center for dcID %s: %s", dcID, string(responseBody))
 	}
 
 	return &dataCenterEditResponse, nil

@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/url"
-	"strconv"
 )
 
 // Endpoints (unexported consts)
@@ -65,7 +64,7 @@ func (c *Client) AddDataCenterServer(dcID, serverAddress, isStandby string) (*Da
 }
 
 // EditDataCenterServer edits the Incapsula data center server
-func (c *Client) EditDataCenterServer(serverID, serverAddress, isStandby, isContent string) (*DataCenterServerEditResponse, error) {
+func (c *Client) EditDataCenterServer(serverID, serverAddress, isStandby, isEnabled string) (*DataCenterServerEditResponse, error) {
 	log.Printf("[INFO] Editing Incapsula data center server for serverID: %s\n", serverID)
 
 	// Post form to Incapsula
@@ -75,7 +74,7 @@ func (c *Client) EditDataCenterServer(serverID, serverAddress, isStandby, isCont
 		"server_id":      {serverID},
 		"server_address": {serverAddress},
 		"is_standby":     {isStandby},
-		"is_content":     {isContent},
+		"is_enabled":     {isEnabled},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error editing data center server for serverID: %s: %s", serverID, err)
@@ -104,7 +103,7 @@ func (c *Client) EditDataCenterServer(serverID, serverAddress, isStandby, isCont
 }
 
 // DeleteDataCenterServer deletes a data center server currently managed by Incapsula
-func (c *Client) DeleteDataCenterServer(serverID int) error {
+func (c *Client) DeleteDataCenterServer(serverID string) error {
 	// Specifically shaded this struct, no need to share across funcs or export
 	// We only care about the response code and possibly the message
 	type DataCenterServerDeleteResponse struct {
@@ -112,16 +111,16 @@ func (c *Client) DeleteDataCenterServer(serverID int) error {
 		ServerID string `json:"server_id"`
 	}
 
-	log.Printf("[INFO] Deleting Incapsula data center server serverID: %d)\n", serverID)
+	log.Printf("[INFO] Deleting Incapsula data center server serverID: %s)\n", serverID)
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServerDelete), url.Values{
 		"api_id":    {c.config.APIID},
 		"api_key":   {c.config.APIKey},
-		"server_id": {strconv.Itoa(serverID)},
+		"server_id": {serverID},
 	})
 	if err != nil {
-		return fmt.Errorf("Error deleting data center server (server_id: %d): %s", serverID, err)
+		return fmt.Errorf("Error deleting data center server (server_id: %s): %s", serverID, err)
 	}
 
 	// Read the body
@@ -135,12 +134,12 @@ func (c *Client) DeleteDataCenterServer(serverID int) error {
 	var dataCenterServerDeleteResponse DataCenterServerDeleteResponse
 	err = json.Unmarshal([]byte(responseBody), &dataCenterServerDeleteResponse)
 	if err != nil {
-		return fmt.Errorf("Error parsing delete data center server JSON response (server_id: %d): %s", serverID, err)
+		return fmt.Errorf("Error parsing delete data center server JSON response (server_id: %s): %s", serverID, err)
 	}
 
 	// Look at the response status code from Incapsula
 	if dataCenterServerDeleteResponse.Res != "0" {
-		return fmt.Errorf("Error from Incapsula service when deleting data center server (server_id: %d): %s", serverID, string(responseBody))
+		return fmt.Errorf("Error from Incapsula service when deleting data center server (server_id: %s): %s", serverID, string(responseBody))
 	}
 
 	return nil

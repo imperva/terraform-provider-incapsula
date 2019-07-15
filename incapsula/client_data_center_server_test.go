@@ -201,12 +201,12 @@ func TestClientEditDataCenterServerValidRule(t *testing.T) {
 func TestClientDeleteDataCenterServerBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	serverID := 42
+	serverID := "42"
 	err := client.DeleteDataCenterServer(serverID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error deleting data center server (server_id: %d)", serverID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error deleting data center server (server_id: %s)", serverID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 }
@@ -222,12 +222,12 @@ func TestClientDeleteDataCenterServerBadJSON(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	serverID := 42
+	serverID := "42"
 	err := client.DeleteDataCenterServer(serverID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing delete data center server JSON response (server_id: %d)", serverID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing delete data center server JSON response (server_id: %s)", serverID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
 }
@@ -243,12 +243,12 @@ func TestClientDeleteDataCenterServerInvalidRule(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	serverID := 42
+	serverID := "42"
 	err := client.DeleteDataCenterServer(serverID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when deleting data center server (server_id: %d)", serverID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when deleting data center server (server_id: %s)", serverID)) {
 		t.Errorf("Should have received a bad data center error, got: %s", err)
 	}
 }
@@ -264,7 +264,7 @@ func TestClientDeleteDataCenterServerValidSite(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	serverID := 42
+	serverID := "42"
 	err := client.DeleteDataCenterServer(serverID)
 	if err != nil {
 		t.Errorf("Should not have received an error")

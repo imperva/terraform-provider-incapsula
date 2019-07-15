@@ -2,6 +2,7 @@ package incapsula
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -87,6 +88,20 @@ func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	if d.Get("is_enabled") != "" || d.Get("is_standby") != "" {
+		if d.Get("is_enabled") != "" {
+			log.Printf("[INFO] Updating data center datacenter_id (%s) with is_enabled (%s)\n", dataCenterAddResponse.DataCenterID, d.Get("is_enabled").(string))
+		}
+		if d.Get("is_standby") != "" {
+			log.Printf("[INFO] Updating data center datacenter_id (%s) with is_standby (%s)\n", dataCenterAddResponse.DataCenterID, d.Get("is_standby").(string))
+		}
+		_, err := client.EditDataCenter(dataCenterAddResponse.DataCenterID, d.Get("name").(string), d.Get("is_standby").(string), d.Get("is_content").(string), d.Get("is_enabled").(string))
+		if err != nil {
+			log.Printf("[ERROR] Could not update data center datacenter_id (%s) with is_enabled (%s) %s\n", dataCenterAddResponse.DataCenterID, d.Get("is_enabled").(string), err)
+			return err
+		}
+	}
+
 	// Set the dc ID
 	d.SetId(dataCenterAddResponse.DataCenterID)
 
@@ -103,9 +118,11 @@ func resourceDataCenterRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	for _, dataCenter := range listDataCentersResponse.DCs {
-		if dataCenter.Name == d.Get("name").(string) {
+		if dataCenter.ID == d.Id() {
+			d.Set("name", dataCenter.Name)
 			d.Set("enabled", dataCenter.Enabled)
 			d.Set("is_content", dataCenter.ContentOnly)
+			d.Set("is_standby", dataCenter.IsActive)
 		}
 	}
 
@@ -116,10 +133,11 @@ func resourceDataCenterUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	_, err := client.EditDataCenter(
-		d.Get("dc_id").(int),
+		d.Id(),
 		d.Get("name").(string),
-		d.Get("is_standby").(string),
 		d.Get("is_content").(string),
+		d.Get("is_standby").(string),
+		d.Get("is_enabled").(string),
 	)
 
 	if err != nil {

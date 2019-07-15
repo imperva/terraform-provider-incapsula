@@ -2,6 +2,7 @@ package incapsula
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -57,6 +58,12 @@ func resourceDataCenterServer() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"is_enabled": {
+				Description: "Enables the data center server.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "yes",
+			},
 		},
 	}
 }
@@ -72,6 +79,15 @@ func resourceDataCenterServerCreate(d *schema.ResourceData, m interface{}) error
 
 	if err != nil {
 		return err
+	}
+
+	if d.Get("is_enabled") != "" {
+		log.Printf("[INFO] Updating data center server server_id (%s) with is_enabled (%s)\n", dataCenterServerAddResponse.ServerID, d.Get("is_enabled").(string))
+		_, err := client.EditDataCenterServer(dataCenterServerAddResponse.ServerID, d.Get("server_address").(string), d.Get("is_standby").(string), d.Get("is_enabled").(string))
+		if err != nil {
+			log.Printf("[ERROR] Could not update data center server server_id (%s) with is_enabled (%s) %s\n", dataCenterServerAddResponse.ServerID, d.Get("is_enabled").(string), err)
+			return err
+		}
 	}
 
 	// Set the server ID
@@ -111,7 +127,7 @@ func resourceDataCenterServerUpdate(d *schema.ResourceData, m interface{}) error
 		d.Id(),
 		d.Get("server_address").(string),
 		d.Get("is_standby").(string),
-		d.Get("is_content").(string),
+		d.Get("is_enabled").(string),
 	)
 
 	if err != nil {
@@ -123,7 +139,7 @@ func resourceDataCenterServerUpdate(d *schema.ResourceData, m interface{}) error
 
 func resourceDataCenterServerDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	serverID, _ := strconv.Atoi(d.Id())
+	serverID := d.Id()
 	err := client.DeleteDataCenterServer(serverID)
 
 	if err != nil {
