@@ -12,7 +12,7 @@ import (
 // Endpoints (unexported consts)
 const endpointAccount = "account"
 
-// IncapAccountResponse contains account id
+// AccountResponse contains account id
 type AccountResponse struct {
 	Account struct {
 		Email        string `json:"email"`
@@ -52,7 +52,7 @@ type AccountResponse struct {
 	Res                          int    `json:"res"`
 	ResMessage                   string `json:"res_message"`
 	DebugInfo                    struct {
-		IdInfo string `json:"id-info"`
+		IDInfo string `json:"id-info"`
 	} `json:"debug_info"`
 }
 
