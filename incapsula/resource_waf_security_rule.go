@@ -2,11 +2,12 @@ package incapsula
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/terraform"
 )
 
 // Default actions to reset polies to upon delete/destroy
@@ -53,14 +54,14 @@ func resourceWAFSecurityRule() *schema.Resource {
 				Required:    true,
 			},
 			"rule_id": &schema.Schema{
-				Description: "The id of the waf rule, e.g api.threats.cross_site_scripting.",
+				Description: "The identifier of the WAF rule, e.g api.threats.cross_site_scripting.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
 
 			// Required for rule_id: api.threats.backdoor, api.threats.cross_site_scripting, api.threats.illegal_resource_access, api.threats.remote_file_inclusion, api.threats.sql_injection
 			"security_rule_action": &schema.Schema{
-				Description: "The action that should be taken when a threat is detected, for example: api.threats.action.block_ip",
+				Description: "The action that should be taken when a threat is detected, for example: api.threats.action.block_ip.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
@@ -72,19 +73,19 @@ func resourceWAFSecurityRule() *schema.Resource {
 				Optional:    true,
 			},
 			"ddos_traffic_threshold": &schema.Schema{
-				Description: "Consider site to be under DDoS if the request rate is above this threshold. The valid values are 10, 20, 50, 100, 200, 500, 750, 1000, 2000, 3000, 4000, 5000",
+				Description: "Consider site to be under DDoS if the request rate is above this threshold. The valid values are 10, 20, 50, 100, 200, 500, 750, 1000, 2000, 3000, 4000, 5000.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 
 			// Required for rule_id: api.threats.bot_access_control
 			"block_bad_bots": &schema.Schema{
-				Description: "Whether or not to block bad bots. Possible values: true, false",
+				Description: "Whether or not to block bad bots. Possible values: true, false.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"challenge_suspected_bots": &schema.Schema{
-				Description: "Whether or not to send a challenge to clients that are suspected to be bad bots (CAPTCHA for example). Possible values: true, false",
+				Description: "Whether or not to send a challenge to clients that are suspected to be bad bots (CAPTCHA for example). Possible values: true, false.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
