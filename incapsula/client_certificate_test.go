@@ -19,12 +19,12 @@ func TestClientAddCertificateBadConnection(t *testing.T) {
 	log.Printf("[DEBUG] Running test client_certificate_test.TestClientAddCertificateBadConnection")
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	siteId := "1234"
-	addCertificateResponse, err := client.AddCertificate(siteId, "abc", "def", "efg")
+	siteID := "1234"
+	addCertificateResponse, err := client.AddCertificate(siteID, "abc", "def", "efg")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding custom certificate for site_id %s", siteId)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding custom certificate for site_id %s", siteID)) {
 		t.Errorf("Should have received a client error, got: %s", err)
 	}
 	if addCertificateResponse != nil {
@@ -224,9 +224,9 @@ func TestClientEditCertificateBadConnection(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "1234"
 	certificate := "foo"
-	private_key := "bar"
+	privateKey := "bar"
 	passphrase := "loremipsum"
-	editCertificateResponse, err := client.EditCertificate(siteID, certificate, private_key, passphrase)
+	editCertificateResponse, err := client.EditCertificate(siteID, certificate, privateKey, passphrase)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -253,9 +253,9 @@ func TestClientEditCertificateBadJSON(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := "1234"
 	certificate := "foo"
-	private_key := "bar"
+	privateKey := "bar"
 	passphrase := "loremipsum"
-	editCertificateResponse, err := client.EditCertificate(siteID, certificate, private_key, passphrase)
+	editCertificateResponse, err := client.EditCertificate(siteID, certificate, privateKey, passphrase)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -309,9 +309,9 @@ func TestClientEditCertificateValidRule(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := "1234"
 	certificate := "foo"
-	private_key := "bar"
+	privateKey := "bar"
 	passphrase := "loremipsum"
-	editCertificateResponse, err := client.EditCertificate(siteID, certificate, private_key, passphrase)
+	editCertificateResponse, err := client.EditCertificate(siteID, certificate, privateKey, passphrase)
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}

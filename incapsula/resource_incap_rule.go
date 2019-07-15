@@ -164,7 +164,7 @@ func resourceIncapRuleRead(d *schema.ResourceData, m interface{}) error {
 		fallthrough
 	case actionRetry:
 		fallthrough
-	case actionIntrusiveHtml:
+	case actionIntrusiveHTML:
 		includeAdRules = "No"
 		includeIncapRules = "Yes"
 	case actionDeleteCookie:
@@ -179,7 +179,7 @@ func resourceIncapRuleRead(d *schema.ResourceData, m interface{}) error {
 		fallthrough
 	case actionRewriteHeader:
 		fallthrough
-	case actionRewriteUrl:
+	case actionRewriteURL:
 		includeAdRules = "Yes"
 		includeIncapRules = "No"
 	}

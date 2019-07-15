@@ -70,12 +70,12 @@ func resourceCertificateRead(d *schema.ResourceData, m interface{}) error {
 	// Implement by reading the ListCertificatesResponse for the data center
 	client := m.(*Client)
 
-	siteId := d.Get("site_id").(string)
+	siteID := d.Get("site_id").(string)
 
-	_, err := client.ListCertificates(siteId)
+	_, err := client.ListCertificates(siteID)
 
 	if err != nil {
-		log.Printf("[ERROR] Could not read custom certificate from Incapsula site for site_id: %s, %s\n", siteId, err)
+		log.Printf("[ERROR] Could not read custom certificate from Incapsula site for site_id: %s, %s\n", siteID, err)
 		return err
 	}
 

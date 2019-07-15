@@ -26,10 +26,10 @@ const actionFwdToDataCenter = "RULE_ACTION_FORWARD_TO_DC"
 const actionRedirect = "RULE_ACTION_REDIRECT"
 const actionCaptcha = "RULE_ACTION_CAPTCHA"
 const actionRetry = "RULE_ACTION_RETRY"
-const actionIntrusiveHtml = "RULE_ACTION_INTRUSIVE_HTML"
+const actionIntrusiveHTML = "RULE_ACTION_INTRUSIVE_HTML"
 const actionRewriteCookie = "RULE_ACTION_REWRITE_COOKIE"
 const actionRewriteHeader = "RULE_ACTION_REWRITE_HEADER"
-const actionRewriteUrl = "RULE_ACTION_REWRITE_URL"
+const actionRewriteURL = "RULE_ACTION_REWRITE_URL"
 
 // IncapRuleAddResponse contains id of rule
 type IncapRuleAddResponse struct {
@@ -88,7 +88,7 @@ func (c *Client) AddIncapRule(enabled, name, action, filter, siteID, priority, r
 		fallthrough
 	case actionRetry:
 		fallthrough
-	case actionIntrusiveHtml:
+	case actionIntrusiveHTML:
 		values.Add("site_id", siteID)
 		values.Add("priority", priority)
 	case actionFwdToDataCenter:
@@ -110,7 +110,7 @@ func (c *Client) AddIncapRule(enabled, name, action, filter, siteID, priority, r
 		fallthrough
 	case actionRewriteHeader:
 		fallthrough
-	case actionRewriteUrl:
+	case actionRewriteURL:
 		values.Add("site_id", siteID)
 		values.Add("priority", priority)
 		values.Add("add_missing", addMissing)
@@ -158,7 +158,7 @@ func (c *Client) AddIncapRule(enabled, name, action, filter, siteID, priority, r
 	return &incapRuleAddResponse, nil
 }
 
-// IncapRuleList gets the Incapsula list of incap rules
+// ListIncapRules gets the list of Incap Rules
 func (c *Client) ListIncapRules(siteID, includeAdRules, includeIncapRules string) (*IncapRuleListResponse, error) {
 	log.Printf("[INFO] Getting Incapsula incaprules (include_ad_rules: %s, include_incap_rules: %s)\n", includeAdRules, includeIncapRules)
 

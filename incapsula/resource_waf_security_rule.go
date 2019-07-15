@@ -11,13 +11,13 @@ import (
 )
 
 // Default actions to reset polies to upon delete/destroy
-const backdoorRuleIdDefaultAction = "api.threats.action.quarantine_url"
-const crossSiteScriptingRuleIdDefaultAction = "api.threats.action.block_request"
-const illegalResourceAccessRuleIdDefaultAction = "api.threats.action.block_request"
-const remoteFileInclusionRuleIdDefaultAction = "api.threats.action.block_request"
-const sqlInjectionRuleIdDefaultAction = "api.threats.action.block_request"
-const ddosRuleIdDefaultActivationMode = "api.threats.ddos.activation_mode.auto"
-const ddosRuleIdDefaultDDOSTrafficThreshold = "1000"
+const backdoorRuleIDDefaultAction = "api.threats.action.quarantine_url"
+const crossSiteScriptingRuleIDDefaultAction = "api.threats.action.block_request"
+const illegalResourceAccessRuleIDDefaultAction = "api.threats.action.block_request"
+const remoteFileInclusionRuleIDDefaultAction = "api.threats.action.block_request"
+const sqlInjectionRuleIDDefaultAction = "api.threats.action.block_request"
+const ddosRuleIDDefaultActivationMode = "api.threats.ddos.activation_mode.auto"
+const ddosRuleIDDefaultDDOSTrafficThreshold = "1000"
 const botAccessControlBlockBadBotsDefaultAction = "true"
 const botAccessControlChallengeSuspectedBotsDefaultAction = "false"
 
@@ -236,70 +236,70 @@ func resourceWAFSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 		_, err := client.ConfigureWAFSecurityRule(
 			d.Get("site_id").(int),
 			ruleID,
-			backdoorRuleIdDefaultAction,
+			backdoorRuleIDDefaultAction,
 			"",
 			"",
 			"",
 			"",
 		)
 		if err != nil {
-			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, backdoorRuleIdDefaultAction, d.Get("site_id").(int), err)
+			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, backdoorRuleIDDefaultAction, d.Get("site_id").(int), err)
 			return err
 		}
 	case crossSiteScriptingRuleId:
 		_, err := client.ConfigureWAFSecurityRule(
 			d.Get("site_id").(int),
 			ruleID,
-			crossSiteScriptingRuleIdDefaultAction,
+			crossSiteScriptingRuleIDDefaultAction,
 			"",
 			"",
 			"",
 			"",
 		)
 		if err != nil {
-			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, crossSiteScriptingRuleIdDefaultAction, d.Get("site_id").(int), err)
+			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, crossSiteScriptingRuleIDDefaultAction, d.Get("site_id").(int), err)
 			return err
 		}
 	case illegalResourceAccessRuleId:
 		_, err := client.ConfigureWAFSecurityRule(
 			d.Get("site_id").(int),
 			ruleID,
-			illegalResourceAccessRuleIdDefaultAction,
+			illegalResourceAccessRuleIDDefaultAction,
 			"",
 			"",
 			"",
 			"",
 		)
 		if err != nil {
-			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, illegalResourceAccessRuleIdDefaultAction, d.Get("site_id").(int), err)
+			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, illegalResourceAccessRuleIDDefaultAction, d.Get("site_id").(int), err)
 			return err
 		}
 	case remoteFileInclusionRuleId:
 		_, err := client.ConfigureWAFSecurityRule(
 			d.Get("site_id").(int),
 			ruleID,
-			remoteFileInclusionRuleIdDefaultAction,
+			remoteFileInclusionRuleIDDefaultAction,
 			"",
 			"",
 			"",
 			"",
 		)
 		if err != nil {
-			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, remoteFileInclusionRuleIdDefaultAction, d.Get("site_id").(int), err)
+			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, remoteFileInclusionRuleIDDefaultAction, d.Get("site_id").(int), err)
 			return err
 		}
 	case sqlInjectionRuleId:
 		_, err := client.ConfigureWAFSecurityRule(
 			d.Get("site_id").(int),
 			ruleID,
-			sqlInjectionRuleIdDefaultAction,
+			sqlInjectionRuleIDDefaultAction,
 			"",
 			"",
 			"",
 			"",
 		)
 		if err != nil {
-			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, sqlInjectionRuleIdDefaultAction, d.Get("site_id").(int), err)
+			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, sqlInjectionRuleIDDefaultAction, d.Get("site_id").(int), err)
 			return err
 		}
 	case ddosRuleId:
@@ -307,13 +307,13 @@ func resourceWAFSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 			d.Get("site_id").(int),
 			ruleID,
 			"",
-			ddosRuleIdDefaultActivationMode,
-			ddosRuleIdDefaultDDOSTrafficThreshold,
+			ddosRuleIDDefaultActivationMode,
+			ddosRuleIDDefaultDDOSTrafficThreshold,
 			"",
 			"",
 		)
 		if err != nil {
-			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with default_activation_mode (%s) and ddos_traffic_threshold (%s) on site_id (%d) %s\n", ruleID, ddosRuleIdDefaultActivationMode, ddosRuleIdDefaultDDOSTrafficThreshold, d.Get("site_id").(int), err)
+			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with default_activation_mode (%s) and ddos_traffic_threshold (%s) on site_id (%d) %s\n", ruleID, ddosRuleIDDefaultActivationMode, ddosRuleIDDefaultDDOSTrafficThreshold, d.Get("site_id").(int), err)
 			return err
 		}
 	case botAccessControlRuleId:
