@@ -53,18 +53,18 @@ func resourceDataCenter() *schema.Resource {
 
 			// Optional Arguments
 			"is_enabled": {
-				Description: "Is enabled",
+				Description: "Enables the data center.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "yes",
 			},
 			"is_standby": {
-				Description: "Is standby",
+				Description: "Defines the data center as standby for failover.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"is_content": {
-				Description: "Is content",
+				Description: "The data center will be available for specific resources (Forward Delivery Rules).",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},

@@ -46,6 +46,7 @@ The following arguments are supported:
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `rule_id` - (Required) The id of the acl, e.g api.acl.blacklisted_ips. Options are `api.acl.blacklisted_countries`, `api.acl.blacklisted_urls`, `api.acl.blacklisted_ips`, and `api.acl.whitelisted_ips`.
+* `continents` - (Optional) A comma separated list of continent codes.
 * `countries` - (Optional) A comma separated list of country codes.
 * `ips` - (Optional) A comma separated list of IPs or IP ranges, e.g: `192.168.1.1`, `192.168.1.1-192.168.1.100` or `192.168.1.1/24`.
 * `urls` - (Optional) A comma separated list of resource paths.

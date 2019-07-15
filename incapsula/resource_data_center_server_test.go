@@ -2,31 +2,32 @@ package incapsula
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/terraform"
 	"strconv"
 	"testing"
+
+	"github.com/hashicorp/terraform/terraform"
 
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-const dataCenterServersServerAddress = "4.4.4.4"
-const dataCenterServersResourceName = "incapsula_data_center_servers.testacc-terraform-data-center-servers"
+const dataCenterServerAddress = "4.4.4.4"
+const dataCenterServerResourceName = "incapsula_data_center_server.testacc-terraform-data-center-server"
 
-func TestAccIncapsulaDataCenterServers_Basic(t *testing.T) {
+func TestAccIncapsulaDataCenterServer_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIncapsulaDataCenterServersDestroy,
+		CheckDestroy: testAccCheckIncapsulaDataCenterServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaDataCenterServersConfig_basic(),
+				Config: testAccCheckIncapsulaDataCenterServerConfig_basic(),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckIncapsulaDataCenterServersExists(dataCenterServersResourceName),
-					resource.TestCheckResourceAttr(dataCenterServersResourceName, "server_address", dataCenterServersServerAddress),
+					testCheckIncapsulaDataCenterServerExists(dataCenterServerResourceName),
+					resource.TestCheckResourceAttr(dataCenterServerResourceName, "server_address", dataCenterServerAddress),
 				),
 			},
 			{
-				ResourceName:      dataCenterServersResourceName,
+				ResourceName:      dataCenterServerResourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: testAccStateDCID,
@@ -37,7 +38,7 @@ func TestAccIncapsulaDataCenterServers_Basic(t *testing.T) {
 
 func testAccStateDCID(s *terraform.State) (string, error) {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "incapsula_data_center_servers" {
+		if rs.Type != "incapsula_data_center_server" {
 			continue
 		}
 
@@ -55,7 +56,7 @@ func testAccStateDCID(s *terraform.State) (string, error) {
 	return "", fmt.Errorf("Error finding dc_id")
 }
 
-func testAccCheckIncapsulaDataCenterServersDestroy(state *terraform.State) error {
+func testAccCheckIncapsulaDataCenterServerDestroy(state *terraform.State) error {
 	client := testAccProvider.Meta().(*Client)
 
 	for _, res := range state.RootModule().Resources {
@@ -82,7 +83,7 @@ func testAccCheckIncapsulaDataCenterServersDestroy(state *terraform.State) error
 	return nil
 }
 
-func testCheckIncapsulaDataCenterServersExists(name string) resource.TestCheckFunc {
+func testCheckIncapsulaDataCenterServerExists(name string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		siteRes, siteOk := state.RootModule().Resources[siteResourceName]
 		if !siteOk {
@@ -125,9 +126,9 @@ func testCheckIncapsulaDataCenterServersExists(name string) resource.TestCheckFu
 	}
 }
 
-func testAccCheckIncapsulaDataCenterServersConfig_basic() string {
+func testAccCheckIncapsulaDataCenterServerConfig_basic() string {
 	return testAccCheckIncapsulaDataCenterConfig_basic() + fmt.Sprintf(`
-resource "incapsula_data_center_servers" "testacc-terraform-data-center-servers" {
+resource "incapsula_data_center_server" "testacc-terraform-data-center-server" {
   dc_id = "${incapsula_data_center.testacc-terraform-data-center.id}"
   site_id = "${incapsula_site.testacc-terraform-site.id}"
   server_address = "4.4.4.4"

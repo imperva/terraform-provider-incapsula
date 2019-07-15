@@ -2,17 +2,18 @@ package incapsula
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func resourceDataCenterServers() *schema.Resource {
+func resourceDataCenterServer() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceDataCenterServersCreate,
-		Read:   resourceDataCenterServersRead,
-		Update: resourceDataCenterServersUpdate,
-		Delete: resourceDataCenterServersDelete,
+		Create: resourceDataCenterServerCreate,
+		Read:   resourceDataCenterServerRead,
+		Update: resourceDataCenterServerUpdate,
+		Delete: resourceDataCenterServerDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				idSlice := strings.Split(d.Id(), "/")
@@ -47,12 +48,12 @@ func resourceDataCenterServers() *schema.Resource {
 
 			// Optional Arguments
 			"server_address": {
-				Description: "The server address",
+				Description: "The server's address.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"is_standby": {
-				Description: "Is standby",
+				Description: "Set the server as Active (P0) or Standby (P1).",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
@@ -60,10 +61,10 @@ func resourceDataCenterServers() *schema.Resource {
 	}
 }
 
-func resourceDataCenterServersCreate(d *schema.ResourceData, m interface{}) error {
+func resourceDataCenterServerCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	dataCenterServerAddResponse, err := client.AddDataCenterServers(
+	dataCenterServerAddResponse, err := client.AddDataCenterServer(
 		d.Get("dc_id").(string),
 		d.Get("server_address").(string),
 		d.Get("is_standby").(string),
@@ -76,10 +77,10 @@ func resourceDataCenterServersCreate(d *schema.ResourceData, m interface{}) erro
 	// Set the server ID
 	d.SetId(dataCenterServerAddResponse.ServerID)
 
-	return resourceDataCenterServersRead(d, m)
+	return resourceDataCenterServerRead(d, m)
 }
 
-func resourceDataCenterServersRead(d *schema.ResourceData, m interface{}) error {
+func resourceDataCenterServerRead(d *schema.ResourceData, m interface{}) error {
 	// Implement by reading the ListDataCentersResponse for the data centers
 	client := m.(*Client)
 
@@ -103,10 +104,10 @@ func resourceDataCenterServersRead(d *schema.ResourceData, m interface{}) error 
 	return nil
 }
 
-func resourceDataCenterServersUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceDataCenterServerUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	_, err := client.EditDataCenterServers(
+	_, err := client.EditDataCenterServer(
 		d.Id(),
 		d.Get("server_address").(string),
 		d.Get("is_standby").(string),
@@ -120,10 +121,10 @@ func resourceDataCenterServersUpdate(d *schema.ResourceData, m interface{}) erro
 	return nil
 }
 
-func resourceDataCenterServersDelete(d *schema.ResourceData, m interface{}) error {
+func resourceDataCenterServerDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	serverID, _ := strconv.Atoi(d.Id())
-	err := client.DeleteDataCenterServers(serverID)
+	err := client.DeleteDataCenterServer(serverID)
 
 	if err != nil {
 		return err

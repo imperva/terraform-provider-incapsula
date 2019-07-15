@@ -84,7 +84,7 @@ func (c *Client) AddDataCenter(siteID, name, serverAddress, isStandby, isContent
 	return &dataCenterAddResponse, nil
 }
 
-// DataCenterList gets the Incapsula list of data centers
+// ListDataCenters gets the Incapsula list of data centers
 func (c *Client) ListDataCenters(siteID string) (*DataCenterListResponse, error) {
 	log.Printf("[INFO] Getting Incapsula data centers (site_id: %s)\n", siteID)
 

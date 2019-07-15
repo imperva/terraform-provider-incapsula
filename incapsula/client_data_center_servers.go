@@ -10,28 +10,28 @@ import (
 )
 
 // Endpoints (unexported consts)
-const endpointDataCenterServersAdd = "sites/dataCenters/servers/add"
-const endpointDataCenterServersEdit = "sites/dataCenters/servers/edit"
-const endpointDataCenterServersDelete = "sites/dataCenters/servers/delete"
+const endpointDataCenterServerAdd = "sites/dataCenters/servers/add"
+const endpointDataCenterServerEdit = "sites/dataCenters/servers/edit"
+const endpointDataCenterServerDelete = "sites/dataCenters/servers/delete"
 
-// DataCenterServersAddResponse contains id of server
-type DataCenterServersAddResponse struct {
+// DataCenterServerAddResponse contains id of server
+type DataCenterServerAddResponse struct {
 	ServerID string `json:"server_id"`
 	Res      string `json:"res"`
 }
 
-// DataCenterServersEditResponse contains data center id
-type DataCenterServersEditResponse struct {
+// DataCenterServerEditResponse contains data center id
+type DataCenterServerEditResponse struct {
 	Res          string `json:"res"`
 	DataCenterID string `json:"datacenter_id"`
 }
 
-// AddDataCenterServers adds an incap data center server to be managed by Incapsula
-func (c *Client) AddDataCenterServers(dcID, serverAddress, isStandby string) (*DataCenterServersAddResponse, error) {
+// AddDataCenterServer adds an incap data center server to be managed by Incapsula
+func (c *Client) AddDataCenterServer(dcID, serverAddress, isStandby string) (*DataCenterServerAddResponse, error) {
 	log.Printf("[INFO] Adding Incapsula data center server for dcID: %s\n", dcID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServersAdd), url.Values{
+	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServerAdd), url.Values{
 		"api_id":         {c.config.APIID},
 		"api_key":        {c.config.APIKey},
 		"dc_id":          {dcID},
@@ -50,7 +50,7 @@ func (c *Client) AddDataCenterServers(dcID, serverAddress, isStandby string) (*D
 	log.Printf("[DEBUG] Incapsula add data center JSON response: %s\n", string(responseBody))
 
 	// Parse the JSON
-	var dataCenterServerAddResponse DataCenterServersAddResponse
+	var dataCenterServerAddResponse DataCenterServerAddResponse
 	err = json.Unmarshal([]byte(responseBody), &dataCenterServerAddResponse)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing add data center server JSON response for dcID %s: %s\nresponse: %s", dcID, err, string(responseBody))
@@ -64,12 +64,12 @@ func (c *Client) AddDataCenterServers(dcID, serverAddress, isStandby string) (*D
 	return &dataCenterServerAddResponse, nil
 }
 
-// EditDataCenterServers edits the Incapsula data center servers
-func (c *Client) EditDataCenterServers(serverID, serverAddress, isStandby, isContent string) (*DataCenterServersEditResponse, error) {
-	log.Printf("[INFO] Editing Incapsula data center servers for serverID: %s\n", serverID)
+// EditDataCenterServer edits the Incapsula data center server
+func (c *Client) EditDataCenterServer(serverID, serverAddress, isStandby, isContent string) (*DataCenterServerEditResponse, error) {
+	log.Printf("[INFO] Editing Incapsula data center server for serverID: %s\n", serverID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServersEdit), url.Values{
+	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServerEdit), url.Values{
 		"api_id":         {c.config.APIID},
 		"api_key":        {c.config.APIKey},
 		"server_id":      {serverID},
@@ -89,25 +89,25 @@ func (c *Client) EditDataCenterServers(serverID, serverAddress, isStandby, isCon
 	log.Printf("[DEBUG] Incapsula edit data center server JSON response: %s\n", string(responseBody))
 
 	// Parse the JSON
-	var dataCenterServersEditResponse DataCenterServersEditResponse
-	err = json.Unmarshal([]byte(responseBody), &dataCenterServersEditResponse)
+	var dataCenterServerEditResponse DataCenterServerEditResponse
+	err = json.Unmarshal([]byte(responseBody), &dataCenterServerEditResponse)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing edit data center server JSON response for serverID %s: %s", serverID, err)
 	}
 
 	// Look at the response status code from Incapsula
-	if dataCenterServersEditResponse.Res != "0" {
+	if dataCenterServerEditResponse.Res != "0" {
 		return nil, fmt.Errorf("Error from Incapsula service when editing data center server for serverID %s: %s", serverID, string(responseBody))
 	}
 
-	return &dataCenterServersEditResponse, nil
+	return &dataCenterServerEditResponse, nil
 }
 
-// DeleteDataCenterServers deletes a data center servers currently managed by Incapsula
-func (c *Client) DeleteDataCenterServers(serverID int) error {
+// DeleteDataCenterServer deletes a data center server currently managed by Incapsula
+func (c *Client) DeleteDataCenterServer(serverID int) error {
 	// Specifically shaded this struct, no need to share across funcs or export
 	// We only care about the response code and possibly the message
-	type DataCenterServersDeleteResponse struct {
+	type DataCenterServerDeleteResponse struct {
 		Res      string `json:"res"`
 		ServerID string `json:"server_id"`
 	}
@@ -115,7 +115,7 @@ func (c *Client) DeleteDataCenterServers(serverID int) error {
 	log.Printf("[INFO] Deleting Incapsula data center server serverID: %d)\n", serverID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServersDelete), url.Values{
+	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServerDelete), url.Values{
 		"api_id":    {c.config.APIID},
 		"api_key":   {c.config.APIKey},
 		"server_id": {strconv.Itoa(serverID)},
@@ -132,7 +132,7 @@ func (c *Client) DeleteDataCenterServers(serverID int) error {
 	log.Printf("[DEBUG] Incapsula delete data center JSON response: %s\n", string(responseBody))
 
 	// Parse the JSON
-	var dataCenterServerDeleteResponse DataCenterServersDeleteResponse
+	var dataCenterServerDeleteResponse DataCenterServerDeleteResponse
 	err = json.Unmarshal([]byte(responseBody), &dataCenterServerDeleteResponse)
 	if err != nil {
 		return fmt.Errorf("Error parsing delete data center server JSON response (server_id: %d): %s", serverID, err)

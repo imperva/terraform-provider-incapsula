@@ -10,29 +10,29 @@ import (
 )
 
 ////////////////////////////////////////////////////////////////
-// AddDataCenterServers Tests
+// AddDataCenterServer Tests
 ////////////////////////////////////////////////////////////////
 
-func TestClientAddDataCenterServersBadConnection(t *testing.T) {
+func TestClientAddDataCenterServerBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	dcID := "42"
-	addDataCenterServersResponse, err := client.AddDataCenterServers(dcID, "", "")
+	addDataCenterServerResponse, err := client.AddDataCenterServer(dcID, "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
 	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding data center server for dcID %s", dcID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
-	if addDataCenterServersResponse != nil {
-		t.Errorf("Should have received a nil addDataCenterServersResponse instance")
+	if addDataCenterServerResponse != nil {
+		t.Errorf("Should have received a nil addDataCenterServerResponse instance")
 	}
 }
 
-func TestClientAddDataCenterServersBadJSON(t *testing.T) {
+func TestClientAddDataCenterServerBadJSON(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServersAdd) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServersAdd, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServerAdd) {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServerAdd, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
@@ -41,22 +41,22 @@ func TestClientAddDataCenterServersBadJSON(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	dcID := "42"
-	addDataCenterServersResponse, err := client.AddDataCenterServers(dcID, "", "")
+	addDataCenterServerResponse, err := client.AddDataCenterServer(dcID, "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
 	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing add data center server JSON response for dcID %s", dcID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
-	if addDataCenterServersResponse != nil {
-		t.Errorf("Should have received a nil addDataCenterServersResponse instance")
+	if addDataCenterServerResponse != nil {
+		t.Errorf("Should have received a nil addDataCenterServerResponse instance")
 	}
 }
 
-func TestClientAddDataCenterServersInvalidRule(t *testing.T) {
+func TestClientAddDataCenterServerInvalidRule(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServersAdd) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServersAdd, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServerAdd) {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServerAdd, req.URL.String())
 		}
 		rw.Write([]byte(`{"rule_id":"0","res":"1"}`))
 	}))
@@ -65,22 +65,22 @@ func TestClientAddDataCenterServersInvalidRule(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	dcID := "42"
-	addDataCenterServersResponse, err := client.AddDataCenterServers(dcID, "", "")
+	addDataCenterServerResponse, err := client.AddDataCenterServer(dcID, "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
 	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding data center server for dcID %s", dcID)) {
-		t.Errorf("Should have received a data center servers error, got: %s", err)
+		t.Errorf("Should have received a data center server error, got: %s", err)
 	}
-	if addDataCenterServersResponse != nil {
-		t.Errorf("Should have received a nil addDataCenterServersResponse instance")
+	if addDataCenterServerResponse != nil {
+		t.Errorf("Should have received a nil addDataCenterServerResponse instance")
 	}
 }
 
-func TestClientAddDataCenterServersValidRule(t *testing.T) {
+func TestClientAddDataCenterServerValidRule(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServersAdd) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServersAdd, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServerAdd) {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServerAdd, req.URL.String())
 		}
 		rw.Write([]byte(`{"rule_id":"123","res":"0"}`))
 	}))
@@ -89,27 +89,27 @@ func TestClientAddDataCenterServersValidRule(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	dcID := "42"
-	addDataCenterServersResponse, err := client.AddDataCenterServers(dcID, "", "")
+	addDataCenterServerResponse, err := client.AddDataCenterServer(dcID, "", "")
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
-	if addDataCenterServersResponse == nil {
-		t.Errorf("Should not have received a nil addDataCenterServersResponse instance")
+	if addDataCenterServerResponse == nil {
+		t.Errorf("Should not have received a nil addDataCenterServerResponse instance")
 	}
-	if addDataCenterServersResponse.Res != "0" {
+	if addDataCenterServerResponse.Res != "0" {
 		t.Errorf("Response code doesn't match")
 	}
 }
 
 ////////////////////////////////////////////////////////////////
-// EditDataCenterServers Tests
+// EditDataCenterServer Tests
 ////////////////////////////////////////////////////////////////
 
-func TestClientEditDataCenterServersBadConnection(t *testing.T) {
+func TestClientEditDataCenterServerBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	serverID := "411"
-	editDataCenterResponse, err := client.EditDataCenterServers(serverID, "", "", "")
+	editDataCenterResponse, err := client.EditDataCenterServer(serverID, "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -121,10 +121,10 @@ func TestClientEditDataCenterServersBadConnection(t *testing.T) {
 	}
 }
 
-func TestClientEditDataCenterServersBadJSON(t *testing.T) {
+func TestClientEditDataCenterServerBadJSON(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServersEdit) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServersEdit, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServerEdit) {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServerEdit, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
@@ -133,7 +133,7 @@ func TestClientEditDataCenterServersBadJSON(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	serverID := "411"
-	editDataCenterResponse, err := client.EditDataCenterServers(serverID, "", "", "")
+	editDataCenterResponse, err := client.EditDataCenterServer(serverID, "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -145,10 +145,10 @@ func TestClientEditDataCenterServersBadJSON(t *testing.T) {
 	}
 }
 
-func TestClientEditDataCenterServersInvalidRule(t *testing.T) {
+func TestClientEditDataCenterServerInvalidRule(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServersEdit) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServersEdit, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServerEdit) {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServerEdit, req.URL.String())
 		}
 		rw.Write([]byte(`{"rule_id":0,"res":"1"}`))
 	}))
@@ -157,7 +157,7 @@ func TestClientEditDataCenterServersInvalidRule(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	serverID := "411"
-	editDataCenterResponse, err := client.EditDataCenterServers(serverID, "", "", "")
+	editDataCenterResponse, err := client.EditDataCenterServer(serverID, "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -169,10 +169,10 @@ func TestClientEditDataCenterServersInvalidRule(t *testing.T) {
 	}
 }
 
-func TestClientEditDataCenterServersValidRule(t *testing.T) {
+func TestClientEditDataCenterServerValidRule(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServersEdit) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServersEdit, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServerEdit) {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServerEdit, req.URL.String())
 		}
 		rw.Write([]byte(`{"rule_id":123,"res":"0"}`))
 	}))
@@ -181,7 +181,7 @@ func TestClientEditDataCenterServersValidRule(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	serverID := "411"
-	editDataCenterResponse, err := client.EditDataCenterServers(serverID, "", "", "")
+	editDataCenterResponse, err := client.EditDataCenterServer(serverID, "", "", "")
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
@@ -195,14 +195,14 @@ func TestClientEditDataCenterServersValidRule(t *testing.T) {
 }
 
 ////////////////////////////////////////////////////////////////
-// DeleteDataCenterServers Tests
+// DeleteDataCenterServer Tests
 ////////////////////////////////////////////////////////////////
 
-func TestClientDeleteDataCenterServersBadConnection(t *testing.T) {
+func TestClientDeleteDataCenterServerBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	serverID := 42
-	err := client.DeleteDataCenterServers(serverID)
+	err := client.DeleteDataCenterServer(serverID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -211,10 +211,10 @@ func TestClientDeleteDataCenterServersBadConnection(t *testing.T) {
 	}
 }
 
-func TestClientDeleteDataCenterServersBadJSON(t *testing.T) {
+func TestClientDeleteDataCenterServerBadJSON(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServersDelete) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServersDelete, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServerDelete) {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServerDelete, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
@@ -223,7 +223,7 @@ func TestClientDeleteDataCenterServersBadJSON(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	serverID := 42
-	err := client.DeleteDataCenterServers(serverID)
+	err := client.DeleteDataCenterServer(serverID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -232,10 +232,10 @@ func TestClientDeleteDataCenterServersBadJSON(t *testing.T) {
 	}
 }
 
-func TestClientDeleteDataCenterServersInvalidRule(t *testing.T) {
+func TestClientDeleteDataCenterServerInvalidRule(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServersDelete) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServersDelete, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServerDelete) {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServerDelete, req.URL.String())
 		}
 		rw.Write([]byte(`{"res":"1","res_message":"fail"}`))
 	}))
@@ -244,7 +244,7 @@ func TestClientDeleteDataCenterServersInvalidRule(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	serverID := 42
-	err := client.DeleteDataCenterServers(serverID)
+	err := client.DeleteDataCenterServer(serverID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -253,10 +253,10 @@ func TestClientDeleteDataCenterServersInvalidRule(t *testing.T) {
 	}
 }
 
-func TestClientDeleteDataCenterServersValidSite(t *testing.T) {
+func TestClientDeleteDataCenterServerValidSite(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServersDelete) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServersDelete, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterServerDelete) {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterServerDelete, req.URL.String())
 		}
 		rw.Write([]byte(`{"res":"0","res_message":"OK"}`))
 	}))
@@ -265,7 +265,7 @@ func TestClientDeleteDataCenterServersValidSite(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	serverID := 42
-	err := client.DeleteDataCenterServers(serverID)
+	err := client.DeleteDataCenterServer(serverID)
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}

@@ -1,8 +1,9 @@
 package incapsula
 
 import (
-	"github.com/hashicorp/terraform/helper/schema"
 	"log"
+
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 func resourceCertificate() *schema.Resource {
@@ -69,12 +70,12 @@ func resourceCertificateRead(d *schema.ResourceData, m interface{}) error {
 	// Implement by reading the ListCertificatesResponse for the data center
 	client := m.(*Client)
 
-	site_id := d.Get("site_id").(string)
+	siteId := d.Get("site_id").(string)
 
-	_, err := client.ListCertificates(site_id)
+	_, err := client.ListCertificates(siteId)
 
 	if err != nil {
-		log.Printf("[ERROR] Could not read custom certificate from Incapsula site for site_id: %s, %s\n", site_id, err)
+		log.Printf("[ERROR] Could not read custom certificate from Incapsula site for site_id: %s, %s\n", siteId, err)
 		return err
 	}
 

@@ -49,7 +49,7 @@ func resourceACLSecurityRule() *schema.Resource {
 
 			// Optional Arguments
 			"continents": &schema.Schema{
-				Description:      "A comma separated list of continents codes.",
+				Description:      "A comma separated list of continent codes.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,

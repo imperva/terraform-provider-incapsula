@@ -36,7 +36,7 @@ func resourceIncapRule() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
 			"priority": {
-				Description: "The priority",
+				Description: "New priority for the selected rule.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},

@@ -263,6 +263,7 @@ func (c *Client) SiteStatus(domain string, siteID int) (*SiteStatusResponse, err
 	return &siteStatusResponse, nil
 }
 
+// UpdateSite will update the specific param/value on the site resource
 func (c *Client) UpdateSite(siteID, param, value string) (*SiteUpdateResponse, error) {
 	log.Printf("[INFO] Updating Incapsula site for siteID: %s\n", siteID)
 
