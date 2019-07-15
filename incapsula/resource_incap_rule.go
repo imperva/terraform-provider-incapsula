@@ -36,12 +36,12 @@ func resourceIncapRule() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
 			"priority": {
-				Description: "New priority for the selected rule.",
+				Description: "Priority for the selected rule.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
 			"name": {
-				Description: "The name",
+				Description: "Rule name",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
@@ -53,53 +53,53 @@ func resourceIncapRule() *schema.Resource {
 
 			// Optional Arguments
 			"enabled": {
-				Description: "Is enabled",
+				Description: "Enables the rule.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "true",
 			},
 			"action": {
-				Description: "The action",
+				Description: "Rule action. See the possible values in the API documentation.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"filter": {
-				Description: "The filter",
+				Description: "Rule will trigger only a request that matches this filter. The filter may contain up to 400 characters.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"allow_caching": {
-				Description: "Allow caching",
+				Description: "Allows rule caching.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"dc_id": {
-				Description: "The data center id",
+				Description: "Data center to forward request to. Applies only for RULE_ACTION_FORWARD_TO_DC.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"from": {
-				Description: "From",
+				Description: "The pattern to rewrite.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"to": {
-				Description: "To",
+				Description: "The pattern to change to.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"response_code": {
-				Description: "The response code",
+				Description: "Redirect rule's response code. Valid values are 302, 301, 303, 307, 308.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"add_missing": {
-				Description: "Add missing",
+				Description: "Add cookie or header if it doesn't exist (Rewrite cookie rule only).",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"rewrite_name": {
-				Description: "Rewrite name",
+				Description: "Name of cookie or header to rewrite. Applies only for RULE_ACTION_REWRITE_COOKIE and RULE_ACTION_REWRITE_HEADER.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},

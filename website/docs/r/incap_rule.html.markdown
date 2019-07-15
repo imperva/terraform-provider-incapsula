@@ -157,13 +157,19 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-url" {
 
 The following arguments are supported:
 
-* `domain` - (Required) The fully qualified domain name of the site. For example: www.example.com, hello.example.com.
-* `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
-* `send_site_setup_emails` - (Optional) If this value is false, end users will not get emails about the add site process such as DNS instructions and SSL setup.
-* `site_ip` - (Optional) The web server IP/CNAME.
-* `force_ssl` - (Optional) Force SSL. This option is only available for sites with manually configured IP/CNAME and for specific accounts.
-* `log_level` - (Optional) Log level. Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Sets the log reporting level for the site. Options are `full`, `security`, `none`, and `default`.
-* `logs_account_id` - (Optional) Account where logs should be stored. Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.
+* `site_id` - (Required) Numeric identifier of the site to operate on.
+* `name` - (Required) Rule name.
+* `priority` - (Required) Priority for the selected rule.
+* `enabled` - (Optional) Enables the rule.
+* `action` - (Optional) Rule action. See the possible values in the API documentation.
+* `filter` - (Optional) Rule will trigger only a request that matches this filter. The filter may contain up to 400 characters.
+* `allow_caching` - (Optional) Allows rule caching.
+* `dc_id` - (Optional) Data center to forward request to. Applies only for RULE_ACTION_FORWARD_TO_DC.
+* `from` - (Optional) The pattern to rewrite.
+* `to` - (Optional) The pattern to change to.
+* `response_code` - (Optional) Redirect rule's response code. Valid values are 302, 301, 303, 307, 308.
+* `add_missing` - (Optional) Add cookie or header if it doesn't exist (Rewrite cookie rule only).
+* `rewrite_name` - (Optional) Name of cookie or header to rewrite. Applies only for RULE_ACTION_REWRITE_COOKIE and RULE_ACTION_REWRITE_HEADER.
 
 ## Attributes Reference
 
