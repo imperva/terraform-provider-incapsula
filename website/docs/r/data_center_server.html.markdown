@@ -29,6 +29,7 @@ The following arguments are supported:
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `server_address` - (Optional) The server's address.
 * `is_standby` - (Optional) Set the server as Active (P0) or Standby (P1).
+* `is_enabled` - (Optional) Enables the data center server.
 
 ## Attributes Reference
 
