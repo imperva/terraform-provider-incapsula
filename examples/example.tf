@@ -26,9 +26,9 @@ resource "incapsula_site" "example-site" {
   remove_ssl = "false"
 }
 
-####################################################################
-# Custom Certificates
-####################################################################
+# ####################################################################
+# # Custom Certificates
+# ####################################################################
 resource "incapsula_custom_certificate" "custom-certificate" {
    site_id = "${incapsula_site.example-site.id}"
    certificate = "${file("path/to/your/cert.crt")}"
@@ -36,9 +36,9 @@ resource "incapsula_custom_certificate" "custom-certificate" {
    passphrase = "yourpassphrase"
 }
 
-####################################################################
-# Data Center
-####################################################################
+# ####################################################################
+# # Data Center
+# ####################################################################
 
 resource "incapsula_data_center" "example-data-center-test" {
   site_id = "${incapsula_site.example-site.id}"
@@ -63,83 +63,46 @@ resource "incapsula_data_center_server" "example-data-center-server" {
 }
 
 # ###################################################################
-# # Security Rules (WAF)
-# ###################################################################
-
-resource "incapsula_waf_security_rule" "example-waf-backdoor-rule" {
-  site_id = "${incapsula_site.example-site.id}"
-  rule_id = "api.threats.backdoor"
-  security_rule_action = "api.threats.action.quarantine_url" # (api.threats.action.quarantine_url (default) | api.threats.action.alert | api.threats.action.disabled | api.threats.action.quarantine_url)
-}
-
-resource "incapsula_waf_security_rule" "example-waf-cross-site-scripting-rule" {
-  site_id = "${incapsula_site.example-site.id}"
-  rule_id = "api.threats.cross_site_scripting"
-  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
-}
-
-resource "incapsula_waf_security_rule" "example-waf-illegal-resource-rule" {
-  site_id = "${incapsula_site.example-site.id}"
-  rule_id = "api.threats.illegal_resource_access"
-  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
-}
-
-resource "incapsula_waf_security_rule" "example-waf-remote-file-inclusion-rule" {
-  site_id = "${incapsula_site.example-site.id}"
-  rule_id = "api.threats.remote_file_inclusion"
-  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
-}
-
-resource "incapsula_waf_security_rule" "example-waf-sql-injection-rule" {
-  site_id = "${incapsula_site.example-site.id}"
-  rule_id = "api.threats.sql_injection"
-  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
-}
-
-resource "incapsula_waf_security_rule" "example-waf-bot-access-control-rule" {
-  site_id = "${incapsula_site.example-site.id}"
-  rule_id = "api.threats.bot_access_control"
-  block_bad_bots = "true" # true | false (optional, default: true)
-  challenge_suspected_bots = "true" # true | false (optional, default: true)
-}
-
-resource "incapsula_waf_security_rule" "example-waf-ddos-rule" {
-  site_id = "${incapsula_site.example-site.id}"
-  rule_id = "api.threats.ddos"
-  activation_mode = "api.threats.ddos.activation_mode.on" # (api.threats.ddos.activation_mode.auto | api.threats.ddos.activation_mode.off | api.threats.ddos.activation_mode.on)
-  ddos_traffic_threshold = "5000" # valid values are 10, 20, 50, 100, 200, 500, 750, 1000, 2000, 3000, 4000, 5000
-}
-
-# ###################################################################
 # # Security Rules (ACLs)
 # ###################################################################
 
-# Security Rule: Country
+# api.acl.blacklisted_countries Security Rule (one instance per site)
 resource "incapsula_acl_security_rule" "example-global-blacklist-country-rule" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.acl.blacklisted_countries"
   countries = "AI,AN"
 }
 
-# Security Rule: Blacklist IP
+# api.threats.blacklisted_countries Security Rule Sample Exception
+resource "incapsula_security_rule_exception" "example-waf-blacklisted-countries-rule-exception" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.acl.blacklisted_countries"
+  client_app_types="DataScraper,"
+  ips="1.2.3.6,1.2.3.7"
+  url_patterns="EQUALS,CONTAINS"
+  urls="/myurl,/myurl2"
+}
+
+# api.acl.blacklisted_ips Security Rule (one instance per site)
 resource "incapsula_acl_security_rule" "example-global-blacklist-ip-rule" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.acl.blacklisted_ips"
   ips = "192.168.1.1,192.168.1.2"
 }
 
-# Security Rule: Blacklist IP Exception
-resource "incapsula_acl_security_rule" "example-global-blacklist-ip-rule_exception" {
-  rule_id = "api.acl.blacklisted_ips"
+# api.threats.blacklisted_ips Security Rule Sample Exception
+resource "incapsula_security_rule_exception" "example-waf-blacklisted-ips-rule-exception" {
   site_id = "${incapsula_site.example-site.id}"
-  ips = "192.168.1.1,192.168.1.2"
-  urls = "/myurl,/myurl2"
-  url_patterns = "EQUALS,CONTAINS"
-  countries = "JM,US"
-  client_apps= "488,123"
+  rule_id = "api.acl.blacklisted_ips"
+  client_apps="488,123"
+  countries="JM,US"
+  continents="NA,AF"
+  ips="1.2.3.6,1.2.3.7"
+  url_patterns="EQUALS,CONTAINS"
+  urls="/myurl,/myurl2"
 }
 
-# Security Rule: URL
+# api.acl.blacklisted_urls Security Rule (one instance per site)
 resource "incapsula_acl_security_rule" "example-global-blacklist-url-rule" {
   rule_id = "api.acl.blacklisted_urls"
   site_id = "${incapsula_site.example-site.id}"
@@ -147,11 +110,163 @@ resource "incapsula_acl_security_rule" "example-global-blacklist-url-rule" {
   urls = "/alpha,/bravo"
 }
 
+# api.acl.blacklisted_urls Security Rule Sample Exception
+resource "incapsula_security_rule_exception" "example-waf-blacklisted-urls-rule-exception" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.acl.blacklisted_urls"
+  client_apps="488,123"
+  countries="JM,US"
+  continents="NA,AF"
+  ips="1.2.3.6,1.2.3.7"
+  url_patterns="EQUALS,CONTAINS"
+  urls="/myurl,/myurl2"
+}
+
 # Security Rule: Whitelist IP
 resource "incapsula_acl_security_rule" "example-global-whitelist-ip-rule" {
   rule_id = "api.acl.whitelisted_ips"
   site_id = "${incapsula_site.example-site.id}"
   ips = "192.168.1.3,192.168.1.4"
+}
+
+# ####################################################################
+# # Security Rules (WAF) and Security Rule (WAF) Exceptions/Whitelists
+# ####################################################################
+
+# api.threats.backdoor Security Rule (one instance per site)
+resource "incapsula_waf_security_rule" "example-waf-backdoor-rule" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.backdoor"
+  security_rule_action = "api.threats.action.quarantine_url" # (api.threats.action.quarantine_url (default) | api.threats.action.alert | api.threats.action.disabled | api.threats.action.quarantine_url)
+}
+# api.threats.backdoor Security Rule Sample Exception
+resource "incapsula_security_rule_exception" "example-waf-backdoor-rule-exception" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.backdoor"
+  client_apps="488,123"
+  countries="JM,US"
+  continents="NA,AF"
+  ips="1.2.3.6,1.2.3.7"
+  url_patterns="EQUALS,CONTAINS"
+  urls="/myurl,/myurl2"
+  user_agents="myUserAgent"
+  parameters="myparam"
+}
+
+# api.acl.bot_access_control Security Rule (one instance per site)
+resource "incapsula_waf_security_rule" "example-waf-bot-access-control-rule" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.bot_access_control"
+  block_bad_bots = "true" # true | false (optional, default: true)
+  challenge_suspected_bots = "true" # true | false (optional, default: true)
+}
+
+# api.threats.bot_access_control Security Rule Sample Exception
+resource "incapsula_security_rule_exception" "example-waf-bot_access-control-rule-exception" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.bot_access_control"
+  client_app_types="DataScraper,"
+  ips="1.2.3.6,1.2.3.7"
+  url_patterns="EQUALS,CONTAINS"
+  urls="/myurl,/myurl2"
+  user_agents="myUserAgent"
+}
+
+# api.threats.cross_site_scripting Security Rule (one instance per site)
+resource "incapsula_waf_security_rule" "example-waf-cross-site-scripting-rule" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.cross_site_scripting"
+  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
+}
+# api.threats.cross_site_scripting Security Rule Sample Exception
+resource "incapsula_security_rule_exception" "example-waf-cross-site-scripting-rule-exception" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.cross_site_scripting"
+  client_apps="488,123"
+  countries="JM,US"
+  continents="NA,AF"
+  url_patterns="EQUALS,CONTAINS"
+  urls="/myurl,/myurl2"
+  parameters="myparam"
+}
+
+# api.acl.ddos Security Rule (one instance per site)
+resource "incapsula_waf_security_rule" "example-waf-ddos-rule" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.ddos"
+  activation_mode = "api.threats.ddos.activation_mode.on" # (api.threats.ddos.activation_mode.auto | api.threats.ddos.activation_mode.off | api.threats.ddos.activation_mode.on)
+  ddos_traffic_threshold = "5000" # valid values are 10, 20, 50, 100, 200, 500, 750, 1000, 2000, 3000, 4000, 5000
+}
+
+# api.threats.ddos Security Rule Sample Exception
+resource "incapsula_security_rule_exception" "example-waf-ddos-rule-exception" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.ddos"
+  client_apps="488,123"
+  countries="JM,US"
+  continents="NA,AF"
+  ips="1.2.3.6,1.2.3.7"
+  url_patterns="EQUALS,CONTAINS"
+  urls="/myurl,/myurl2"
+}
+
+# api.acl.illegal_resource_access Security Rule (one instance per site)
+resource "incapsula_waf_security_rule" "example-waf-illegal-resource-rule" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.illegal_resource_access"
+  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
+}
+# api.threats.illegal_resource_access Security Rule Sample Exception
+resource "incapsula_security_rule_exception" "example-waf-illegal-resource-access-rule-exception" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.illegal_resource_access"
+  client_apps="488,123"
+  countries="JM,US"
+  continents="NA,AF"
+  ips="1.2.3.6,1.2.3.7"
+  url_patterns="EQUALS,CONTAINS"
+  urls="/myurl,/myurl2"
+  parameters="myparam"
+}
+
+# api.acl.remote_file_inclusion Security Rule (one instance per site)
+resource "incapsula_waf_security_rule" "example-waf-remote-file-inclusion-rule" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.remote_file_inclusion"
+  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
+}
+
+# api.threats.remote_file_inclusion Security Rule Sample Exception
+resource "incapsula_security_rule_exception" "example-waf-remote-file-inclusion-rule-exception" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.remote_file_inclusion"
+  client_apps="488,123"
+  countries="JM,US"
+  continents="NA,AF"
+  ips="1.2.3.6,1.2.3.7"
+  url_patterns="EQUALS,CONTAINS"
+  urls="/myurl,/myurl2"
+  user_agents="myUserAgent"
+  parameters="myparam"
+}
+
+# api.acl.sql_injection Security Rule (one instance per site)
+resource "incapsula_waf_security_rule" "example-waf-sql-injection-rule" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.sql_injection"
+  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
+}
+
+# api.threats.incapsula_security_rule_exception Security Rule Sample Exception
+resource "incapsula_security_rule_exception" "example-waf-sql-injection-rule-exception" {
+  site_id = "${incapsula_site.example-site.id}"
+  rule_id = "api.threats.sql_injection"
+  client_apps="488,123"
+  countries="JM,US"
+  continents="NA,AF"
+  ips="1.2.3.6,1.2.3.7"
+  url_patterns="EQUALS,CONTAINS"
+  urls="/myurl,/myurl2"
 }
 
 # ###################################################################
