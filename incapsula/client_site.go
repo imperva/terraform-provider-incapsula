@@ -31,6 +31,7 @@ type SiteStatusResponse struct {
 	SiteID            int      `json:"site_id"`
 	Status            string   `json:"status"`
 	Domain            string   `json:"domain"`
+	RefID             string   `json:"ref_id,omitempty"`
 	AccountID         int      `json:"account_id"`
 	AccelerationLevel string   `json:"acceleration_level"`
 	SiteCreationDate  int64    `json:"site_creation_date"`
@@ -66,23 +67,24 @@ type SiteStatusResponse struct {
 				DdosTrafficThreshold   int    `json:"ddos_traffic_threshold,omitempty"`
 				Exceptions             []struct {
 					Values []struct {
-						ID   string   `json:"id"`
-						Name string   `json:"name"`
+						ID   string   `json:"id,omitempty"`
+						Name string   `json:"name,omitempty"`
 						Ips  []string `json:"ips,omitempty"`
 						Urls []struct {
-							Value   string `json:"value"`
-							Pattern string `json:"pattern"`
+							Value   string `json:"value,omitempty"`
+							Pattern string `json:"pattern,omitempty"`
 						} `json:"urls,omitempty"`
 						Geo struct {
-							Countries  []string `json:"countries"`
-							Continents []string `json:"continents"`
+							Countries  []string `json:"countries,omitempty"`
+							Continents []string `json:"continents,omitempty"`
 						} `json:"geo,omitempty"`
 						ClientApps     []string `json:"client_apps,omitempty"`
 						ClientAppTypes []string `json:"client_app_types,omitempty"`
 						Parameters     []string `json:"parameters,omitempty"`
-					} `json:"values"`
-					ID string `json:"id"`
-				} `json:"exceptions"`
+						UserAgents     []string `json:"user_agents,omitempty"`
+					} `json:"values,omitempty"`
+					ID int `json:"id,omitempty"`
+				} `json:"exceptions,omitempty"`
 			} `json:"rules"`
 		} `json:"waf"`
 		Acls struct {
@@ -114,8 +116,9 @@ type SiteStatusResponse struct {
 						ClientApps     []string `json:"client_apps,omitempty"`
 						ClientAppTypes []string `json:"client_app_types,omitempty"`
 						Parameters     []string `json:"parameters,omitempty"`
+						UserAgents     []string `json:"user_agents,omitempty"`
 					} `json:"values"`
-					ID string `json:"id"`
+					ID int `json:"id"`
 				} `json:"exceptions"`
 			} `json:"rules"`
 		} `json:"acls"`
@@ -180,6 +183,7 @@ type SiteStatusResponse struct {
 		CacheHeaders              []interface{} `json:"cache_headers"`
 	} `json:"performance_configuration"`
 	ExtendedDdos int    `json:"extended_ddos"`
+	ExceptionID  string `json:"exception_id,omitempty"`
 	Res          int    `json:"res"`
 	ResMessage   string `json:"res_message"`
 	DebugInfo    struct {
