@@ -96,13 +96,13 @@ func (c *Client) AddSecurityRuleException(siteID int, ruleID, client_app_types, 
 			}
 		}
 	} else {
-		return nil, fmt.Errorf("Error - invalid WAF security rule rule_id (%s)", ruleID)
+		return nil, fmt.Errorf("Error - invalid security rule exception rule_id (%s)", ruleID)
 	}
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointExceptionConfigure), values)
 	if err != nil {
-		return nil, fmt.Errorf("Error configuring WAF security rule rule_id (%s) for site_id (%d)", ruleID, siteID)
+		return nil, fmt.Errorf("Error configuring security rule exception rule_id (%s) for site_id (%d)", ruleID, siteID)
 	}
 
 	// Read the body
@@ -110,18 +110,18 @@ func (c *Client) AddSecurityRuleException(siteID int, ruleID, client_app_types, 
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
 	// Dump JSON
-	log.Printf("[DEBUG] Incapsula configure WAF security rule JSON response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] Incapsula configure SecurityRuleExceptionCreateResponse JSON response: %s\n", string(responseBody))
 
 	// Parse the JSON
 	var securityRuleExceptionCreateResponse SecurityRuleExceptionCreateResponse
 	err = json.Unmarshal([]byte(responseBody), &securityRuleExceptionCreateResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing configure WAF rule JSON response for rule_id (%s) and site_id (%d)", ruleID, siteID)
+		return nil, fmt.Errorf("Error parsing SecurityRuleExceptionCreateResponse JSON response for rule_id (%s) and site_id (%d)", ruleID, siteID)
 	}
 
 	// Look at the response status code from Incapsula
 	if securityRuleExceptionCreateResponse.Res != "0" {
-		return nil, fmt.Errorf("Error from Incapsula service when adding WAF rule for rule_id (%s) and site_id (%d): %s", ruleID, siteID, string(responseBody))
+		return nil, fmt.Errorf("Error from Incapsula service when adding security rule exception for rule_id (%s) and site_id (%d): %s", ruleID, siteID, string(responseBody))
 	}
 
 	return &securityRuleExceptionCreateResponse, nil
@@ -186,13 +186,13 @@ func (c *Client) EditSecurityRuleException(siteID int, ruleID, client_app_types,
 			}
 		}
 	} else {
-		return nil, fmt.Errorf("Error - invalid WAF security rule rule_id (%s)", ruleID)
+		return nil, fmt.Errorf("Error - invalid security rule exception rule_id (%s)", ruleID)
 	}
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointExceptionConfigure), values)
 	if err != nil {
-		return nil, fmt.Errorf("Error configuring WAF security rule rule_id (%s) for site_id (%d)", ruleID, siteID)
+		return nil, fmt.Errorf("Error configuring security rule exception rule_id (%s) for site_id (%d)", ruleID, siteID)
 	}
 
 	// Read the body
@@ -200,18 +200,18 @@ func (c *Client) EditSecurityRuleException(siteID int, ruleID, client_app_types,
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
 	// Dump JSON
-	log.Printf("[DEBUG] Incapsula configure WAF security rule JSON response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] Incapsula configure security rule exception JSON response: %s\n", string(responseBody))
 
 	// Parse the JSON
 	var siteStatusResponse SiteStatusResponse
 	err = json.Unmarshal([]byte(responseBody), &siteStatusResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing configure WAF rule JSON response for rule_id (%s) and site_id (%d)", ruleID, siteID)
+		return nil, fmt.Errorf("Error parsing configure security rule exception JSON response for rule_id (%s) and site_id (%d)", ruleID, siteID)
 	}
 
 	// Look at the response status code from Incapsula
 	if siteStatusResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when adding WAF rule for rule_id (%s) and site_id (%d): %s", ruleID, siteID, string(responseBody))
+		return nil, fmt.Errorf("Error from Incapsula service when adding security rule exception for rule_id (%s) and site_id (%d): %s", ruleID, siteID, string(responseBody))
 	}
 
 	return &siteStatusResponse, nil
