@@ -35,14 +35,14 @@ func resourceCertificate() *schema.Resource {
 			},
 			// Optional Arguments
 			"private_key": {
-				Description: "The private key of the certificate in base64 format. Optional in case of PFX certificate file format.",
+				Description: "The private key of the certificate in base64 format. Optional in case of PFX certificate file format. This will be encoded in sha256 in terraform state.",
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
 				StateFunc:   sha256Encode,
 			},
 			"passphrase": {
-				Description: "The passphrase used to protect your SSL certificate.",
+				Description: "The passphrase used to protect your SSL certificate. This will be encoded in sha256 in terraform state.",
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
