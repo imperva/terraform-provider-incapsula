@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+	"strconv"
 	"testing"
 )
 
@@ -132,6 +133,26 @@ func testCheckSecurityRuleExceptionExists(name string) resource.TestCheckFunc {
 
 		return nil
 	}
+}
+
+func testAccStateSecurityRuleExceptionID(s *terraform.State) (string, error) {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "incapsula_waf_security_rule" {
+			continue
+		}
+
+		ruleID, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return "", fmt.Errorf("Error parsing ID %v to int", rs.Primary.ID)
+		}
+		siteID, err := strconv.Atoi(rs.Primary.Attributes["site_id"])
+		if err != nil {
+			return "", fmt.Errorf("Error parsing site_id %v to int", rs.Primary.Attributes["site_id"])
+		}
+		return fmt.Sprintf("%d/%d", siteID, ruleID), nil
+	}
+
+	return "", fmt.Errorf("Error finding site_id")
 }
 
 // Good Security Rule Exception configs

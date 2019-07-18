@@ -6,7 +6,7 @@ provider "incapsula" {
 
 resource "incapsula_site" "example-site" {
   ####################################################################
-  # # The first 6 parameters listed below are designated for initially creating the site in Incapsula.
+  # The first 6 parameters listed below are designated for initially creating the site in Incapsula.
   ####################################################################
   domain = ""
   account_id = "1234"
@@ -16,7 +16,7 @@ resource "incapsula_site" "example-site" {
   force_ssl = "true"
 
   ####################################################################
-  # # The remaining following parameters below are designated for updating the site after it has been created.
+  # The remaining following parameters below are designated for updating the site after it has been created.
   ####################################################################
   active = "bypass" # active | bypass
   ignore_ssl = "true"
@@ -26,9 +26,9 @@ resource "incapsula_site" "example-site" {
   remove_ssl = "false"
 }
 
-# ####################################################################
-# # Custom Certificates
-# ####################################################################
+####################################################################
+# Custom Certificates
+####################################################################
 resource "incapsula_custom_certificate" "custom-certificate" {
    site_id = "${incapsula_site.example-site.id}"
    certificate = "${file("path/to/your/cert.crt")}"
@@ -36,9 +36,9 @@ resource "incapsula_custom_certificate" "custom-certificate" {
    passphrase = "yourpassphrase"
 }
 
-# ####################################################################
-# # Data Center
-# ####################################################################
+####################################################################
+# Data Center
+####################################################################
 
 resource "incapsula_data_center" "example-data-center-test" {
   site_id = "${incapsula_site.example-site.id}"
@@ -62,9 +62,9 @@ resource "incapsula_data_center_server" "example-data-center-server" {
   is_standby = "no"
 }
 
-# ###################################################################
-# # Security Rules (ACLs)
-# ###################################################################
+###################################################################
+# Security Rules (ACLs) and Security Rule (ACLs) Exceptions/Whitelists
+###################################################################
 
 # api.acl.blacklisted_countries Security Rule (one instance per site)
 resource "incapsula_acl_security_rule" "example-global-blacklist-country-rule" {
@@ -122,16 +122,16 @@ resource "incapsula_security_rule_exception" "example-waf-blacklisted-urls-rule-
   urls="/myurl,/myurl2"
 }
 
-# Security Rule: Whitelist IP
+# api.acl.whitelisted_ips Security Rule (one instance per site)
 resource "incapsula_acl_security_rule" "example-global-whitelist-ip-rule" {
   rule_id = "api.acl.whitelisted_ips"
   site_id = "${incapsula_site.example-site.id}"
   ips = "192.168.1.3,192.168.1.4"
 }
 
-# ####################################################################
-# # Security Rules (WAF) and Security Rule (WAF) Exceptions/Whitelists
-# ####################################################################
+####################################################################
+# Security Rules (WAF) and Security Rule (WAF) Exceptions/Whitelists
+####################################################################
 
 # api.threats.backdoor Security Rule (one instance per site)
 resource "incapsula_waf_security_rule" "example-waf-backdoor-rule" {
@@ -139,6 +139,7 @@ resource "incapsula_waf_security_rule" "example-waf-backdoor-rule" {
   rule_id = "api.threats.backdoor"
   security_rule_action = "api.threats.action.quarantine_url" # (api.threats.action.quarantine_url (default) | api.threats.action.alert | api.threats.action.disabled | api.threats.action.quarantine_url)
 }
+
 # api.threats.backdoor Security Rule Sample Exception
 resource "incapsula_security_rule_exception" "example-waf-backdoor-rule-exception" {
   site_id = "${incapsula_site.example-site.id}"
@@ -176,8 +177,9 @@ resource "incapsula_security_rule_exception" "example-waf-bot_access-control-rul
 resource "incapsula_waf_security_rule" "example-waf-cross-site-scripting-rule" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.threats.cross_site_scripting"
-  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
+  security_rule_action = "api.threats.action.block_ip"
 }
+
 # api.threats.cross_site_scripting Security Rule Sample Exception
 resource "incapsula_security_rule_exception" "example-waf-cross-site-scripting-rule-exception" {
   site_id = "${incapsula_site.example-site.id}"
@@ -216,6 +218,7 @@ resource "incapsula_waf_security_rule" "example-waf-illegal-resource-rule" {
   rule_id = "api.threats.illegal_resource_access"
   security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
 }
+
 # api.threats.illegal_resource_access Security Rule Sample Exception
 resource "incapsula_security_rule_exception" "example-waf-illegal-resource-access-rule-exception" {
   site_id = "${incapsula_site.example-site.id}"
@@ -257,7 +260,7 @@ resource "incapsula_waf_security_rule" "example-waf-sql-injection-rule" {
   security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
 }
 
-# api.threats.incapsula_security_rule_exception Security Rule Sample Exception
+# api.threats.sql_injection Security Rule Sample Exception
 resource "incapsula_security_rule_exception" "example-waf-sql-injection-rule-exception" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.threats.sql_injection"
@@ -269,9 +272,9 @@ resource "incapsula_security_rule_exception" "example-waf-sql-injection-rule-exc
   urls="/myurl,/myurl2"
 }
 
-# ###################################################################
-# # Incap Rules
-# ###################################################################
+###################################################################
+# Incap Rules
+###################################################################
 
 # Incap Rule: Alert
 resource "incapsula_incap_rule" "example-incap-rule-alert" {

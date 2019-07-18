@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+	"strconv"
 	"testing"
 )
 
@@ -31,7 +32,7 @@ func testAccCheckACLSecurityRuleCreate_validRule(t *testing.T) {
 				ResourceName:      aclSecurityRuleResourceName_blacklistedCountries,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: testAccStateSecurityRuleExceptionID,
+				ImportStateIdFunc: testAccStateACLSecurityRuleID,
 			},
 		},
 	})
@@ -54,7 +55,7 @@ func testAccCheckACLSecurityRuleCreate_invalidRuleId(t *testing.T) {
 				ResourceName:      aclSecurityRuleResourceName_blacklistedCountries,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: testAccStateSecurityRuleExceptionID,
+				ImportStateIdFunc: testAccStateACLSecurityRuleID,
 			},
 		},
 	})
@@ -77,7 +78,7 @@ func testAccCheckACLSecurityRuleCreate_invalidParams(t *testing.T) {
 				ResourceName:      aclSecurityRuleResourceName_blacklistedCountries,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: testAccStateSecurityRuleExceptionID,
+				ImportStateIdFunc: testAccStateACLSecurityRuleID,
 			},
 		},
 	})
@@ -112,6 +113,26 @@ func testCheckACLSecurityRuleExists(name string) resource.TestCheckFunc {
 		// each security rule will always exist as a part of the site.  Returning nil.
 		return nil
 	}
+}
+
+func testAccStateACLSecurityRuleID(s *terraform.State) (string, error) {
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "incapsula_waf_security_rule" {
+			continue
+		}
+
+		ruleID, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return "", fmt.Errorf("Error parsing ID %v to int", rs.Primary.ID)
+		}
+		siteID, err := strconv.Atoi(rs.Primary.Attributes["site_id"])
+		if err != nil {
+			return "", fmt.Errorf("Error parsing site_id %v to int", rs.Primary.Attributes["site_id"])
+		}
+		return fmt.Sprintf("%d/%d", siteID, ruleID), nil
+	}
+
+	return "", fmt.Errorf("Error finding site_id")
 }
 
 // Good Security Rule Exception configs

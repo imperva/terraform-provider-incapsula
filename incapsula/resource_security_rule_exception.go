@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
 )
 
 // Security Rule Enumerations
@@ -90,7 +89,7 @@ func resourceSecurityRuleException() *schema.Resource {
 				Optional:    true,
 			},
 			"url_patterns": &schema.Schema{
-				Description: "",
+				Description: "A comma separated list of url patterns. One of: contains | equals | prefix | suffix | not_equals | not_contain | not_prefix | not_suffix. The patterns should be in accordance with the matching urls sent by the urls parameter.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
@@ -421,26 +420,6 @@ func resourceSecurityRuleExceptionUpdate(d *schema.ResourceData, m interface{}) 
 	log.Printf("[INFO] Updated Incapsula security rule exception for rule_id (%s) on site_id (%d)\n", ruleID, d.Get("site_id").(int))
 
 	return resourceWAFSecurityRuleRead(d, m)
-}
-
-func testAccStateSecurityRuleExceptionID(s *terraform.State) (string, error) {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "incapsula_waf_security_rule" {
-			continue
-		}
-
-		ruleID, err := strconv.Atoi(rs.Primary.ID)
-		if err != nil {
-			return "", fmt.Errorf("Error parsing ID %v to int", rs.Primary.ID)
-		}
-		siteID, err := strconv.Atoi(rs.Primary.Attributes["site_id"])
-		if err != nil {
-			return "", fmt.Errorf("Error parsing site_id %v to int", rs.Primary.Attributes["site_id"])
-		}
-		return fmt.Sprintf("%d/%d", siteID, ruleID), nil
-	}
-
-	return "", fmt.Errorf("Error finding site_id")
 }
 
 func resourceSecurityRuleExceptionDelete(d *schema.ResourceData, m interface{}) error {

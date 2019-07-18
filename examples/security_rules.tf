@@ -34,9 +34,9 @@ resource "incapsula_data_center_server" "example-data-center-server" {
   is_standby = "no"
 }
 
-# ###################################################################
+####################################################################
 # Security Rules (WAF)
-# ###################################################################
+####################################################################
 
 resource "incapsula_waf_security_rule" "example-waf-backdoor-rule" {
   site_id = "${incapsula_site.example-site.id}"
@@ -82,9 +82,9 @@ resource "incapsula_waf_security_rule" "example-waf-ddos-rule" {
   ddos_traffic_threshold = "5000" # valid values are 10, 20, 50, 100, 200, 500, 750, 1000, 2000, 3000, 4000, 5000
 }
 
-# ###################################################################
+####################################################################
 # Security Rules (ACLs)
-# ###################################################################
+####################################################################
 
 # Security Rule: Country
 resource "incapsula_acl_security_rule" "example-global-blacklist-country-rule" {
@@ -126,9 +126,9 @@ resource "incapsula_acl_security_rule" "example-global-whitelist-ip-rule" {
   ips = "192.168.1.3,192.168.1.4"
 }
 
-# ###################################################################
+####################################################################
 # Incap Rules
-# ###################################################################
+####################################################################
 
 # Incap Rule: Alert
 resource "incapsula_incap_rule" "example-incap-rule-alert" {
