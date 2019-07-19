@@ -56,13 +56,14 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"incapsula_site":               resourceSite(),
-			"incapsula_acl_security_rule":  resourceACLSecurityRule(),
-			"incapsula_waf_security_rule":  resourceWAFSecurityRule(),
-			"incapsula_incap_rule":         resourceIncapRule(),
-			"incapsula_data_center":        resourceDataCenter(),
-			"incapsula_data_center_server": resourceDataCenterServer(),
-			"incapsula_custom_certificate": resourceCertificate(),
+			"incapsula_site":                    resourceSite(),
+			"incapsula_acl_security_rule":       resourceACLSecurityRule(),
+			"incapsula_waf_security_rule":       resourceWAFSecurityRule(),
+			"incapsula_security_rule_exception": resourceSecurityRuleException(),
+			"incapsula_incap_rule":              resourceIncapRule(),
+			"incapsula_data_center":             resourceDataCenter(),
+			"incapsula_data_center_server":      resourceDataCenterServer(),
+			"incapsula_custom_certificate":      resourceCertificate(),
 		},
 
 		ConfigureFunc: configureProvider,

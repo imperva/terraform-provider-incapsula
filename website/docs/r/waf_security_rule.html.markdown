@@ -6,7 +6,7 @@ description: |-
   Provides a Incapsula WAF Security Rule resource.
 ---
 
-# incapsula_site
+# incapsula_waf_security_rule
 
 Provides a Incapsula WAF Security Rule resource. 
 
