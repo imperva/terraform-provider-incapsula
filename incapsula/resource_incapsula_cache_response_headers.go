@@ -3,6 +3,7 @@ package incapsula
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -81,9 +82,16 @@ func resourceCacheResponseHeadersRead(d *schema.ResourceData, m interface{}) err
 
 	// now loop through values in status response
 	for _, entry := range listCacheHeaderResponse.PerformanceConfiguration.CacheHeaders {
-		cacheHeader := d.Get("cache_headers")
-		if cacheHeader == entry {
-			return nil
+		cacheHeaders := d.Get("cache_headers").(string)
+
+		// cache headers could be multiple values separated with comma
+		// handle this by splitting the values and interate through the values
+		s := strings.Split(cacheHeaders, ",")
+
+		for _, v := range s {
+			if v == entry {
+				break
+			}
 		}
 	}
 
