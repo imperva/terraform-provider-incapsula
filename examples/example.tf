@@ -414,3 +414,9 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-url" {
   allow_caching = "false"
   rewrite_name = "my_test_header"
 }
+
+# Adding a cache header response
+resource "incapsula_cache_response_headers" "example_cache_response_headers" {
+  site_id = "${incapsula_site.example-site.id}"
+  cache_headers = "server,x-v"
+}
