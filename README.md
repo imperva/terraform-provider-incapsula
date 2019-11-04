@@ -24,7 +24,7 @@ Building The Provider
 Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-incapsula`
 
 ```sh
-$ git clone git@github.com:terraform-providers/terraform-provider-incapsula $GOPATH/src/github.com/terraform-providers/terraform-provider-incapsula
+$ git clone git@github.com:imperva/terraform-provider-incapsula $GOPATH/src/github.com/terraform-providers/terraform-provider-incapsula
 ```
 
 Enter the provider directory and build the provider
