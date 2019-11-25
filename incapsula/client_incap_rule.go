@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/url"
-	"strconv"
 )
 
 // Endpoints (unexported consts)
@@ -55,7 +54,7 @@ type IncapRuleListResponse struct {
 
 // IncapRuleEditResponse contains rule id
 type IncapRuleEditResponse struct {
-	Res        string `json:"res"`
+	Res        int    `json:"res"`
 	ResMessage string `json:"res_message"`
 }
 
@@ -197,23 +196,68 @@ func (c *Client) ListIncapRules(siteID, includeAdRules, includeIncapRules string
 }
 
 // EditIncapRule edits the Incapsula incap rule
-func (c *Client) EditIncapRule(siteID int, enabled, priority, name, action, filter string, ruleID int) (*IncapRuleEditResponse, error) {
-	log.Printf("[INFO] Editing Incapsula incap rule name: %s for siteID: %d\n", name, siteID)
+func (c *Client) EditIncapRule(enabled, name, action, filter, siteID, priority, ruleID, dcID, allowCaching, responseCode, from, to, addMissing, rewriteName string) (*IncapRuleEditResponse, error) {
+	log.Printf("[INFO] Editing Incapsula incap rule name: %s for siteID: %s\n", name, siteID)
+
+	values := url.Values{
+		"api_id":  {c.config.APIID},
+		"api_key": {c.config.APIKey},
+		"enabled": {enabled},
+		"name":    {name},
+		"action":  {action},
+		"filter":  {filter},
+		"rule_id": {ruleID},
+	}
+
+	switch action {
+	case actionAlert:
+		fallthrough
+	case actionBlockIP:
+		fallthrough
+	case actionBlockRequest:
+		fallthrough
+	case actionBlockSession:
+		fallthrough
+	case actionCaptcha:
+		fallthrough
+	case actionRetry:
+		fallthrough
+	case actionIntrusiveHTML:
+		values.Add("site_id", siteID)
+		values.Add("priority", priority)
+	case actionFwdToDataCenter:
+		values.Add("site_id", siteID)
+		values.Add("priority", priority)
+		values.Add("dc_id", dcID)
+		values.Add("allow_caching", allowCaching)
+	case actionRedirect:
+		values.Add("site_id", siteID)
+		values.Add("priority", priority)
+		values.Add("response_code", responseCode)
+		values.Add("from", from)
+		values.Add("to", to)
+	case actionDeleteCookie:
+		fallthrough
+	case actionDeleteHeader:
+		fallthrough
+	case actionRewriteCookie:
+		fallthrough
+	case actionRewriteHeader:
+		fallthrough
+	case actionRewriteURL:
+		values.Add("site_id", siteID)
+		values.Add("priority", priority)
+		values.Add("add_missing", addMissing)
+		values.Add("from", from)
+		values.Add("to", to)
+		values.Add("allow_caching", allowCaching)
+		values.Add("rewrite_name", rewriteName)
+	}
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointIncapRuleEdit), url.Values{
-		"api_id":   {c.config.APIID},
-		"api_key":  {c.config.APIKey},
-		"site_id":  {strconv.Itoa(siteID)},
-		"enabled":  {enabled},
-		"priority": {priority},
-		"name":     {name},
-		"action":   {action},
-		"filter":   {filter},
-		"rule_id":  {strconv.Itoa(ruleID)},
-	})
+	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointIncapRuleEdit), values)
 	if err != nil {
-		return nil, fmt.Errorf("Error editing incap rule name: %s for siteID: %d: %s", name, siteID, err)
+		return nil, fmt.Errorf("Error editing incap rule name: %s for siteID: %s: %s", name, siteID, err)
 	}
 
 	// Read the body
@@ -227,12 +271,12 @@ func (c *Client) EditIncapRule(siteID int, enabled, priority, name, action, filt
 	var incapRuleEditResponse IncapRuleEditResponse
 	err = json.Unmarshal([]byte(responseBody), &incapRuleEditResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing edit incap rule JSON response for siteID %d: %s", siteID, err)
+		return nil, fmt.Errorf("Error parsing edit incap rule JSON response for siteID %s: %s", siteID, err)
 	}
 
 	// Look at the response status code from Incapsula
-	if incapRuleEditResponse.Res != "0" {
-		return nil, fmt.Errorf("Error from Incapsula service when editing incap rule for siteID %d, ruleID: %d: %s", siteID, ruleID, string(responseBody))
+	if incapRuleEditResponse.Res != 0 {
+		return nil, fmt.Errorf("Error from Incapsula service when editing incap rule for siteID %s, ruleID: %s: %s", siteID, ruleID, string(responseBody))
 	}
 
 	return &incapRuleEditResponse, nil
