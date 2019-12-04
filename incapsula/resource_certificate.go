@@ -1,8 +1,6 @@
 package incapsula
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -41,7 +39,6 @@ func resourceCertificate() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 				Sensitive:   true,
-				StateFunc:   sha256Encode,
 			},
 			"passphrase": {
 				Description: "The passphrase used to protect your SSL certificate. This will be encoded in sha256 in terraform state.",
@@ -49,7 +46,6 @@ func resourceCertificate() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 				Sensitive:   true,
-				StateFunc:   sha256Encode,
 			},
 		},
 	}
@@ -126,10 +122,4 @@ func resourceCertificateDelete(d *schema.ResourceData, m interface{}) error {
 	d.SetId("")
 
 	return nil
-}
-
-// Private key and passphrase will be exposed in terraform state file, fix is to encode it to sha256
-// https://github.com/GoogleCloudPlatform/magic-modules/pull/1336/files
-func sha256Encode(v interface{}) string {
-	return hex.EncodeToString(sha256.New().Sum([]byte(v.(string))))
 }
