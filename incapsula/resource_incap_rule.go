@@ -50,14 +50,13 @@ func resourceIncapRule() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-
-			// Optional Arguments
 			"enabled": {
 				Description: "Enables the rule.",
 				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "true",
+				Required:    true,
 			},
+
+			// Optional Arguments
 			"action": {
 				Description: "Rule action. See the possible values in the API documentation.",
 				Type:        schema.TypeString,

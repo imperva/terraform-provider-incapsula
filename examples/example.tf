@@ -283,6 +283,7 @@ resource "incapsula_incap_rule" "example-incap-rule-alert" {
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_ALERT"
   filter = "Full-URL == \"/someurl\""
+  enabled = "true"
 }
 
 # Incap Rule: Require javascript support
@@ -292,6 +293,7 @@ resource "incapsula_incap_rule" "example-incap-rule-require-js-support" {
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_INTRUSIVE_HTML"
   filter = "Full-URL == \"/someurl\""
+  enabled = "true"
 }
 
 # Incap Rule: Block IP
@@ -301,6 +303,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-ip" {
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_BLOCK_IP"
   filter = "Full-URL == \"/someurl\""
+  enabled = "true"
 }
 
 # Incap Rule: Block Request
@@ -310,6 +313,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-request" {
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_BLOCK"
   filter = "Full-URL == \"/someurl\""
+  enabled = "true"
 }
 
 # Incap Rule: Block Session
@@ -319,6 +323,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-session" {
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_BLOCK_USER"
   filter = "Full-URL == \"/someurl\""
+  enabled = "true"
 }
 
 # Incap Rule: Delete Cookie (ADR)
@@ -329,6 +334,7 @@ resource "incapsula_incap_rule" "example-incap-rule-delete-cookie" {
   action = "RULE_ACTION_DELETE_COOKIE"
   filter = "Full-URL == \"/someurl\""
   rewrite_name = "my_test_header"
+  enabled = "true"
 }
 
 # Incap Rule: Delete Header (ADR)
@@ -339,6 +345,7 @@ resource "incapsula_incap_rule" "example-incap-rule-delete-header" {
   action = "RULE_ACTION_DELETE_HEADER"
   filter = "Full-URL == \"/someurl\""
   rewrite_name = "my_test_header"
+  enabled = "true"
 }
 
 # Incap Rule: Forward to Data Center (ADR)
@@ -350,6 +357,7 @@ resource "incapsula_incap_rule" "example-incap-rule-fwd-to-data-center" {
   filter = "Full-URL == \"/someurl\""
   dc_id = "${incapsula_data_center.example-data-center.id}"
   allow_caching = "false"
+  enabled = "true"
 }
 
 # Incap Rule: Redirect (ADR)
@@ -362,6 +370,7 @@ resource "incapsula_incap_rule" "example-incap-rule-redirect" {
   response_code = "302"
   from = "https://site1.com/url1"
   to = "https://site2.com/url2"
+  enabled = "true"
 }
 
 # Incap Rule: Require Cookie Support (IncapRule)
@@ -371,6 +380,7 @@ resource "incapsula_incap_rule" "example-incap-rule-require-cookie-support" {
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_RETRY"
   filter = "Full-URL == \"/someurl\""
+  enabled = "true"
 }
 
 # Incap Rule: Rewrite Cookie (ADR)
@@ -385,6 +395,7 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-cookie" {
   to = "some_new_value"
   allow_caching = "false"
   rewrite_name = "my_cookie_name"
+  enabled = "true"
 }
 
 # Incap Rule: Rewrite Header (ADR)
@@ -399,6 +410,7 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-header" {
   to = "some_new_value"
   allow_caching = "false"
   rewrite_name = "my_test_header"
+  enabled = "true"
 }
 
 # Incap Rule: Rewrite URL (ADR)
@@ -413,4 +425,5 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-url" {
   to = "/redirect"
   allow_caching = "false"
   rewrite_name = "my_test_header"
+  enabled = "true"
 }
