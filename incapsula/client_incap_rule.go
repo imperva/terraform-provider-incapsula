@@ -287,8 +287,8 @@ func (c *Client) DeleteIncapRule(ruleID, accountID string) error {
 	// Specifically shaded this struct, no need to share across funcs or export
 	// We only care about the response code and possibly the message
 	type IncapRuleDeleteResponse struct {
-		Res        string `json:"res"`
-		ResMessage string `json:"res_message"`
+		Res        interface{} `json:"res"`
+		ResMessage string      `json:"res_message"`
 	}
 
 	log.Printf("[INFO] Deleting Incapsula incap rule (rule_id: %s)\n", ruleID)
@@ -318,10 +318,20 @@ func (c *Client) DeleteIncapRule(ruleID, accountID string) error {
 		return fmt.Errorf("Error parsing delete incap rule JSON response (rule_id: %s): %s", ruleID, err)
 	}
 
-	// Look at the response status code from Incapsula
-	if incapRuleDeleteResponse.Res != "0" {
-		return fmt.Errorf("Error from Incapsula service when deleting incap rule (rule_id: %s): %s", ruleID, string(responseBody))
+	// Res can sometimes oscillate between a string and number
+	// We need to add safeguards for this inside the provider
+	var resString string
+
+	if resNumber, ok := incapRuleDeleteResponse.Res.(float64); ok {
+		resString = fmt.Sprintf("%d", int(resNumber))
+	} else {
+		resString = incapRuleDeleteResponse.Res.(string)
 	}
 
-	return nil
+	// Look at the response status code from Incapsula data center
+	if resString == "0" {
+		return nil
+	}
+
+	return fmt.Errorf("Error from Incapsula service when deleting incap rule (rule_id: %s): %s", ruleID, string(responseBody))
 }
