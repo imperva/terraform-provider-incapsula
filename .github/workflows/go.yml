@@ -1,7 +1,10 @@
-name: Go
-on: [push]
-jobs:
+name: Build Provider
+on:
+  push:
+    tags: 
+      - 'v*' # Push events to matching v*, i.e. v1.0, v2.1.0, v10.1.1-alpha
 
+jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
