@@ -29,6 +29,7 @@ import (
 // no color codes will be included.
 func ResourceChange(
 	change *plans.ResourceInstanceChangeSrc,
+	tainted bool,
 	schema *configschema.Block,
 	color *colorstring.Colorize,
 ) string {
@@ -56,7 +57,11 @@ func ResourceChange(
 	case plans.Update:
 		buf.WriteString(color.Color(fmt.Sprintf("[bold]  # %s[reset] will be updated in-place", dispAddr)))
 	case plans.CreateThenDelete, plans.DeleteThenCreate:
-		buf.WriteString(color.Color(fmt.Sprintf("[bold]  # %s[reset] must be [bold][red]replaced", dispAddr)))
+		if tainted {
+			buf.WriteString(color.Color(fmt.Sprintf("[bold]  # %s[reset] is tainted, so must be [bold][red]replaced", dispAddr)))
+		} else {
+			buf.WriteString(color.Color(fmt.Sprintf("[bold]  # %s[reset] must be [bold][red]replaced", dispAddr)))
+		}
 	case plans.Delete:
 		buf.WriteString(color.Color(fmt.Sprintf("[bold]  # %s[reset] will be [bold][red]destroyed", dispAddr)))
 	default:
@@ -65,22 +70,7 @@ func ResourceChange(
 	}
 	buf.WriteString(color.Color("[reset]\n"))
 
-	switch change.Action {
-	case plans.Create:
-		buf.WriteString(color.Color("[green]  +[reset] "))
-	case plans.Read:
-		buf.WriteString(color.Color("[cyan] <=[reset] "))
-	case plans.Update:
-		buf.WriteString(color.Color("[yellow]  ~[reset] "))
-	case plans.DeleteThenCreate:
-		buf.WriteString(color.Color("[red]-[reset]/[green]+[reset] "))
-	case plans.CreateThenDelete:
-		buf.WriteString(color.Color("[green]+[reset]/[red]-[reset] "))
-	case plans.Delete:
-		buf.WriteString(color.Color("[red]  -[reset] "))
-	default:
-		buf.WriteString(color.Color("??? "))
-	}
+	buf.WriteString(color.Color(DiffActionSymbol(change.Action)) + " ")
 
 	switch addr.Resource.Resource.Mode {
 	case addrs.ManagedResourceMode:
@@ -100,7 +90,7 @@ func ResourceChange(
 		buf.WriteString(addr.String())
 	}
 
-	buf.WriteString(" {\n")
+	buf.WriteString(" {")
 
 	p := blockBodyDiffPrinter{
 		buf:             &buf,
@@ -122,16 +112,24 @@ func ResourceChange(
 		panic(fmt.Sprintf("failed to decode plan for %s while rendering diff: %s", addr, err))
 	}
 
-	p.writeBlockBodyDiff(schema, changeV.Before, changeV.After, 6, path)
+	// We currently have an opt-out that permits the legacy SDK to return values
+	// that defy our usual conventions around handling of nesting blocks. To
+	// avoid the rendering code from needing to handle all of these, we'll
+	// normalize first.
+	// (Ideally we'd do this as part of the SDK opt-out implementation in core,
+	// but we've added it here for now to reduce risk of unexpected impacts
+	// on other code in core.)
+	changeV.Change.Before = objchange.NormalizeObjectFromLegacySDK(changeV.Change.Before, schema)
+	changeV.Change.After = objchange.NormalizeObjectFromLegacySDK(changeV.Change.After, schema)
 
-	buf.WriteString("    }\n")
+	bodyWritten := p.writeBlockBodyDiff(schema, changeV.Before, changeV.After, 6, path)
+	if bodyWritten {
+		buf.WriteString("\n")
+		buf.WriteString(strings.Repeat(" ", 4))
+	}
+	buf.WriteString("}\n")
 
 	return buf.String()
-}
-
-type ctyValueDiff struct {
-	Action plans.Action
-	Value  cty.Value
 }
 
 type blockBodyDiffPrinter struct {
@@ -143,9 +141,12 @@ type blockBodyDiffPrinter struct {
 
 const forcesNewResourceCaption = " [red]# forces replacement[reset]"
 
-func (p *blockBodyDiffPrinter) writeBlockBodyDiff(schema *configschema.Block, old, new cty.Value, indent int, path cty.Path) {
+// writeBlockBodyDiff writes attribute or block differences
+// and returns true if any differences were found and written
+func (p *blockBodyDiffPrinter) writeBlockBodyDiff(schema *configschema.Block, old, new cty.Value, indent int, path cty.Path) bool {
 	path = ctyEnsurePathCapacity(path, 1)
 
+	bodyWritten := false
 	blankBeforeBlocks := false
 	{
 		attrNames := make([]string, 0, len(schema.Attributes))
@@ -176,6 +177,7 @@ func (p *blockBodyDiffPrinter) writeBlockBodyDiff(schema *configschema.Block, ol
 			oldVal := ctyGetAttrMaybeNull(old, name)
 			newVal := ctyGetAttrMaybeNull(new, name)
 
+			bodyWritten = true
 			p.writeAttrDiff(name, attrS, oldVal, newVal, attrNameLen, indent, path)
 		}
 	}
@@ -192,16 +194,20 @@ func (p *blockBodyDiffPrinter) writeBlockBodyDiff(schema *configschema.Block, ol
 			oldVal := ctyGetAttrMaybeNull(old, name)
 			newVal := ctyGetAttrMaybeNull(new, name)
 
+			bodyWritten = true
 			p.writeNestedBlockDiffs(name, blockS, oldVal, newVal, blankBeforeBlocks, indent, path)
 
 			// Always include a blank for any subsequent block types.
 			blankBeforeBlocks = true
 		}
 	}
+
+	return bodyWritten
 }
 
 func (p *blockBodyDiffPrinter) writeAttrDiff(name string, attrS *configschema.Attribute, old, new cty.Value, nameLen, indent int, path cty.Path) {
 	path = append(path, cty.GetAttrStep{Name: name})
+	p.buf.WriteString("\n")
 	p.buf.WriteString(strings.Repeat(" ", indent))
 	showJustNew := false
 	var action plans.Action
@@ -232,6 +238,9 @@ func (p *blockBodyDiffPrinter) writeAttrDiff(name string, attrS *configschema.At
 		switch {
 		case showJustNew:
 			p.writeValue(new, action, indent+2)
+			if p.pathForcesNewResource(path) {
+				p.buf.WriteString(p.color.Color(forcesNewResourceCaption))
+			}
 		default:
 			// We show new even if it is null to emphasize the fact
 			// that it is being unset, since otherwise it is easy to
@@ -239,9 +248,6 @@ func (p *blockBodyDiffPrinter) writeAttrDiff(name string, attrS *configschema.At
 			p.writeValueDiff(old, new, indent+2, path)
 		}
 	}
-
-	p.buf.WriteString("\n")
-
 }
 
 func (p *blockBodyDiffPrinter) writeNestedBlockDiffs(name string, blockS *configschema.NestedBlock, old, new cty.Value, blankBefore bool, indent int, path cty.Path) {
@@ -257,19 +263,20 @@ func (p *blockBodyDiffPrinter) writeNestedBlockDiffs(name string, blockS *config
 	// the objects within are computed.
 
 	switch blockS.Nesting {
-	case configschema.NestingSingle:
+	case configschema.NestingSingle, configschema.NestingGroup:
 		var action plans.Action
+		eqV := new.Equals(old)
 		switch {
 		case old.IsNull():
 			action = plans.Create
 		case new.IsNull():
 			action = plans.Delete
-		case !new.IsKnown() || !old.IsKnown():
+		case !new.IsWhollyKnown() || !old.IsWhollyKnown():
 			// "old" should actually always be known due to our contract
 			// that old values must never be unknown, but we'll allow it
 			// anyway to be robust.
 			action = plans.Update
-		case !(new.Equals(old).True()):
+		case !eqV.IsKnown() || !eqV.True():
 			action = plans.Update
 		}
 
@@ -281,12 +288,8 @@ func (p *blockBodyDiffPrinter) writeNestedBlockDiffs(name string, blockS *config
 		// For the sake of handling nested blocks, we'll treat a null list
 		// the same as an empty list since the config language doesn't
 		// distinguish these anyway.
-		if old.IsNull() {
-			old = cty.ListValEmpty(old.Type().ElementType())
-		}
-		if new.IsNull() {
-			new = cty.ListValEmpty(new.Type().ElementType())
-		}
+		old = ctyNullBlockListAsEmpty(old)
+		new = ctyNullBlockListAsEmpty(new)
 
 		oldItems := ctyCollectionValues(old)
 		newItems := ctyCollectionValues(new)
@@ -340,12 +343,8 @@ func (p *blockBodyDiffPrinter) writeNestedBlockDiffs(name string, blockS *config
 		// For the sake of handling nested blocks, we'll treat a null set
 		// the same as an empty set since the config language doesn't
 		// distinguish these anyway.
-		if old.IsNull() {
-			old = cty.SetValEmpty(old.Type().ElementType())
-		}
-		if new.IsNull() {
-			new = cty.SetValEmpty(new.Type().ElementType())
-		}
+		old = ctyNullBlockSetAsEmpty(old)
+		new = ctyNullBlockSetAsEmpty(new)
 
 		oldItems := ctyCollectionValues(old)
 		newItems := ctyCollectionValues(new)
@@ -369,6 +368,9 @@ func (p *blockBodyDiffPrinter) writeNestedBlockDiffs(name string, blockS *config
 			var action plans.Action
 			var oldValue, newValue cty.Value
 			switch {
+			case !val.IsKnown():
+				action = plans.Update
+				newValue = val
 			case !old.HasElement(val).True():
 				action = plans.Create
 				oldValue = cty.NullVal(val.Type())
@@ -387,12 +389,61 @@ func (p *blockBodyDiffPrinter) writeNestedBlockDiffs(name string, blockS *config
 		}
 
 	case configschema.NestingMap:
-		// TODO: Implement this, once helper/schema is actually able to
-		// produce schemas containing nested map block types.
+		// For the sake of handling nested blocks, we'll treat a null map
+		// the same as an empty map since the config language doesn't
+		// distinguish these anyway.
+		old = ctyNullBlockMapAsEmpty(old)
+		new = ctyNullBlockMapAsEmpty(new)
+
+		oldItems := old.AsValueMap()
+		newItems := new.AsValueMap()
+		if (len(oldItems) + len(newItems)) == 0 {
+			// Nothing to do if both maps are empty
+			return
+		}
+
+		allKeys := make(map[string]bool)
+		for k := range oldItems {
+			allKeys[k] = true
+		}
+		for k := range newItems {
+			allKeys[k] = true
+		}
+		allKeysOrder := make([]string, 0, len(allKeys))
+		for k := range allKeys {
+			allKeysOrder = append(allKeysOrder, k)
+		}
+		sort.Strings(allKeysOrder)
+
+		if blankBefore {
+			p.buf.WriteRune('\n')
+		}
+
+		for _, k := range allKeysOrder {
+			var action plans.Action
+			oldValue := oldItems[k]
+			newValue := newItems[k]
+			switch {
+			case oldValue == cty.NilVal:
+				oldValue = cty.NullVal(newValue.Type())
+				action = plans.Create
+			case newValue == cty.NilVal:
+				newValue = cty.NullVal(oldValue.Type())
+				action = plans.Delete
+			case !newValue.RawEquals(oldValue):
+				action = plans.Update
+			default:
+				action = plans.NoOp
+			}
+
+			path := append(path, cty.IndexStep{Key: cty.StringVal(k)})
+			p.writeNestedBlockDiff(name, &k, &blockS.Block, action, oldValue, newValue, indent, path)
+		}
 	}
 }
 
 func (p *blockBodyDiffPrinter) writeNestedBlockDiff(name string, label *string, blockS *configschema.Block, action plans.Action, old, new cty.Value, indent int, path cty.Path) {
+	p.buf.WriteString("\n")
 	p.buf.WriteString(strings.Repeat(" ", indent))
 	p.writeActionSymbol(action)
 
@@ -406,12 +457,12 @@ func (p *blockBodyDiffPrinter) writeNestedBlockDiff(name string, label *string, 
 		p.buf.WriteString(p.color.Color(forcesNewResourceCaption))
 	}
 
-	p.buf.WriteString("\n")
-
-	p.writeBlockBodyDiff(blockS, old, new, indent+4, path)
-
-	p.buf.WriteString(strings.Repeat(" ", indent+2))
-	p.buf.WriteString("}\n")
+	bodyWritten := p.writeBlockBodyDiff(blockS, old, new, indent+4, path)
+	if bodyWritten {
+		p.buf.WriteString("\n")
+		p.buf.WriteString(strings.Repeat(" ", indent+2))
+	}
+	p.buf.WriteString("}")
 }
 
 func (p *blockBodyDiffPrinter) writeValue(val cty.Value, action plans.Action, indent int) {
@@ -420,7 +471,7 @@ func (p *blockBodyDiffPrinter) writeValue(val cty.Value, action plans.Action, in
 		return
 	}
 	if val.IsNull() {
-		p.buf.WriteString("null")
+		p.buf.WriteString(p.color.Color("[dark_gray]null[reset]"))
 		return
 	}
 
@@ -434,20 +485,41 @@ func (p *blockBodyDiffPrinter) writeValue(val cty.Value, action plans.Action, in
 				// Special behavior for JSON strings containing array or object
 				src := []byte(val.AsString())
 				ty, err := ctyjson.ImpliedType(src)
-				if err == nil && !ty.IsPrimitiveType() {
+				// check for the special case of "null", which decodes to nil,
+				// and just allow it to be printed out directly
+				if err == nil && !ty.IsPrimitiveType() && strings.TrimSpace(val.AsString()) != "null" {
 					jv, err := ctyjson.Unmarshal(src, ty)
 					if err == nil {
 						p.buf.WriteString("jsonencode(")
-						p.buf.WriteByte('\n')
-						p.buf.WriteString(strings.Repeat(" ", indent+4))
-						p.writeValue(jv, action, indent+4)
-						p.buf.WriteByte('\n')
-						p.buf.WriteString(strings.Repeat(" ", indent))
+						if jv.LengthInt() == 0 {
+							p.writeValue(jv, action, 0)
+						} else {
+							p.buf.WriteByte('\n')
+							p.buf.WriteString(strings.Repeat(" ", indent+4))
+							p.writeValue(jv, action, indent+4)
+							p.buf.WriteByte('\n')
+							p.buf.WriteString(strings.Repeat(" ", indent))
+						}
 						p.buf.WriteByte(')')
 						break // don't *also* do the normal behavior below
 					}
 				}
 			}
+
+			if strings.Contains(val.AsString(), "\n") {
+				// It's a multi-line string, so we want to use the multi-line
+				// rendering so it'll be readable. Rather than re-implement
+				// that here, we'll just re-use the multi-line string diff
+				// printer with no changes, which ends up producing the
+				// result we want here.
+				// The path argument is nil because we don't track path
+				// information into strings and we know that a string can't
+				// have any indices or attributes that might need to be marked
+				// as (requires replacement), which is what that argument is for.
+				p.writeValueDiff(val, val, indent, nil)
+				break
+			}
+
 			fmt.Fprintf(p.buf, "%q", val.AsString())
 		case cty.Bool:
 			if val.True() {
@@ -463,21 +535,26 @@ func (p *blockBodyDiffPrinter) writeValue(val cty.Value, action plans.Action, in
 			fmt.Fprintf(p.buf, "%#v", val)
 		}
 	case ty.IsListType() || ty.IsSetType() || ty.IsTupleType():
-		p.buf.WriteString("[\n")
+		p.buf.WriteString("[")
 
 		it := val.ElementIterator()
 		for it.Next() {
 			_, val := it.Element()
+
+			p.buf.WriteString("\n")
 			p.buf.WriteString(strings.Repeat(" ", indent+2))
 			p.writeActionSymbol(action)
 			p.writeValue(val, action, indent+4)
-			p.buf.WriteString(",\n")
+			p.buf.WriteString(",")
 		}
 
-		p.buf.WriteString(strings.Repeat(" ", indent))
+		if val.LengthInt() > 0 {
+			p.buf.WriteString("\n")
+			p.buf.WriteString(strings.Repeat(" ", indent))
+		}
 		p.buf.WriteString("]")
 	case ty.IsMapType():
-		p.buf.WriteString("{\n")
+		p.buf.WriteString("{")
 
 		keyLen := 0
 		for it := val.ElementIterator(); it.Next(); {
@@ -489,19 +566,23 @@ func (p *blockBodyDiffPrinter) writeValue(val cty.Value, action plans.Action, in
 
 		for it := val.ElementIterator(); it.Next(); {
 			key, val := it.Element()
+
+			p.buf.WriteString("\n")
 			p.buf.WriteString(strings.Repeat(" ", indent+2))
 			p.writeActionSymbol(action)
 			p.writeValue(key, action, indent+4)
 			p.buf.WriteString(strings.Repeat(" ", keyLen-len(key.AsString())))
 			p.buf.WriteString(" = ")
 			p.writeValue(val, action, indent+4)
-			p.buf.WriteString("\n")
 		}
 
-		p.buf.WriteString(strings.Repeat(" ", indent))
+		if val.LengthInt() > 0 {
+			p.buf.WriteString("\n")
+			p.buf.WriteString(strings.Repeat(" ", indent))
+		}
 		p.buf.WriteString("}")
 	case ty.IsObjectType():
-		p.buf.WriteString("{\n")
+		p.buf.WriteString("{")
 
 		atys := ty.AttributeTypes()
 		attrNames := make([]string, 0, len(atys))
@@ -516,22 +597,27 @@ func (p *blockBodyDiffPrinter) writeValue(val cty.Value, action plans.Action, in
 
 		for _, attrName := range attrNames {
 			val := val.GetAttr(attrName)
+
+			p.buf.WriteString("\n")
 			p.buf.WriteString(strings.Repeat(" ", indent+2))
 			p.writeActionSymbol(action)
 			p.buf.WriteString(attrName)
 			p.buf.WriteString(strings.Repeat(" ", nameLen-len(attrName)))
 			p.buf.WriteString(" = ")
 			p.writeValue(val, action, indent+4)
-			p.buf.WriteString("\n")
 		}
 
-		p.buf.WriteString(strings.Repeat(" ", indent))
+		if len(attrNames) > 0 {
+			p.buf.WriteString("\n")
+			p.buf.WriteString(strings.Repeat(" ", indent))
+		}
 		p.buf.WriteString("}")
 	}
 }
 
 func (p *blockBodyDiffPrinter) writeValueDiff(old, new cty.Value, indent int, path cty.Path) {
 	ty := old.Type()
+	typesEqual := ctyTypesEqual(ty, new.Type())
 
 	// We have some specialized diff implementations for certain complex
 	// values where it's useful to see a visualization of the diff of
@@ -539,10 +625,8 @@ func (p *blockBodyDiffPrinter) writeValueDiff(old, new cty.Value, indent int, pa
 	// new values verbatim.
 	// However, these specialized implementations can apply only if both
 	// values are known and non-null.
-	if old.IsKnown() && new.IsKnown() && !old.IsNull() && !new.IsNull() {
+	if old.IsKnown() && new.IsKnown() && !old.IsNull() && !new.IsNull() && typesEqual {
 		switch {
-		// TODO: object diffs that behave a bit like the map diffs, including if the two object types don't exactly match
-
 		case ty == cty.String:
 			// We have special behavior for both multi-line strings in general
 			// and for strings that can parse as JSON. For the JSON handling
@@ -621,31 +705,21 @@ func (p *blockBodyDiffPrinter) writeValueDiff(old, new cty.Value, indent int, pa
 
 			diffLines := ctySequenceDiff(oldLines, newLines)
 			for _, diffLine := range diffLines {
-				line := diffLine.Value.AsString()
+				p.buf.WriteString(strings.Repeat(" ", indent+2))
+				p.writeActionSymbol(diffLine.Action)
+
 				switch diffLine.Action {
+				case plans.NoOp, plans.Delete:
+					p.buf.WriteString(diffLine.Before.AsString())
 				case plans.Create:
-					p.buf.WriteString(strings.Repeat(" ", indent+2))
-					p.buf.WriteString(p.color.Color("[green]+[reset] "))
-					p.buf.WriteString(line)
-					p.buf.WriteString("\n")
-				case plans.Delete:
-					p.buf.WriteString(strings.Repeat(" ", indent+2))
-					p.buf.WriteString(p.color.Color("[red]-[reset] "))
-					p.buf.WriteString(line)
-					p.buf.WriteString("\n")
-				case plans.NoOp:
-					p.buf.WriteString(strings.Repeat(" ", indent+2))
-					p.buf.WriteString(p.color.Color("  "))
-					p.buf.WriteString(line)
-					p.buf.WriteString("\n")
+					p.buf.WriteString(diffLine.After.AsString())
 				default:
 					// Should never happen since the above covers all
-					// actions that ctySequenceDiff can return.
-					p.buf.WriteString(strings.Repeat(" ", indent+2))
-					p.buf.WriteString(p.color.Color("? "))
-					p.buf.WriteString(line)
-					p.buf.WriteString("\n")
+					// actions that ctySequenceDiff can return for strings
+					p.buf.WriteString(diffLine.After.AsString())
+
 				}
+				p.buf.WriteString("\n")
 			}
 
 			p.buf.WriteString(strings.Repeat(" ", indent)) // +4 here because there's no symbol
@@ -671,7 +745,7 @@ func (p *blockBodyDiffPrinter) writeValueDiff(old, new cty.Value, indent int, pa
 			for it := new.ElementIterator(); it.Next(); {
 				_, val := it.Element()
 				allVals = append(allVals, val)
-				if old.HasElement(val).False() {
+				if val.IsKnown() && old.HasElement(val).False() {
 					addedVals = append(addedVals, val)
 				}
 			}
@@ -700,6 +774,8 @@ func (p *blockBodyDiffPrinter) writeValueDiff(old, new cty.Value, indent int, pa
 
 				var action plans.Action
 				switch {
+				case !val.IsKnown():
+					action = plans.Update
 				case added.HasElement(val).True():
 					action = plans.Create
 				case removed.HasElement(val).True():
@@ -716,7 +792,6 @@ func (p *blockBodyDiffPrinter) writeValueDiff(old, new cty.Value, indent int, pa
 			p.buf.WriteString(strings.Repeat(" ", indent))
 			p.buf.WriteString("]")
 			return
-
 		case ty.IsListType() || ty.IsTupleType():
 			p.buf.WriteString("[")
 			if p.pathForcesNewResource(path) {
@@ -728,7 +803,19 @@ func (p *blockBodyDiffPrinter) writeValueDiff(old, new cty.Value, indent int, pa
 			for _, elemDiff := range elemDiffs {
 				p.buf.WriteString(strings.Repeat(" ", indent+2))
 				p.writeActionSymbol(elemDiff.Action)
-				p.writeValue(elemDiff.Value, elemDiff.Action, indent+4)
+				switch elemDiff.Action {
+				case plans.NoOp, plans.Delete:
+					p.writeValue(elemDiff.Before, elemDiff.Action, indent+4)
+				case plans.Update:
+					p.writeValueDiff(elemDiff.Before, elemDiff.After, indent+4, path)
+				case plans.Create:
+					p.writeValue(elemDiff.After, elemDiff.Action, indent+4)
+				default:
+					// Should never happen since the above covers all
+					// actions that ctySequenceDiff can return.
+					p.writeValue(elemDiff.After, elemDiff.Action, indent+4)
+				}
+
 				p.buf.WriteString(",\n")
 			}
 
@@ -810,12 +897,95 @@ func (p *blockBodyDiffPrinter) writeValueDiff(old, new cty.Value, indent int, pa
 			p.buf.WriteString(strings.Repeat(" ", indent))
 			p.buf.WriteString("}")
 			return
+		case ty.IsObjectType():
+			p.buf.WriteString("{")
+			p.buf.WriteString("\n")
+
+			forcesNewResource := p.pathForcesNewResource(path)
+
+			var allKeys []string
+			keyLen := 0
+			for it := old.ElementIterator(); it.Next(); {
+				k, _ := it.Element()
+				keyStr := k.AsString()
+				allKeys = append(allKeys, keyStr)
+				if len(keyStr) > keyLen {
+					keyLen = len(keyStr)
+				}
+			}
+			for it := new.ElementIterator(); it.Next(); {
+				k, _ := it.Element()
+				keyStr := k.AsString()
+				allKeys = append(allKeys, keyStr)
+				if len(keyStr) > keyLen {
+					keyLen = len(keyStr)
+				}
+			}
+
+			sort.Strings(allKeys)
+
+			lastK := ""
+			for i, k := range allKeys {
+				if i > 0 && lastK == k {
+					continue // skip duplicates (list is sorted)
+				}
+				lastK = k
+
+				p.buf.WriteString(strings.Repeat(" ", indent+2))
+				kV := k
+				var action plans.Action
+				if !old.Type().HasAttribute(kV) {
+					action = plans.Create
+				} else if !new.Type().HasAttribute(kV) {
+					action = plans.Delete
+				} else if eqV := old.GetAttr(kV).Equals(new.GetAttr(kV)); eqV.IsKnown() && eqV.True() {
+					action = plans.NoOp
+				} else {
+					action = plans.Update
+				}
+
+				path := append(path, cty.GetAttrStep{Name: kV})
+
+				p.writeActionSymbol(action)
+				p.buf.WriteString(k)
+				p.buf.WriteString(strings.Repeat(" ", keyLen-len(k)))
+				p.buf.WriteString(" = ")
+
+				switch action {
+				case plans.Create, plans.NoOp:
+					v := new.GetAttr(kV)
+					p.writeValue(v, action, indent+4)
+				case plans.Delete:
+					oldV := old.GetAttr(kV)
+					newV := cty.NullVal(oldV.Type())
+					p.writeValueDiff(oldV, newV, indent+4, path)
+				default:
+					oldV := old.GetAttr(kV)
+					newV := new.GetAttr(kV)
+					p.writeValueDiff(oldV, newV, indent+4, path)
+				}
+
+				p.buf.WriteString("\n")
+			}
+
+			p.buf.WriteString(strings.Repeat(" ", indent))
+			p.buf.WriteString("}")
+
+			if forcesNewResource {
+				p.buf.WriteString(p.color.Color(forcesNewResourceCaption))
+			}
+			return
 		}
 	}
 
 	// In all other cases, we just show the new and old values as-is
 	p.writeValue(old, plans.Delete, indent)
-	p.buf.WriteString(p.color.Color(" [yellow]->[reset] "))
+	if new.IsNull() {
+		p.buf.WriteString(p.color.Color(" [dark_gray]->[reset] "))
+	} else {
+		p.buf.WriteString(p.color.Color(" [yellow]->[reset] "))
+	}
+
 	p.writeValue(new, plans.Create, indent)
 	if p.pathForcesNewResource(path) {
 		p.buf.WriteString(p.color.Color(forcesNewResourceCaption))
@@ -844,20 +1014,41 @@ func (p *blockBodyDiffPrinter) writeActionSymbol(action plans.Action) {
 }
 
 func (p *blockBodyDiffPrinter) pathForcesNewResource(path cty.Path) bool {
-	if !p.action.IsReplace() {
-		// "requiredReplace" only applies when the instance is being replaced
+	if !p.action.IsReplace() || p.requiredReplace.Empty() {
+		// "requiredReplace" only applies when the instance is being replaced,
+		// and we should only inspect that set if it is not empty
 		return false
 	}
 	return p.requiredReplace.Has(path)
 }
 
+func ctyEmptyString(value cty.Value) bool {
+	if !value.IsNull() && value.IsKnown() {
+		valueType := value.Type()
+		if valueType == cty.String && value.AsString() == "" {
+			return true
+		}
+	}
+	return false
+}
+
 func ctyGetAttrMaybeNull(val cty.Value, name string) cty.Value {
+	attrType := val.Type().AttributeType(name)
+
 	if val.IsNull() {
-		ty := val.Type().AttributeType(name)
-		return cty.NullVal(ty)
+		return cty.NullVal(attrType)
 	}
 
-	return val.GetAttr(name)
+	// We treat "" as null here
+	// as existing SDK doesn't support null yet.
+	// This allows us to avoid spurious diffs
+	// until we introduce null to the SDK.
+	attrValue := val.GetAttr(name)
+	if ctyEmptyString(attrValue) {
+		return cty.NullVal(attrType)
+	}
+
+	return attrValue
 }
 
 func ctyCollectionValues(val cty.Value) []cty.Value {
@@ -873,68 +1064,24 @@ func ctyCollectionValues(val cty.Value) []cty.Value {
 	return ret
 }
 
-func ctySequenceDiff(old, new []cty.Value) []ctyValueDiff {
-	var ret []ctyValueDiff
-	lcs := objchange.LongestCommonSubsequence(old, new)
-	var oldI, newI, lcsI int
-	for oldI < len(old) || newI < len(new) || lcsI < len(lcs) {
-		for oldI < len(old) && (lcsI >= len(lcs) || !old[oldI].RawEquals(lcs[lcsI])) {
-			ret = append(ret, ctyValueDiff{
-				Action: plans.Delete,
-				Value:  old[oldI],
-			})
-			oldI++
-		}
-		for newI < len(new) && (lcsI >= len(lcs) || !new[newI].RawEquals(lcs[lcsI])) {
-			ret = append(ret, ctyValueDiff{
-				Action: plans.Create,
-				Value:  new[newI],
-			})
-			newI++
-		}
-		if lcsI < len(lcs) {
-			ret = append(ret, ctyValueDiff{
-				Action: plans.NoOp,
-				Value:  new[newI],
-			})
-
-			// All of our indexes advance together now, since the line
-			// is common to all three sequences.
-			lcsI++
-			oldI++
-			newI++
-		}
-	}
-	return ret
-}
-
-// ctyObjectSequenceDiff is a variant of ctySequenceDiff that only works for
-// values of object types. Whereas ctySequenceDiff can only return Create
-// and Delete actions, this function can additionally return Update actions
-// heuristically based on similarity of objects in the lists, which must
-// be greater than or equal to the caller-specified threshold.
-//
-// See ctyObjectSimilarity for details on what "similarity" means here.
-func ctyObjectSequenceDiff(old, new []cty.Value, threshold float64) []*plans.Change {
+// ctySequenceDiff returns differences between given sequences of cty.Value(s)
+// in the form of Create, Delete, or Update actions (for objects).
+func ctySequenceDiff(old, new []cty.Value) []*plans.Change {
 	var ret []*plans.Change
 	lcs := objchange.LongestCommonSubsequence(old, new)
 	var oldI, newI, lcsI int
 	for oldI < len(old) || newI < len(new) || lcsI < len(lcs) {
 		for oldI < len(old) && (lcsI >= len(lcs) || !old[oldI].RawEquals(lcs[lcsI])) {
-			if newI < len(new) {
-				// See if the next "new" is similar enough to our "old" that
-				// we'll treat this as an Update rather than a Delete/Create.
-				similarity := ctyObjectSimilarity(old[oldI], new[newI])
-				if similarity >= threshold {
-					ret = append(ret, &plans.Change{
-						Action: plans.Update,
-						Before: old[oldI],
-						After:  new[newI],
-					})
-					oldI++
-					newI++ // we also consume the next "new" in this case
-					continue
-				}
+			isObjectDiff := old[oldI].Type().IsObjectType() && newI < len(new) && new[newI].Type().IsObjectType() && (lcsI >= len(lcs) || !new[newI].RawEquals(lcs[lcsI]))
+			if isObjectDiff {
+				ret = append(ret, &plans.Change{
+					Action: plans.Update,
+					Before: old[oldI],
+					After:  new[newI],
+				})
+				oldI++
+				newI++ // we also consume the next "new" in this case
+				continue
 			}
 
 			ret = append(ret, &plans.Change{
@@ -955,8 +1102,8 @@ func ctyObjectSequenceDiff(old, new []cty.Value, threshold float64) []*plans.Cha
 		if lcsI < len(lcs) {
 			ret = append(ret, &plans.Change{
 				Action: plans.NoOp,
-				Before: new[newI],
-				After:  new[newI],
+				Before: lcs[lcsI],
+				After:  lcs[lcsI],
 			})
 
 			// All of our indexes advance together now, since the line
@@ -969,53 +1116,24 @@ func ctyObjectSequenceDiff(old, new []cty.Value, threshold float64) []*plans.Cha
 	return ret
 }
 
-// ctyObjectSimilarity returns a number between 0 and 1 that describes
-// approximately how similar the two given values are, comparing in terms of
-// how many of the corresponding attributes have the same value in both
-// objects.
-//
-// This function expects the two values to have a similar set of attribute
-// names, though doesn't mind if the two slightly differ since it will
-// count missing attributes as differences.
-//
-// This function will panic if either of the given values is not an object.
-func ctyObjectSimilarity(old, new cty.Value) float64 {
-	oldType := old.Type()
-	newType := new.Type()
-	attrNames := make(map[string]struct{})
-	for name := range oldType.AttributeTypes() {
-		attrNames[name] = struct{}{}
-	}
-	for name := range newType.AttributeTypes() {
-		attrNames[name] = struct{}{}
-	}
-
-	matches := 0
-
-	for name := range attrNames {
-		if !oldType.HasAttribute(name) {
-			continue
-		}
-		if !newType.HasAttribute(name) {
-			continue
-		}
-		eq := old.GetAttr(name).Equals(new.GetAttr(name))
-		if !eq.IsKnown() {
-			continue
-		}
-		if eq.True() {
-			matches++
-		}
-	}
-
-	return float64(matches) / float64(len(attrNames))
-}
-
 func ctyEqualWithUnknown(old, new cty.Value) bool {
-	if !old.IsKnown() || !new.IsKnown() {
+	if !old.IsWhollyKnown() || !new.IsWhollyKnown() {
 		return false
 	}
 	return old.Equals(new).True()
+}
+
+// ctyTypesEqual checks equality of two types more loosely
+// by avoiding checks of object/tuple elements
+// as we render differences on element-by-element basis anyway
+func ctyTypesEqual(oldT, newT cty.Type) bool {
+	if oldT.IsObjectType() && newT.IsObjectType() {
+		return true
+	}
+	if oldT.IsTupleType() && newT.IsTupleType() {
+		return true
+	}
+	return oldT.Equals(newT)
 }
 
 func ctyEnsurePathCapacity(path cty.Path, minExtra int) cty.Path {
@@ -1029,4 +1147,70 @@ func ctyEnsurePathCapacity(path cty.Path, minExtra int) cty.Path {
 	newPath := make(cty.Path, len(path), newCap)
 	copy(newPath, path)
 	return newPath
+}
+
+// ctyNullBlockListAsEmpty either returns the given value verbatim if it is non-nil
+// or returns an empty value of a suitable type to serve as a placeholder for it.
+//
+// In particular, this function handles the special situation where a "list" is
+// actually represented as a tuple type where nested blocks contain
+// dynamically-typed values.
+func ctyNullBlockListAsEmpty(in cty.Value) cty.Value {
+	if !in.IsNull() {
+		return in
+	}
+	if ty := in.Type(); ty.IsListType() {
+		return cty.ListValEmpty(ty.ElementType())
+	}
+	return cty.EmptyTupleVal // must need a tuple, then
+}
+
+// ctyNullBlockMapAsEmpty either returns the given value verbatim if it is non-nil
+// or returns an empty value of a suitable type to serve as a placeholder for it.
+//
+// In particular, this function handles the special situation where a "map" is
+// actually represented as an object type where nested blocks contain
+// dynamically-typed values.
+func ctyNullBlockMapAsEmpty(in cty.Value) cty.Value {
+	if !in.IsNull() {
+		return in
+	}
+	if ty := in.Type(); ty.IsMapType() {
+		return cty.MapValEmpty(ty.ElementType())
+	}
+	return cty.EmptyObjectVal // must need an object, then
+}
+
+// ctyNullBlockSetAsEmpty either returns the given value verbatim if it is non-nil
+// or returns an empty value of a suitable type to serve as a placeholder for it.
+func ctyNullBlockSetAsEmpty(in cty.Value) cty.Value {
+	if !in.IsNull() {
+		return in
+	}
+	// Dynamically-typed attributes are not supported inside blocks backed by
+	// sets, so our result here is always a set.
+	return cty.SetValEmpty(in.Type().ElementType())
+}
+
+// DiffActionSymbol returns a string that, once passed through a
+// colorstring.Colorize, will produce a result that can be written
+// to a terminal to produce a symbol made of three printable
+// characters, possibly interspersed with VT100 color codes.
+func DiffActionSymbol(action plans.Action) string {
+	switch action {
+	case plans.DeleteThenCreate:
+		return "[red]-[reset]/[green]+[reset]"
+	case plans.CreateThenDelete:
+		return "[green]+[reset]/[red]-[reset]"
+	case plans.Create:
+		return "  [green]+[reset]"
+	case plans.Delete:
+		return "  [red]-[reset]"
+	case plans.Read:
+		return " [cyan]<=[reset]"
+	case plans.Update:
+		return "  [yellow]~[reset]"
+	default:
+		return "  ?"
+	}
 }
