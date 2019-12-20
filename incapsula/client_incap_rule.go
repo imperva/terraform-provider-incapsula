@@ -329,7 +329,7 @@ func (c *Client) DeleteIncapRule(ruleID, accountID string) error {
 	}
 
 	// Look at the response status code from Incapsula data center
-	if resString == "0" || resString == "2" {
+	if resString == "0" || resString == "2" || resString == "9413" {
 		return nil
 	}
 
