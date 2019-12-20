@@ -107,8 +107,8 @@ func (c *Client) DeleteDataCenterServer(serverID string) error {
 	// Specifically shaded this struct, no need to share across funcs or export
 	// We only care about the response code and possibly the message
 	type DataCenterServerDeleteResponse struct {
-		Res      string `json:"res"`
-		ServerID string `json:"server_id"`
+		Res      interface{} `json:"res"`
+		ServerID string      `json:"server_id"`
 	}
 
 	log.Printf("[INFO] Deleting Incapsula data center server serverID: %s)\n", serverID)
@@ -137,10 +137,20 @@ func (c *Client) DeleteDataCenterServer(serverID string) error {
 		return fmt.Errorf("Error parsing delete data center server JSON response (server_id: %s): %s", serverID, err)
 	}
 
-	// Look at the response status code from Incapsula
-	if dataCenterServerDeleteResponse.Res != "0" {
-		return fmt.Errorf("Error from Incapsula service when deleting data center server (server_id: %s): %s", serverID, string(responseBody))
+	// Res can sometimes oscillate between a string and number
+	// We need to add safeguards for this inside the provider
+	var resString string
+
+	if resNumber, ok := dataCenterServerDeleteResponse.Res.(float64); ok {
+		resString = fmt.Sprintf("%d", int(resNumber))
+	} else {
+		resString = dataCenterServerDeleteResponse.Res.(string)
 	}
 
-	return nil
+	// Look at the response status code from Incapsula data center
+	if resString == "0" || resString == "2" {
+		return nil
+	}
+
+	return fmt.Errorf("Error from Incapsula service when deleting data center server (server_id: %s): %s", serverID, string(responseBody))
 }
