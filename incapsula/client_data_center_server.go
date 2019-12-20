@@ -128,7 +128,7 @@ func (c *Client) DeleteDataCenterServer(serverID string) error {
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
 	// Dump JSON
-	log.Printf("[DEBUG] Incapsula delete data center JSON response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] Incapsula delete data center server JSON response: %s\n", string(responseBody))
 
 	// Parse the JSON
 	var dataCenterServerDeleteResponse DataCenterServerDeleteResponse
