@@ -259,8 +259,16 @@ func (c *Client) SiteStatus(domain string, siteID int) (*SiteStatusResponse, err
 		return nil, fmt.Errorf("Error parsing site status JSON response for domain %s (site id: %d): %s", domain, siteID, err)
 	}
 
+	var resString string
+
+	if resNumber, ok := siteStatusResponse.Res.(float64); ok {
+		resString = fmt.Sprintf("%d", int(resNumber))
+	} else {
+		resString = siteStatusResponse.Res.(string)
+	}
+
 	// Look at the response status code from Incapsula
-	if siteStatusResponse.Res != 0 {
+	if resString != "0" {
 		return nil, fmt.Errorf("Error from Incapsula service when getting site status for domain %s (site id: %d): %s", domain, siteID, string(responseBody))
 	}
 
