@@ -69,7 +69,7 @@ func TestClientConfigureACLSecurityRuleInvalidSite(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding ACL rule for rule id %s and site id %d: %s", ruleID, siteID, string(`{"site_id":0,"res":1}`))) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when configuring ACL rule for rule id %s and site id %d: %s", ruleID, siteID, string(`{"site_id":0,"res":1}`))) {
 		t.Errorf("Should have received a bad site error, got: %s", err)
 	}
 	if configureACLSecurityRuleResponse != nil {
@@ -98,8 +98,5 @@ func TestClientConfigureACLSecurityRuleValidSite(t *testing.T) {
 	}
 	if configureACLSecurityRuleResponse.SiteID != 123 {
 		t.Errorf("Site ID doesn't match")
-	}
-	if configureACLSecurityRuleResponse.Res != 0 {
-		t.Errorf("Response code doesn't match")
 	}
 }

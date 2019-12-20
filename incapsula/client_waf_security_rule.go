@@ -68,8 +68,18 @@ func (c *Client) ConfigureWAFSecurityRule(siteID int, ruleID, security_rule_acti
 		return nil, fmt.Errorf("Error parsing configure WAF rule JSON response for rule_id (%s) and site_id (%d)", ruleID, siteID)
 	}
 
+	// Res can sometimes oscillate between a string and number
+	// We need to add safeguards for this inside the provider
+	var resString string
+
+	if resNumber, ok := siteStatusResponse.Res.(float64); ok {
+		resString = fmt.Sprintf("%d", int(resNumber))
+	} else {
+		resString = siteStatusResponse.Res.(string)
+	}
+
 	// Look at the response status code from Incapsula
-	if siteStatusResponse.Res != 0 {
+	if resString != "0" {
 		return nil, fmt.Errorf("Error from Incapsula service when adding WAF rule for rule_id (%s) and site_id (%d): %s", ruleID, siteID, string(responseBody))
 	}
 

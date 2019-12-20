@@ -254,15 +254,12 @@ func TestClientConfigureWAFSecurityRuleValidRule(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 1234
 	ruleID := "api.threats.backdoor"
-	security_rule_action := "api.threats.action.quarantine_url"
-	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, security_rule_action, "", "", "", "")
+	securityRuleAction := "api.threats.action.quarantine_url"
+	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, securityRuleAction, "", "", "", "")
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
 	if configureWAFSecurityRuleResponse == nil {
 		t.Errorf("Should not have received a nil configureWAFSecurityRuleResponse instance")
-	}
-	if configureWAFSecurityRuleResponse.Res != 0 {
-		t.Errorf("Response code doesn't match")
 	}
 }

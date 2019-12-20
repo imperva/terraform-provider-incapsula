@@ -201,9 +201,6 @@ func TestClientSiteStatusValidSite(t *testing.T) {
 	if len(siteStatusResponse.DNS) != 0 {
 		t.Errorf("DNS records are not empty")
 	}
-	if siteStatusResponse.Res != 0 {
-		t.Errorf("Response code doesn't match")
-	}
 }
 
 ////////////////////////////////////////////////////////////////
