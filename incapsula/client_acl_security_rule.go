@@ -65,10 +65,20 @@ func (c *Client) ConfigureACLSecurityRule(siteID int, ruleID, continents, countr
 		return nil, fmt.Errorf("Error parsing add ACL rule JSON response for rule id %s and site id %d", ruleID, siteID)
 	}
 
-	// Look at the response status code from Incapsula
-	if siteStatusResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when adding ACL rule for rule id %s and site id %d: %s", ruleID, siteID, string(responseBody))
+	// Res can sometimes oscillate between a string and number
+	// We need to add safeguards for this inside the provider
+	var resString string
+
+	if resNumber, ok := siteStatusResponse.Res.(float64); ok {
+		resString = fmt.Sprintf("%d", int(resNumber))
+	} else {
+		resString = siteStatusResponse.Res.(string)
 	}
 
-	return &siteStatusResponse, nil
+	// Look at the response status code from Incapsula data center
+	if resString == "0" || resString == "2" {
+		return &siteStatusResponse, nil
+	}
+
+	return nil, fmt.Errorf("Error from Incapsula service when configuring ACL rule for rule id %s and site id %d: %s", ruleID, siteID, string(responseBody))
 }

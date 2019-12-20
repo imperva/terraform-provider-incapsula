@@ -182,10 +182,10 @@ type SiteStatusResponse struct {
 		Cache300X                 bool          `json:"cache300x"`
 		CacheHeaders              []interface{} `json:"cache_headers"`
 	} `json:"performance_configuration"`
-	ExtendedDdos int    `json:"extended_ddos"`
-	ExceptionID  string `json:"exception_id,omitempty"`
-	Res          int    `json:"res"`
-	ResMessage   string `json:"res_message"`
+	ExtendedDdos int         `json:"extended_ddos"`
+	ExceptionID  string      `json:"exception_id,omitempty"`
+	Res          interface{} `json:"res"`
+	ResMessage   string      `json:"res_message"`
 	DebugInfo    struct {
 		IDInfo string `json:"id-info"`
 	} `json:"debug_info"`
