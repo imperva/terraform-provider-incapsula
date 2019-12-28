@@ -24,7 +24,7 @@ type Config struct {
 var missingAPIIDMessage = "API Identifier (api_id) must be provided"
 var missingAPIKeyMessage = "API Key (api_key) must be provided"
 var missingBaseURLMessage = "Base URL must be provided"
-var missingIncapRuleBaseURLMessage = "IncapRule Base URL must be provided"
+var missingIncapRuleBaseURLMessage = "Incap Rule Base URL must be provided"
 
 // Client configures and returns a fully initialized Incapsula Client
 func (c *Config) Client() (interface{}, error) {
