@@ -10,7 +10,7 @@ import (
 )
 
 const incapRuleResourceName = "incapsula_incap_rule.testacc-terraform-incap-rule"
-const incapRuleName = "Example incap rule alert"
+const incapRuleName = "Example Incap Rule Alert"
 
 func TestAccIncapsulaIncapRule_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -56,8 +56,6 @@ func testAccStateRuleID(s *terraform.State) (string, error) {
 }
 
 func testAccCheckIncapsulaIncapRuleDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*Client)
-
 	for _, res := range state.RootModule().Resources {
 		if res.Type != "incapsula_site" {
 			continue
@@ -78,15 +76,18 @@ func testAccCheckIncapsulaIncapRuleDestroy(state *terraform.State) error {
 			return fmt.Errorf("Incapsula incap rule ID does not exist")
 		}
 
-		listIncapRulesResponse, err := client.ListIncapRules(siteID, "true", "true")
-		for _, incapRule := range listIncapRulesResponse.IncapRules.All {
-			if incapRule.ID == ruleID {
-				return fmt.Errorf("Incapsula incap rule: %s (site_id: %s) still exists", incapRuleName, siteID)
-			}
+		ruleIDInt, err := strconv.Atoi(ruleID)
+		if err != nil {
+			return err
 		}
+
+		client := testAccProvider.Meta().(*Client)
+		_, err = client.ReadIncapRule(siteID, ruleIDInt)
 		if err == nil {
-			return fmt.Errorf("Incapsula incap rule: %s (site id: %s) still exists", incapRuleName, siteID)
+			return fmt.Errorf("Incapsula incap rule: %s (site id: %s) still exists\n%s", incapRuleName, siteID, err)
 		}
+
+		return nil
 	}
 
 	return nil
@@ -111,29 +112,27 @@ func testCheckIncapsulaIncapRuleExists(name string) resource.TestCheckFunc {
 
 		ruleID := res.Primary.ID
 		if ruleID == "" {
-			return fmt.Errorf("Incapsula data center ID does not exist")
+			return fmt.Errorf("Incapsula incap rule ID does not exist")
+		}
+
+		ruleIDInt, err := strconv.Atoi(ruleID)
+		if err != nil {
+			return err
 		}
 
 		client := testAccProvider.Meta().(*Client)
-		listIncapRulesResponse, err := client.ListIncapRules(siteID, "true", "true")
-		if listIncapRulesResponse == nil {
+		_, err = client.ReadIncapRule(siteID, ruleIDInt)
+		if err != nil {
 			return fmt.Errorf("Incapsula incap rule: %s (site id: %s) does not exist\n%s", name, siteID, err)
 		}
-		for _, incapRule := range listIncapRulesResponse.IncapRules.All {
-			if incapRule.ID == ruleID {
-				return nil
-			}
-		}
 
-		return fmt.Errorf("Incapsula incap rule: %s (site_id: %s) does not exist", incapRuleName, siteID)
+		return nil
 	}
 }
 
 func testAccCheckIncapsulaIncapRuleConfig_basic() string {
 	return testAccCheckIncapsulaSiteConfig_basic(testAccDomain) + fmt.Sprintf(`
 resource "incapsula_incap_rule" "testacc-terraform-incap-rule" {
-  enabled = "true"
-  priority = "1"
   name = "%s"
   site_id = "${incapsula_site.testacc-terraform-site.id}"
   action = "RULE_ACTION_ALERT"
