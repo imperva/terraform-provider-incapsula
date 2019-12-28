@@ -99,10 +99,7 @@ func testAccCheckACLSecurityRuleDestroy(state *terraform.State) error {
 			return fmt.Errorf("Incapsula acl security rule - rule ID (%s) does not exist", ruleID)
 		}
 
-		err := "nil"
-		if err == "nil" {
-			return fmt.Errorf("Incapsula acl security rule for site site_id (%s) still exists", ruleID)
-		}
+		return fmt.Errorf("Incapsula acl security rule for site site_id (%s) still exists", ruleID)
 	}
 
 	return nil
