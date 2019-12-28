@@ -16,11 +16,15 @@ type Config struct {
 
 	// Base URL (no trailing slash)
 	BaseURL string
+
+	// IncapRule Base URL (no trailing slash)
+	IncapRuleBaseURL string
 }
 
 var missingAPIIDMessage = "API Identifier (api_id) must be provided"
 var missingAPIKeyMessage = "API Key (api_key) must be provided"
 var missingBaseURLMessage = "Base URL must be provided"
+var missingIncapRuleBaseURLMessage = "IncapRule Base URL must be provided"
 
 // Client configures and returns a fully initialized Incapsula Client
 func (c *Config) Client() (interface{}, error) {
@@ -39,6 +43,11 @@ func (c *Config) Client() (interface{}, error) {
 	// Check Base URL
 	if strings.TrimSpace(c.BaseURL) == "" {
 		return nil, errors.New(missingBaseURLMessage)
+	}
+
+	// Check IncapRule Base URL
+	if strings.TrimSpace(c.IncapRuleBaseURL) == "" {
+		return nil, errors.New(missingIncapRuleBaseURLMessage)
 	}
 
 	// Create client
