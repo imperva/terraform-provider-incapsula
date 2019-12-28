@@ -6,12 +6,17 @@ import (
 )
 
 var baseURL string
+var incapRuleBaseURL string
 var descriptions map[string]string
 
 func init() {
 	// Storing this in the provider rather than making it configurable
 	// This endpoint is unlikely to change in the near future
 	baseURL = "https://my.incapsula.com/api/prov/v1"
+
+	// Efforts on APIv2 are underway and IncapRules are supported
+	// The other endpoints will eventually move over but we'll need this for now
+	incapRuleBaseURL = "https://my.imperva.com/api/prov/v2"
 
 	descriptions = map[string]string{
 		"api_id": "The API identifier for API operations. You can retrieve this\n" +
@@ -29,9 +34,10 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	apiKey := d.Get("api_key").(string)
 
 	config := Config{
-		APIID:   apiID,
-		APIKey:  apiKey,
-		BaseURL: baseURL,
+		APIID:            apiID,
+		APIKey:           apiKey,
+		BaseURL:          baseURL,
+		IncapRuleBaseURL: incapRuleBaseURL,
 	}
 
 	return config.Client()
