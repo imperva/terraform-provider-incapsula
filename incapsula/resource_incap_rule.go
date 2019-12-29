@@ -21,10 +21,7 @@ func resourceIncapRule() *schema.Resource {
 					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id/rule_id", d.Id())
 				}
 
-				siteID, err := strconv.Atoi(idSlice[0])
-				if err != nil {
-					return nil, err
-				}
+				siteID := idSlice[0]
 				d.Set("site_id", siteID)
 
 				ruleID := idSlice[1]
@@ -49,12 +46,12 @@ func resourceIncapRule() *schema.Resource {
 			"action": {
 				Description: "Rule action. See the detailed descriptions in the API documentation. Possible values: `RULE_ACTION_REDIRECT`, `RULE_ACTION_SIMPLIFIED_REDIRECT`, `RULE_ACTION_REWRITE_URL`, `RULE_ACTION_REWRITE_HEADER`, `RULE_ACTION_REWRITE_COOKIE`, `RULE_ACTION_DELETE_HEADER`, `RULE_ACTION_DELETE_COOKIE`, `RULE_ACTION_RESPONSE_REWRITE_HEADER`, `RULE_ACTION_RESPONSE_DELETE_HEADER`, `RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE`, `RULE_ACTION_FORWARD_TO_DC`, `RULE_ACTION_ALERT`, `RULE_ACTION_BLOCK`, `RULE_ACTION_BLOCK_USER`, `RULE_ACTION_BLOCK_IP`, `RULE_ACTION_RETRY`, `RULE_ACTION_INTRUSIVE_HTML`, `RULE_ACTION_CAPTCHA`, `RULE_ACTION_RATE`, `RULE_ACTION_CUSTOM_ERROR_RESPONSE`",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 			},
 			"filter": {
 				Description: "The filter defines the conditions that trigger the rule action. For action `RULE_ACTION_SIMPLIFIED_REDIRECT` filter is not relevant. For other actions, if left empty, the rule is always run.",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 			},
 			// Optional Arguments
 			"response_code": {
