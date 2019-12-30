@@ -75,7 +75,7 @@ func (c *Client) ConfigureACLSecurityRule(siteID int, ruleID, continents, countr
 		resString = siteStatusResponse.Res.(string)
 	}
 
-	// Look at the response status code from Incapsula data center
+	// Look at the response status code from Incapsula
 	if resString == "0" || resString == "2" {
 		return &siteStatusResponse, nil
 	}
