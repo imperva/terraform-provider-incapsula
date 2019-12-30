@@ -212,7 +212,7 @@ func (c *Client) DeleteCertificate(siteID string) error {
 		resString = certificateDeleteResponse.Res.(string)
 	}
 
-	// Look at the response status code from Incapsula data center
+	// Look at the response status code from Incapsula
 	if resString == "0" {
 		return nil
 	}

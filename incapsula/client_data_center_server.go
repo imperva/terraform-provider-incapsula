@@ -147,7 +147,7 @@ func (c *Client) DeleteDataCenterServer(serverID string) error {
 		resString = dataCenterServerDeleteResponse.Res.(string)
 	}
 
-	// Look at the response status code from Incapsula data center
+	// Look at the response status code from Incapsula
 	if resString == "0" || resString == "2" {
 		return nil
 	}
