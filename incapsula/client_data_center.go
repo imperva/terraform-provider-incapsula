@@ -22,7 +22,7 @@ type DataCenterAddResponse struct {
 
 // DataCenterListResponse contains list of data centers and servers
 type DataCenterListResponse struct {
-	Res string `json:"res"`
+	Res interface{} `json:"res"`
 	DCs []struct {
 		ID      string `json:"id"`
 		Enabled string `json:"enabled"`
@@ -112,8 +112,18 @@ func (c *Client) ListDataCenters(siteID string) (*DataCenterListResponse, error)
 		return nil, fmt.Errorf("Error parsing data centers list JSON response for siteID: %s %s\nresponse: %s", siteID, err, string(responseBody))
 	}
 
+	// Res can sometimes oscillate between a string and number
+	// We need to add safeguards for this inside the provider
+	var resString string
+
+	if resNumber, ok := dataCenterListResponse.Res.(float64); ok {
+		resString = fmt.Sprintf("%d", int(resNumber))
+	} else {
+		resString = dataCenterListResponse.Res.(string)
+	}
+
 	// Look at the response status code from Incapsula
-	if dataCenterListResponse.Res != "0" {
+	if resString != "0" {
 		return nil, fmt.Errorf("Error from Incapsula service when getting data centers list (site_id: %s): %s", siteID, string(responseBody))
 	}
 
@@ -183,7 +193,7 @@ func (c *Client) DeleteDataCenter(dcID string) error {
 		ResMessage string      `json:"res_message"`
 	}
 
-	log.Printf("[INFO] Deleting Incapsula data center id: %s)\n", dcID)
+	log.Printf("[INFO] Deleting Incapsula data center id: %s\n", dcID)
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterDelete), url.Values{
@@ -219,7 +229,7 @@ func (c *Client) DeleteDataCenter(dcID string) error {
 		resString = dataCenterDeleteResponse.Res.(string)
 	}
 
-	// Look at the response status code from Incapsula data center
+	// Look at the response status code from Incapsula
 	if resString == "0" || resString == "2" || resString == "9413" {
 		return nil
 	}

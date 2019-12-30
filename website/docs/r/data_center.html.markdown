@@ -17,7 +17,7 @@ resource "incapsula_data_center" "example-data-center" {
   site_id = "${incapsula_site.example-site.id}"
   name = "Example data center"
   server_address = "8.8.4.4"
-  is_content = "yes"
+  is_content = "true"
 }
 ```
 
