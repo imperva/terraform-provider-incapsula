@@ -44,14 +44,14 @@ resource "incapsula_data_center" "example-data-center-test" {
   site_id = "${incapsula_site.example-site.id}"
   name = "Example data center test"
   server_address = "8.8.4.8"
-  is_content = "yes"
+  is_content = "true"
 }
 
 resource "incapsula_data_center" "example-data-center" {
   site_id = "${incapsula_site.example-site.id}"
   name = "Example data center"
   server_address = "8.8.4.4"
-  is_content = "yes"
+  is_content = "true"
 }
 
 # Data Center Servers
@@ -59,7 +59,7 @@ resource "incapsula_data_center_server" "example-data-center-server" {
   dc_id = "${incapsula_data_center.example-data-center.id}"
   site_id = "${incapsula_site.example-site.id}"
   server_address = "4.4.4.4"
-  is_standby = "no"
+  is_standby = "false"
 }
 
 ###################################################################

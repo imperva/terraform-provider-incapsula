@@ -3,7 +3,6 @@ package incapsula
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -22,10 +21,7 @@ func resourceDataCenter() *schema.Resource {
 					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id/dc_id", d.Id())
 				}
 
-				siteID, err := strconv.Atoi(idSlice[0])
-				if err != nil {
-					return nil, err
-				}
+				siteID := idSlice[0]
 				dcID := idSlice[1]
 
 				d.Set("site_id", siteID)
@@ -57,12 +53,13 @@ func resourceDataCenter() *schema.Resource {
 				Description: "Enables the data center.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "yes",
+				Default:     "true",
 			},
 			"is_standby": {
 				Description: "Defines the data center as standby for failover.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Default:     "false",
 			},
 			"is_content": {
 				Description: "The data center will be available for specific resources (Forward Delivery Rules).",
@@ -120,9 +117,11 @@ func resourceDataCenterRead(d *schema.ResourceData, m interface{}) error {
 	for _, dataCenter := range listDataCentersResponse.DCs {
 		if dataCenter.ID == d.Id() {
 			d.Set("name", dataCenter.Name)
-			d.Set("enabled", dataCenter.Enabled)
+			d.Set("is_enabled", dataCenter.Enabled)
 			d.Set("is_content", dataCenter.ContentOnly)
 			d.Set("is_standby", dataCenter.IsActive)
+			// Server address is the first value in the nested servers object
+			d.Set("server_address", dataCenter.Servers[0].Address)
 		}
 	}
 

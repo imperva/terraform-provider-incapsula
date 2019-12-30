@@ -68,14 +68,11 @@ func testAccCheckIncapsulaDataCenterDestroy(state *terraform.State) error {
 			return fmt.Errorf("Incapsula site ID does not exist")
 		}
 
-		listDataCenterResponse, err := client.ListDataCenters(siteID)
+		listDataCenterResponse, _ := client.ListDataCenters(siteID)
 		for _, dc := range listDataCenterResponse.DCs {
 			if dc.Name == dataCenterName {
 				return fmt.Errorf("Incapsula data center: %s (site_id: %s) still exists", dataCenterName, siteID)
 			}
-		}
-		if err == nil {
-			return fmt.Errorf("Incapsula site for domain: %s (site id: %s) still exists", testAccDomain, siteID)
 		}
 	}
 
@@ -89,10 +86,17 @@ func testCheckIncapsulaDataCenterExists(name string) resource.TestCheckFunc {
 			return fmt.Errorf("Incapsula site resource not found: %s", siteResourceName)
 		}
 
-		siteID := siteRes.Primary.ID
-		if siteID == "" {
+		siteIDString := siteRes.Primary.ID
+		if siteIDString == "" {
 			return fmt.Errorf("Incapsula site ID does not exist")
 		}
+
+		siteID, err := strconv.Atoi(siteIDString)
+		if err != nil {
+			return fmt.Errorf("Error parsing Rule ID %v to int", siteIDString)
+		}
+
+		domain := siteRes.Primary.Attributes["domain"]
 
 		res, ok := state.RootModule().Resources[name]
 		if !ok {
@@ -105,14 +109,22 @@ func testCheckIncapsulaDataCenterExists(name string) resource.TestCheckFunc {
 		}
 
 		client := testAccProvider.Meta().(*Client)
-		dataCenterListResponse, err := client.ListDataCenters(siteID)
+
+		// If the site has already been deleted then return nil
+		// Otherwise check the data center list
+		_, err = client.SiteStatus(domain, siteID)
+		if err != nil {
+			return nil
+		}
+
+		dataCenterListResponse, err := client.ListDataCenters(siteIDString)
 		if dataCenterListResponse == nil {
-			return fmt.Errorf("Incapsula data center: %s (site id: %s) does not exist\n%s", name, siteID, err)
+			return fmt.Errorf("Incapsula data center: %s (Site ID: %d) does not exist\n%s", name, siteID, err)
 		}
 
 		for _, dc := range dataCenterListResponse.DCs {
 			if dc.Name == dataCenterName && dc.ID != dcID {
-				return fmt.Errorf("Incapsula data center: %s (dc_id: %s) has invalid ID", name, dcID)
+				return fmt.Errorf("Incapsula data center: %s (DC ID: %s) has invalid ID", name, dcID)
 			}
 		}
 
@@ -126,8 +138,8 @@ resource "incapsula_data_center" "testacc-terraform-data-center" {
   site_id = "${incapsula_site.testacc-terraform-site.id}"
   name = "%s"
   server_address = "8.8.8.5"
-  is_standby = "yes"
-  is_content = "yes"
+  is_standby = "false"
+  is_content = "true"
   depends_on = ["%s"]
 }`, dataCenterName, siteResourceName,
 	)
