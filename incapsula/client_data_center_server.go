@@ -130,9 +130,6 @@ func (c *Client) DeleteDataCenterServer(serverID string) error {
 	// Dump JSON
 	log.Printf("[DEBUG] Incapsula delete data center server JSON response: %s\n", string(responseBody))
 
-	fmt.Println(1111111111)
-	fmt.Println(string(responseBody))
-
 	// Parse the JSON
 	var dataCenterServerDeleteResponse DataCenterServerDeleteResponse
 	err = json.Unmarshal([]byte(responseBody), &dataCenterServerDeleteResponse)
