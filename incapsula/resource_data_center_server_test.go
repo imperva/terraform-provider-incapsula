@@ -2,7 +2,6 @@ package incapsula
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform/terraform"
@@ -42,18 +41,14 @@ func testAccStateDCID(s *terraform.State) (string, error) {
 			continue
 		}
 
-		serverID, err := strconv.Atoi(rs.Primary.ID)
-		if err != nil {
-			return "", fmt.Errorf("Error parsing data center ID %v to int", rs.Primary.ID)
-		}
-		dcID, err := strconv.Atoi(rs.Primary.Attributes["dc_id"])
-		if err != nil {
-			return "", fmt.Errorf("Error parsing dc_id %v to int", rs.Primary.Attributes["dc_id"])
-		}
-		return fmt.Sprintf("%d/%d", dcID, serverID), nil
+		serverID := rs.Primary.ID
+		siteID := rs.Primary.Attributes["site_id"]
+		dcID := rs.Primary.Attributes["dc_id"]
+
+		return fmt.Sprintf("%s/%s/%s", siteID, dcID, serverID), nil
 	}
 
-	return "", fmt.Errorf("Error finding dc_id")
+	return "", fmt.Errorf("Error finding a data center server")
 }
 
 func testAccCheckIncapsulaDataCenterServerDestroy(state *terraform.State) error {
@@ -132,7 +127,7 @@ resource "incapsula_data_center_server" "testacc-terraform-data-center-server" {
   dc_id = "${incapsula_data_center.testacc-terraform-data-center.id}"
   site_id = "${incapsula_site.testacc-terraform-site.id}"
   server_address = "4.4.4.4"
-  is_standby = "yes"
+	is_enabled = "true"
   depends_on = ["%s", "%s"]
 }`, siteResourceName, dataCenterResourceName,
 	)

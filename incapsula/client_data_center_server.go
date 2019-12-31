@@ -111,7 +111,7 @@ func (c *Client) DeleteDataCenterServer(serverID string) error {
 		ServerID string      `json:"server_id"`
 	}
 
-	log.Printf("[INFO] Deleting Incapsula data center server serverID: %s)\n", serverID)
+	log.Printf("[INFO] Deleting Incapsula data center server ID: %s\n", serverID)
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServerDelete), url.Values{
@@ -129,6 +129,9 @@ func (c *Client) DeleteDataCenterServer(serverID string) error {
 
 	// Dump JSON
 	log.Printf("[DEBUG] Incapsula delete data center server JSON response: %s\n", string(responseBody))
+
+	fmt.Println(1111111111)
+	fmt.Println(string(responseBody))
 
 	// Parse the JSON
 	var dataCenterServerDeleteResponse DataCenterServerDeleteResponse
