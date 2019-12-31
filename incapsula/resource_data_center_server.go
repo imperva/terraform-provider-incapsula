@@ -3,7 +3,6 @@ package incapsula
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -18,16 +17,15 @@ func resourceDataCenterServer() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				idSlice := strings.Split(d.Id(), "/")
-				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
-					return nil, fmt.Errorf("unexpected format of ID (%q), expected dc_id/server_id", d.Id())
+				if len(idSlice) != 3 || idSlice[0] == "" || idSlice[1] == "" || idSlice[2] == "" {
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id/dc_id/server_id", d.Id())
 				}
 
-				dcID, err := strconv.Atoi(idSlice[0])
-				if err != nil {
-					return nil, err
-				}
-				serverID := idSlice[1]
+				siteID := idSlice[0]
+				dcID := idSlice[1]
+				serverID := idSlice[2]
 
+				d.Set("site_id", siteID)
 				d.Set("dc_id", dcID)
 				d.SetId(serverID)
 				return []*schema.ResourceData{d}, nil
@@ -57,12 +55,13 @@ func resourceDataCenterServer() *schema.Resource {
 				Description: "Set the server as Active (P0) or Standby (P1).",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Default:     "false",
 			},
 			"is_enabled": {
 				Description: "Enables the data center server.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "yes",
+				Default:     "true",
 			},
 		},
 	}
@@ -108,8 +107,9 @@ func resourceDataCenterServerRead(d *schema.ResourceData, m interface{}) error {
 	for _, dataCenter := range listDataCentersResponse.DCs {
 		if dataCenter.ID == d.Get("dc_id").(string) {
 			for _, server := range dataCenter.Servers {
-				if server.Address == d.Get("server_address").(string) {
-					d.Set("enabled", server.Enabled)
+				// Check the server ID
+				if server.ID == d.Id() {
+					d.Set("is_enabled", server.Enabled)
 					d.Set("server_address", server.Address)
 					d.Set("is_standby", server.IsStandBy)
 				}

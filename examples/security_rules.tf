@@ -26,7 +26,6 @@ resource "incapsula_data_center" "example-data-center" {
   is_content = "true"
 }
 
-Data Center Servers
 resource "incapsula_data_center_server" "example-data-center-server" {
   dc_id = "${incapsula_data_center.example-data-center.id}"
   site_id = "${incapsula_site.example-site.id}"
