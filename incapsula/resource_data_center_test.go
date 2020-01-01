@@ -76,6 +76,13 @@ func testAccCheckIncapsulaDataCenterDestroy(state *terraform.State) error {
 		}
 
 		listDataCenterResponse, _ := client.ListDataCenters(siteID)
+
+		// See comment above - the data center may have already been deleted
+		// This workaround will be removed in the future
+		if listDataCenterResponse == nil || listDataCenterResponse.DCs == nil || len(listDataCenterResponse.DCs) == 0 {
+			return nil
+		}
+
 		for _, dc := range listDataCenterResponse.DCs {
 			if dc.Name == dataCenterName {
 				return fmt.Errorf("Incapsula data center: %s (site_id: %s) still exists", dataCenterName, siteID)
