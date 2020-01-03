@@ -37,9 +37,8 @@ type SecurityRuleExceptionCreateResponse struct {
 	Status      string `json:"status"`
 }
 
-// AddSecurityRuleException adds an exception to a security rule
-func (c *Client) AddSecurityRuleException(siteID int, ruleID, client_app_types, client_apps, countries, continents, ips, url_patterns, urls, user_agents, parameters string) (*SecurityRuleExceptionCreateResponse, error) {
-
+// AddSecurityRuleException adds a security rule exception
+func (c *Client) AddSecurityRuleException(siteID int, ruleID, clientAppTypes, clientApps, countries, continents, ips, urlPatterns, urls, userAgents, parameters string) (*SecurityRuleExceptionCreateResponse, error) {
 	// Base URL values
 	values := url.Values{
 		"api_id":            {c.config.APIID},
@@ -56,47 +55,28 @@ func (c *Client) AddSecurityRuleException(siteID int, ruleID, client_app_types, 
 		for i := 0; i < len(ruleParams); i++ {
 			// Add param values for specific ruleID based on securityRuleExceptionParamMapping
 			param := ruleParams[i]
-			switch param {
-			case "client_app_types":
-				if client_app_types != "" {
-					values.Add("client_app_types", client_app_types)
-				}
-			case "client_apps":
-				if client_apps != "" {
-					values.Add("client_apps", client_apps)
-				}
-			case "countries":
-				if countries != "" {
-					values.Add("countries", countries)
-				}
-			case "continents":
-				if continents != "" {
-					values.Add("continents", continents)
-				}
-			case "ips":
-				if ips != "" {
-					values.Add("ips", ips)
-				}
-			case "parameters":
-				if parameters != "" {
-					values.Add("parameters", parameters)
-				}
-			case "url_patterns":
-				if url_patterns != "" {
-					values.Add("url_patterns", url_patterns)
-				}
-			case "urls":
-				if urls != "" {
-					values.Add("urls", urls)
-				}
-			case "user_agents":
-				if user_agents != "" {
-					values.Add("user_agents", user_agents)
-				}
+			if param == "client_app_types" && clientAppTypes != "" {
+				values.Add("client_app_types", clientAppTypes)
+			} else if param == "client_apps" && clientApps != "" {
+				values.Add("client_apps", clientApps)
+			} else if param == "countries" && countries != "" {
+				values.Add("countries", countries)
+			} else if param == "continents" && continents != "" {
+				values.Add("continents", continents)
+			} else if param == "ips" && ips != "" {
+				values.Add("ips", ips)
+			} else if param == "parameters" && parameters != "" {
+				values.Add("parameters", parameters)
+			} else if param == "url_patterns" && urlPatterns != "" {
+				values.Add("url_patterns", urlPatterns)
+			} else if param == "urls" && urls != "" {
+				values.Add("urls", urls)
+			} else if param == "user_agents" && userAgents != "" {
+				values.Add("user_agents", userAgents)
 			}
 		}
 	} else {
-		return nil, fmt.Errorf("Error - invalid security rule exception rule_id (%s)", ruleID)
+		return nil, fmt.Errorf("Error configuring security rule exception: invalid rule_id (%s)", ruleID)
 	}
 
 	// Post form to Incapsula
@@ -127,9 +107,8 @@ func (c *Client) AddSecurityRuleException(siteID int, ruleID, client_app_types, 
 	return &securityRuleExceptionCreateResponse, nil
 }
 
-// EditSecurityRuleException adds an exception to a security rule
-func (c *Client) EditSecurityRuleException(siteID int, ruleID, client_app_types, client_apps, countries, continents, ips, url_patterns, urls, user_agents, parameters, whitelistID string) (*SiteStatusResponse, error) {
-	//whitelistID, _ := strconv.Atoi(whitelist_id)
+// EditSecurityRuleException edits a security rule exception
+func (c *Client) EditSecurityRuleException(siteID int, ruleID, clientAppTypes, clientApps, countries, continents, ips, urlPatterns, urls, userAgents, parameters, whitelistID string) (*SiteStatusResponse, error) {
 	// Base URL values
 	values := url.Values{
 		"api_id":       {c.config.APIID},
@@ -146,47 +125,28 @@ func (c *Client) EditSecurityRuleException(siteID int, ruleID, client_app_types,
 		for i := 0; i < len(ruleParams); i++ {
 			// Add param values for specific ruleID based on securityRuleExceptionParamMapping
 			param := ruleParams[i]
-			switch param {
-			case "client_app_types":
-				if client_app_types != "" {
-					values.Add("client_app_types", client_app_types)
-				}
-			case "client_apps":
-				if client_apps != "" {
-					values.Add("client_apps", client_apps)
-				}
-			case "countries":
-				if countries != "" {
-					values.Add("countries", countries)
-				}
-			case "continents":
-				if continents != "" {
-					values.Add("continents", continents)
-				}
-			case "ips":
-				if ips != "" {
-					values.Add("ips", ips)
-				}
-			case "parameters":
-				if parameters != "" {
-					values.Add("parameters", parameters)
-				}
-			case "url_patterns":
-				if url_patterns != "" {
-					values.Add("url_patterns", url_patterns)
-				}
-			case "urls":
-				if urls != "" {
-					values.Add("urls", urls)
-				}
-			case "user_agents":
-				if user_agents != "" {
-					values.Add("user_agents", user_agents)
-				}
+			if param == "client_app_types" && clientAppTypes != "" {
+				values.Add("client_app_types", clientAppTypes)
+			} else if param == "client_apps" && clientApps != "" {
+				values.Add("client_apps", clientApps)
+			} else if param == "countries" && countries != "" {
+				values.Add("countries", countries)
+			} else if param == "continents" && continents != "" {
+				values.Add("continents", continents)
+			} else if param == "ips" && ips != "" {
+				values.Add("ips", ips)
+			} else if param == "parameters" && parameters != "" {
+				values.Add("parameters", parameters)
+			} else if param == "url_patterns" && urlPatterns != "" {
+				values.Add("url_patterns", urlPatterns)
+			} else if param == "urls" && urls != "" {
+				values.Add("urls", urls)
+			} else if param == "user_agents" && userAgents != "" {
+				values.Add("user_agents", userAgents)
 			}
 		}
 	} else {
-		return nil, fmt.Errorf("Error - invalid security rule exception rule_id (%s)", ruleID)
+		return nil, fmt.Errorf("Error configuring security rule exception: invalid rule_id (%s)", ruleID)
 	}
 
 	// Post form to Incapsula
@@ -253,6 +213,7 @@ func (c *Client) ListSecurityRuleExceptions(siteID, ruleID string) (*SiteStatusR
 	return &siteStatusResponse, nil
 }
 
+// DeleteSecurityRuleException deletes a security rule exception
 func (c *Client) DeleteSecurityRuleException(siteID int, ruleID, whitelistID string) error {
 	type ExceptionDeleteResponse struct {
 		Res        int    `json:"res"`
@@ -260,7 +221,6 @@ func (c *Client) DeleteSecurityRuleException(siteID int, ruleID, whitelistID str
 		Status     string `json:"status"`
 	}
 
-	//whitelistID, _ := strconv.Atoi(whitelist_id)
 	// Base URL values
 	values := url.Values{
 		"api_id":           {c.config.APIID},

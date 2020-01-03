@@ -79,7 +79,7 @@ func TestClientAddSecurityRuleExceptionInvalidRuleID(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error - invalid security rule exception rule_id (%s)", ruleID)) {
+	if err.Error() != fmt.Sprintf("Error configuring security rule exception: invalid rule_id (%s)", ruleID) {
 		t.Errorf("Should have received a bad WAF security error, got: %s", err)
 	}
 	if addSecurityRuleExceptionResponse != nil {
@@ -184,7 +184,7 @@ func TestClientEditSecurityRuleExceptionInvalidRuleID(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error - invalid security rule exception rule_id (%s)", ruleID)) {
+	if err.Error() != fmt.Sprintf("Error configuring security rule exception: invalid rule_id (%s)", ruleID) {
 		t.Errorf("Should have received a bad WAF security error, got: %s", err)
 	}
 	if editSecurityRuleExceptionResponse != nil {
