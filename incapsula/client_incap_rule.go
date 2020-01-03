@@ -99,7 +99,7 @@ func (c *Client) ReadIncapRule(siteID string, ruleID int) (*IncapRuleWithID, err
 	var incapRuleWithID IncapRuleWithID
 	err = json.Unmarshal([]byte(responseBody), &incapRuleWithID)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing Incap Rule (%d) JSON response for Site ID %s: %s\nresponse: %s", ruleID, siteID, err, string(responseBody))
+		return nil, fmt.Errorf("Error parsing Incap Rule %d JSON response for Site ID %s: %s\nresponse: %s", ruleID, siteID, err, string(responseBody))
 	}
 
 	return &incapRuleWithID, nil
@@ -136,14 +136,14 @@ func (c *Client) UpdateIncapRule(siteID string, ruleID int, rule *IncapRule) (*I
 
 	// Check the response code
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Error status code %d from Incapsula service when updating Incap Rule for Site ID %s: %s", resp.StatusCode, siteID, string(responseBody))
+		return nil, fmt.Errorf("Error status code %d from Incapsula service when updating Incap Rule %d for Site ID %s: %s", resp.StatusCode, ruleID, siteID, string(responseBody))
 	}
 
 	// Parse the JSON
 	var incapRuleWithID IncapRuleWithID
 	err = json.Unmarshal([]byte(responseBody), &incapRuleWithID)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing Incap Rule JSON response for Site ID %s: %s\nresponse: %s", siteID, err, string(responseBody))
+		return nil, fmt.Errorf("Error parsing Incap Rule %d JSON response for Site ID %s: %s\nresponse: %s", ruleID, siteID, err, string(responseBody))
 	}
 
 	return &incapRuleWithID, nil
@@ -175,7 +175,7 @@ func (c *Client) DeleteIncapRule(siteID string, ruleID int) error {
 
 	// Check the response code
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("Error status code %d from Incapsula service when deleting Incap Rule for Site ID %s: %s", resp.StatusCode, siteID, string(responseBody))
+		return fmt.Errorf("Error status code %d from Incapsula service when deleting Incap Rule %d for Site ID %s: %s", resp.StatusCode, ruleID, siteID, string(responseBody))
 	}
 
 	return nil
