@@ -21,9 +21,8 @@ func TestClientConfigureWAFSecurityRuleBadConnection(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := 1234
 	ruleID := "api.threats.backdoor"
-	security_rule_action := "badRuleAction"
-	// siteID, ruleID, security_rule_action, activation_mode, ddos_traffic_threshold, block_bad_bots, challenge_suspected_bots
-	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, security_rule_action, "", "", "", "")
+	securityRuleAction := "badRuleAction"
+	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, securityRuleAction, "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -50,8 +49,8 @@ func TestClientConfigureWAFSecurityRuleBadJSON(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 1234
 	ruleID := "api.threats.backdoor"
-	security_rule_action := "badRuleAction"
-	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, security_rule_action, "", "", "", "")
+	securityRuleAction := "badRuleAction"
+	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, securityRuleAction, "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -78,8 +77,8 @@ func TestClientConfigureWAFSecurityRuleInvalidRuleID(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 1234
 	ruleID := "bad_rule_id"
-	security_rule_action := "bad_rule_action"
-	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, security_rule_action, "", "", "", "")
+	securityRuleAction := "bad_rule_action"
+	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, securityRuleAction, "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -106,8 +105,8 @@ func TestClientConfigureWAFSecurityRuleInvalidRuleAction(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 1234
 	ruleID := "api.threats.backdoor"
-	security_rule_action := "bad_rule_action"
-	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, security_rule_action, "", "", "", "")
+	securityRuleAction := "bad_rule_action"
+	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, securityRuleAction, "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -133,10 +132,10 @@ func TestClientConfigureWAFSecurityRuleInvalidRule_activationMode(t *testing.T) 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 1234
-	ruleID := backdoorRuleId
-	activation_mode := "api.threats.ddos.activation_mode.on"
-	ddos_traffic_threshold := "123"
-	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, "", activation_mode, ddos_traffic_threshold, "", "")
+	ruleID := backdoorRuleID
+	activationMode := "api.threats.ddos.activation_mode.on"
+	ddosTrafficThreshold := "123"
+	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, "", activationMode, ddosTrafficThreshold, "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -162,10 +161,10 @@ func TestClientConfigureWAFSecurityRuleInvalidRule_ddosThreshold(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 1234
-	ruleID := ddosRuleId
-	activation_mode := "api.threats.ddos.activation_mode.on"
-	ddos_traffic_threshold := "123"
-	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, "", activation_mode, ddos_traffic_threshold, "", "")
+	ruleID := ddosRuleID
+	activationMode := "api.threats.ddos.activation_mode.on"
+	ddosTrafficThreshold := "123"
+	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, "", activationMode, ddosTrafficThreshold, "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -191,10 +190,10 @@ func TestClientConfigureWAFSecurityRuleInvalidRule_blockBadBots(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 1234
-	ruleID := botAccessControlRuleId
-	challenge_suspected_bots := "true"
-	block_bad_bots := "123"
-	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, "", "", "", block_bad_bots, challenge_suspected_bots)
+	ruleID := botAccessControlRuleID
+	challengeSuspectedBots := "true"
+	blockBadBots := "123"
+	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, "", "", "", blockBadBots, challengeSuspectedBots)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -220,10 +219,10 @@ func TestClientConfigureWAFSecurityRuleInvalidRule_challengeSuspectedBots(t *tes
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 1234
-	ruleID := botAccessControlRuleId
-	challenge_suspected_bots := "123"
-	block_bad_bots := "true"
-	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, "", "", "", block_bad_bots, challenge_suspected_bots)
+	ruleID := botAccessControlRuleID
+	challengeSuspectedBots := "123"
+	blockBadBots := "true"
+	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, "", "", "", blockBadBots, challengeSuspectedBots)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -253,7 +252,7 @@ func TestClientConfigureWAFSecurityRuleValidRule(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 1234
-	ruleID := backdoorRuleId
+	ruleID := backdoorRuleID
 	securityRuleAction := "api.threats.action.quarantine_url"
 	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, securityRuleAction, "", "", "", "")
 	if err != nil {
@@ -278,7 +277,7 @@ func TestClientConfigureWAFSecurityRuleResultCodeStringValidRule(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 1234
-	ruleID := backdoorRuleId
+	ruleID := backdoorRuleID
 	securityRuleAction := "api.threats.action.quarantine_url"
 	configureWAFSecurityRuleResponse, err := client.ConfigureWAFSecurityRule(siteID, ruleID, securityRuleAction, "", "", "", "")
 	if err != nil {

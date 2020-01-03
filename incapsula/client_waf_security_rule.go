@@ -13,17 +13,16 @@ import (
 const endpointWAFRuleConfigure = "sites/configure/security"
 
 // WAF Rule Enumerations
-const backdoorRuleId = "api.threats.backdoor"
-const crossSiteScriptingRuleId = "api.threats.cross_site_scripting"
-const illegalResourceAccessRuleId = "api.threats.illegal_resource_access"
-const remoteFileInclusionRuleId = "api.threats.remote_file_inclusion"
-const sqlInjectionRuleId = "api.threats.sql_injection"
-const ddosRuleId = "api.threats.ddos"
-const botAccessControlRuleId = "api.threats.bot_access_control"
+const backdoorRuleID = "api.threats.backdoor"
+const crossSiteScriptingRuleID = "api.threats.cross_site_scripting"
+const illegalResourceAccessRuleID = "api.threats.illegal_resource_access"
+const remoteFileInclusionRuleID = "api.threats.remote_file_inclusion"
+const sqlInjectionRuleID = "api.threats.sql_injection"
+const ddosRuleID = "api.threats.ddos"
+const botAccessControlRuleID = "api.threats.bot_access_control"
 
 // ConfigureWAFSecurityRule adds an WAF rule
-func (c *Client) ConfigureWAFSecurityRule(siteID int, ruleID, security_rule_action, activation_mode, ddos_traffic_threshold, block_bad_bots, challenge_suspected_bots string) (*SiteStatusResponse, error) {
-
+func (c *Client) ConfigureWAFSecurityRule(siteID int, ruleID, securityRuleAction, activationMode, ddosTrafficThreshold, blockBadBots, challengeSuspectedBots string) (*SiteStatusResponse, error) {
 	// Base URL values
 	values := url.Values{
 		"api_id":  {c.config.APIID},
@@ -33,17 +32,17 @@ func (c *Client) ConfigureWAFSecurityRule(siteID int, ruleID, security_rule_acti
 	}
 
 	// Additional URL values for specific rule ids
-	if ruleID == backdoorRuleId || ruleID == crossSiteScriptingRuleId || ruleID == illegalResourceAccessRuleId || ruleID == remoteFileInclusionRuleId || ruleID == sqlInjectionRuleId {
-		values.Add("security_rule_action", security_rule_action)
-		log.Printf("[INFO] Configuring Incapsula WAF rule id (%s) with security_rule_action (%s) for site id (%d)\n", ruleID, security_rule_action, siteID)
-	} else if ruleID == ddosRuleId {
-		values.Add("activation_mode", activation_mode)
-		values.Add("ddos_traffic_threshold", ddos_traffic_threshold)
-		log.Printf("[INFO] Configuring Incapsula WAF rule id (%s) with activation_mode (%s) and ddos_traffic_threshold (%s) for site id (%d)\n", ruleID, activation_mode, ddos_traffic_threshold, siteID)
-	} else if ruleID == botAccessControlRuleId {
-		values.Add("block_bad_bots", block_bad_bots)
-		values.Add("challenge_suspected_bots", challenge_suspected_bots)
-		log.Printf("[INFO] Configuring Incapsula WAF rule id (%s) with block_bad_bots (%s) and challenge_suspected_bots (%s) for site id (%d)\n", ruleID, block_bad_bots, challenge_suspected_bots, siteID)
+	if ruleID == backdoorRuleID || ruleID == crossSiteScriptingRuleID || ruleID == illegalResourceAccessRuleID || ruleID == remoteFileInclusionRuleID || ruleID == sqlInjectionRuleID {
+		values.Add("security_rule_action", securityRuleAction)
+		log.Printf("[INFO] Configuring Incapsula WAF rule id (%s) with security rule action (%s) for site id (%d)\n", ruleID, securityRuleAction, siteID)
+	} else if ruleID == ddosRuleID {
+		values.Add("activation_mode", activationMode)
+		values.Add("ddos_traffic_threshold", ddosTrafficThreshold)
+		log.Printf("[INFO] Configuring Incapsula WAF rule id (%s) with activation mode (%s) and DDoS traffic threshold (%s) for site id (%d)\n", ruleID, activationMode, ddosTrafficThreshold, siteID)
+	} else if ruleID == botAccessControlRuleID {
+		values.Add("block_bad_bots", blockBadBots)
+		values.Add("challenge_suspected_bots", challengeSuspectedBots)
+		log.Printf("[INFO] Configuring Incapsula WAF rule id (%s) with block_bad_bots (%s) and challenge suspected bots (%s) for site id (%d)\n", ruleID, blockBadBots, challengeSuspectedBots, siteID)
 	} else {
 		return nil, fmt.Errorf("Error - invalid WAF security rule rule_id (%s)", ruleID)
 	}

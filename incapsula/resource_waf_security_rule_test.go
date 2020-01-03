@@ -7,12 +7,12 @@ import (
 	"testing"
 )
 
-const wafSecurityRuleName_backdoor = "Example waf backdoor rule"
-const wafSecurityRuleName_ddos = "Example waf bot rule"
-const wafSecurityRuleName_bots = "Example waf ddos rule"
-const wafSecurityRuleResourceName_backdoor = "incapsula_waf_security_rule.example-waf-backdoor-rule"
-const wafSecurityRuleResourceName_bot_access_control = "incapsula_waf_security_rule.example-waf-bot-access-control-rule"
-const wafSecurityRuleResourceName_ddos = "incapsula_waf_security_rule.example-waf-ddos-rule"
+const wafSecurityRuleNameBackdoor = "Example waf backdoor rule"
+const wafSecurityRuleNameDDoS = "Example waf bot rule"
+const wafSecurityRuleNameBots = "Example waf ddos rule"
+const wafSecurityRuleResourceNameBackdoor = "incapsula_waf_security_rule.example-waf-backdoor-rule"
+const wafSecurityRuleResourceNameBotAccessControl = "incapsula_waf_security_rule.example-waf-bot-access-control-rule"
+const wafSecurityRuleResourceNameDDoS = "incapsula_waf_security_rule.example-waf-ddos-rule"
 
 // Test all WAF security rule good configurations, one for ruleID that uses security_rule_action, one for ddos and bots (the three variations of param combinations)
 func testAccCheckWAFSecurityRuleCreate_goodConfig_backdoor(t *testing.T) {
@@ -24,12 +24,12 @@ func testAccCheckWAFSecurityRuleCreate_goodConfig_backdoor(t *testing.T) {
 			{
 				Config: testAccCheckWAFSecurityRuleGoodConfig_backdoor(),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceName_backdoor),
-					resource.TestCheckResourceAttr(wafSecurityRuleResourceName_backdoor, "name", wafSecurityRuleName_backdoor),
+					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceNameBackdoor),
+					resource.TestCheckResourceAttr(wafSecurityRuleResourceNameBackdoor, "name", wafSecurityRuleNameBackdoor),
 				),
 			},
 			{
-				ResourceName:      wafSecurityRuleResourceName_backdoor,
+				ResourceName:      wafSecurityRuleResourceNameBackdoor,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: testAccStateWAFSecurityRuleID,
@@ -47,12 +47,12 @@ func testAccCheckWAFSecurityRuleCreate_goodConfig_ddos(t *testing.T) {
 			{
 				Config: testAccCheckWAFSecurityRuleGoodConfig_ddos(),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceName_ddos),
-					resource.TestCheckResourceAttr(wafSecurityRuleResourceName_ddos, "name", wafSecurityRuleName_ddos),
+					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceNameDDoS),
+					resource.TestCheckResourceAttr(wafSecurityRuleResourceNameDDoS, "name", wafSecurityRuleResourceNameDDoS),
 				),
 			},
 			{
-				ResourceName:      wafSecurityRuleResourceName_ddos,
+				ResourceName:      wafSecurityRuleResourceNameDDoS,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: testAccStateWAFSecurityRuleID,
@@ -70,12 +70,12 @@ func testAccCheckWAFSecurityRuleCreate_goodConfig_bots(t *testing.T) {
 			{
 				Config: testAccCheckWAFSecurityRuleGoodConfig_bots(),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceName_bot_access_control),
-					resource.TestCheckResourceAttr(wafSecurityRuleResourceName_bot_access_control, "name", wafSecurityRuleName_bots),
+					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceNameBotAccessControl),
+					resource.TestCheckResourceAttr(wafSecurityRuleResourceNameBotAccessControl, "name", wafSecurityRuleResourceNameBotAccessControl),
 				),
 			},
 			{
-				ResourceName:      wafSecurityRuleResourceName_bot_access_control,
+				ResourceName:      wafSecurityRuleResourceNameBotAccessControl,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: testAccStateWAFSecurityRuleID,
@@ -93,12 +93,12 @@ func testAccCheckWAFSecurityRuleCreate_badConfig_backdoor(t *testing.T) {
 			{
 				Config: testAccCheckWAFSecurityRuleBadConfig_backdoor(),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceName_backdoor),
-					resource.TestCheckResourceAttr(wafSecurityRuleResourceName_backdoor, "name", wafSecurityRuleName_backdoor),
+					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceNameBackdoor),
+					resource.TestCheckResourceAttr(wafSecurityRuleResourceNameBackdoor, "name", wafSecurityRuleResourceNameBackdoor),
 				),
 			},
 			{
-				ResourceName:      wafSecurityRuleResourceName_backdoor,
+				ResourceName:      wafSecurityRuleResourceNameBackdoor,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: testAccStateWAFSecurityRuleID,
@@ -116,12 +116,12 @@ func testAccCheckWAFSecurityRuleCreate_badConfig_ddos(t *testing.T) {
 			{
 				Config: testAccCheckWAFSecurityRuleBadConfig_ddos(),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceName_ddos),
-					resource.TestCheckResourceAttr(wafSecurityRuleResourceName_ddos, "name", wafSecurityRuleName_ddos),
+					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceNameDDoS),
+					resource.TestCheckResourceAttr(wafSecurityRuleResourceNameDDoS, "name", wafSecurityRuleResourceNameDDoS),
 				),
 			},
 			{
-				ResourceName:      wafSecurityRuleResourceName_ddos,
+				ResourceName:      wafSecurityRuleResourceNameDDoS,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: testAccStateWAFSecurityRuleID,
@@ -139,12 +139,12 @@ func testAccCheckWAFSecurityRuleCreate_badConfig_bots(t *testing.T) {
 			{
 				Config: testAccCheckWAFSecurityRuleBadConfig_bots(),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceName_bot_access_control),
-					resource.TestCheckResourceAttr(wafSecurityRuleResourceName_bot_access_control, "name", wafSecurityRuleName_bots),
+					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceNameBotAccessControl),
+					resource.TestCheckResourceAttr(wafSecurityRuleResourceNameBotAccessControl, "name", wafSecurityRuleNameBots),
 				),
 			},
 			{
-				ResourceName:      wafSecurityRuleResourceName_bot_access_control,
+				ResourceName:      wafSecurityRuleResourceNameBotAccessControl,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: testAccStateWAFSecurityRuleID,
@@ -161,12 +161,12 @@ func testAccCheckWAFSecurityRuleDestroy_backdoor(state *terraform.State) error {
 
 		ruleID := res.Primary.ID
 		if ruleID == "" {
-			return fmt.Errorf("Incapsula WAF rule ID " + backdoorRuleId + " does not exist")
+			return fmt.Errorf("Incapsula WAF rule ID " + backdoorRuleID + " does not exist")
 		}
 
 		err := "nil"
 		if err == "nil" {
-			return fmt.Errorf("Incapsula WAF security rule for site for domain: %s (site id: %s) still exists", backdoorRuleId, ruleID)
+			return fmt.Errorf("Incapsula WAF security rule for site for domain: %s (site id: %s) still exists", backdoorRuleID, ruleID)
 		}
 	}
 
@@ -181,12 +181,12 @@ func testAccCheckWAFSecurityRuleDestroy_ddos(state *terraform.State) error {
 
 		ruleID := res.Primary.ID
 		if ruleID == "" {
-			return fmt.Errorf("Incapsula WAF rule ID " + backdoorRuleId + " does not exist")
+			return fmt.Errorf("Incapsula WAF rule ID " + backdoorRuleID + " does not exist")
 		}
 
 		err := "nil"
 		if err == "nil" {
-			return fmt.Errorf("Incapsula WAF security rule for site for domain: %s (site id: %s) still exists", backdoorRuleId, ruleID)
+			return fmt.Errorf("Incapsula WAF security rule for site for domain: %s (site id: %s) still exists", backdoorRuleID, ruleID)
 		}
 	}
 
@@ -201,12 +201,12 @@ func testAccCheckWAFSecurityRuleDestroy_bots(state *terraform.State) error {
 
 		ruleID := res.Primary.ID
 		if ruleID == "" {
-			return fmt.Errorf("Incapsula WAF rule ID " + backdoorRuleId + " does not exist")
+			return fmt.Errorf("Incapsula WAF rule ID " + backdoorRuleID + " does not exist")
 		}
 
 		err := "nil"
 		if err == "nil" {
-			return fmt.Errorf("Incapsula WAF security rule for site for domain: %s (site id: %s) still exists", backdoorRuleId, ruleID)
+			return fmt.Errorf("Incapsula WAF security rule for site for domain: %s (site id: %s) still exists", backdoorRuleID, ruleID)
 		}
 	}
 
