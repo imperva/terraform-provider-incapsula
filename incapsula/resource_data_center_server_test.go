@@ -19,7 +19,7 @@ func TestAccIncapsulaDataCenterServer_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaDataCenterServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaDataCenterServerConfig_basic(),
+				Config: testAccCheckIncapsulaDataCenterServerConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaDataCenterServerExists(dataCenterServerResourceName),
 					resource.TestCheckResourceAttr(dataCenterServerResourceName, "server_address", dataCenterServerAddress),
@@ -132,8 +132,8 @@ func testCheckIncapsulaDataCenterServerExists(name string) resource.TestCheckFun
 	}
 }
 
-func testAccCheckIncapsulaDataCenterServerConfig_basic() string {
-	return testAccCheckIncapsulaDataCenterConfig_basic() + fmt.Sprintf(`
+func testAccCheckIncapsulaDataCenterServerConfigBasic() string {
+	return testAccCheckIncapsulaDataCenterConfigBasic() + fmt.Sprintf(`
 resource "incapsula_data_center_server" "testacc-terraform-data-center-server" {
   dc_id = incapsula_data_center.testacc-terraform-data-center.id
   site_id = incapsula_site.testacc-terraform-site.id

@@ -11,17 +11,18 @@ import (
 
 // Security Rule Enumerations
 // NOTE: no whitelists for rule: api.acl.whitelisted_ips
-const blacklistedCountriesExceptionRuleId = "api.acl.blacklisted_countries"
-const blacklistedURLsExceptionRuleId = "api.acl.blacklisted_urls"
-const blacklistedIPsExceptionRuleId = "api.acl.blacklisted_ips"
-const backdoorExceptionRuleId = "api.threats.backdoor"
-const crossSiteScriptingExceptionRuleId = "api.threats.cross_site_scripting"
-const illegalResourceAccessExceptionRuleId = "api.threats.illegal_resource_access"
-const remoteFileInclusionExceptionRuleId = "api.threats.remote_file_inclusion"
-const sqlInjectionExceptionRuleId = "api.threats.sql_injection"
-const ddosExceptionRuleId = "api.threats.ddos"
-const botAccessControlExceptionRuleId = "api.threats.bot_access_control"
+const blacklistedCountriesExceptionRuleID = "api.acl.blacklisted_countries"
+const blacklistedURLsExceptionRuleID = "api.acl.blacklisted_urls"
+const blacklistedIPsExceptionRuleID = "api.acl.blacklisted_ips"
+const backdoorExceptionRuleID = "api.threats.backdoor"
+const crossSiteScriptingExceptionRuleID = "api.threats.cross_site_scripting"
+const illegalResourceAccessExceptionRuleID = "api.threats.illegal_resource_access"
+const remoteFileInclusionExceptionRuleID = "api.threats.remote_file_inclusion"
+const sqlInjectionExceptionRuleID = "api.threats.sql_injection"
+const ddosExceptionRuleID = "api.threats.ddos"
+const botAccessControlExceptionRuleID = "api.threats.bot_access_control"
 
+// DeleteSecurityRuleExceptionResponse contains the response code for deleting a security exception
 type DeleteSecurityRuleExceptionResponse struct {
 	Res int `json:"res"`
 }
@@ -173,7 +174,7 @@ func resourceSecurityRuleExceptionRead(d *schema.ResourceData, m interface{}) er
 
 	// Now with the site status, iterate through the rules and find our ID
 	exceptionFound := false
-	if ruleID == blacklistedCountriesExceptionRuleId || ruleID == blacklistedURLsExceptionRuleId || ruleID == blacklistedIPsExceptionRuleId {
+	if ruleID == blacklistedCountriesExceptionRuleID || ruleID == blacklistedURLsExceptionRuleID || ruleID == blacklistedIPsExceptionRuleID {
 		for _, entry := range siteStatusResponse.Security.Acls.Rules {
 			if entry.ID == d.Get("rule_id").(string) {
 				for _, exception := range entry.Exceptions {
@@ -222,7 +223,7 @@ func resourceSecurityRuleExceptionUpdate(d *schema.ResourceData, m interface{}) 
 	// Add the appropriate exception params based on ruleID, set exception_id_only to return the whitelist_id for newly created rule
 	switch ruleID {
 	// ACL RuleIDs
-	case blacklistedCountriesExceptionRuleId:
+	case blacklistedCountriesExceptionRuleID:
 		_, err := client.EditSecurityRuleException(
 			d.Get("site_id").(int),
 			ruleID,
@@ -241,7 +242,7 @@ func resourceSecurityRuleExceptionUpdate(d *schema.ResourceData, m interface{}) 
 			log.Printf("[ERROR] Could not update Incapsula security rule exception for rule_id (%s) on site_id (%d), %s\n", ruleID, d.Get("site_id").(int), err)
 			return err
 		}
-	case blacklistedIPsExceptionRuleId:
+	case blacklistedIPsExceptionRuleID:
 		_, err := client.EditSecurityRuleException(
 			d.Get("site_id").(int),
 			ruleID,
@@ -260,7 +261,7 @@ func resourceSecurityRuleExceptionUpdate(d *schema.ResourceData, m interface{}) 
 			log.Printf("[ERROR] Could not update Incapsula security rule exception for rule_id (%s) on site_id (%d), %s\n", ruleID, d.Get("site_id").(int), err)
 			return err
 		}
-	case blacklistedURLsExceptionRuleId:
+	case blacklistedURLsExceptionRuleID:
 		_, err := client.EditSecurityRuleException(
 			d.Get("site_id").(int),
 			ruleID,
@@ -279,102 +280,7 @@ func resourceSecurityRuleExceptionUpdate(d *schema.ResourceData, m interface{}) 
 			log.Printf("[ERROR] Could not update Incapsula security rule exception for rule_id (%s) on site_id (%d), %s\n", ruleID, d.Get("site_id").(int), err)
 			return err
 		}
-	case backdoorExceptionRuleId:
-		_, err := client.EditSecurityRuleException(
-			d.Get("site_id").(int),
-			ruleID,
-			"",
-			d.Get("client_apps").(string),
-			d.Get("countries").(string),
-			d.Get("continents").(string),
-			d.Get("ips").(string),
-			d.Get("url_patterns").(string),
-			d.Get("urls").(string),
-			d.Get("user_agents").(string),
-			d.Get("parameters").(string),
-			whitelistID,
-		)
-		if err != nil {
-			log.Printf("[ERROR] Could not update Incapsula security rule exception for rule_id (%s) on site_id (%d), %s\n", ruleID, d.Get("site_id").(int), err)
-			return err
-		}
-	case botAccessControlExceptionRuleId:
-		_, err := client.EditSecurityRuleException(
-			d.Get("site_id").(int),
-			ruleID,
-			"",
-			"",
-			"",
-			"",
-			d.Get("ips").(string),
-			d.Get("url_patterns").(string),
-			d.Get("urls").(string),
-			d.Get("user_agents").(string),
-			"",
-			whitelistID,
-		)
-		if err != nil {
-			log.Printf("[ERROR] Could not update Incapsula security rule exception for rule_id (%s) on site_id (%d), %s\n", ruleID, d.Get("site_id").(int), err)
-			return err
-		}
-	case crossSiteScriptingExceptionRuleId:
-		_, err := client.EditSecurityRuleException(
-			d.Get("site_id").(int),
-			ruleID,
-			"",
-			d.Get("client_apps").(string),
-			d.Get("countries").(string),
-			d.Get("continents").(string),
-			"",
-			d.Get("url_patterns").(string),
-			d.Get("urls").(string),
-			"",
-			d.Get("parameters").(string),
-			whitelistID,
-		)
-		if err != nil {
-			log.Printf("[ERROR] Could not update Incapsula security rule exception for rule_id (%s) on site_id (%d), %s\n", ruleID, d.Get("site_id").(int), err)
-			return err
-		}
-	case ddosExceptionRuleId:
-		_, err := client.EditSecurityRuleException(
-			d.Get("site_id").(int),
-			ruleID,
-			"",
-			d.Get("client_apps").(string),
-			d.Get("countries").(string),
-			d.Get("continents").(string),
-			d.Get("ips").(string),
-			d.Get("url_patterns").(string),
-			d.Get("urls").(string),
-			"",
-			"",
-			whitelistID,
-		)
-		if err != nil {
-			log.Printf("[ERROR] Could not update Incapsula security rule exception for rule_id (%s) on site_id (%d), %s\n", ruleID, d.Get("site_id").(int), err)
-			return err
-		}
-	case illegalResourceAccessExceptionRuleId:
-		_, err := client.EditSecurityRuleException(
-			d.Get("site_id").(int),
-			ruleID,
-			"",
-			d.Get("client_apps").(string),
-			d.Get("countries").(string),
-			d.Get("continents").(string),
-			d.Get("ips").(string),
-			d.Get("url_patterns").(string),
-			d.Get("urls").(string),
-			"",
-			d.Get("parameters").(string),
-			whitelistID,
-		)
-		if err != nil {
-			log.Printf("[ERROR] Could not update Incapsula security rule exception for rule_id (%s) on site_id (%d), %s\n", ruleID, d.Get("site_id").(int), err)
-			return err
-		}
-	case remoteFileInclusionExceptionRuleId:
+	case backdoorExceptionRuleID:
 		_, err := client.EditSecurityRuleException(
 			d.Get("site_id").(int),
 			ruleID,
@@ -393,7 +299,102 @@ func resourceSecurityRuleExceptionUpdate(d *schema.ResourceData, m interface{}) 
 			log.Printf("[ERROR] Could not update Incapsula security rule exception for rule_id (%s) on site_id (%d), %s\n", ruleID, d.Get("site_id").(int), err)
 			return err
 		}
-	case sqlInjectionExceptionRuleId:
+	case botAccessControlExceptionRuleID:
+		_, err := client.EditSecurityRuleException(
+			d.Get("site_id").(int),
+			ruleID,
+			"",
+			"",
+			"",
+			"",
+			d.Get("ips").(string),
+			d.Get("url_patterns").(string),
+			d.Get("urls").(string),
+			d.Get("user_agents").(string),
+			"",
+			whitelistID,
+		)
+		if err != nil {
+			log.Printf("[ERROR] Could not update Incapsula security rule exception for rule_id (%s) on site_id (%d), %s\n", ruleID, d.Get("site_id").(int), err)
+			return err
+		}
+	case crossSiteScriptingExceptionRuleID:
+		_, err := client.EditSecurityRuleException(
+			d.Get("site_id").(int),
+			ruleID,
+			"",
+			d.Get("client_apps").(string),
+			d.Get("countries").(string),
+			d.Get("continents").(string),
+			"",
+			d.Get("url_patterns").(string),
+			d.Get("urls").(string),
+			"",
+			d.Get("parameters").(string),
+			whitelistID,
+		)
+		if err != nil {
+			log.Printf("[ERROR] Could not update Incapsula security rule exception for rule_id (%s) on site_id (%d), %s\n", ruleID, d.Get("site_id").(int), err)
+			return err
+		}
+	case ddosExceptionRuleID:
+		_, err := client.EditSecurityRuleException(
+			d.Get("site_id").(int),
+			ruleID,
+			"",
+			d.Get("client_apps").(string),
+			d.Get("countries").(string),
+			d.Get("continents").(string),
+			d.Get("ips").(string),
+			d.Get("url_patterns").(string),
+			d.Get("urls").(string),
+			"",
+			"",
+			whitelistID,
+		)
+		if err != nil {
+			log.Printf("[ERROR] Could not update Incapsula security rule exception for rule_id (%s) on site_id (%d), %s\n", ruleID, d.Get("site_id").(int), err)
+			return err
+		}
+	case illegalResourceAccessExceptionRuleID:
+		_, err := client.EditSecurityRuleException(
+			d.Get("site_id").(int),
+			ruleID,
+			"",
+			d.Get("client_apps").(string),
+			d.Get("countries").(string),
+			d.Get("continents").(string),
+			d.Get("ips").(string),
+			d.Get("url_patterns").(string),
+			d.Get("urls").(string),
+			"",
+			d.Get("parameters").(string),
+			whitelistID,
+		)
+		if err != nil {
+			log.Printf("[ERROR] Could not update Incapsula security rule exception for rule_id (%s) on site_id (%d), %s\n", ruleID, d.Get("site_id").(int), err)
+			return err
+		}
+	case remoteFileInclusionExceptionRuleID:
+		_, err := client.EditSecurityRuleException(
+			d.Get("site_id").(int),
+			ruleID,
+			"",
+			d.Get("client_apps").(string),
+			d.Get("countries").(string),
+			d.Get("continents").(string),
+			d.Get("ips").(string),
+			d.Get("url_patterns").(string),
+			d.Get("urls").(string),
+			d.Get("user_agents").(string),
+			d.Get("parameters").(string),
+			whitelistID,
+		)
+		if err != nil {
+			log.Printf("[ERROR] Could not update Incapsula security rule exception for rule_id (%s) on site_id (%d), %s\n", ruleID, d.Get("site_id").(int), err)
+			return err
+		}
+	case sqlInjectionExceptionRuleID:
 		_, err := client.EditSecurityRuleException(
 			d.Get("site_id").(int),
 			ruleID,

@@ -17,17 +17,17 @@ const endpointExceptionList = "sites/status"
 // NOTE: no exceptions for whitelistedIPsExceptionRuleId
 var securityRuleExceptionParamMapping = map[string][]string{
 	// ACL RuleIDs
-	blacklistedCountriesExceptionRuleId: []string{"client_app_types", "ips", "url_patterns", "urls"},
-	blacklistedIPsExceptionRuleId:       []string{"client_apps", "countries", "ips", "url_patterns", "urls"},
-	blacklistedURLsExceptionRuleId:      []string{"client_apps", "countries", "ips", "url_patterns", "urls"},
+	blacklistedCountriesExceptionRuleID: []string{"client_app_types", "ips", "url_patterns", "urls"},
+	blacklistedIPsExceptionRuleID:       []string{"client_apps", "countries", "ips", "url_patterns", "urls"},
+	blacklistedURLsExceptionRuleID:      []string{"client_apps", "countries", "ips", "url_patterns", "urls"},
 	// WAF RuleIDs
-	backdoorExceptionRuleId:              []string{"client_apps", "countries", "ips", "url_patterns", "urls", "user_agents", "parameters"},
-	botAccessControlExceptionRuleId:      []string{"client_app_types", "ips", "url_patterns", "urls", "user_agents"},
-	crossSiteScriptingExceptionRuleId:    []string{"client_apps", "countries", "url_patterns", "urls", "parameters"},
-	ddosExceptionRuleId:                  []string{"client_apps", "countries", "ips", "url_patterns", "urls"},
-	illegalResourceAccessExceptionRuleId: []string{"client_apps", "countries", "ips", "url_patterns", "urls", "parameters"},
-	remoteFileInclusionExceptionRuleId:   []string{"client_apps", "countries", "ips", "url_patterns", "urls", "user_agents", "parameters"},
-	sqlInjectionExceptionRuleId:          []string{"client_apps", "countries", "ips", "url_patterns", "urls"},
+	backdoorExceptionRuleID:              []string{"client_apps", "countries", "ips", "url_patterns", "urls", "user_agents", "parameters"},
+	botAccessControlExceptionRuleID:      []string{"client_app_types", "ips", "url_patterns", "urls", "user_agents"},
+	crossSiteScriptingExceptionRuleID:    []string{"client_apps", "countries", "url_patterns", "urls", "parameters"},
+	ddosExceptionRuleID:                  []string{"client_apps", "countries", "ips", "url_patterns", "urls"},
+	illegalResourceAccessExceptionRuleID: []string{"client_apps", "countries", "ips", "url_patterns", "urls", "parameters"},
+	remoteFileInclusionExceptionRuleID:   []string{"client_apps", "countries", "ips", "url_patterns", "urls", "user_agents", "parameters"},
+	sqlInjectionExceptionRuleID:          []string{"client_apps", "countries", "ips", "url_patterns", "urls"},
 }
 
 // SecurityRuleExceptionCreateResponse provides exception_id of rule exception
