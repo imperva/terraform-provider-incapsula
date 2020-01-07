@@ -205,8 +205,18 @@ func (c *Client) ListSecurityRuleExceptions(siteID, ruleID string) (*SiteStatusR
 		return nil, fmt.Errorf("Error parsing ListSecurityRuleExceptions JSON response for siteID: %s %s\nresponse: %s", siteID, err, string(responseBody))
 	}
 
+	// Res can sometimes oscillate between a string and number
+	// We need to add safeguards for this inside the provider
+	var resString string
+
+	if resNumber, ok := siteStatusResponse.Res.(float64); ok {
+		resString = fmt.Sprintf("%d", int(resNumber))
+	} else {
+		resString = siteStatusResponse.Res.(string)
+	}
+
 	// Look at the response status code from Incapsula
-	if siteStatusResponse.Res != 0 {
+	if resString != "0" {
 		return nil, fmt.Errorf("Error from Incapsula service when getting security rule exceptions (site_id: %s): %s", siteID, string(responseBody))
 	}
 
