@@ -204,7 +204,7 @@ func resourceWAFSecurityRuleRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if !found {
-		log.Printf("[INFO] Incapsula WAF Security Rule ID %d for Site ID %d has already been deleted: %s\n", ruleID, d.Get("site_id").(int), err)
+		log.Printf("[INFO] Incapsula WAF Security Rule ID %s for Site ID %d has already been deleted: %s\n", ruleID, d.Get("site_id").(int), err)
 		d.SetId("")
 		return nil
 	}
