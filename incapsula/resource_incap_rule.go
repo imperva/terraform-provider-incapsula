@@ -153,7 +153,13 @@ func resourceIncapRuleRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	rule, err := client.ReadIncapRule(d.Get("site_id").(string), ruleID)
+	rule, statusCode, err := client.ReadIncapRule(d.Get("site_id").(string), ruleID)
+
+	// If the rule is deleted on the server, blow it out locally and run through the normal TF cycle
+	if statusCode == 404 {
+		d.SetId("")
+		return nil
+	}
 
 	if err != nil {
 		return err

@@ -72,8 +72,10 @@ func testAccCheckIncapsulaIncapRuleDestroy(state *terraform.State) error {
 			return fmt.Errorf("Incapsula Site ID does not exist for Rule ID %d", ruleID)
 		}
 
-		_, err = client.ReadIncapRule(siteID, ruleID)
-
+		_, statusCode, err := client.ReadIncapRule(siteID, ruleID)
+		if statusCode != 404 {
+			return fmt.Errorf("Incapsula Incap Rule %d (site id: %s) should have received 404 status code", ruleID, siteID)
+		}
 		if err == nil {
 			return fmt.Errorf("Incapsula Incap Rule %d still exists for Site ID %s", ruleID, siteID)
 		}
@@ -100,9 +102,12 @@ func testCheckIncapsulaIncapRuleExists(name string) resource.TestCheckFunc {
 		}
 
 		client := testAccProvider.Meta().(*Client)
-		_, err = client.ReadIncapRule(siteID, ruleID)
+		_, statusCode, err := client.ReadIncapRule(siteID, ruleID)
+		if statusCode != 200 {
+			return fmt.Errorf("Incapsula Incap Rule: %s (site id: %s) should have received 200 status code", name, siteID)
+		}
 		if err != nil {
-			return fmt.Errorf("Incapsula Incap Rule: %s (site id: %s) does not exist\n%s", name, siteID, err)
+			return fmt.Errorf("Incapsula Incap Rule: %s (site id: %s) does not exist", name, siteID)
 		}
 
 		return nil

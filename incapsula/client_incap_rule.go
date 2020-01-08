@@ -74,13 +74,13 @@ func (c *Client) AddIncapRule(siteID string, rule *IncapRule) (*IncapRuleWithID,
 }
 
 // ReadIncapRule gets the specific Incap Rule
-func (c *Client) ReadIncapRule(siteID string, ruleID int) (*IncapRuleWithID, error) {
+func (c *Client) ReadIncapRule(siteID string, ruleID int) (*IncapRuleWithID, int, error) {
 	log.Printf("[INFO] Getting Incapsula Incap Rule %d for Site ID %s\n", ruleID, siteID)
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.Get(fmt.Sprintf("%s/sites/%s/rules/%d?api_id=%s&api_key=%s", c.config.IncapRuleBaseURL, siteID, ruleID, c.config.APIID, c.config.APIKey))
 	if err != nil {
-		return nil, fmt.Errorf("Error from Incapsula service when reading Incap Rule %d for Site ID %s: %s", ruleID, siteID, err)
+		return nil, 0, fmt.Errorf("Error from Incapsula service when reading Incap Rule %d for Site ID %s: %s", ruleID, siteID, err)
 	}
 
 	// Read the body
@@ -92,17 +92,17 @@ func (c *Client) ReadIncapRule(siteID string, ruleID int) (*IncapRuleWithID, err
 
 	// Check the response code
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Error status code %d from Incapsula service when reading Incap Rule %d for Site ID %s: %s", resp.StatusCode, ruleID, siteID, string(responseBody))
+		return nil, resp.StatusCode, fmt.Errorf("Error status code %d from Incapsula service when reading Incap Rule %d for Site ID %s: %s", resp.StatusCode, ruleID, siteID, string(responseBody))
 	}
 
 	// Parse the JSON
 	var incapRuleWithID IncapRuleWithID
 	err = json.Unmarshal([]byte(responseBody), &incapRuleWithID)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing Incap Rule %d JSON response for Site ID %s: %s\nresponse: %s", ruleID, siteID, err, string(responseBody))
+		return nil, resp.StatusCode, fmt.Errorf("Error parsing Incap Rule %d JSON response for Site ID %s: %s\nresponse: %s", ruleID, siteID, err, string(responseBody))
 	}
 
-	return &incapRuleWithID, nil
+	return &incapRuleWithID, resp.StatusCode, nil
 }
 
 // UpdateIncapRule updates the Incapsula Incap Rule

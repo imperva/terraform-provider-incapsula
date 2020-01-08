@@ -154,7 +154,7 @@ func TestClientReadIncapRuleBadConnection(t *testing.T) {
 	siteID := "42"
 	ruleID := 62
 
-	readIncapRuleResponse, err := client.ReadIncapRule(siteID, ruleID)
+	readIncapRuleResponse, _, err := client.ReadIncapRule(siteID, ruleID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -185,7 +185,7 @@ func TestClientReadIncapRuleBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, IncapRuleBaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	readIncapRuleResponse, err := client.ReadIncapRule(siteID, ruleID)
+	readIncapRuleResponse, _, err := client.ReadIncapRule(siteID, ruleID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -217,12 +217,15 @@ func TestClientReadIncapRuleInvalidRule(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, IncapRuleBaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	readIncapRuleResponse, err := client.ReadIncapRule(siteID, ruleID)
+	readIncapRuleResponse, statusCode, err := client.ReadIncapRule(siteID, ruleID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
 	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 404 from Incapsula service when reading Incap Rule %d for Site ID %s", ruleID, siteID)) {
 		t.Errorf("Should have received a bad incap rule error, got: %s", err)
+	}
+	if statusCode != 404 {
+		t.Errorf("Should have received a 404 status code")
 	}
 	if readIncapRuleResponse != nil {
 		t.Errorf("Should have received a nil readIncapRuleResponse instance")
@@ -249,12 +252,15 @@ func TestClientReadIncapRuleValidRule(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, IncapRuleBaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	readIncapRuleResponse, err := client.ReadIncapRule(siteID, ruleID)
+	readIncapRuleResponse, statusCode, err := client.ReadIncapRule(siteID, ruleID)
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
 	if readIncapRuleResponse == nil {
 		t.Errorf("Should not have received a nil readIncapRuleResponse instance")
+	}
+	if statusCode != 200 {
+		t.Errorf("Should not have received a 200 status code")
 	}
 	if readIncapRuleResponse.RuleID == 0 {
 		t.Errorf("Should not have received an empty rule ID")
