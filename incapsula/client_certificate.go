@@ -112,7 +112,7 @@ func (c *Client) ListCertificates(siteID string) (*CertificateListResponse, erro
 
 	// Look at the response status code from Incapsula
 	if certificateListResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when getting custom certificates list for site_id %s: %s", siteID, string(responseBody))
+		return &certificateListResponse, fmt.Errorf("Error from Incapsula service when getting custom certificates list for site_id %s: %s", siteID, string(responseBody))
 	}
 
 	return &certificateListResponse, nil

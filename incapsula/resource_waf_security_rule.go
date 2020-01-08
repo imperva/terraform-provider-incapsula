@@ -162,10 +162,19 @@ func resourceWAFSecurityRuleRead(d *schema.ResourceData, m interface{}) error {
 
 	siteStatusResponse, err := client.SiteStatus("waf-rule-read", d.Get("site_id").(int))
 
+	// Site object may have been deleted
+	if siteStatusResponse != nil && siteStatusResponse.Res.(float64) == 9413 {
+		log.Printf("[INFO] Incapsula Site ID %s has already been deleted: %s\n", d.Get("site_id"), err)
+		d.SetId("")
+		return nil
+	}
+
 	if err != nil {
 		log.Printf("[ERROR] Could not read Incapsula WAF Rule for id: %s, %s\n", ruleID, err)
 		return err
 	}
+
+	found := false
 
 	// Now with the site status, iterate through the rules and find our ID
 	for _, entry := range siteStatusResponse.Security.Waf.Rules {
@@ -189,8 +198,15 @@ func resourceWAFSecurityRuleRead(d *schema.ResourceData, m interface{}) error {
 				d.Set("block_bad_bots", entry.BlockBadBots)
 				d.Set("block_bad_bots", entry.ChallengeSuspectedBots)
 			}
+			found = true
 			break
 		}
+	}
+
+	if !found {
+		log.Printf("[INFO] Incapsula WAF Security Rule ID %d for Site ID %d has already been deleted: %s\n", ruleID, d.Get("site_id").(int), err)
+		d.SetId("")
+		return nil
 	}
 
 	log.Printf("[INFO] Read Incapsula WAF Rule rule_id (%s) on site_id (%d)\n", ruleID, d.Get("site_id").(int))

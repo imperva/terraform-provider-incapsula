@@ -269,7 +269,7 @@ func (c *Client) SiteStatus(domain string, siteID int) (*SiteStatusResponse, err
 
 	// Look at the response status code from Incapsula
 	if resString != "0" {
-		return nil, fmt.Errorf("Error from Incapsula service when getting site status for domain %s (site id: %d): %s", domain, siteID, string(responseBody))
+		return &siteStatusResponse, fmt.Errorf("Error from Incapsula service when getting site status for domain %s (site id: %d): %s", domain, siteID, string(responseBody))
 	}
 
 	return &siteStatusResponse, nil

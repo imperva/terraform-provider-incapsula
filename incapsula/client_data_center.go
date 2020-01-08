@@ -124,7 +124,7 @@ func (c *Client) ListDataCenters(siteID string) (*DataCenterListResponse, error)
 
 	// Look at the response status code from Incapsula
 	if resString != "0" {
-		return nil, fmt.Errorf("Error from Incapsula service when getting data centers list (site_id: %s): %s", siteID, string(responseBody))
+		return &dataCenterListResponse, fmt.Errorf("Error from Incapsula service when getting data centers list (site_id: %s): %s", siteID, string(responseBody))
 	}
 
 	return &dataCenterListResponse, nil

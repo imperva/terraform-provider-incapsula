@@ -1,3 +1,16 @@
+## 2.1.0 (Unreleased)
+
+Add checks for resource destruction during reads. The following resources have been updated:
+
+* ACL Security Rule
+* Certificate
+* Data Center
+* Data Center Server
+* Incap Rule
+* Security Rule Exception
+* Site
+* WAF Security Rule
+
 ## 2.0.0 (Unreleased)
 
 As we near certification readiness, we've made lots of changes to the provider. Backwards incompatible changes have been made to the Incap Rule resources. Please review the documentation. Changes below:

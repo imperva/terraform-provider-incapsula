@@ -1,9 +1,10 @@
 package incapsula
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"log"
 	"strconv"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceSite() *schema.Resource {
@@ -186,6 +187,13 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Reading Incapsula site for domain: %s\n", domain)
 
 	siteStatusResponse, err := client.SiteStatus(domain, siteID)
+
+	// Site object may have been deleted
+	if siteStatusResponse != nil && siteStatusResponse.Res.(float64) == 9413 {
+		log.Printf("[INFO] Incapsula Site ID %d has already been deleted: %s\n", siteID, err)
+		d.SetId("")
+		return nil
+	}
 
 	if err != nil {
 		log.Printf("[ERROR] Could not read Incapsula site for domain: %s, %s\n", domain, err)

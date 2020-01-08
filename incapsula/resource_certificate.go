@@ -77,7 +77,14 @@ func resourceCertificateRead(d *schema.ResourceData, m interface{}) error {
 
 	siteID := d.Get("site_id").(string)
 
-	_, err := client.ListCertificates(siteID)
+	listCertificatesResponse, err := client.ListCertificates(siteID)
+
+	// List data centers response object may indicate that the Site ID has been deleted (9413)
+	if listCertificatesResponse != nil && listCertificatesResponse.Res == 9413 {
+		log.Printf("[INFO] Incapsula Site ID %s has already been deleted: %s\n", d.Get("site_id"), err)
+		d.SetId("")
+		return nil
+	}
 
 	if err != nil {
 		log.Printf("[ERROR] Could not read custom certificate from Incapsula site for site_id: %s, %s\n", siteID, err)

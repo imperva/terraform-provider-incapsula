@@ -217,7 +217,7 @@ func (c *Client) ListSecurityRuleExceptions(siteID, ruleID string) (*SiteStatusR
 
 	// Look at the response status code from Incapsula
 	if resString != "0" {
-		return nil, fmt.Errorf("Error from Incapsula service when getting security rule exceptions (site_id: %s): %s", siteID, string(responseBody))
+		return &siteStatusResponse, fmt.Errorf("Error from Incapsula service when getting security rule exceptions (site_id: %s): %s", siteID, string(responseBody))
 	}
 
 	return &siteStatusResponse, nil

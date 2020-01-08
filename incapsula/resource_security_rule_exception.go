@@ -167,6 +167,13 @@ func resourceSecurityRuleExceptionRead(d *schema.ResourceData, m interface{}) er
 
 	siteStatusResponse, err := client.ListSecurityRuleExceptions(siteID, ruleID)
 
+	// Site object may have been deleted
+	if siteStatusResponse != nil && siteStatusResponse.Res.(float64) == 9413 {
+		log.Printf("[INFO] Incapsula Site ID %s has already been deleted: %s\n", d.Get("site_id"), err)
+		d.SetId("")
+		return nil
+	}
+
 	if err != nil {
 		log.Printf("[ERROR] Could not read Incapsula security rule exception whitelist_id (%d) on rule_id (%s) %s\n", whitelistID, ruleID, err)
 		return err
@@ -205,6 +212,7 @@ func resourceSecurityRuleExceptionRead(d *schema.ResourceData, m interface{}) er
 	}
 	if exceptionFound == false {
 		log.Printf("[ERROR] Read Incapsula security rule exception failed, exception not found: whitelist_id (%d) and rule_id (%s) on site_id (%d)\n", whitelistID, ruleID, d.Get("site_id").(int))
+		d.SetId("")
 	} else {
 		log.Printf("[INFO] Read Incapsula security rule exception whitelist_id (%d) and rule_id (%s) on site_id (%d)\n", whitelistID, ruleID, d.Get("site_id").(int))
 	}
