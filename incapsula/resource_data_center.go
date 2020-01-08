@@ -112,10 +112,19 @@ func resourceDataCenterRead(d *schema.ResourceData, m interface{}) error {
 	listDataCentersResponse, err := client.ListDataCenters(d.Get("site_id").(string))
 
 	// List data centers response object may indicate that the Site ID has been deleted (9413)
-	if listDataCentersResponse != nil && listDataCentersResponse.Res.(float64) == 9413 {
-		log.Printf("[INFO] Incapsula Site ID %s has already been deleted: %s\n", d.Get("site_id"), err)
-		d.SetId("")
-		return nil
+	if listDataCentersResponse != nil {
+		// Res can oscillate between strings and ints
+		var resString string
+		if resNumber, ok := listDataCentersResponse.Res.(float64); ok {
+			resString = fmt.Sprintf("%d", int(resNumber))
+		} else {
+			resString = listDataCentersResponse.Res.(string)
+		}
+		if resString == "9413" {
+			log.Printf("[INFO] Incapsula Site ID %s has already been deleted: %s\n", d.Get("site_id"), err)
+			d.SetId("")
+			return nil
+		}
 	}
 
 	if err != nil {

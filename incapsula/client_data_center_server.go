@@ -15,14 +15,14 @@ const endpointDataCenterServerDelete = "sites/dataCenters/servers/delete"
 
 // DataCenterServerAddResponse contains id of server
 type DataCenterServerAddResponse struct {
-	ServerID string `json:"server_id"`
-	Res      string `json:"res"`
+	Res      interface{} `json:"res"`
+	ServerID string      `json:"server_id"`
 }
 
 // DataCenterServerEditResponse contains data center id
 type DataCenterServerEditResponse struct {
-	Res          string `json:"res"`
-	DataCenterID string `json:"datacenter_id"`
+	Res          interface{} `json:"res"`
+	DataCenterID string      `json:"datacenter_id"`
 }
 
 // AddDataCenterServer adds an incap data center server to be managed by Incapsula
@@ -55,8 +55,18 @@ func (c *Client) AddDataCenterServer(dcID, serverAddress, isStandby string) (*Da
 		return nil, fmt.Errorf("Error parsing add data center server JSON response for dcID %s: %s\nresponse: %s", dcID, err, string(responseBody))
 	}
 
+	// Res can sometimes oscillate between a string and number
+	// We need to add safeguards for this inside the provider
+	var resString string
+
+	if resNumber, ok := dataCenterServerAddResponse.Res.(float64); ok {
+		resString = fmt.Sprintf("%d", int(resNumber))
+	} else {
+		resString = dataCenterServerAddResponse.Res.(string)
+	}
+
 	// Look at the response status code from Incapsula
-	if dataCenterServerAddResponse.Res != "0" {
+	if resString != "0" {
 		return nil, fmt.Errorf("Error from Incapsula service when adding data center server for dcID %s: %s", dcID, string(responseBody))
 	}
 
@@ -94,8 +104,18 @@ func (c *Client) EditDataCenterServer(serverID, serverAddress, isStandby, isEnab
 		return nil, fmt.Errorf("Error parsing edit data center server JSON response for serverID %s: %s", serverID, err)
 	}
 
+	// Res can sometimes oscillate between a string and number
+	// We need to add safeguards for this inside the provider
+	var resString string
+
+	if resNumber, ok := dataCenterServerEditResponse.Res.(float64); ok {
+		resString = fmt.Sprintf("%d", int(resNumber))
+	} else {
+		resString = dataCenterServerEditResponse.Res.(string)
+	}
+
 	// Look at the response status code from Incapsula
-	if dataCenterServerEditResponse.Res != "0" {
+	if resString != "0" {
 		return nil, fmt.Errorf("Error from Incapsula service when editing data center server for serverID %s: %s", serverID, string(responseBody))
 	}
 
