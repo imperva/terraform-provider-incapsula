@@ -170,8 +170,8 @@ func TestClientSiteStatusInvalidSite(t *testing.T) {
 	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when getting site status for domain %s (site id: %d)", domain, siteID)) {
 		t.Errorf("Should have received a bad site error, got: %s", err)
 	}
-	if siteStatusResponse != nil {
-		t.Errorf("Should have received a nil siteStatusResponse instance")
+	if siteStatusResponse == nil {
+		t.Errorf("Should have received a siteStatusResponse instance")
 	}
 }
 

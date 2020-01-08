@@ -164,8 +164,8 @@ func TestClientListDataCentersInvalidRequest(t *testing.T) {
 	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when getting data centers list (site_id: %s", siteID)) {
 		t.Errorf("Should have received a bad site error, got: %s", err)
 	}
-	if listDataCentersResponse != nil {
-		t.Errorf("Should have received a nil listDataCentersResponse instance")
+	if listDataCentersResponse == nil {
+		t.Errorf("Should have received a listDataCentersResponse instance")
 	}
 }
 
