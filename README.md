@@ -15,8 +15,8 @@ This provider plugin is maintained by the team at [Imperva](https://www.imperva.
 Requirements
 ------------
 
--	[Terraform](https://www.terraform.io/downloads.html) 0.10.x
--	[Go](https://golang.org/doc/install) 1.11 (to build the provider plugin)
+-	[Terraform](https://www.terraform.io/downloads.html) 0.12.x
+-	[Go](https://golang.org/doc/install) 1.13 (to build the provider plugin)
 
 Building The Provider
 ---------------------
