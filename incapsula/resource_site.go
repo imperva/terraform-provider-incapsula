@@ -28,7 +28,7 @@ func resourceSite() *schema.Resource {
 				ForceNew:    true,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					d := val.(string)
-					parts := strings.Split(d, ",")
+					parts := strings.Split(d, ".")
 					if len(parts) < 2 {
 						errs = append(errs, fmt.Errorf("%q must be a fully qualified domain name (www.example.com, not example.com), got: %s", key, d))
 					}
