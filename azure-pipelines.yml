@@ -1,0 +1,31 @@
+trigger:
+  - master
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  system.debug: true
+  GOFLAGS: -mod=vendor
+  BinName: terraform-provider-incapsula
+  WorkingDir: /go/src/github.com/terraform-providers/$(BinName)
+
+jobs:
+- job: build
+  container: 
+    image: docker.io/golang:1.13
+  steps:
+    - checkout: self
+      clean: true
+    - bash: mkdir -p $(WorkingDir)
+    - bash: cp -r $(Build.SourcesDirectory)/** $(WorkingDir)
+    - bash: $(WorkingDir)/scripts/gogetcookie.sh
+    - bash: make build
+      workingDirectory: $(WorkingDir)
+    - bash: make test
+      workingDirectory: $(WorkingDir)
+    - bash: make vet
+      workingDirectory: $(WorkingDir)      
+    - bash: cp /go/bin/$(BinName) $(Build.SourcesDirectory)/$(BinName)
+    - publish: $(Build.SourcesDirectory)/$(BinName)
+      artifact: drop
