@@ -138,7 +138,7 @@ func resourceDataCenterServerRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if !found {
-		log.Printf("[INFO] Incapsula Data Center Server ID %s for Site ID %d has already been deleted: %s\n", d.Id(), d.Get("site_id").(int), err)
+		log.Printf("[INFO] Incapsula Data Center Server ID %s for Site ID %s has already been deleted: %s\n", d.Id(), d.Get("site_id"), err)
 		d.SetId("")
 		return nil
 	}
