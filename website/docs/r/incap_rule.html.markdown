@@ -129,10 +129,8 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-url" {
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_REWRITE_URL"
   filter = "Full-URL == \"/someurl\""
-  add_missing = "true"
   from = "*"
   to = "/redirect"
-  rewrite_name = "my_test_header"
 }
 ```
 

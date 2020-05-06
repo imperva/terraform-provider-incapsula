@@ -10,38 +10,39 @@ import (
 )
 
 ////////////////////////////////////////////////////////////////
-// AddIncapRule Tests
+// AddCacheRule Tests
 ////////////////////////////////////////////////////////////////
 
-func TestClientAddIncapRuleBadConnection(t *testing.T) {
+func TestClientAddCacheRuleBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", APIV2BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
 
-	rule := IncapRule{
-		Name:   "myfirstcoolrule",
-		Action: "RULE_ACTION_ALERT",
-		Filter: "Full-URL == \"/someurl\"",
+	rule := CacheRule{
+		Name:    "myfirstcoolrule",
+		Action:  "HTTP_CACHE_MAKE_STATIC",
+		Filter:  "Full-URL == \"/someurl\"",
+		Enabled: true,
 	}
 
-	addIncapRuleResponse, err := client.AddIncapRule(siteID, &rule)
+	addCacheRuleResponse, err := client.AddCacheRule(siteID, &rule)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding Incap Rule for Site ID %s", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding Cache Rule for Site ID %s", siteID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
-	if addIncapRuleResponse != nil {
-		t.Errorf("Should have received a nil addIncapRuleResponse instance")
+	if addCacheRuleResponse != nil {
+		t.Errorf("Should have received a nil addCacheRuleResponse instance")
 	}
 }
 
-func TestClientAddIncapRuleBadJSON(t *testing.T) {
+func TestClientAddCacheRuleBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
 
-	endpoint := fmt.Sprintf("/sites/%s/rules?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules?api_id=%s&api_key=%s", siteID, apiID, apiKey)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -54,125 +55,127 @@ func TestClientAddIncapRuleBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	rule := IncapRule{
-		Name:   "myfirstcoolrule",
-		Action: "RULE_ACTION_ALERT",
-		Filter: "Full-URL == \"/someurl\"",
+	rule := CacheRule{
+		Name:    "myfirstcoolrule",
+		Action:  "HTTP_CACHE_MAKE_STATIC",
+		Filter:  "Full-URL == \"/someurl\"",
+		Enabled: true,
 	}
 
-	addIncapRuleResponse, err := client.AddIncapRule(siteID, &rule)
+	addCacheRuleResponse, err := client.AddCacheRule(siteID, &rule)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing Incap Rule JSON response for Site ID %s", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing Cache Rule JSON response for Site ID %s", siteID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
-	if addIncapRuleResponse != nil {
-		t.Errorf("Should have received a nil addIncapRuleResponse instance")
+	if addCacheRuleResponse != nil {
+		t.Errorf("Should have received a nil addCacheRuleResponse instance")
 	}
 }
 
-func TestClientAddIncapRuleInvalidRule(t *testing.T) {
+func TestClientAddCacheRuleInvalidRule(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
 
-	endpoint := fmt.Sprintf("/sites/%s/rules?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules?api_id=%s&api_key=%s", siteID, apiID, apiKey)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(406)
 		if req.URL.String() != endpoint {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
-		rw.Write([]byte(`{"res":2,"res_message":"Invalid input","debug_info":{"id-info":"13007"}}`))
+		rw.Write([]byte(`{"res":2,"res_message":"Invalid input","debug_info":{"action":"Unknown action","id-info":"13017"}}`))
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	rule := IncapRule{
-		Name: "some_name",
+	rule := CacheRule{
+		Name: "myfirstcoolrule",
 	}
 
-	addIncapRuleResponse, err := client.AddIncapRule(siteID, &rule)
+	addCacheRuleResponse, err := client.AddCacheRule(siteID, &rule)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 406 from Incapsula service when adding Incap Rule for Site ID %s", siteID)) {
-		t.Errorf("Should have received a bad incap rule error, got: %s", err)
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 406 from Incapsula service when adding Cache Rule for Site ID %s", siteID)) {
+		t.Errorf("Should have received a bad cache rule error, got: %s", err)
 	}
-	if addIncapRuleResponse != nil {
-		t.Errorf("Should have received a nil addIncapRuleResponse instance")
+	if addCacheRuleResponse != nil {
+		t.Errorf("Should have received a nil addCacheRuleResponse instance")
 	}
 }
 
-func TestClientAddIncapRuleValidRule(t *testing.T) {
+func TestClientAddCacheRuleValidRule(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
 
-	endpoint := fmt.Sprintf("/sites/%s/rules?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules?api_id=%s&api_key=%s", siteID, apiID, apiKey)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
 		if req.URL.String() != endpoint {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
-		rw.Write([]byte(`{"filter":"Full-URL == \"/someurl\"","rule_id":290109,"name":"myfirstcoolrule","action":"RULE_ACTION_ALERT","enabled":true}`))
+		rw.Write([]byte(`{"rule_id":66770,"res":0,"res_message":"OK","debug_info":{"id-info":"13017"}}`))
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	rule := IncapRule{
-		Name:   "myfirstcoolrule",
-		Action: "RULE_ACTION_ALERT",
-		Filter: "Full-URL == \"/someurl\"",
+	rule := CacheRule{
+		Name:    "myfirstcoolrule",
+		Action:  "HTTP_CACHE_MAKE_STATIC",
+		Filter:  "Full-URL == \"/someurl\"",
+		Enabled: true,
 	}
 
-	addIncapRuleResponse, err := client.AddIncapRule(siteID, &rule)
+	addCacheRuleResponse, err := client.AddCacheRule(siteID, &rule)
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
-	if addIncapRuleResponse == nil {
-		t.Errorf("Should not have received a nil addIncapRuleResponse instance")
+	if addCacheRuleResponse == nil {
+		t.Errorf("Should not have received a nil addCacheRuleResponse instance")
 	}
-	if addIncapRuleResponse.RuleID == 0 {
+	if addCacheRuleResponse.RuleID == 0 {
 		t.Errorf("Should not have received an empty rule ID")
 	}
 }
 
 ////////////////////////////////////////////////////////////////
-// ReadIncapRule Tests
+// ReadCacheRule Tests
 ////////////////////////////////////////////////////////////////
 
-func TestClientReadIncapRuleBadConnection(t *testing.T) {
+func TestClientReadCacheRuleBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", APIV2BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
 	ruleID := 62
 
-	readIncapRuleResponse, _, err := client.ReadIncapRule(siteID, ruleID)
+	readCacheRuleResponse, _, err := client.ReadCacheRule(siteID, ruleID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when reading Incap Rule %d for Site ID %s", ruleID, siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when reading Cache Rule %d for Site ID %s", ruleID, siteID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
-	if readIncapRuleResponse != nil {
-		t.Errorf("Should have received a nil readIncapRuleResponse instance")
+	if readCacheRuleResponse != nil {
+		t.Errorf("Should have received a nil readCacheRuleResponse instance")
 	}
 }
 
-func TestClientReadIncapRuleBadJSON(t *testing.T) {
+func TestClientReadCacheRuleBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
 	ruleID := 62
 
-	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -185,129 +188,128 @@ func TestClientReadIncapRuleBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	readIncapRuleResponse, _, err := client.ReadIncapRule(siteID, ruleID)
+	readCacheRuleResponse, _, err := client.ReadCacheRule(siteID, ruleID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing Incap Rule %d JSON response for Site ID %s", ruleID, siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing Cache Rule %d JSON response for Site ID %s", ruleID, siteID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
-	if readIncapRuleResponse != nil {
-		t.Errorf("Should have received a nil readIncapRuleResponse instance")
+	if readCacheRuleResponse != nil {
+		t.Errorf("Should have received a nil readCacheRuleResponse instance")
 	}
 }
 
-func TestClientReadIncapRuleInvalidRule(t *testing.T) {
+func TestClientReadCacheRuleInvalidRule(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
 	ruleID := 29010333
 
-	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
 		if req.URL.String() != endpoint {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
-		rw.Write([]byte(`{"res":2,"res_message":"Invalid input","debug_info":{"ruleId":"invalid rule : 29010333","id-info":"13007"}}`))
+		rw.Write([]byte(`{"res":2,"res_message":"Invalid input","debug_info":{"ruleId":"invalid rule : 29010333","id-info":"13017"}}`))
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	readIncapRuleResponse, statusCode, err := client.ReadIncapRule(siteID, ruleID)
+	readCacheRuleResponse, statusCode, err := client.ReadCacheRule(siteID, ruleID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 404 from Incapsula service when reading Incap Rule %d for Site ID %s", ruleID, siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 404 from Incapsula service when reading Cache Rule %d for Site ID %s", ruleID, siteID)) {
 		t.Errorf("Should have received a bad incap rule error, got: %s", err)
 	}
 	if statusCode != 404 {
 		t.Errorf("Should have received a 404 status code")
 	}
-	if readIncapRuleResponse != nil {
-		t.Errorf("Should have received a nil readIncapRuleResponse instance")
+	if readCacheRuleResponse != nil {
+		t.Errorf("Should have received a nil readCacheRuleResponse instance")
 	}
 }
 
-func TestClientReadIncapRuleValidRule(t *testing.T) {
+func TestClientReadCacheRuleValidRule(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
-	ruleID := 290109
+	ruleID := 66772
 
-	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
 		if req.URL.String() != endpoint {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
-		rw.Write([]byte(`{"filter":"Full-URL == \"/someurl\"","rule_id":290109,"name":"myfirstcoolrule","action":"RULE_ACTION_ALERT","enabled":true}`))
+		rw.Write([]byte(`{"rule_id":66772,"action":"HTTP_CACHE_MAKE_STATIC","enabled":true,"filter":"isMobile == Yes","name":"test","ttl":300}`))
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	readIncapRuleResponse, statusCode, err := client.ReadIncapRule(siteID, ruleID)
+	readCacheRuleResponse, statusCode, err := client.ReadCacheRule(siteID, ruleID)
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
-	if readIncapRuleResponse == nil {
-		t.Errorf("Should not have received a nil readIncapRuleResponse instance")
+	if readCacheRuleResponse == nil {
+		t.Errorf("Should not have received a nil readCacheRuleResponse instance")
 	}
 	if statusCode != 200 {
 		t.Errorf("Should not have received a 200 status code")
 	}
-	if readIncapRuleResponse.RuleID == 0 {
+	if readCacheRuleResponse.RuleID == 0 {
 		t.Errorf("Should not have received an empty rule ID")
 	}
 }
 
 ////////////////////////////////////////////////////////////////
-// UpdateIncapRule Tests
+// UpdateCacheRule Tests
 ////////////////////////////////////////////////////////////////
 
-func TestClientUpdateIncapRuleBadConnection(t *testing.T) {
+func TestClientUpdateCacheRuleBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", APIV2BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
-	ruleID := 62
+	ruleID := 66772
 
-	rule := IncapRule{
-		Name:   "myfirstcoolrule",
-		Action: "RULE_ACTION_ALERT",
-		Filter: "Full-URL == \"/someurl\"",
+	rule := CacheRule{
+		Name:    "myfirstcoolrule",
+		Action:  "HTTP_CACHE_MAKE_STATIC",
+		Filter:  "Full-URL == \"/someurl\"",
+		Enabled: true,
 	}
 
-	updateIncapRuleResponse, err := client.UpdateIncapRule(siteID, ruleID, &rule)
+	err := client.UpdateCacheRule(siteID, ruleID, &rule)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when updating Incap Rule %d for Site ID %s", ruleID, siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when updating Cache Rule %d for Site ID %s", ruleID, siteID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
-	}
-	if updateIncapRuleResponse != nil {
-		t.Errorf("Should have received a nil updateIncapRuleResponse instance")
 	}
 }
 
-func TestClientUpdateIncapRuleBadJSON(t *testing.T) {
+func TestClientUpdateCacheRuleBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
-	ruleID := 62
+	ruleID := 66772
 
-	rule := IncapRule{
-		Name:   "myfirstcoolrule",
-		Action: "RULE_ACTION_ALERT",
-		Filter: "Full-URL == \"/someurl\"",
+	rule := CacheRule{
+		Name:    "myfirstcoolrule",
+		Action:  "HTTP_CACHE_MAKE_STATIC",
+		Filter:  "Full-URL == \"/someurl\"",
+		Enabled: true,
 	}
 
-	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -320,161 +322,153 @@ func TestClientUpdateIncapRuleBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	updateIncapRuleResponse, err := client.UpdateIncapRule(siteID, ruleID, &rule)
+	err := client.UpdateCacheRule(siteID, ruleID, &rule)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing Incap Rule %d JSON response for Site ID %s", ruleID, siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing Cache Rule %d JSON response for Site ID %s", ruleID, siteID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
-	}
-	if updateIncapRuleResponse != nil {
-		t.Errorf("Should have received a nil updateIncapRuleResponse instance")
 	}
 }
 
-func TestClientUpdateIncapRuleInvalidRule(t *testing.T) {
+func TestClientUpdateCacheRuleInvalidRule(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
 	ruleID := 11111
 
-	rule := IncapRule{
-		Name:   "myfirstcoolrule",
-		Action: "RULE_ACTION_ALERT",
-		Filter: "Full-URL == \"/someurl\"",
+	rule := CacheRule{
+		Name:    "myfirstcoolrule",
+		Action:  "HTTP_CACHE_MAKE_STATIC",
+		Filter:  "Full-URL == \"/someurl\"",
+		Enabled: true,
 	}
 
-	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
 		if req.URL.String() != endpoint {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
-		rw.Write([]byte(`{"res":2,"res_message":"Invalid input","debug_info":{"ruleId":"invalid rule : 11111","id-info":"13007"}}`))
+		rw.Write([]byte(`{"res":2002,"res_message":"Object is not found","debug_info":{"rule_id":"rule with id 11111 not found","id-info":"13017"}}`))
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	updateIncapRuleResponse, err := client.UpdateIncapRule(siteID, ruleID, &rule)
+	err := client.UpdateCacheRule(siteID, ruleID, &rule)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 404 from Incapsula service when updating Incap Rule %d for Site ID %s", ruleID, siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 404 from Incapsula service when updating Cache Rule %d for Site ID %s", ruleID, siteID)) {
 		t.Errorf("Should have received a bad incap rule error, got: %s", err)
-	}
-	if updateIncapRuleResponse != nil {
-		t.Errorf("Should have received a nil updateIncapRuleResponse instance")
 	}
 }
 
-func TestClientUpdateIncapRuleValidRule(t *testing.T) {
+func TestClientUpdateCacheRuleValidRule(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
-	ruleID := 290109
+	ruleID := 66772
 
-	rule := IncapRule{
-		Name:   "myfirstcoolrule",
-		Action: "RULE_ACTION_ALERT",
-		Filter: "Full-URL == \"/someurl\"",
+	rule := CacheRule{
+		Name:    "myfirstcoolrule",
+		Action:  "HTTP_CACHE_MAKE_STATIC",
+		Filter:  "Full-URL == \"/someurl\"",
+		Enabled: true,
 	}
 
-	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
 		if req.URL.String() != endpoint {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
-		rw.Write([]byte(`{"filter":"Full-URL == \"/someurl\"","rule_id":290109,"name":"myfirstcoolrule","action":"RULE_ACTION_ALERT","enabled":true}`))
+		rw.Write([]byte(`{"res":0,"res_message":"OK","debug_info":{"id-info":"13017"}}`))
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	updateIncapRuleResponse, err := client.UpdateIncapRule(siteID, ruleID, &rule)
+	err := client.UpdateCacheRule(siteID, ruleID, &rule)
 	if err != nil {
 		t.Errorf("Should not have received an error")
-	}
-	if updateIncapRuleResponse == nil {
-		t.Errorf("Should not have received a nil updateIncapRuleResponse instance")
-	}
-	if updateIncapRuleResponse.RuleID == 0 {
-		t.Errorf("Should not have received an empty rule ID")
 	}
 }
 
 ////////////////////////////////////////////////////////////////
-// DeleteIncapRule Tests
+// DeleteCacheRule Tests
 ////////////////////////////////////////////////////////////////
 
-func TestClientDeleteIncapRuleBadConnection(t *testing.T) {
+func TestClientDeleteCacheRuleBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", APIV2BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
 	ruleID := 62
 
-	err := client.DeleteIncapRule(siteID, ruleID)
+	err := client.DeleteCacheRule(siteID, ruleID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when deleting Incap Rule %d for Site ID %s", ruleID, siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when deleting Cache Rule %d for Site ID %s", ruleID, siteID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 }
 
-func TestClientDeleteIncapRuleInvalidRule(t *testing.T) {
+func TestClientDeleteCacheRuleInvalidRule(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
 	ruleID := 11111
 
-	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
-
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.WriteHeader(404)
-		if req.URL.String() != endpoint {
-			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
-		}
-	}))
-	defer server.Close()
-
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
-	client := &Client{config: config, httpClient: &http.Client{}}
-
-	err := client.DeleteIncapRule(siteID, ruleID)
-	if err == nil {
-		t.Errorf("Should have received an error")
-	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 404 from Incapsula service when deleting Incap Rule %d for Site ID %s", ruleID, siteID)) {
-		t.Errorf("Should have received a bad incap rule error, got: %s", err)
-	}
-}
-
-func TestClientDeleteIncapRuleValidRule(t *testing.T) {
-	apiID := "foo"
-	apiKey := "bar"
-	siteID := "42"
-	ruleID := 290109
-
-	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
 		if req.URL.String() != endpoint {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
+		rw.Write([]byte(`{"res":2002,"res_message":"Object is not found","debug_info":{"rule_id":"rule with id 11111 not found","id-info":"13017"}}`))
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	err := client.DeleteIncapRule(siteID, ruleID)
+	err := client.DeleteCacheRule(siteID, ruleID)
+	if err == nil {
+		t.Errorf("Should have received an error")
+	}
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error deleting Cache Rule %d JSON response for Site ID %s", ruleID, siteID)) {
+		t.Errorf("Should have received a bad cache rule error, got: %s", err)
+	}
+}
+
+func TestClientDeleteCacheRuleValidRule(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := "42"
+	ruleID := 290109
+
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(200)
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		}
+		rw.Write([]byte(`{"res":0,"res_message":"OK","debug_info":{"id-info":"13017"}}`))
+	}))
+	defer server.Close()
+
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+	err := client.DeleteCacheRule(siteID, ruleID)
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}

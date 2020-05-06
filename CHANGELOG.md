@@ -1,3 +1,9 @@
+## 2.2.0 (Unreleased)
+
+* Add support for cache rules
+* Improve documentation
+* Fix Incap Rule example bugs
+
 ## 2.1.0 (Unreleased)
 
 Add checks for resource destruction during reads. The following resources have been updated:

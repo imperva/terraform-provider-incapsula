@@ -51,14 +51,14 @@ func TestMissingBaseURL(t *testing.T) {
 	}
 }
 
-func TestMissingBaseIncapRuleURL(t *testing.T) {
-	config := Config{APIID: "foo", APIKey: "bar", BaseURL: "foobar.com", IncapRuleBaseURL: ""}
+func TestMissingAPIV2BaseURL(t *testing.T) {
+	config := Config{APIID: "foo", APIKey: "bar", BaseURL: "foobar.com", APIV2BaseURL: ""}
 	client, err := config.Client()
 	if err == nil {
 		t.Errorf("Should have received an error, got a client: %q", client)
 	}
-	if err.Error() != missingIncapRuleBaseURLMessage {
-		t.Errorf("Should have received missing base Incap Rule URL message, got: %s", err)
+	if err.Error() != missingAPIV2BaseURLMessage {
+		t.Errorf("Should have received missing APIv2 Base URL message, got: %s", err)
 	}
 }
 
@@ -71,7 +71,7 @@ func TestInvalidCredentials(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := Config{APIID: "bad", APIKey: "bad", BaseURL: server.URL, IncapRuleBaseURL: server.URL}
+	config := Config{APIID: "bad", APIKey: "bad", BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client, err := config.Client()
 	if err == nil {
 		t.Errorf("Should have received an error, got a client: %q", client)
@@ -90,7 +90,7 @@ func TestValidCredentials(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := Config{APIID: "good", APIKey: "good", BaseURL: server.URL, IncapRuleBaseURL: server.URL}
+	config := Config{APIID: "good", APIKey: "good", BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client, err := config.Client()
 	if err != nil {
 		t.Errorf("Should not have received an error, got: %s", err)
