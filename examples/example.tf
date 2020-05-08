@@ -13,6 +13,7 @@ resource "incapsula_site" "example-site" {
   send_site_setup_emails = "true"
   site_ip                = "10.10.10.11"
   force_ssl              = "true"
+  data_storage_region    = "US"
 
   ####################################################################
   # The remaining following parameters below are designated for updating the site after it has been created.

@@ -29,7 +29,6 @@ The following arguments are supported:
 * `name` - (Required) The new data center's name.
 * `server_address` - (Required) The server's address. Possible values: IP, CNAME.
 * `is_enabled` - (Optional) Enables the data center.
-* `is_standby` - (Optional) Defines the data center as standby for failover.
 * `is_content` - (Optional) The data center will be available for specific resources (Forward Delivery Rules).
 
 ## Attributes Reference

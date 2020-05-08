@@ -1,3 +1,10 @@
+## 2.3.0 (Unreleased)
+
+* Add support for setting the data storage region on a site
+* Remove the deprecated setting for `is_standby` on the `data_center` resource (`is_enabled` replaces this functionality); should resolve flapping integration tests + potential production issues
+* Properly configuring `site` resource values for: `active`, `acceleration_level`, `seal_location`, `domain_redirect_to_full`, `remove_ssl`, `ignore_ssl`
+* Added `domain_verification` as an exported variable for the `site` resource
+
 ## 2.2.0 (Unreleased)
 
 * Add support for cache rules

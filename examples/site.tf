@@ -10,6 +10,7 @@ resource "incapsula_site" "example-site" {
   send_site_setup_emails = "true"
   site_ip                = "1.2.3.4"
   force_ssl              = "true"
+  data_storage_region    = "US"
 }
 
 resource "incapsula_custom_certificate" "custom-certificate" {

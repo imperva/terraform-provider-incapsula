@@ -5,6 +5,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
@@ -112,6 +113,11 @@ func resourceSite() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"data_storage_region": &schema.Schema{
+				Description: "The data region to use. Options are `APAC`, `AU`, `EU`, and `US`.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 
 			// Computed Attributes
 			"site_creation_date": &schema.Schema{
@@ -142,6 +148,11 @@ func resourceSite() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"domain_verification": &schema.Schema{
+				Description: "Domain verification (e.g. GlobalSign verification).",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -171,16 +182,31 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Created Incapsula site for domain: %s\n", domain)
 
 	// list of params from config that are specific to update after site creation
-	updateParams := [6]string{"active", "acceleration_level", "seal_location", "domain_redirect_to_full", "remove_ssl", "ignore_ssl"}
+	updateParams := [7]string{"acceleration_level", "active", "approver", "domain_redirect_to_full", "domain_validation", "ignore_ssl", "remove_ssl"}
 	for i := 0; i < len(updateParams); i++ {
 		param := updateParams[i]
-		if d.Get(param) != "" {
+		if d.HasChange(param) && d.Get(param) != "" {
+			// There may be a timing/race condition here
+			// Set an arbitrary period to sleep
+			time.Sleep(3 * time.Second)
 			log.Printf("[INFO] Updating Incapsula site param (%s) with value (%s) for site_id: %d\n", param, d.Get(param).(string), siteAddResponse.SiteID)
 			_, err := client.UpdateSite(strconv.Itoa(siteAddResponse.SiteID), param, d.Get(param).(string))
 			if err != nil {
 				log.Printf("[ERROR] Could not update Incapsula site param (%s) with value (%s) for site_id: %d %s\n", param, d.Get(param).(string), siteAddResponse.SiteID, err)
 				return err
 			}
+		}
+	}
+
+	// Set the data storage region
+	if d.HasChange("data_storage_region") {
+		// There may be a timing/race condition here
+		// Set an arbitrary period to sleep
+		time.Sleep(3 * time.Second)
+		_, err := client.UpdateDataStorageRegion(strconv.Itoa(siteAddResponse.SiteID), d.Get("data_storage_region").(string))
+		if err != nil {
+			log.Printf("[ERROR] Could not set Incapsula site data storage region with value (%s) for site_id: %d %s\n", d.Get("data_storage_region").(string), siteAddResponse.SiteID, err)
+			return err
 		}
 	}
 
@@ -228,6 +254,19 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	}
 	d.Set("dns_a_record_value", dnsARecordValues)
 
+	// Set the GlobalSign verification (may not exist)
+	if siteStatusResponse.Ssl.GeneratedCertificate.ValidationMethod == "dns" {
+		d.Set("domain_verification", siteStatusResponse.Ssl.GeneratedCertificate.ValidationData[0].SetDataTo[0])
+	}
+
+	// Grab the data storage region for the site
+	dataStorageRegionResponse, err := client.GetDataStorageRegion(d.Id())
+	if err != nil {
+		log.Printf("[ERROR] Could not read Incapsula site data storage region for domain: %s and site id: %d, %s\n", domain, siteID, err)
+		return err
+	}
+	d.Set("data_storage_region", dataStorageRegionResponse.Region)
+
 	log.Printf("[INFO] Read Incapsula site for domain: %s\n", domain)
 
 	return nil
@@ -247,6 +286,15 @@ func resourceSiteUpdate(d *schema.ResourceData, m interface{}) error {
 				log.Printf("[ERROR] Could not update Incapsula site param (%s) with value (%s) for site_id: %d %s\n", param, d.Get(param).(string), siteID, err)
 				return err
 			}
+		}
+	}
+
+	// Check if we need to update the data storage region
+	if d.HasChange("data_storage_region") {
+		_, err := client.UpdateDataStorageRegion(d.Id(), d.Get("data_storage_region").(string))
+		if err != nil {
+			log.Printf("[ERROR] Could not update Incapsula site data storage region with value (%s) for site_id: %d %s\n", d.Get("data_storage_region").(string), siteID, err)
+			return err
 		}
 	}
 
