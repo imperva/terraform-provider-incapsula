@@ -1,6 +1,8 @@
 ## 2.4.0 (Unreleased)
 
 * Add support for site masking settings
+* Add support for specifying the log level on a site
+* Re-factor internal site resource (lots of copy/pasta in create and update)
 * Fix an issue with computed and optional attributes for `data_storage_region`
 * Configure `site` resource values during an update for: `active`, `acceleration_level`, `seal_location`, `domain_redirect_to_full`, `remove_ssl`, `ignore_ssl`
 

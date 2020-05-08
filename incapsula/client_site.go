@@ -195,6 +195,7 @@ type SiteStatusResponse struct {
 	} `json:"performance_configuration"`
 	ExtendedDdos int         `json:"extended_ddos"`
 	ExceptionID  string      `json:"exception_id,omitempty"`
+	LogLevel     string      `json:"log_level,omitempty"`
 	Res          interface{} `json:"res"`
 	ResMessage   string      `json:"res_message"`
 	DebugInfo    struct {
