@@ -1,3 +1,9 @@
+## 2.4.0 (Unreleased)
+
+* Add support for site masking settings
+* Fix an issue with computed and optional attributes for `data_storage_region`
+* Configure `site` resource values during an update for: `active`, `acceleration_level`, `seal_location`, `domain_redirect_to_full`, `remove_ssl`, `ignore_ssl`
+
 ## 2.3.0 (Unreleased)
 
 * Add support for setting the data storage region on a site

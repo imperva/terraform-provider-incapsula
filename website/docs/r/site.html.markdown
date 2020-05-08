@@ -24,6 +24,8 @@ resource "incapsula_site" "example-site" {
   log_level              = "full"
   logs_account_id        = "456"
   data_storage_region    = "US"
+  hashing_enabled        = true
+  hash_salt              = "foobar"
 }
 ```
 
@@ -39,6 +41,8 @@ The following arguments are supported:
 * `log_level` - (Optional) Log level. Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Sets the log reporting level for the site. Options are `full`, `security`, `none`, and `default`.
 * `logs_account_id` - (Optional) Account where logs should be stored. Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `data_storage_region` - (Optional) The data region to use. Options are `APAC`, `AU`, `EU`, and `US`.
+* `hashing_enabled` - (Optional) Specify if hashing (masking setting) should be enabled.
+* `hash_salt` - (Optional) Specify the hash salt (masking setting), required if hashing is enabled. Maximum length of 64 characters.
 
 ## Attributes Reference
 
