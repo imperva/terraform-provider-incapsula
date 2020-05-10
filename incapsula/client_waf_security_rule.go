@@ -20,6 +20,7 @@ const remoteFileInclusionRuleID = "api.threats.remote_file_inclusion"
 const sqlInjectionRuleID = "api.threats.sql_injection"
 const ddosRuleID = "api.threats.ddos"
 const botAccessControlRuleID = "api.threats.bot_access_control"
+const customRuleDefaultActionID = "api.threats.customRule"
 
 // ConfigureWAFSecurityRule adds an WAF rule
 func (c *Client) ConfigureWAFSecurityRule(siteID int, ruleID, securityRuleAction, activationMode, ddosTrafficThreshold, blockBadBots, challengeSuspectedBots string) (*SiteStatusResponse, error) {

@@ -55,12 +55,6 @@ func resourceDataCenter() *schema.Resource {
 				Optional:    true,
 				Default:     "true",
 			},
-			"is_standby": {
-				Description: "Defines the data center as standby for failover.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "false",
-			},
 			"is_content": {
 				Description: "The data center will be available for specific resources (Forward Delivery Rules).",
 				Type:        schema.TypeString,
@@ -77,7 +71,6 @@ func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 		d.Get("site_id").(string),
 		d.Get("name").(string),
 		d.Get("server_address").(string),
-		d.Get("is_standby").(string),
 		d.Get("is_content").(string),
 	)
 
@@ -85,14 +78,11 @@ func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	if d.Get("is_enabled") != "" || d.Get("is_standby") != "" {
+	if d.Get("is_enabled") != "" {
 		if d.Get("is_enabled") != "" {
 			log.Printf("[INFO] Updating data center datacenter_id (%s) with is_enabled (%s)\n", dataCenterAddResponse.DataCenterID, d.Get("is_enabled").(string))
 		}
-		if d.Get("is_standby") != "" {
-			log.Printf("[INFO] Updating data center datacenter_id (%s) with is_standby (%s)\n", dataCenterAddResponse.DataCenterID, d.Get("is_standby").(string))
-		}
-		_, err := client.EditDataCenter(dataCenterAddResponse.DataCenterID, d.Get("name").(string), d.Get("is_standby").(string), d.Get("is_content").(string), d.Get("is_enabled").(string))
+		_, err := client.EditDataCenter(dataCenterAddResponse.DataCenterID, d.Get("name").(string), d.Get("is_content").(string), d.Get("is_enabled").(string))
 		if err != nil {
 			log.Printf("[ERROR] Could not update data center datacenter_id (%s) with is_enabled (%s) %s\n", dataCenterAddResponse.DataCenterID, d.Get("is_enabled").(string), err)
 			return err
@@ -138,7 +128,6 @@ func resourceDataCenterRead(d *schema.ResourceData, m interface{}) error {
 			d.Set("name", dataCenter.Name)
 			d.Set("is_enabled", dataCenter.Enabled)
 			d.Set("is_content", dataCenter.ContentOnly)
-			d.Set("is_standby", dataCenter.IsActive)
 			// Server address is the first value in the nested servers object
 			d.Set("server_address", dataCenter.Servers[0].Address)
 			found = true
@@ -161,7 +150,6 @@ func resourceDataCenterUpdate(d *schema.ResourceData, m interface{}) error {
 		d.Id(),
 		d.Get("name").(string),
 		d.Get("is_content").(string),
-		d.Get("is_standby").(string),
 		d.Get("is_enabled").(string),
 	)
 

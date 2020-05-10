@@ -1,3 +1,24 @@
+## 2.4.0 (Unreleased)
+
+* Add support for site masking settings
+* Add support for specifying the log level on a site
+* Re-factor internal site resource (lots of copy/pasta in create and update)
+* Fix an issue with computed and optional attributes for `data_storage_region`
+* Configure `site` resource values during an update for: `active`, `acceleration_level`, `seal_location`, `domain_redirect_to_full`, `remove_ssl`, `ignore_ssl`
+
+## 2.3.0 (Unreleased)
+
+* Add support for setting the data storage region on a site
+* Remove the deprecated setting for `is_standby` on the `data_center` resource (`is_enabled` replaces this functionality); should resolve flapping integration tests + potential production issues
+* Properly configuring `site` resource values for: `active`, `acceleration_level`, `seal_location`, `domain_redirect_to_full`, `remove_ssl`, `ignore_ssl`
+* Added `domain_verification` as an exported variable for the `site` resource
+
+## 2.2.0 (Unreleased)
+
+* Add support for cache rules
+* Improve documentation
+* Fix Incap Rule example bugs
+
 ## 2.1.0 (Unreleased)
 
 Add checks for resource destruction during reads. The following resources have been updated:
