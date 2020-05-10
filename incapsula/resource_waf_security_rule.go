@@ -175,28 +175,29 @@ func resourceWAFSecurityRuleRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	found := false
-
 	// Now with the site status, iterate through the rules and find our ID
 	for _, entry := range siteStatusResponse.Security.Waf.Rules {
 		if entry.ID == d.Get("rule_id").(string) {
 			// Set different attributes based on the rule id
 			switch entry.ID {
 			case backdoorRuleID:
-				d.Set("action", entry.Action)
+				d.Set("security_rule_action", entry.Action)
 			case crossSiteScriptingRuleID:
-				d.Set("action", entry.Action)
+				d.Set("security_rule_action", entry.Action)
+			case customRuleDefaultActionID:
+				d.Set("security_rule_action", entry.Action)
 			case illegalResourceAccessRuleID:
-				d.Set("action", entry.Action)
+				d.Set("security_rule_action", entry.Action)
 			case remoteFileInclusionRuleID:
-				d.Set("action", entry.Action)
+				d.Set("security_rule_action", entry.Action)
 			case sqlInjectionRuleID:
-				d.Set("action", entry.Action)
+				d.Set("security_rule_action", entry.Action)
 			case ddosRuleID:
 				d.Set("activation_mode", entry.ActivationMode)
-				d.Set("ddos_traffic_threshold", entry.DdosTrafficThreshold)
+				d.Set("ddos_traffic_threshold", strconv.FormatInt(int64(entry.DdosTrafficThreshold), 10))
 			case botAccessControlRuleID:
-				d.Set("block_bad_bots", entry.BlockBadBots)
-				d.Set("block_bad_bots", entry.ChallengeSuspectedBots)
+				d.Set("block_bad_bots", strconv.FormatBool(entry.BlockBadBots))
+				d.Set("challenge_suspected_bots", strconv.FormatBool(entry.ChallengeSuspectedBots))
 			}
 			found = true
 			break

@@ -13,6 +13,7 @@ resource "incapsula_site" "example-site" {
   send_site_setup_emails = "true"
   site_ip                = "10.10.10.11"
   force_ssl              = "true"
+  data_storage_region    = "US"
 
   ####################################################################
   # The remaining following parameters below are designated for updating the site after it has been created.
@@ -196,7 +197,7 @@ resource "incapsula_waf_security_rule" "example-waf-ddos-rule" {
   site_id                = incapsula_site.example-site.id
   rule_id                = "api.threats.ddos"
   activation_mode        = "api.threats.ddos.activation_mode.on"
-  ddos_traffic_threshold = "5000"                                
+  ddos_traffic_threshold = "5000"
 }
 
 # api.threats.ddos Security Rule Sample Exception
@@ -391,8 +392,46 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-url" {
   site_id      = incapsula_site.example-site.id
   action       = "RULE_ACTION_REWRITE_URL"
   filter       = "Full-URL == \"/someurl\""
-  add_missing  = "true"
   from         = "*"
   to           = "/redirect"
-  rewrite_name = "my_test_header"
+}
+
+###################################################################
+# Cache Rules
+###################################################################
+
+resource "incapsula_cache_rule" "example-cache-rule-make-static" {
+  site_id = incapsula_site.example-site.id
+  name    = "test-make-static"
+  action  = "HTTP_CACHE_MAKE_STATIC"
+  enabled = true
+  filter  = "isMobile == Yes"
+  ttl     = 3600
+}
+
+resource "incapsula_cache_rule" "example-cache-rule-ignore-params" {
+  site_id       = incapsula_site.example-site.id
+  name          = "test-ignore-params"
+  action        = "HTTP_CACHE_IGNORE_PARAMS"
+  enabled       = true
+  filter        = "isMobile == Yes"
+  ignored_params = "state, site-id"
+}
+
+resource "incapsula_cache_rule" "example-cache-rule-add-tag" {
+  site_id = incapsula_site.example-site.id
+  name    = "test-add-tag"
+  action  = "HTTP_CACHE_ADD_TAG"
+  enabled = true
+  filter  = "isMobile == Yes"
+  text    = "testing"
+}
+
+resource "incapsula_cache_rule" "example-cache-rule-diff-header" {
+  site_id                = incapsula_site.example-site.id
+  name                   = "test-diff-header"
+  action                 = "HTTP_CACHE_DIFFERENTIATE_BY_HEADER"
+  enabled                = true
+  filter                 = "isMobile == Yes"
+  differentiate_by_value = "testing"
 }

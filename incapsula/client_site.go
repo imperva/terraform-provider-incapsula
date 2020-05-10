@@ -132,8 +132,19 @@ type SiteStatusResponse struct {
 			Detected        bool   `json:"detected"`
 			DetectionStatus string `json:"detectionStatus"`
 		} `json:"origin_server"`
+		CustomCertificate struct {
+			Active bool `json:"active"`
+		} `json:"custom_certificate"`
 		GeneratedCertificate struct {
-			San []interface{} `json:"san"`
+			Ca               string `json:"ca"`
+			ValidationMethod string `json:"validation_method"`
+			ValidationData   []struct {
+				DNSRecordName string   `json:"dns_record_name"`
+				SetTypeTo     string   `json:"set_type_to"`
+				SetDataTo     []string `json:"set_data_to"`
+			} `json:"validation_data"`
+			San              []string `json:"san"`
+			ValidationStatus string   `json:"validation_status"`
 		} `json:"generated_certificate"`
 	} `json:"ssl"`
 	SiteDualFactorSettings struct {
@@ -184,6 +195,7 @@ type SiteStatusResponse struct {
 	} `json:"performance_configuration"`
 	ExtendedDdos int         `json:"extended_ddos"`
 	ExceptionID  string      `json:"exception_id,omitempty"`
+	LogLevel     string      `json:"log_level,omitempty"`
 	Res          interface{} `json:"res"`
 	ResMessage   string      `json:"res_message"`
 	DebugInfo    struct {

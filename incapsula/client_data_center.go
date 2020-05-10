@@ -45,7 +45,7 @@ type DataCenterEditResponse struct {
 }
 
 // AddDataCenter adds an incap rule to be managed by Incapsula
-func (c *Client) AddDataCenter(siteID, name, serverAddress, isStandby, isContent string) (*DataCenterAddResponse, error) {
+func (c *Client) AddDataCenter(siteID, name, serverAddress, isContent string) (*DataCenterAddResponse, error) {
 	log.Printf("[INFO] Adding Incapsula data center for siteID: %s\n", siteID)
 
 	// Post form to Incapsula
@@ -55,7 +55,6 @@ func (c *Client) AddDataCenter(siteID, name, serverAddress, isStandby, isContent
 		"site_id":        {siteID},
 		"name":           {name},
 		"server_address": {serverAddress},
-		"is_standby":     {isStandby},
 		"is_content":     {isContent},
 	})
 	if err != nil {
@@ -141,7 +140,7 @@ func (c *Client) ListDataCenters(siteID string) (*DataCenterListResponse, error)
 }
 
 // EditDataCenter edits the Incapsula incap rule
-func (c *Client) EditDataCenter(dcID, name, isStandby, isContent, isEnabled string) (*DataCenterEditResponse, error) {
+func (c *Client) EditDataCenter(dcID, name, isContent, isEnabled string) (*DataCenterEditResponse, error) {
 	log.Printf("[INFO] Editing Incapsula data center for dcID: %s\n", dcID)
 
 	values := url.Values{
@@ -152,10 +151,6 @@ func (c *Client) EditDataCenter(dcID, name, isStandby, isContent, isEnabled stri
 
 	if name != "" {
 		values.Add("name", name)
-	}
-
-	if isStandby != "" {
-		values.Add("is_standby", isStandby)
 	}
 
 	if isContent != "" {

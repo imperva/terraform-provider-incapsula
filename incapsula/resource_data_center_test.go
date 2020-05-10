@@ -2,9 +2,10 @@ package incapsula
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"strconv"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
@@ -152,7 +153,6 @@ resource "incapsula_data_center" "testacc-terraform-data-center" {
   site_id = "${incapsula_site.testacc-terraform-site.id}"
   name = "%s"
   server_address = "8.8.8.5"
-  is_standby = "false"
   is_content = "true"
   depends_on = ["%s"]
 }`, dataCenterName, siteResourceName,
