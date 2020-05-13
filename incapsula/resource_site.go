@@ -22,7 +22,7 @@ func resourceSite() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
-			"domain": &schema.Schema{
+			"domain": {
 				Description: "The fully qualified domain name of the site. For example: www.example.com, hello.example.com.",
 				Type:        schema.TypeString,
 				Required:    true,
@@ -38,89 +38,89 @@ func resourceSite() *schema.Resource {
 			},
 
 			// Optional Arguments
-			"account_id": &schema.Schema{
+			"account_id": {
 				Description: "Numeric identifier of the account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"ref_id": &schema.Schema{
+			"ref_id": {
 				Description: "Customer specific identifier for this operation.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"send_site_setup_emails": &schema.Schema{
+			"send_site_setup_emails": {
 				Description: "If this value is false, end users will not get emails about the add site process such as DNS instructions and SSL setup.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"site_ip": &schema.Schema{
+			"site_ip": {
 				Description: "Manually set the web server IP/CNAME.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"force_ssl": &schema.Schema{
+			"force_ssl": {
 				Description: "If this value is true, manually set the site to support SSL. This option is only available for sites with manually configured IP/CNAME and for specific accounts.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"logs_account_id": &schema.Schema{
+			"logs_account_id": {
 				Description: "Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"active": &schema.Schema{
+			"active": {
 				Description: "active or bypass.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"domain_validation": &schema.Schema{
+			"domain_validation": {
 				Description: "email or html or dns.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"approver": &schema.Schema{
+			"approver": {
 				Description: "my.approver@email.com (some approver email address).",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"ignore_ssl": &schema.Schema{
+			"ignore_ssl": {
 				Description: "true or empty string.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"acceleration_level": &schema.Schema{
+			"acceleration_level": {
 				Description: "none | standard | aggressive.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"seal_location": &schema.Schema{
+			"seal_location": {
 				Description: "api.seal_location.bottom_left | api.seal_location.none | api.seal_location.right_bottom | api.seal_location.right | api.seal_location.left | api.seal_location.bottom_right | api.seal_location.bottom.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"domain_redirect_to_full": &schema.Schema{
+			"domain_redirect_to_full": {
 				Description: "true or empty string.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"remove_ssl": &schema.Schema{
+			"remove_ssl": {
 				Description: "true or empty string.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"data_storage_region": &schema.Schema{
+			"data_storage_region": {
 				Description: "The data region to use. Options are `APAC`, `AU`, `EU`, and `US`.",
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
 			},
-			"hashing_enabled": &schema.Schema{
+			"hashing_enabled": {
 				Description: "Specify if hashing (masking setting) should be enabled.",
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Optional:    true,
 			},
-			"hash_salt": &schema.Schema{
+			"hash_salt": {
 				Description: "Specify the hash salt (masking setting), required if hashing is enabled. Maximum length of 64 characters.",
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -133,7 +133,7 @@ func resourceSite() *schema.Resource {
 					return
 				},
 			},
-			"log_level": &schema.Schema{
+			"log_level": {
 				Description: "The log level. Options are `full`, `security`, and `none`. Defaults to `none`.",
 				Type:        schema.TypeString,
 				Default:     "none",
@@ -141,22 +141,22 @@ func resourceSite() *schema.Resource {
 			},
 
 			// Computed Attributes
-			"site_creation_date": &schema.Schema{
+			"site_creation_date": {
 				Description: "Numeric representation of the site creation date.",
 				Type:        schema.TypeInt,
 				Computed:    true,
 			},
-			"dns_cname_record_name": &schema.Schema{
+			"dns_cname_record_name": {
 				Description: "CNAME record name.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"dns_cname_record_value": &schema.Schema{
+			"dns_cname_record_value": {
 				Description: "CNAME record value.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"dns_a_record_name": &schema.Schema{
+			"dns_a_record_name": {
 				Description: "A record name.",
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -169,7 +169,7 @@ func resourceSite() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"domain_verification": &schema.Schema{
+			"domain_verification": {
 				Description: "Domain verification (e.g. GlobalSign verification).",
 				Type:        schema.TypeString,
 				Computed:    true,

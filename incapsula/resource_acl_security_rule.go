@@ -36,49 +36,49 @@ func resourceACLSecurityRule() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
-			"site_id": &schema.Schema{
+			"site_id": {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeInt,
 				Required:    true,
 			},
-			"rule_id": &schema.Schema{
+			"rule_id": {
 				Description: "The id of the acl, e.g api.acl.blacklisted_ips.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
 
 			// Optional Arguments
-			"continents": &schema.Schema{
+			"continents": {
 				Description:      "A comma separated list of continent codes.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"countries": &schema.Schema{
+			"countries": {
 				Description:      "A comma separated list of country codes.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"ips": &schema.Schema{
+			"ips": {
 				Description:      "A comma separated list of IPs or IP ranges, e.g: 192.168.1.1, 192.168.1.1-192.168.1.100 or 192.168.1.1/24.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"urls": &schema.Schema{
+			"urls": {
 				Description:      "A comma separated list of resource paths. NOTE: this is a 1:1 list with url_patterns e.q:  urls = \"Test,/Values\" url_patterns = \"CONTAINS,PREFIX\"",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"url_patterns": &schema.Schema{
+			"url_patterns": {
 				Description:      "The patterns should be in accordance with the matching urls sent by the urls parameter. Options: CONTAINS | EQUALS | PREFIX | SUFFIX | NOT_EQUALS | NOT_CONTAIN | NOT_PREFIX | NOT_SUFFIX",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"client_apps": &schema.Schema{
+			"client_apps": {
 				Description:      "The client apps",
 				Type:             schema.TypeString,
 				Optional:         true,

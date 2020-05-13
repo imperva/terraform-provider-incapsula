@@ -54,76 +54,76 @@ func resourceSecurityRuleException() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
-			"site_id": &schema.Schema{
+			"site_id": {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeInt,
 				Required:    true,
 			},
-			"rule_id": &schema.Schema{
+			"rule_id": {
 				Description: "The identifier of the security rule, e.g api.threats.cross_site_scripting.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"client_app_types": &schema.Schema{
+			"client_app_types": {
 				Description:      "A comma separated list of client application types,",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"client_apps": &schema.Schema{
+			"client_apps": {
 				Description:      "A comma separated list of client application IDs.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"countries": &schema.Schema{
+			"countries": {
 				Description:      "A comma separated list of country codes.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"continents": &schema.Schema{
+			"continents": {
 				Description:      "A comma separated list of continent codes.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"ips": &schema.Schema{
+			"ips": {
 				Description:      "A comma separated list of IPs or IP ranges, e.g: 192.168.1.1, 192.168.1.1-192.168.1.100 or 192.168.1.1/24",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"url_patterns": &schema.Schema{
+			"url_patterns": {
 				Description:      "A comma separated list of url patterns. One of: contains | equals | prefix | suffix | not_equals | not_contain | not_prefix | not_suffix. The patterns should be in accordance with the matching urls sent by the urls parameter.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"urls": &schema.Schema{
+			"urls": {
 				Description:      "A comma separated list of resource paths. For example, /home and /admin/index.html are resource paths, while http://www.example.com/home is not. Each URL should be encoded separately using percent encoding as specified by RFC 3986 (http://tools.ietf.org/html/rfc3986#section-2.1). An empty URL list will remove all URLs.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"user_agents": &schema.Schema{
+			"user_agents": {
 				Description:      "A comma separated list of encoded user agents.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"parameters": &schema.Schema{
+			"parameters": {
 				Description:      "A comma separated list of encoded parameters.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"whitelist_id": &schema.Schema{
+			"whitelist_id": {
 				Description: "The id (an integer) of the whitelist to be set. This field is optional - in case no id is supplied, a new whitelist will be created.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"exception_id_only": &schema.Schema{
+			"exception_id_only": {
 				Description: "The id (an integer) of the whitelist to be set. This field is optional - in case no id is supplied, a new whitelist will be created.",
 				Type:        schema.TypeString,
 				Optional:    true,
