@@ -13,7 +13,7 @@ import (
 type IncapRule struct {
 	Name                string `json:"name"`
 	Action              string `json:"action"`
-	Filter              string `json:"filter"`
+	Filter              string `json:"filter,omitempty"`
 	ResponseCode        int    `json:"response_code,omitempty"`
 	AddMissing          bool   `json:"add_missing,omitempty"`
 	From                string `json:"from,omitempty"`
