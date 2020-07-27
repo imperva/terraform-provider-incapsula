@@ -3,10 +3,9 @@ package incapsula
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceDataCenter() *schema.Resource {
@@ -22,10 +21,7 @@ func resourceDataCenter() *schema.Resource {
 					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id/dc_id", d.Id())
 				}
 
-				siteID, err := strconv.Atoi(idSlice[0])
-				if err != nil {
-					return nil, err
-				}
+				siteID := idSlice[0]
 				dcID := idSlice[1]
 
 				d.Set("site_id", siteID)
@@ -57,12 +53,7 @@ func resourceDataCenter() *schema.Resource {
 				Description: "Enables the data center.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "yes",
-			},
-			"is_standby": {
-				Description: "Defines the data center as standby for failover.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Default:     "true",
 			},
 			"is_content": {
 				Description: "The data center will be available for specific resources (Forward Delivery Rules).",
@@ -80,7 +71,6 @@ func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 		d.Get("site_id").(string),
 		d.Get("name").(string),
 		d.Get("server_address").(string),
-		d.Get("is_standby").(string),
 		d.Get("is_content").(string),
 	)
 
@@ -88,14 +78,11 @@ func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	if d.Get("is_enabled") != "" || d.Get("is_standby") != "" {
+	if d.Get("is_enabled") != "" {
 		if d.Get("is_enabled") != "" {
 			log.Printf("[INFO] Updating data center datacenter_id (%s) with is_enabled (%s)\n", dataCenterAddResponse.DataCenterID, d.Get("is_enabled").(string))
 		}
-		if d.Get("is_standby") != "" {
-			log.Printf("[INFO] Updating data center datacenter_id (%s) with is_standby (%s)\n", dataCenterAddResponse.DataCenterID, d.Get("is_standby").(string))
-		}
-		_, err := client.EditDataCenter(dataCenterAddResponse.DataCenterID, d.Get("name").(string), d.Get("is_standby").(string), d.Get("is_content").(string), d.Get("is_enabled").(string))
+		_, err := client.EditDataCenter(dataCenterAddResponse.DataCenterID, d.Get("name").(string), d.Get("is_content").(string), d.Get("is_enabled").(string))
 		if err != nil {
 			log.Printf("[ERROR] Could not update data center datacenter_id (%s) with is_enabled (%s) %s\n", dataCenterAddResponse.DataCenterID, d.Get("is_enabled").(string), err)
 			return err
@@ -113,17 +100,44 @@ func resourceDataCenterRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	listDataCentersResponse, err := client.ListDataCenters(d.Get("site_id").(string))
+
+	// List data centers response object may indicate that the Site ID has been deleted (9413)
+	if listDataCentersResponse != nil {
+		// Res can oscillate between strings and ints
+		var resString string
+		if resNumber, ok := listDataCentersResponse.Res.(float64); ok {
+			resString = fmt.Sprintf("%d", int(resNumber))
+		} else {
+			resString = listDataCentersResponse.Res.(string)
+		}
+		if resString == "9413" {
+			log.Printf("[INFO] Incapsula Site ID %s has already been deleted: %s\n", d.Get("site_id"), err)
+			d.SetId("")
+			return nil
+		}
+	}
+
 	if err != nil {
 		return err
 	}
 
+	found := false
+
 	for _, dataCenter := range listDataCentersResponse.DCs {
 		if dataCenter.ID == d.Id() {
 			d.Set("name", dataCenter.Name)
-			d.Set("enabled", dataCenter.Enabled)
+			d.Set("is_enabled", dataCenter.Enabled)
 			d.Set("is_content", dataCenter.ContentOnly)
-			d.Set("is_standby", dataCenter.IsActive)
+			// Server address is the first value in the nested servers object
+			d.Set("server_address", dataCenter.Servers[0].Address)
+			found = true
 		}
+	}
+
+	if !found {
+		log.Printf("[INFO] Incapsula Data Center ID %s for Site ID %s has already been deleted: %s\n", d.Id(), d.Get("site_id"), err)
+		d.SetId("")
+		return nil
 	}
 
 	return nil
@@ -136,7 +150,6 @@ func resourceDataCenterUpdate(d *schema.ResourceData, m interface{}) error {
 		d.Id(),
 		d.Get("name").(string),
 		d.Get("is_content").(string),
-		d.Get("is_standby").(string),
 		d.Get("is_enabled").(string),
 	)
 

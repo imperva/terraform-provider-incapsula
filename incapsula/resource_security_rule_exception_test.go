@@ -2,34 +2,34 @@ package incapsula
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"strconv"
 	"testing"
 )
 
-const securityRuleExceptionName_blacklistedCountries = "Example security rule exception - blacklisted_countries"
-const securityRuleExceptionResourceName_blacklistedCountries = "incapsula_security_rule_exception.example-waf-blacklisted-countries-rule-exception"
+const securityRuleExceptionNameBlacklistedCountries = "Example security rule exception - blacklisted_countries"
+const securityRuleExceptionResourceNameBlacklistedCountries = "incapsula_security_rule_exception.example-waf-blacklisted-countries-rule-exception"
 
 ////////////////////////////////////////////////////////////////
 // AccCheckAddSecurityRuleException Tests
 ////////////////////////////////////////////////////////////////
 
-func testAccCheckSecurityRuleExceptionCreate_validRule(t *testing.T) {
+func testAccCheckSecurityRuleExceptionCreateValidRule(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckSecurityRuleExceptionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckACLSecurityRuleExceptionGoodConfig_blacklistedCountries(),
+				Config: testAccCheckACLSecurityRuleExceptionGoodConfigBlacklistedCountries(),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckSecurityRuleExceptionExists(securityRuleExceptionResourceName_blacklistedCountries),
-					resource.TestCheckResourceAttr(securityRuleExceptionResourceName_blacklistedCountries, "name", securityRuleExceptionName_blacklistedCountries),
+					testCheckSecurityRuleExceptionExists(securityRuleExceptionResourceNameBlacklistedCountries),
+					resource.TestCheckResourceAttr(securityRuleExceptionResourceNameBlacklistedCountries, "name", securityRuleExceptionNameBlacklistedCountries),
 				),
 			},
 			{
-				ResourceName:      securityRuleExceptionResourceName_blacklistedCountries,
+				ResourceName:      securityRuleExceptionResourceNameBlacklistedCountries,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: testAccStateSecurityRuleExceptionID,
@@ -38,21 +38,21 @@ func testAccCheckSecurityRuleExceptionCreate_validRule(t *testing.T) {
 	})
 }
 
-func testAccCheckSecurityRuleExceptionCreate_invalidRuleId(t *testing.T) {
+func testAccCheckSecurityRuleExceptionCreateInvalidRuleID(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckSecurityRuleExceptionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckACLSecurityRuleExceptionInvalidRuleID_blacklistedCountries(),
+				Config: testAccCheckACLSecurityRuleExceptionInvalidRuleIDBlacklistedCountries(),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckSecurityRuleExceptionExists(securityRuleExceptionResourceName_blacklistedCountries),
-					resource.TestCheckResourceAttr(securityRuleExceptionResourceName_blacklistedCountries, "name", securityRuleExceptionName_blacklistedCountries),
+					testCheckSecurityRuleExceptionExists(securityRuleExceptionResourceNameBlacklistedCountries),
+					resource.TestCheckResourceAttr(securityRuleExceptionResourceNameBlacklistedCountries, "name", securityRuleExceptionNameBlacklistedCountries),
 				),
 			},
 			{
-				ResourceName:      securityRuleExceptionResourceName_blacklistedCountries,
+				ResourceName:      securityRuleExceptionResourceNameBlacklistedCountries,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: testAccStateSecurityRuleExceptionID,
@@ -61,21 +61,21 @@ func testAccCheckSecurityRuleExceptionCreate_invalidRuleId(t *testing.T) {
 	})
 }
 
-func testAccCheckSecurityRuleExceptionCreate_invalidParams(t *testing.T) {
+func testAccCheckSecurityRuleExceptionCreateInvalidParams(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckSecurityRuleExceptionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckACLSecurityRuleExceptionInvalidParam_blacklistedCountries(),
+				Config: testAccCheckACLSecurityRuleExceptionInvalidParamBlacklistedCountries(),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckSecurityRuleExceptionExists(securityRuleExceptionResourceName_blacklistedCountries),
-					resource.TestCheckResourceAttr(securityRuleExceptionResourceName_blacklistedCountries, "name", securityRuleExceptionName_blacklistedCountries),
+					testCheckSecurityRuleExceptionExists(securityRuleExceptionResourceNameBlacklistedCountries),
+					resource.TestCheckResourceAttr(securityRuleExceptionResourceNameBlacklistedCountries, "name", securityRuleExceptionNameBlacklistedCountries),
 				),
 			},
 			{
-				ResourceName:      securityRuleExceptionResourceName_blacklistedCountries,
+				ResourceName:      securityRuleExceptionResourceNameBlacklistedCountries,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: testAccStateSecurityRuleExceptionID,
@@ -124,7 +124,7 @@ func testCheckSecurityRuleExceptionExists(name string) resource.TestCheckFunc {
 		client := testAccProvider.Meta().(*Client)
 		siteStatusResponse, err := client.ListSecurityRuleExceptions(siteID, ruleID)
 		if err != nil {
-			return fmt.Errorf("ListSecurityRuleExceptions Error for site_id (%s) and rule_id (%s) %s\n", siteID, ruleID, err)
+			return fmt.Errorf("ListSecurityRuleExceptions Error for site_id (%s) and rule_id (%s) %s", siteID, ruleID, err)
 		}
 
 		if siteStatusResponse == nil {
@@ -156,8 +156,8 @@ func testAccStateSecurityRuleExceptionID(s *terraform.State) (string, error) {
 }
 
 // Good Security Rule Exception configs
-func testAccCheckACLSecurityRuleExceptionGoodConfig_blacklistedCountries() string {
-	return testAccCheckIncapsulaSiteConfig_basic(testAccDomain) + fmt.Sprintf("%s%s", `
+func testAccCheckACLSecurityRuleExceptionGoodConfigBlacklistedCountries() string {
+	return testAccCheckIncapsulaSiteConfigBasic(testAccDomain) + fmt.Sprintf("%s%s", `
 resource "incapsula_security_rule_exception" "example-waf-blacklisted-countries-rule-exception" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.acl.blacklisted_countries"
@@ -165,13 +165,13 @@ resource "incapsula_security_rule_exception" "example-waf-blacklisted-countries-
   ips="1.2.3.6,1.2.3.7"
   url_patterns="EQUALS,CONTAINS"
   urls="/myurl,/myurl2"
-}`, securityRuleExceptionResourceName_blacklistedCountries,
+}`, securityRuleExceptionResourceNameBlacklistedCountries,
 	)
 }
 
 // Bad Security Rule Exception configs
-func testAccCheckACLSecurityRuleExceptionInvalidRuleID_blacklistedCountries() string {
-	return testAccCheckIncapsulaSiteConfig_basic(testAccDomain) + fmt.Sprintf("%s%s", `
+func testAccCheckACLSecurityRuleExceptionInvalidRuleIDBlacklistedCountries() string {
+	return testAccCheckIncapsulaSiteConfigBasic(testAccDomain) + fmt.Sprintf("%s%s", `
 resource "incapsula_security_rule_exception" "example-waf-blacklisted-countries-rule-exception" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "bad_rule_id"
@@ -179,12 +179,12 @@ resource "incapsula_security_rule_exception" "example-waf-blacklisted-countries-
   ips="1.2.3.6,1.2.3.7"
   url_patterns="EQUALS,CONTAINS"
   urls="/myurl,/myurl2"
-}`, securityRuleExceptionResourceName_blacklistedCountries,
+}`, securityRuleExceptionResourceNameBlacklistedCountries,
 	)
 }
 
-func testAccCheckACLSecurityRuleExceptionInvalidParam_blacklistedCountries() string {
-	return testAccCheckIncapsulaSiteConfig_basic(testAccDomain) + fmt.Sprintf("%s%s", `
+func testAccCheckACLSecurityRuleExceptionInvalidParamBlacklistedCountries() string {
+	return testAccCheckIncapsulaSiteConfigBasic(testAccDomain) + fmt.Sprintf("%s%s", `
 resource "incapsula_security_rule_exception" "example-waf-blacklisted-countries-rule-exception" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.acl.blacklisted_countries"
@@ -192,6 +192,6 @@ resource "incapsula_security_rule_exception" "example-waf-blacklisted-countries-
   ips="1.2.3.6,1.2.3."
   url_patterns="EQUALS,CONTAINS"
   urls="/myurl,myurl2"
-}`, securityRuleExceptionResourceName_blacklistedCountries,
+}`, securityRuleExceptionResourceNameBlacklistedCountries,
 	)
 }

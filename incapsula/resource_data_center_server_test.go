@@ -2,12 +2,11 @@ package incapsula
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
-	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
 const dataCenterServerAddress = "4.4.4.4"
@@ -20,7 +19,7 @@ func TestAccIncapsulaDataCenterServer_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaDataCenterServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaDataCenterServerConfig_basic(),
+				Config: testAccCheckIncapsulaDataCenterServerConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaDataCenterServerExists(dataCenterServerResourceName),
 					resource.TestCheckResourceAttr(dataCenterServerResourceName, "server_address", dataCenterServerAddress),
@@ -42,18 +41,14 @@ func testAccStateDCID(s *terraform.State) (string, error) {
 			continue
 		}
 
-		serverID, err := strconv.Atoi(rs.Primary.ID)
-		if err != nil {
-			return "", fmt.Errorf("Error parsing data center ID %v to int", rs.Primary.ID)
-		}
-		dcID, err := strconv.Atoi(rs.Primary.Attributes["dc_id"])
-		if err != nil {
-			return "", fmt.Errorf("Error parsing dc_id %v to int", rs.Primary.Attributes["dc_id"])
-		}
-		return fmt.Sprintf("%d/%d", dcID, serverID), nil
+		serverID := rs.Primary.ID
+		siteID := rs.Primary.Attributes["site_id"]
+		dcID := rs.Primary.Attributes["dc_id"]
+
+		return fmt.Sprintf("%s/%s/%s", siteID, dcID, serverID), nil
 	}
 
-	return "", fmt.Errorf("Error finding dc_id")
+	return "", fmt.Errorf("Error finding a data center server")
 }
 
 func testAccCheckIncapsulaDataCenterServerDestroy(state *terraform.State) error {
@@ -66,17 +61,28 @@ func testAccCheckIncapsulaDataCenterServerDestroy(state *terraform.State) error 
 
 		siteID := res.Primary.ID
 		if siteID == "" {
-			return fmt.Errorf("Incapsula site ID does not exist")
+			// There is a bug in Terraform: https://github.com/hashicorp/terraform/issues/23635
+			// Specifically, upgrades/destroys are happening simulatneously and not honoroing
+			// dependencies. In this case, it's possible that the site has already been deleted,
+			// which means that all of the subresources will have been cleared out.
+			// Ordinarily, this should return an error, but until this gets addressed, we're
+			// going to simply return nil.
+			// return fmt.Errorf("Incapsula site ID does not exist")
+			return nil
 		}
 
-		listDataCenterResponse, err := client.ListDataCenters(siteID)
+		listDataCenterResponse, _ := client.ListDataCenters(siteID)
+
+		// See comment above - the data center may have already been deleted
+		// This workaround will be removed in the future
+		if listDataCenterResponse == nil || listDataCenterResponse.DCs == nil || len(listDataCenterResponse.DCs) == 0 {
+			return nil
+		}
+
 		for _, dc := range listDataCenterResponse.DCs {
 			if dc.Name == dataCenterName {
 				return fmt.Errorf("Incapsula data center: %s (site_id: %s) still exists", dataCenterName, siteID)
 			}
-		}
-		if err == nil {
-			return fmt.Errorf("Incapsula site for domain: %s (site id: %s) still exists", testAccDomain, siteID)
 		}
 	}
 
@@ -126,14 +132,14 @@ func testCheckIncapsulaDataCenterServerExists(name string) resource.TestCheckFun
 	}
 }
 
-func testAccCheckIncapsulaDataCenterServerConfig_basic() string {
-	return testAccCheckIncapsulaDataCenterConfig_basic() + fmt.Sprintf(`
+func testAccCheckIncapsulaDataCenterServerConfigBasic() string {
+	return testAccCheckIncapsulaDataCenterConfigBasic() + fmt.Sprintf(`
 resource "incapsula_data_center_server" "testacc-terraform-data-center-server" {
-  dc_id = "${incapsula_data_center.testacc-terraform-data-center.id}"
-  site_id = "${incapsula_site.testacc-terraform-site.id}"
+  dc_id = incapsula_data_center.testacc-terraform-data-center.id
+  site_id = incapsula_site.testacc-terraform-site.id
   server_address = "4.4.4.4"
-  is_standby = "yes"
-  depends_on = ["%s", "%s"]
-}`, siteResourceName, dataCenterResourceName,
+	is_enabled = "true"
+  depends_on = [%s, %s]
+}`, dataCenterResourceName, siteResourceName,
 	)
 }

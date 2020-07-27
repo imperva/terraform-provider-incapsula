@@ -132,8 +132,19 @@ type SiteStatusResponse struct {
 			Detected        bool   `json:"detected"`
 			DetectionStatus string `json:"detectionStatus"`
 		} `json:"origin_server"`
+		CustomCertificate struct {
+			Active bool `json:"active"`
+		} `json:"custom_certificate"`
 		GeneratedCertificate struct {
-			San []interface{} `json:"san"`
+			Ca               string `json:"ca"`
+			ValidationMethod string `json:"validation_method"`
+			ValidationData   []struct {
+				DNSRecordName string   `json:"dns_record_name"`
+				SetTypeTo     string   `json:"set_type_to"`
+				SetDataTo     []string `json:"set_data_to"`
+			} `json:"validation_data"`
+			San              []string `json:"san"`
+			ValidationStatus string   `json:"validation_status"`
 		} `json:"generated_certificate"`
 	} `json:"ssl"`
 	SiteDualFactorSettings struct {
@@ -182,10 +193,11 @@ type SiteStatusResponse struct {
 		Cache300X                 bool          `json:"cache300x"`
 		CacheHeaders              []interface{} `json:"cache_headers"`
 	} `json:"performance_configuration"`
-	ExtendedDdos int    `json:"extended_ddos"`
-	ExceptionID  string `json:"exception_id,omitempty"`
-	Res          int    `json:"res"`
-	ResMessage   string `json:"res_message"`
+	ExtendedDdos int         `json:"extended_ddos"`
+	ExceptionID  string      `json:"exception_id,omitempty"`
+	LogLevel     string      `json:"log_level,omitempty"`
+	Res          interface{} `json:"res"`
+	ResMessage   string      `json:"res_message"`
 	DebugInfo    struct {
 		IDInfo string `json:"id-info"`
 	} `json:"debug_info"`
@@ -259,9 +271,17 @@ func (c *Client) SiteStatus(domain string, siteID int) (*SiteStatusResponse, err
 		return nil, fmt.Errorf("Error parsing site status JSON response for domain %s (site id: %d): %s", domain, siteID, err)
 	}
 
+	var resString string
+
+	if resNumber, ok := siteStatusResponse.Res.(float64); ok {
+		resString = fmt.Sprintf("%d", int(resNumber))
+	} else {
+		resString = siteStatusResponse.Res.(string)
+	}
+
 	// Look at the response status code from Incapsula
-	if siteStatusResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when getting site status for domain %s (site id: %d): %s", domain, siteID, string(responseBody))
+	if resString != "0" {
+		return &siteStatusResponse, fmt.Errorf("Error from Incapsula service when getting site status for domain %s (site id: %d): %s", domain, siteID, string(responseBody))
 	}
 
 	return &siteStatusResponse, nil

@@ -53,7 +53,7 @@ func TestClientConfigureACLSecurityRuleBadJSON(t *testing.T) {
 	}
 }
 
-func TestClientConfigureACLSecurityRuleInvalidSite(t *testing.T) {
+func TestClientConfigureACLSecurityRuleInvalidRule(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointACLRuleConfigure) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointACLRuleConfigure, req.URL.String())
@@ -69,7 +69,7 @@ func TestClientConfigureACLSecurityRuleInvalidSite(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding ACL rule for rule id %s and site id %d: %s", ruleID, siteID, string(`{"site_id":0,"res":1}`))) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when configuring ACL rule for rule id %s and site id %d: %s", ruleID, siteID, string(`{"site_id":0,"res":1}`))) {
 		t.Errorf("Should have received a bad site error, got: %s", err)
 	}
 	if configureACLSecurityRuleResponse != nil {
@@ -77,7 +77,7 @@ func TestClientConfigureACLSecurityRuleInvalidSite(t *testing.T) {
 	}
 }
 
-func TestClientConfigureACLSecurityRuleValidSite(t *testing.T) {
+func TestClientConfigureACLSecurityRuleContinentsValidRule(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointACLRuleConfigure) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointACLRuleConfigure, req.URL.String())
@@ -88,8 +88,8 @@ func TestClientConfigureACLSecurityRuleValidSite(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID, ruleID := 42, "42"
-	configureACLSecurityRuleResponse, err := client.ConfigureACLSecurityRule(siteID, ruleID, "", "", "", "", "")
+	siteID, ruleID := 42, blacklistedCountries
+	configureACLSecurityRuleResponse, err := client.ConfigureACLSecurityRule(siteID, ruleID, "Africa", "Australia", "", "", "")
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
@@ -99,7 +99,76 @@ func TestClientConfigureACLSecurityRuleValidSite(t *testing.T) {
 	if configureACLSecurityRuleResponse.SiteID != 123 {
 		t.Errorf("Site ID doesn't match")
 	}
-	if configureACLSecurityRuleResponse.Res != 0 {
-		t.Errorf("Response code doesn't match")
+}
+
+func TestClientConfigureACLSecurityRuleIPsValidRule(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != fmt.Sprintf("/%s", endpointACLRuleConfigure) {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointACLRuleConfigure, req.URL.String())
+		}
+		rw.Write([]byte(`{"site_id":123,"res":0}`))
+	}))
+	defer server.Close()
+
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+	siteID, ruleID := 42, blacklistedIPs
+	configureACLSecurityRuleResponse, err := client.ConfigureACLSecurityRule(siteID, ruleID, "", "", "44.55.66.77", "", "")
+	if err != nil {
+		t.Errorf("Should not have received an error")
+	}
+	if configureACLSecurityRuleResponse == nil {
+		t.Errorf("Should not have received a nil configureACLSecurityRuleResponse instance")
+	}
+	if configureACLSecurityRuleResponse.SiteID != 123 {
+		t.Errorf("Site ID doesn't match")
+	}
+}
+
+func TestClientConfigureACLSecurityRuleURLsValidRule(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != fmt.Sprintf("/%s", endpointACLRuleConfigure) {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointACLRuleConfigure, req.URL.String())
+		}
+		rw.Write([]byte(`{"site_id":123,"res":0}`))
+	}))
+	defer server.Close()
+
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+	siteID, ruleID := 42, blacklistedURLs
+	configureACLSecurityRuleResponse, err := client.ConfigureACLSecurityRule(siteID, ruleID, "", "", "", "/alpha,/bravo", "CONTAINS,EQUALS")
+	if err != nil {
+		t.Errorf("Should not have received an error")
+	}
+	if configureACLSecurityRuleResponse == nil {
+		t.Errorf("Should not have received a nil configureACLSecurityRuleResponse instance")
+	}
+	if configureACLSecurityRuleResponse.SiteID != 123 {
+		t.Errorf("Site ID doesn't match")
+	}
+}
+
+func TestClientConfigureACLSecurityRuleResultCodeStringValidRule(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != fmt.Sprintf("/%s", endpointACLRuleConfigure) {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointACLRuleConfigure, req.URL.String())
+		}
+		rw.Write([]byte(`{"site_id":123,"res":"0"}`))
+	}))
+	defer server.Close()
+
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+	siteID, ruleID := 42, blacklistedCountries
+	configureACLSecurityRuleResponse, err := client.ConfigureACLSecurityRule(siteID, ruleID, "Africa", "Australia", "", "", "")
+	if err != nil {
+		t.Errorf("Should not have received an error")
+	}
+	if configureACLSecurityRuleResponse == nil {
+		t.Errorf("Should not have received a nil configureACLSecurityRuleResponse instance")
+	}
+	if configureACLSecurityRuleResponse.SiteID != 123 {
+		t.Errorf("Site ID doesn't match")
 	}
 }

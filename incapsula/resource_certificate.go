@@ -1,11 +1,9 @@
 package incapsula
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"log"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceCertificate() *schema.Resource {
@@ -32,21 +30,22 @@ func resourceCertificate() *schema.Resource {
 				Description: "The certificate file in base64 format.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			// Optional Arguments
 			"private_key": {
 				Description: "The private key of the certificate in base64 format. Optional in case of PFX certificate file format. This will be encoded in sha256 in terraform state.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				ForceNew:    true,
 				Sensitive:   true,
-				StateFunc:   sha256Encode,
 			},
 			"passphrase": {
 				Description: "The passphrase used to protect your SSL certificate. This will be encoded in sha256 in terraform state.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				ForceNew:    true,
 				Sensitive:   true,
-				StateFunc:   sha256Encode,
 			},
 		},
 	}
@@ -78,7 +77,14 @@ func resourceCertificateRead(d *schema.ResourceData, m interface{}) error {
 
 	siteID := d.Get("site_id").(string)
 
-	_, err := client.ListCertificates(siteID)
+	listCertificatesResponse, err := client.ListCertificates(siteID)
+
+	// List data centers response object may indicate that the Site ID has been deleted (9413)
+	if listCertificatesResponse != nil && listCertificatesResponse.Res == 9413 {
+		log.Printf("[INFO] Incapsula Site ID %s has already been deleted: %s\n", d.Get("site_id"), err)
+		d.SetId("")
+		return nil
+	}
 
 	if err != nil {
 		log.Printf("[ERROR] Could not read custom certificate from Incapsula site for site_id: %s, %s\n", siteID, err)
@@ -124,9 +130,12 @@ func resourceCertificateDelete(d *schema.ResourceData, m interface{}) error {
 
 	return nil
 }
+<<<<<<< HEAD
 
 // Private key and passphrase will be exposed in terraform state file, fix is to encode it to sha256
 // https://github.com/GoogleCloudPlatform/magic-modules/pull/1336/files
 func sha256Encode(v interface{}) string {
 	return hex.EncodeToString(sha256.New().Sum([]byte(v.(string))))
 }
+=======
+>>>>>>> master

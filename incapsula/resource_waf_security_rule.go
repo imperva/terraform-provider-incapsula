@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 // Default actions to reset polies to upon delete/destroy
@@ -48,43 +48,43 @@ func resourceWAFSecurityRule() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
-			"site_id": &schema.Schema{
+			"site_id": {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeInt,
 				Required:    true,
 			},
-			"rule_id": &schema.Schema{
+			"rule_id": {
 				Description: "The identifier of the WAF rule, e.g api.threats.cross_site_scripting.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
 
 			// Required for rule_id: api.threats.backdoor, api.threats.cross_site_scripting, api.threats.illegal_resource_access, api.threats.remote_file_inclusion, api.threats.sql_injection
-			"security_rule_action": &schema.Schema{
+			"security_rule_action": {
 				Description: "The action that should be taken when a threat is detected, for example: api.threats.action.block_ip.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 
 			// Required for rule_id: api.threats.ddos
-			"activation_mode": &schema.Schema{
+			"activation_mode": {
 				Description: "The mode of activation for ddos on a site. Possible values: off, auto, on.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"ddos_traffic_threshold": &schema.Schema{
+			"ddos_traffic_threshold": {
 				Description: "Consider site to be under DDoS if the request rate is above this threshold. The valid values are 10, 20, 50, 100, 200, 500, 750, 1000, 2000, 3000, 4000, 5000.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 
 			// Required for rule_id: api.threats.bot_access_control
-			"block_bad_bots": &schema.Schema{
+			"block_bad_bots": {
 				Description: "Whether or not to block bad bots. Possible values: true, false.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"challenge_suspected_bots": &schema.Schema{
+			"challenge_suspected_bots": {
 				Description: "Whether or not to send a challenge to clients that are suspected to be bad bots (CAPTCHA for example). Possible values: true, false.",
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -100,7 +100,7 @@ func resourceWAFSecurityRuleCreate(d *schema.ResourceData, m interface{}) error 
 
 	log.Printf("[INFO] Creating Incapsula WAF Rule rule_id (%s) on site_id (%d)\n", ruleID, d.Get("site_id").(int))
 
-	if ruleID == backdoorRuleId || ruleID == crossSiteScriptingRuleId || ruleID == illegalResourceAccessRuleId || ruleID == remoteFileInclusionRuleId || ruleID == sqlInjectionRuleId {
+	if ruleID == backdoorRuleID || ruleID == crossSiteScriptingRuleID || ruleID == illegalResourceAccessRuleID || ruleID == remoteFileInclusionRuleID || ruleID == sqlInjectionRuleID {
 		_, err := client.ConfigureWAFSecurityRule(
 			d.Get("site_id").(int),
 			ruleID,
@@ -114,7 +114,7 @@ func resourceWAFSecurityRuleCreate(d *schema.ResourceData, m interface{}) error 
 			log.Printf("[ERROR] Could not create Incapsula WAF Rule rule_id (%s) and security_rule_action (%s) on site_id (%d), %s\n", ruleID, d.Get("security_rule_action").(string), d.Get("site_id").(int), err)
 			return err
 		}
-	} else if ruleID == ddosRuleId {
+	} else if ruleID == ddosRuleID {
 		_, err := client.ConfigureWAFSecurityRule(
 			d.Get("site_id").(int),
 			ruleID,
@@ -128,7 +128,7 @@ func resourceWAFSecurityRuleCreate(d *schema.ResourceData, m interface{}) error 
 			log.Printf("[ERROR] Could not create Incapsula WAF Rule rule_id (%s) with activation_mode (%s) and ddos_traffic_threshold (%s) on site_id (%d), %s\n", ruleID, d.Get("activation_mode").(string), d.Get("ddos_traffic_threshold").(string), d.Get("site_id").(int), err)
 			return err
 		}
-	} else if ruleID == botAccessControlRuleId {
+	} else if ruleID == botAccessControlRuleID {
 		_, err := client.ConfigureWAFSecurityRule(
 			d.Get("site_id").(int),
 			ruleID,
@@ -162,35 +162,52 @@ func resourceWAFSecurityRuleRead(d *schema.ResourceData, m interface{}) error {
 
 	siteStatusResponse, err := client.SiteStatus("waf-rule-read", d.Get("site_id").(int))
 
+	// Site object may have been deleted
+	if siteStatusResponse != nil && siteStatusResponse.Res.(float64) == 9413 {
+		log.Printf("[INFO] Incapsula Site ID %s has already been deleted: %s\n", d.Get("site_id"), err)
+		d.SetId("")
+		return nil
+	}
+
 	if err != nil {
 		log.Printf("[ERROR] Could not read Incapsula WAF Rule for id: %s, %s\n", ruleID, err)
 		return err
 	}
 
+	found := false
 	// Now with the site status, iterate through the rules and find our ID
 	for _, entry := range siteStatusResponse.Security.Waf.Rules {
 		if entry.ID == d.Get("rule_id").(string) {
 			// Set different attributes based on the rule id
 			switch entry.ID {
-			case backdoorRuleId:
-				d.Set("action", entry.Action)
-			case crossSiteScriptingRuleId:
-				d.Set("action", entry.Action)
-			case illegalResourceAccessRuleId:
-				d.Set("action", entry.Action)
-			case remoteFileInclusionRuleId:
-				d.Set("action", entry.Action)
-			case sqlInjectionRuleId:
-				d.Set("action", entry.Action)
-			case ddosRuleId:
+			case backdoorRuleID:
+				d.Set("security_rule_action", entry.Action)
+			case crossSiteScriptingRuleID:
+				d.Set("security_rule_action", entry.Action)
+			case customRuleDefaultActionID:
+				d.Set("security_rule_action", entry.Action)
+			case illegalResourceAccessRuleID:
+				d.Set("security_rule_action", entry.Action)
+			case remoteFileInclusionRuleID:
+				d.Set("security_rule_action", entry.Action)
+			case sqlInjectionRuleID:
+				d.Set("security_rule_action", entry.Action)
+			case ddosRuleID:
 				d.Set("activation_mode", entry.ActivationMode)
-				d.Set("ddos_traffic_threshold", entry.DdosTrafficThreshold)
-			case botAccessControlRuleId:
-				d.Set("block_bad_bots", entry.BlockBadBots)
-				d.Set("block_bad_bots", entry.ChallengeSuspectedBots)
+				d.Set("ddos_traffic_threshold", strconv.FormatInt(int64(entry.DdosTrafficThreshold), 10))
+			case botAccessControlRuleID:
+				d.Set("block_bad_bots", strconv.FormatBool(entry.BlockBadBots))
+				d.Set("challenge_suspected_bots", strconv.FormatBool(entry.ChallengeSuspectedBots))
 			}
+			found = true
 			break
 		}
+	}
+
+	if !found {
+		log.Printf("[INFO] Incapsula WAF Security Rule ID %s for Site ID %d has already been deleted: %s\n", ruleID, d.Get("site_id").(int), err)
+		d.SetId("")
+		return nil
 	}
 
 	log.Printf("[INFO] Read Incapsula WAF Rule rule_id (%s) on site_id (%d)\n", ruleID, d.Get("site_id").(int))
@@ -232,7 +249,7 @@ func resourceWAFSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 
 	// Set WAF rule type defaults based on specific rule id
 	switch ruleID {
-	case backdoorRuleId:
+	case backdoorRuleID:
 		_, err := client.ConfigureWAFSecurityRule(
 			d.Get("site_id").(int),
 			ruleID,
@@ -246,7 +263,7 @@ func resourceWAFSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, backdoorRuleIDDefaultAction, d.Get("site_id").(int), err)
 			return err
 		}
-	case crossSiteScriptingRuleId:
+	case crossSiteScriptingRuleID:
 		_, err := client.ConfigureWAFSecurityRule(
 			d.Get("site_id").(int),
 			ruleID,
@@ -260,7 +277,7 @@ func resourceWAFSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, crossSiteScriptingRuleIDDefaultAction, d.Get("site_id").(int), err)
 			return err
 		}
-	case illegalResourceAccessRuleId:
+	case illegalResourceAccessRuleID:
 		_, err := client.ConfigureWAFSecurityRule(
 			d.Get("site_id").(int),
 			ruleID,
@@ -274,7 +291,7 @@ func resourceWAFSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, illegalResourceAccessRuleIDDefaultAction, d.Get("site_id").(int), err)
 			return err
 		}
-	case remoteFileInclusionRuleId:
+	case remoteFileInclusionRuleID:
 		_, err := client.ConfigureWAFSecurityRule(
 			d.Get("site_id").(int),
 			ruleID,
@@ -288,7 +305,7 @@ func resourceWAFSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, remoteFileInclusionRuleIDDefaultAction, d.Get("site_id").(int), err)
 			return err
 		}
-	case sqlInjectionRuleId:
+	case sqlInjectionRuleID:
 		_, err := client.ConfigureWAFSecurityRule(
 			d.Get("site_id").(int),
 			ruleID,
@@ -302,7 +319,7 @@ func resourceWAFSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, sqlInjectionRuleIDDefaultAction, d.Get("site_id").(int), err)
 			return err
 		}
-	case ddosRuleId:
+	case ddosRuleID:
 		_, err := client.ConfigureWAFSecurityRule(
 			d.Get("site_id").(int),
 			ruleID,
@@ -316,7 +333,7 @@ func resourceWAFSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with default_activation_mode (%s) and ddos_traffic_threshold (%s) on site_id (%d) %s\n", ruleID, ddosRuleIDDefaultActivationMode, ddosRuleIDDefaultDDOSTrafficThreshold, d.Get("site_id").(int), err)
 			return err
 		}
-	case botAccessControlRuleId:
+	case botAccessControlRuleID:
 		_, err := client.ConfigureWAFSecurityRule(
 			d.Get("site_id").(int),
 			ruleID,

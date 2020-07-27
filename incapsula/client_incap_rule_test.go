@@ -14,15 +14,21 @@ import (
 ////////////////////////////////////////////////////////////////
 
 func TestClientAddIncapRuleBadConnection(t *testing.T) {
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", APIV2BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
-	dcID := "43"
-	addIncapRuleResponse, err := client.AddIncapRule("", "", "", "", siteID, "", "", dcID, "", "", "", "", "", "")
+
+	rule := IncapRule{
+		Name:   "myfirstcoolrule",
+		Action: "RULE_ACTION_ALERT",
+		Filter: "Full-URL == \"/someurl\"",
+	}
+
+	addIncapRuleResponse, err := client.AddIncapRule(siteID, &rule)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding incap rule for siteID %s", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding Incap Rule for Site ID %s", siteID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 	if addIncapRuleResponse != nil {
@@ -31,23 +37,34 @@ func TestClientAddIncapRuleBadConnection(t *testing.T) {
 }
 
 func TestClientAddIncapRuleBadJSON(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := "42"
+
+	endpoint := fmt.Sprintf("/sites/%s/rules?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointIncapRuleAdd) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointIncapRuleAdd, req.URL.String())
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := "42"
-	dcID := "43"
-	addIncapRuleResponse, err := client.AddIncapRule("", "", "", "", siteID, "", "", dcID, "", "", "", "", "", "")
+
+	rule := IncapRule{
+		Name:   "myfirstcoolrule",
+		Action: "RULE_ACTION_ALERT",
+		Filter: "Full-URL == \"/someurl\"",
+	}
+
+	addIncapRuleResponse, err := client.AddIncapRule(siteID, &rule)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing add incap rule JSON response for siteID %s", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing Incap Rule JSON response for Site ID %s", siteID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
 	if addIncapRuleResponse != nil {
@@ -56,23 +73,33 @@ func TestClientAddIncapRuleBadJSON(t *testing.T) {
 }
 
 func TestClientAddIncapRuleInvalidRule(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := "42"
+
+	endpoint := fmt.Sprintf("/sites/%s/rules?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointIncapRuleAdd) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointIncapRuleAdd, req.URL.String())
+		rw.WriteHeader(406)
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
-		rw.Write([]byte(`{"rule_id":"0","res":"1"}`))
+		rw.Write([]byte(`{"res":2,"res_message":"Invalid input","debug_info":{"id-info":"13007"}}`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := "42"
-	dcID := "43"
-	addIncapRuleResponse, err := client.AddIncapRule("", "", "", "", siteID, "", "", dcID, "", "", "", "", "", "")
+
+	rule := IncapRule{
+		Name: "some_name",
+	}
+
+	addIncapRuleResponse, err := client.AddIncapRule(siteID, &rule)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding incap rule for siteID %s: %s", siteID, `{"rule_id":"0","res":"1"}`)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 406 from Incapsula service when adding Incap Rule for Site ID %s", siteID)) {
 		t.Errorf("Should have received a bad incap rule error, got: %s", err)
 	}
 	if addIncapRuleResponse != nil {
@@ -81,225 +108,303 @@ func TestClientAddIncapRuleInvalidRule(t *testing.T) {
 }
 
 func TestClientAddIncapRuleValidRule(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := "42"
+
+	endpoint := fmt.Sprintf("/sites/%s/rules?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointIncapRuleAdd) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointIncapRuleAdd, req.URL.String())
+		rw.WriteHeader(200)
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
-		rw.Write([]byte(`{"rule_id":"123","res":"0"}`))
+		rw.Write([]byte(`{"filter":"Full-URL == \"/someurl\"","rule_id":290109,"name":"myfirstcoolrule","action":"RULE_ACTION_ALERT","enabled":true}`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := "42"
-	dcID := "43"
-	addIncapRuleResponse, err := client.AddIncapRule("", "", "", "", siteID, "", "", dcID, "", "", "", "", "", "")
+
+	rule := IncapRule{
+		Name:   "myfirstcoolrule",
+		Action: "RULE_ACTION_ALERT",
+		Filter: "Full-URL == \"/someurl\"",
+	}
+
+	addIncapRuleResponse, err := client.AddIncapRule(siteID, &rule)
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
 	if addIncapRuleResponse == nil {
 		t.Errorf("Should not have received a nil addIncapRuleResponse instance")
 	}
-	if addIncapRuleResponse.Res != "0" {
-		t.Errorf("Response code doesn't match")
+	if addIncapRuleResponse.RuleID == 0 {
+		t.Errorf("Should not have received an empty rule ID")
 	}
 }
 
 ////////////////////////////////////////////////////////////////
-// ListIncapRules Tests
+// ReadIncapRule Tests
 ////////////////////////////////////////////////////////////////
 
-func TestClientListIncapRulesBadConnection(t *testing.T) {
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
+func TestClientReadIncapRuleBadConnection(t *testing.T) {
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", APIV2BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
-	includeAdRules := "true"
-	includeIncapRules := "true"
-	listIncapRulesResponse, err := client.ListIncapRules(siteID, includeAdRules, includeIncapRules)
+	ruleID := 62
+
+	readIncapRuleResponse, _, err := client.ReadIncapRule(siteID, ruleID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error getting incap rules (include_ad_rules: %s, include_incap_rules: %s)", includeAdRules, includeIncapRules)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when reading Incap Rule %d for Site ID %s", ruleID, siteID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
-	if listIncapRulesResponse != nil {
-		t.Errorf("Should have received a nil listIncapRulesResponse instance")
+	if readIncapRuleResponse != nil {
+		t.Errorf("Should have received a nil readIncapRuleResponse instance")
 	}
 }
 
-func TestClientListIncapRulesBadJSON(t *testing.T) {
+func TestClientReadIncapRuleBadJSON(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := "42"
+	ruleID := 62
+
+	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointIncapRuleList) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointIncapRuleList, req.URL.String())
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := "42"
-	includeAdRules := "true"
-	includeIncapRules := "true"
-	listIncapRulesResponse, err := client.ListIncapRules(siteID, includeAdRules, includeIncapRules)
+
+	readIncapRuleResponse, _, err := client.ReadIncapRule(siteID, ruleID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing incap rule list JSON response (include_ad_rules: %s, include_incap_rules: %s)", includeAdRules, includeIncapRules)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing Incap Rule %d JSON response for Site ID %s", ruleID, siteID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
-	if listIncapRulesResponse != nil {
-		t.Errorf("Should have received a nil listIncapRulesResponse instance")
+	if readIncapRuleResponse != nil {
+		t.Errorf("Should have received a nil readIncapRuleResponse instance")
 	}
 }
 
-func TestClientListIncapRulesInvalidRequest(t *testing.T) {
+func TestClientReadIncapRuleInvalidRule(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := "42"
+	ruleID := 29010333
+
+	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointIncapRuleList) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointIncapRuleList, req.URL.String())
+		rw.WriteHeader(404)
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
-		rw.Write([]byte(`{"res":"1","res_message":"fail"}`))
+		rw.Write([]byte(`{"res":2,"res_message":"Invalid input","debug_info":{"ruleId":"invalid rule : 29010333","id-info":"13007"}}`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := "42"
-	includeAdRules := "true"
-	includeIncapRules := "true"
-	listIncapRulesResponse, err := client.ListIncapRules(siteID, includeAdRules, includeIncapRules)
+
+	readIncapRuleResponse, statusCode, err := client.ReadIncapRule(siteID, ruleID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when getting incap rule list (include_ad_rules: %s, include_incap_rules: %s)", includeAdRules, includeIncapRules)) {
-		t.Errorf("Should have received a bad site error, got: %s", err)
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 404 from Incapsula service when reading Incap Rule %d for Site ID %s", ruleID, siteID)) {
+		t.Errorf("Should have received a bad incap rule error, got: %s", err)
 	}
-	if listIncapRulesResponse != nil {
-		t.Errorf("Should have received a nil listIncapRulesResponse instance")
+	if statusCode != 404 {
+		t.Errorf("Should have received a 404 status code")
+	}
+	if readIncapRuleResponse != nil {
+		t.Errorf("Should have received a nil readIncapRuleResponse instance")
 	}
 }
 
-func TestClientListIncapRulesValidRequest(t *testing.T) {
+func TestClientReadIncapRuleValidRule(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := "42"
+	ruleID := 290109
+
+	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointIncapRuleList) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointIncapRuleList, req.URL.String())
+		rw.WriteHeader(200)
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
-		rw.Write([]byte(`{"res":"0"}`))
+		rw.Write([]byte(`{"filter":"Full-URL == \"/someurl\"","rule_id":290109,"name":"myfirstcoolrule","action":"RULE_ACTION_ALERT","enabled":true}`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := "42"
-	includeAdRules := "true"
-	includeIncapRules := "true"
-	listIncapRulesResponse, err := client.ListIncapRules(siteID, includeAdRules, includeIncapRules)
+
+	readIncapRuleResponse, statusCode, err := client.ReadIncapRule(siteID, ruleID)
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
-	if listIncapRulesResponse == nil {
-		t.Errorf("Should not have received a nil listIncapRulesResponse instance")
+	if readIncapRuleResponse == nil {
+		t.Errorf("Should not have received a nil readIncapRuleResponse instance")
 	}
-
-	if listIncapRulesResponse.Res != "0" {
-		t.Errorf("Response code doesn't match")
+	if statusCode != 200 {
+		t.Errorf("Should not have received a 200 status code")
+	}
+	if readIncapRuleResponse.RuleID == 0 {
+		t.Errorf("Should not have received an empty rule ID")
 	}
 }
 
 ////////////////////////////////////////////////////////////////
-// EditIncapRule Tests
+// UpdateIncapRule Tests
 ////////////////////////////////////////////////////////////////
 
-func TestClientEditIncapRuleBadConnection(t *testing.T) {
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
+func TestClientUpdateIncapRuleBadConnection(t *testing.T) {
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", APIV2BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	name := "foo"
-	siteID, ruleID := 42, 42
-	editIncapRuleResponse, err := client.EditIncapRule(siteID, "", "", name, "", "", ruleID)
+	siteID := "42"
+	ruleID := 62
+
+	rule := IncapRule{
+		Name:   "myfirstcoolrule",
+		Action: "RULE_ACTION_ALERT",
+		Filter: "Full-URL == \"/someurl\"",
+	}
+
+	updateIncapRuleResponse, err := client.UpdateIncapRule(siteID, ruleID, &rule)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error editing incap rule name: %s for siteID: %d: ", name, siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when updating Incap Rule %d for Site ID %s", ruleID, siteID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
-	if editIncapRuleResponse != nil {
-		t.Errorf("Should have received a nil editIncapRuleResponse instance")
+	if updateIncapRuleResponse != nil {
+		t.Errorf("Should have received a nil updateIncapRuleResponse instance")
 	}
 }
 
-func TestClientEditIncapRuleBadJSON(t *testing.T) {
+func TestClientUpdateIncapRuleBadJSON(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := "42"
+	ruleID := 62
+
+	rule := IncapRule{
+		Name:   "myfirstcoolrule",
+		Action: "RULE_ACTION_ALERT",
+		Filter: "Full-URL == \"/someurl\"",
+	}
+
+	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointIncapRuleEdit) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointIncapRuleEdit, req.URL.String())
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	name := "foo"
-	siteID, ruleID := 42, 42
-	editIncapRuleResponse, err := client.EditIncapRule(siteID, "", "", name, "", "", ruleID)
+
+	updateIncapRuleResponse, err := client.UpdateIncapRule(siteID, ruleID, &rule)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing edit incap rule JSON response for siteID %d", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing Incap Rule %d JSON response for Site ID %s", ruleID, siteID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
-	if editIncapRuleResponse != nil {
-		t.Errorf("Should have received a nil editIncapRuleResponse instance")
+	if updateIncapRuleResponse != nil {
+		t.Errorf("Should have received a nil updateIncapRuleResponse instance")
 	}
 }
 
-func TestClientEditIncapRuleInvalidRule(t *testing.T) {
+func TestClientUpdateIncapRuleInvalidRule(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := "42"
+	ruleID := 11111
+
+	rule := IncapRule{
+		Name:   "myfirstcoolrule",
+		Action: "RULE_ACTION_ALERT",
+		Filter: "Full-URL == \"/someurl\"",
+	}
+
+	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointIncapRuleEdit) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointIncapRuleEdit, req.URL.String())
+		rw.WriteHeader(404)
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
-		rw.Write([]byte(`{"rule_id":0,"res":"1"}`))
+		rw.Write([]byte(`{"res":2,"res_message":"Invalid input","debug_info":{"ruleId":"invalid rule : 11111","id-info":"13007"}}`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	name := "foo"
-	siteID, ruleID := 42, 42
-	editIncapRuleResponse, err := client.EditIncapRule(siteID, "", "", name, "", "", ruleID)
+
+	updateIncapRuleResponse, err := client.UpdateIncapRule(siteID, ruleID, &rule)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when editing incap rule for siteID %d, ruleID: %d", siteID, ruleID)) {
-		t.Errorf("Should have received a bad site error, got: %s", err)
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 404 from Incapsula service when updating Incap Rule %d for Site ID %s", ruleID, siteID)) {
+		t.Errorf("Should have received a bad incap rule error, got: %s", err)
 	}
-	if editIncapRuleResponse != nil {
-		t.Errorf("Should have received a nil editIncapRuleResponse instance")
+	if updateIncapRuleResponse != nil {
+		t.Errorf("Should have received a nil updateIncapRuleResponse instance")
 	}
 }
 
-func TestClientEditIncapRuleValidRule(t *testing.T) {
+func TestClientUpdateIncapRuleValidRule(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := "42"
+	ruleID := 290109
+
+	rule := IncapRule{
+		Name:   "myfirstcoolrule",
+		Action: "RULE_ACTION_ALERT",
+		Filter: "Full-URL == \"/someurl\"",
+	}
+
+	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointIncapRuleEdit) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointIncapRuleEdit, req.URL.String())
+		rw.WriteHeader(200)
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
-		rw.Write([]byte(`{"rule_id":123,"res":"0"}`))
+		rw.Write([]byte(`{"filter":"Full-URL == \"/someurl\"","rule_id":290109,"name":"myfirstcoolrule","action":"RULE_ACTION_ALERT","enabled":true}`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	name := "foo"
-	siteID, ruleID := 42, 42
-	editIncapRuleResponse, err := client.EditIncapRule(siteID, "", "", name, "", "", ruleID)
+
+	updateIncapRuleResponse, err := client.UpdateIncapRule(siteID, ruleID, &rule)
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
-	if editIncapRuleResponse == nil {
-		t.Errorf("Should not have received a nil editIncapRuleResponse instance")
+	if updateIncapRuleResponse == nil {
+		t.Errorf("Should not have received a nil updateIncapRuleResponse instance")
 	}
-
-	if editIncapRuleResponse.Res != "0" {
-		t.Errorf("Response code doesn't match")
+	if updateIncapRuleResponse.RuleID == 0 {
+		t.Errorf("Should not have received an empty rule ID")
 	}
 }
 
@@ -308,77 +413,68 @@ func TestClientEditIncapRuleValidRule(t *testing.T) {
 ////////////////////////////////////////////////////////////////
 
 func TestClientDeleteIncapRuleBadConnection(t *testing.T) {
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", APIV2BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	ruleID := "42"
-	accountID := "43"
-	err := client.DeleteIncapRule(ruleID, accountID)
+	siteID := "42"
+	ruleID := 62
+
+	err := client.DeleteIncapRule(siteID, ruleID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error deleting incap rule (rule_id: %s)", ruleID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when deleting Incap Rule %d for Site ID %s", ruleID, siteID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 }
 
-func TestClientDeleteIncapRuleBadJSON(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointIncapRuleDelete) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointIncapRuleDelete, req.URL.String())
-		}
-		rw.Write([]byte(`{`))
-	}))
-	defer server.Close()
-
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
-	client := &Client{config: config, httpClient: &http.Client{}}
-	ruleID := "42"
-	accountID := "43"
-	err := client.DeleteIncapRule(ruleID, accountID)
-	if err == nil {
-		t.Errorf("Should have received an error")
-	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing delete incap rule JSON response (rule_id: %s)", ruleID)) {
-		t.Errorf("Should have received a JSON parse error, got: %s", err)
-	}
-}
-
 func TestClientDeleteIncapRuleInvalidRule(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := "42"
+	ruleID := 11111
+
+	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointIncapRuleDelete) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointIncapRuleDelete, req.URL.String())
+		rw.WriteHeader(404)
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
-		rw.Write([]byte(`{"res":"1","res_message":"fail"}`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	ruleID := "42"
-	accountID := "43"
-	err := client.DeleteIncapRule(ruleID, accountID)
+
+	err := client.DeleteIncapRule(siteID, ruleID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when deleting incap rule (rule_id: %s)", ruleID)) {
-		t.Errorf("Should have received a bad site error, got: %s", err)
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 404 from Incapsula service when deleting Incap Rule %d for Site ID %s", ruleID, siteID)) {
+		t.Errorf("Should have received a bad incap rule error, got: %s", err)
 	}
 }
 
-func TestClientDeleteIncapRuleValidSite(t *testing.T) {
+func TestClientDeleteIncapRuleValidRule(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := "42"
+	ruleID := 290109
+
+	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointIncapRuleDelete) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointIncapRuleDelete, req.URL.String())
+		rw.WriteHeader(200)
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
-		rw.Write([]byte(`{"res":"0","res_message":"OK"}`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	ruleID := "42"
-	accountID := "43"
-	err := client.DeleteIncapRule(ruleID, accountID)
+
+	err := client.DeleteIncapRule(siteID, ruleID)
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}

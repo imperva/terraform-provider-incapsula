@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceACLSecurityRule() *schema.Resource {
@@ -36,50 +36,53 @@ func resourceACLSecurityRule() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
-			"site_id": &schema.Schema{
+			"site_id": {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeInt,
 				Required:    true,
 			},
-			"rule_id": &schema.Schema{
+			"rule_id": {
 				Description: "The id of the acl, e.g api.acl.blacklisted_ips.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
 
 			// Optional Arguments
-			"continents": &schema.Schema{
+			"continents": {
 				Description:      "A comma separated list of continent codes.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"countries": &schema.Schema{
+			"countries": {
 				Description:      "A comma separated list of country codes.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"ips": &schema.Schema{
+			"ips": {
 				Description:      "A comma separated list of IPs or IP ranges, e.g: 192.168.1.1, 192.168.1.1-192.168.1.100 or 192.168.1.1/24.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"urls": &schema.Schema{
-				Description: "A comma separated list of resource paths. NOTE: this is a 1:1 list with url_patterns e.q:  urls = \"Test,/Values\" url_patterns = \"CONTAINS,PREFIX\"",
-				Type:        schema.TypeString,
-				Optional:    true,
+			"urls": {
+				Description:      "A comma separated list of resource paths. NOTE: this is a 1:1 list with url_patterns e.q:  urls = \"Test,/Values\" url_patterns = \"CONTAINS,PREFIX\"",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"url_patterns": &schema.Schema{
-				Description: "The patterns should be in accordance with the matching urls sent by the urls parameter. Options: CONTAINS | EQUALS | PREFIX | SUFFIX | NOT_EQUALS | NOT_CONTAIN | NOT_PREFIX | NOT_SUFFIX",
-				Type:        schema.TypeString,
-				Optional:    true,
+			"url_patterns": {
+				Description:      "The patterns should be in accordance with the matching urls sent by the urls parameter. Options: CONTAINS | EQUALS | PREFIX | SUFFIX | NOT_EQUALS | NOT_CONTAIN | NOT_PREFIX | NOT_SUFFIX",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"client_apps": &schema.Schema{
-				Description: "The client apps",
-				Type:        schema.TypeString,
-				Optional:    true,
+			"client_apps": {
+				Description:      "The client apps",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
 		},
 	}
@@ -125,10 +128,19 @@ func resourceACLSecurityRuleRead(d *schema.ResourceData, m interface{}) error {
 
 	siteStatusResponse, err := client.SiteStatus("acl-rule-read", d.Get("site_id").(int))
 
+	// Site object may have been deleted
+	if siteStatusResponse != nil && siteStatusResponse.Res.(float64) == 9413 {
+		log.Printf("[INFO] Incapsula Site ID %s has already been deleted: %s\n", d.Get("site_id"), err)
+		d.SetId("")
+		return nil
+	}
+
 	if err != nil {
 		log.Printf("[ERROR] Could not read Incapsula ACL Rule for id: %s, %s\n", ruleID, err)
 		return err
 	}
+
+	found := false
 
 	// Now with the site status, iterate through the rules and find our ID
 	for _, entry := range siteStatusResponse.Security.Acls.Rules {
@@ -152,8 +164,15 @@ func resourceACLSecurityRuleRead(d *schema.ResourceData, m interface{}) error {
 			case whitelistedIPs:
 				d.Set("ips", strings.Join(entry.Ips, ","))
 			}
+			found = true
 			break
 		}
+	}
+
+	if !found {
+		log.Printf("[INFO] Incapsula ACL Security Rule ID %s for Site ID %d has already been deleted: %s\n", ruleID, d.Get("site_id").(int), err)
+		d.SetId("")
+		return nil
 	}
 
 	log.Printf("[INFO] Read Incapsula ACL Rule for id: %s\n", ruleID)

@@ -15,7 +15,6 @@ Incap Rules include security, delivery, and rate rules.
 
 ```hcl
 resource "incapsula_incap_rule" "example-incap-rule-alert" {
-  priority = "1"
   name = "Example incap rule alert"
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_ALERT"
@@ -24,7 +23,6 @@ resource "incapsula_incap_rule" "example-incap-rule-alert" {
 
 # Incap Rule: Require javascript support
 resource "incapsula_incap_rule" "example-incap-rule-require-js-support" {
-  priority = "1"
   name = "Example incap rule require javascript support 3"
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_INTRUSIVE_HTML"
@@ -33,7 +31,6 @@ resource "incapsula_incap_rule" "example-incap-rule-require-js-support" {
 
 # Incap Rule: Block IP
 resource "incapsula_incap_rule" "example-incap-rule-block-ip" {
-  priority = "1"
   name = "Example incap rule block ip"
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_BLOCK_IP"
@@ -42,7 +39,6 @@ resource "incapsula_incap_rule" "example-incap-rule-block-ip" {
 
 # Incap Rule: Block Request
 resource "incapsula_incap_rule" "example-incap-rule-block-request" {
-  priority = "1"
   name = "Example incap rule block request"
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_BLOCK"
@@ -51,7 +47,6 @@ resource "incapsula_incap_rule" "example-incap-rule-block-request" {
 
 # Incap Rule: Block Session
 resource "incapsula_incap_rule" "example-incap-rule-block-session" {
-  priority = "1"
   name = "Example incap rule block session"
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_BLOCK_USER"
@@ -60,7 +55,6 @@ resource "incapsula_incap_rule" "example-incap-rule-block-session" {
 
 # Incap Rule: Delete Cookie (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-delete-cookie" {
-  priority = "1"
   name = "Example incap rule delete cookie"
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_DELETE_COOKIE"
@@ -70,7 +64,6 @@ resource "incapsula_incap_rule" "example-incap-rule-delete-cookie" {
 
 # Incap Rule: Delete Header (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-delete-header" {
-  priority = "1"
   name = "Example incap rule delete header"
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_DELETE_HEADER"
@@ -80,18 +73,15 @@ resource "incapsula_incap_rule" "example-incap-rule-delete-header" {
 
 # Incap Rule: Forward to Data Center (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-fwd-to-data-center" {
-  priority = "1"
   name = "Example incap rule forward to data center"
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_FORWARD_TO_DC"
   filter = "Full-URL == \"/someurl\""
   dc_id = "${incapsula_data_center.example-data-center.id}"
-  allow_caching = "false"
 }
 
 # Incap Rule: Redirect (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-redirect" {
-  priority = "1"
   name = "Example incap rule redirect"
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_REDIRECT"
@@ -103,7 +93,6 @@ resource "incapsula_incap_rule" "example-incap-rule-redirect" {
 
 # Incap Rule: Require Cookie Support (IncapRule)
 resource "incapsula_incap_rule" "example-incap-rule-require-cookie-support" {
-  priority = "1"
   name = "Example incap rule require cookie support"
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_RETRY"
@@ -112,7 +101,6 @@ resource "incapsula_incap_rule" "example-incap-rule-require-cookie-support" {
 
 # Incap Rule: Rewrite Cookie (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-rewrite-cookie" {
-  priority = "18"
   name = "Example incap rule rewrite cookie"
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_REWRITE_COOKIE"
@@ -120,13 +108,11 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-cookie" {
   add_missing = "true"
   from = "some_optional_value"
   to = "some_new_value"
-  allow_caching = "false"
   rewrite_name = "my_cookie_name"
 }
 
 # Incap Rule: Rewrite Header (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-rewrite-header" {
-  priority = "17"
   name = "Example incap rule rewrite header"
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_REWRITE_HEADER"
@@ -134,22 +120,17 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-header" {
   add_missing = "true"
   from = "some_optional_value"
   to = "some_new_value"
-  allow_caching = "false"
   rewrite_name = "my_test_header"
 }
 
 # Incap Rule: Rewrite URL (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-rewrite-url" {
-  priority = "1"
   name = "ExampleRewriteURL"
   site_id = "${incapsula_site.example-site.id}"
   action = "RULE_ACTION_REWRITE_URL"
   filter = "Full-URL == \"/someurl\""
-  add_missing = "true"
   from = "*"
   to = "/redirect"
-  allow_caching = "false"
-  rewrite_name = "my_test_header"
 }
 ```
 
@@ -159,17 +140,19 @@ The following arguments are supported:
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `name` - (Required) Rule name.
-* `priority` - (Required) Priority for the selected rule.
-* `enabled` - (Optional) Enables the rule.
-* `action` - (Optional) Rule action. See the possible values in the API documentation.
-* `filter` - (Optional) Rule will trigger only a request that matches this filter. The filter may contain up to 400 characters.
-* `allow_caching` - (Optional) Allows rule caching.
-* `dc_id` - (Optional) Data center to forward request to. Applies only for RULE_ACTION_FORWARD_TO_DC.
-* `from` - (Optional) The pattern to rewrite.
-* `to` - (Optional) The pattern to change to.
-* `response_code` - (Optional) Redirect rule's response code. Valid values are 302, 301, 303, 307, 308.
+* `action` - (Required) Rule action. See the detailed descriptions in the API documentation. Possible values: `RULE_ACTION_REDIRECT`, `RULE_ACTION_SIMPLIFIED_REDIRECT`, `RULE_ACTION_REWRITE_URL`, `RULE_ACTION_REWRITE_HEADER`, `RULE_ACTION_REWRITE_COOKIE`, `RULE_ACTION_DELETE_HEADER`, `RULE_ACTION_DELETE_COOKIE`, `RULE_ACTION_RESPONSE_REWRITE_HEADER`, `RULE_ACTION_RESPONSE_DELETE_HEADER`, `RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE`, `RULE_ACTION_FORWARD_TO_DC`, `RULE_ACTION_ALERT`, `RULE_ACTION_BLOCK`, `RULE_ACTION_BLOCK_USER`, `RULE_ACTION_BLOCK_IP`, `RULE_ACTION_RETRY`, `RULE_ACTION_INTRUSIVE_HTML`, `RULE_ACTION_CAPTCHA`, `RULE_ACTION_RATE`, `RULE_ACTION_CUSTOM_ERROR_RESPONSE`.
+* `filter` - (Required) The filter defines the conditions that trigger the rule action. For action `RULE_ACTION_SIMPLIFIED_REDIRECT` filter is not relevant. For other actions, if left empty, the rule is always run.
+* `response_code` - (Optional) For `RULE_ACTION_REDIRECT` or `RULE_ACTION_SIMPLIFIED_REDIRECT` rule's response code, valid values are `302`, `301`, `303`, `307`, `308`. For `RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE` rule's response code, valid values are all 3-digits numbers. For `RULE_ACTION_CUSTOM_ERROR_RESPONSE`, valid values are `400`, `401`, `402`, `403`, `404`, `405`, `406`, `407`, `408`, `409`, `410`, `411`, `412`, `413`, `414`, `415`, `416`, `417`, `419`, `420`, `422`, `423`, `424`, `500`, `501`, `502`, `503`, `504`, `505`, `507`.
 * `add_missing` - (Optional) Add cookie or header if it doesn't exist (Rewrite cookie rule only).
-* `rewrite_name` - (Optional) Name of cookie or header to rewrite. Applies only for RULE_ACTION_REWRITE_COOKIE and RULE_ACTION_REWRITE_HEADER.
+* `from` - (Optional) Pattern to rewrite. For `RULE_ACTION_REWRITE_URL` - Url to rewrite. For `RULE_ACTION_REWRITE_HEADER` and `RULE_ACTION_RESPONSE_REWRITE_HEADER` - Header value to rewrite. For `RULE_ACTION_REWRITE_COOKIE` - Cookie value to rewrite.
+* `to` - (Optional) Pattern to change to. `RULE_ACTION_REWRITE_URL` - Url to change to. `RULE_ACTION_REWRITE_HEADER` and `RULE_ACTION_RESPONSE_REWRITE_HEADER` - Header value to change to. `RULE_ACTION_REWRITE_COOKIE` - Cookie value to change to.
+* `rewrite_name` - (Optional) Name of cookie or header to rewrite. Applies only for `RULE_ACTION_REWRITE_COOKIE`, `RULE_ACTION_REWRITE_HEADER` and `RULE_ACTION_RESPONSE_REWRITE_HEADER`.
+* `dc_id` - (Optional) Data center to forward request to. Applies only for `RULE_ACTION_FORWARD_TO_DC`.
+* `rate_context` - (Optional) The context of the rate counter. Possible values `IP` or `Session`. Applies only to rules using `RULE_ACTION_RATE`.
+* `rate_interval` - (Optional) The interval in seconds of the rate counter. Possible values is a multiple of `10`; minimum `10` and maximum `300`. Applies only to rules using `RULE_ACTION_RATE`.
+* `error_type` - (Optional) The error that triggers the rule. `error.type.all` triggers the rule regardless of the error type. Applies only for `RULE_ACTION_CUSTOM_ERROR_RESPONSE`. Possible values: `error.type.all`, `error.type.connection_timeout`, `error.type.access_denied`, `error.type.parse_req_error`, `error.type.parse_resp_error`, `error.type.connection_failed`, `error.type.deny_and_retry`, `error.type.ssl_failed`, `error.type.deny_and_captcha`, `error.type.2fa_required`, `error.type.no_ssl_config`, `error.type.no_ipv6_config`.
+* `error_response_format` - (Optional) The format of the given error response in the error_response_data field. Applies only for `RULE_ACTION_CUSTOM_ERROR_RESPONSE`. Possible values: `json`, `xml`.
+* `error_response_data` - (Optional) The response returned when the request matches the filter and is blocked. Applies only for `RULE_ACTION_CUSTOM_ERROR_RESPONSE`.
 
 ## Attributes Reference
 

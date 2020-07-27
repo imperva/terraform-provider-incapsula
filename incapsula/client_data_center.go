@@ -16,13 +16,13 @@ const endpointDataCenterDelete = "sites/dataCenters/delete"
 
 // DataCenterAddResponse contains id of data center
 type DataCenterAddResponse struct {
-	Res          string `json:"res"`
-	DataCenterID string `json:"datacenter_id"`
+	Res          interface{} `json:"res"`
+	DataCenterID string      `json:"datacenter_id"`
 }
 
 // DataCenterListResponse contains list of data centers and servers
 type DataCenterListResponse struct {
-	Res string `json:"res"`
+	Res interface{} `json:"res"`
 	DCs []struct {
 		ID      string `json:"id"`
 		Enabled string `json:"enabled"`
@@ -40,12 +40,12 @@ type DataCenterListResponse struct {
 
 // DataCenterEditResponse contains edit response message
 type DataCenterEditResponse struct {
-	Res        string `json:"res"`
-	ResMessage string `json:"res_message"`
+	Res        interface{} `json:"res"`
+	ResMessage string      `json:"res_message"`
 }
 
 // AddDataCenter adds an incap rule to be managed by Incapsula
-func (c *Client) AddDataCenter(siteID, name, serverAddress, isStandby, isContent string) (*DataCenterAddResponse, error) {
+func (c *Client) AddDataCenter(siteID, name, serverAddress, isContent string) (*DataCenterAddResponse, error) {
 	log.Printf("[INFO] Adding Incapsula data center for siteID: %s\n", siteID)
 
 	// Post form to Incapsula
@@ -55,7 +55,6 @@ func (c *Client) AddDataCenter(siteID, name, serverAddress, isStandby, isContent
 		"site_id":        {siteID},
 		"name":           {name},
 		"server_address": {serverAddress},
-		"is_standby":     {isStandby},
 		"is_content":     {isContent},
 	})
 	if err != nil {
@@ -76,8 +75,18 @@ func (c *Client) AddDataCenter(siteID, name, serverAddress, isStandby, isContent
 		return nil, fmt.Errorf("Error parsing add data center JSON response for siteID %s: %s\nresponse: %s", siteID, err, string(responseBody))
 	}
 
+	// Res can sometimes oscillate between a string and number
+	// We need to add safeguards for this inside the provider
+	var resString string
+
+	if resNumber, ok := dataCenterAddResponse.Res.(float64); ok {
+		resString = fmt.Sprintf("%d", int(resNumber))
+	} else {
+		resString = dataCenterAddResponse.Res.(string)
+	}
+
 	// Look at the response status code from Incapsula
-	if dataCenterAddResponse.Res != "0" {
+	if resString != "0" {
 		return nil, fmt.Errorf("Error from Incapsula service when adding data center for siteID %s: %s", siteID, string(responseBody))
 	}
 
@@ -112,16 +121,26 @@ func (c *Client) ListDataCenters(siteID string) (*DataCenterListResponse, error)
 		return nil, fmt.Errorf("Error parsing data centers list JSON response for siteID: %s %s\nresponse: %s", siteID, err, string(responseBody))
 	}
 
+	// Res can sometimes oscillate between a string and number
+	// We need to add safeguards for this inside the provider
+	var resString string
+
+	if resNumber, ok := dataCenterListResponse.Res.(float64); ok {
+		resString = fmt.Sprintf("%d", int(resNumber))
+	} else {
+		resString = dataCenterListResponse.Res.(string)
+	}
+
 	// Look at the response status code from Incapsula
-	if dataCenterListResponse.Res != "0" {
-		return nil, fmt.Errorf("Error from Incapsula service when getting data centers list (site_id: %s): %s", siteID, string(responseBody))
+	if resString != "0" {
+		return &dataCenterListResponse, fmt.Errorf("Error from Incapsula service when getting data centers list (site_id: %s): %s", siteID, string(responseBody))
 	}
 
 	return &dataCenterListResponse, nil
 }
 
 // EditDataCenter edits the Incapsula incap rule
-func (c *Client) EditDataCenter(dcID, name, isStandby, isContent, isEnabled string) (*DataCenterEditResponse, error) {
+func (c *Client) EditDataCenter(dcID, name, isContent, isEnabled string) (*DataCenterEditResponse, error) {
 	log.Printf("[INFO] Editing Incapsula data center for dcID: %s\n", dcID)
 
 	values := url.Values{
@@ -132,10 +151,6 @@ func (c *Client) EditDataCenter(dcID, name, isStandby, isContent, isEnabled stri
 
 	if name != "" {
 		values.Add("name", name)
-	}
-
-	if isStandby != "" {
-		values.Add("is_standby", isStandby)
 	}
 
 	if isContent != "" {
@@ -166,8 +181,18 @@ func (c *Client) EditDataCenter(dcID, name, isStandby, isContent, isEnabled stri
 		return nil, fmt.Errorf("Error parsing edit dta center JSON response for dcID %s: %s", dcID, err)
 	}
 
+	// Res can sometimes oscillate between a string and number
+	// We need to add safeguards for this inside the provider
+	var resString string
+
+	if resNumber, ok := dataCenterEditResponse.Res.(float64); ok {
+		resString = fmt.Sprintf("%d", int(resNumber))
+	} else {
+		resString = dataCenterEditResponse.Res.(string)
+	}
+
 	// Look at the response status code from Incapsula
-	if dataCenterEditResponse.Res != "0" {
+	if resString != "0" {
 		return nil, fmt.Errorf("Error from Incapsula service when editing data center for dcID %s: %s", dcID, string(responseBody))
 	}
 
@@ -183,7 +208,7 @@ func (c *Client) DeleteDataCenter(dcID string) error {
 		ResMessage string      `json:"res_message"`
 	}
 
-	log.Printf("[INFO] Deleting Incapsula data center id: %s)\n", dcID)
+	log.Printf("[INFO] Deleting Incapsula data center id: %s\n", dcID)
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterDelete), url.Values{
@@ -219,8 +244,8 @@ func (c *Client) DeleteDataCenter(dcID string) error {
 		resString = dataCenterDeleteResponse.Res.(string)
 	}
 
-	// Look at the response status code from Incapsula data center
-	if resString == "0" || resString == "9413" {
+	// Look at the response status code from Incapsula
+	if resString == "0" || resString == "2" || resString == "9413" {
 		return nil
 	}
 

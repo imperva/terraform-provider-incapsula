@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 const testAccDomain = "www.examplesite.com"
@@ -19,7 +19,7 @@ func TestAccIncapsulaSite_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaSiteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaSiteConfig_basic(testAccDomain),
+				Config: testAccCheckIncapsulaSiteConfigBasic(testAccDomain),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiteExists(siteResourceName),
 					resource.TestCheckResourceAttr(siteResourceName, "domain", testAccDomain),
@@ -36,7 +36,7 @@ func TestAccIncapsulaSite_ImportBasic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaSiteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaSiteConfig_basic(testAccDomain),
+				Config: testAccCheckIncapsulaSiteConfigBasic(testAccDomain),
 			},
 			{
 				ResourceName:      "incapsula_site.testacc-terraform-site",
@@ -102,7 +102,7 @@ func testCheckIncapsulaSiteExists(name string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckIncapsulaSiteConfig_basic(domain string) string {
+func testAccCheckIncapsulaSiteConfigBasic(domain string) string {
 	return fmt.Sprintf(`
 		resource "incapsula_site" "testacc-terraform-site" {
 			domain = "%s"
