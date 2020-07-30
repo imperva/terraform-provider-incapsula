@@ -335,11 +335,30 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 	// Set an arbitrary period to sleep
 	time.Sleep(3 * time.Second)
 
-	updateAdditionalSiteProperties(client, d)
-	updateDataStorageRegion(client, d)
-	updateMaskingSettings(client, d)
-	updateLogLevel(client, d)
-	updatePerformanceSettings(client, d)
+	err = updateAdditionalSiteProperties(client, d)
+	if err != nil {
+		return err
+	}
+
+	err = updateDataStorageRegion(client, d)
+	if err != nil {
+		return err
+	}
+
+	err = updateMaskingSettings(client, d)
+	if err != nil {
+		return err
+	}
+
+	err = updateLogLevel(client, d)
+	if err != nil {
+		return err
+	}
+
+	err = updatePerformanceSettings(client, d)
+	if err != nil {
+		return err
+	}
 
 	// Set the rest of the state from the resource read
 	return resourceSiteRead(d, m)
