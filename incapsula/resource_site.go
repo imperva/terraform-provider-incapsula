@@ -415,7 +415,7 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	// Get the performance settings for the site
 	performanceSettingsResponse, _, err := client.GetPerformanceSettings(d.Id())
 	if err != nil {
-		log.Printf("[ERROR] Could not read Incapsula site masking settings for domain: %s and site id: %d, %s\n", domain, siteID, err)
+		log.Printf("[ERROR] Could not read Incapsula site peformance settings for domain: %s and site id: %d, %s\n", domain, siteID, err)
 		return err
 	}
 	d.Set("perf_client_comply_no_cache", performanceSettingsResponse.ClientSide.ComplyNoCache)
