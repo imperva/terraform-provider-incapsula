@@ -1,3 +1,7 @@
+## 2.5.0 (Unreleased)
+
+* Add support for performance settings in the `site` resource
+
 ## 2.4.0 (Unreleased)
 
 * Add support for site masking settings

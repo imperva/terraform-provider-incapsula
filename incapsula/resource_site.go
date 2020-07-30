@@ -139,6 +139,135 @@ func resourceSite() *schema.Resource {
 				Default:     "none",
 				Optional:    true,
 			},
+			"perf_client_comply_no_cache": {
+				Description: "Comply with No-Cache and Max-Age directives in client requests. By default, these cache directives are ignored. Resources are dynamically profiled and re-configured to optimize performance.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_client_enable_client_side_caching": {
+				Description: "Cache content on client browsers or applications. When not enabled, content is cached only on the Imperva proxies.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_client_send_age_header": {
+				Description: "Send Cache-Control: max-age and Age headers.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_key_comply_vary": {
+				Description: "Comply with Vary. Cache resources in accordance with the Vary response header.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_key_unite_naked_full_cache": {
+				Description: "Use the Same Cache for Full and Naked Domains. For example, use the same cached resource for www.example.com/a and example.com/a.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_mode_https": {
+				Description: "The resources that are cached over HTTPS, the general level applies. Options are `disabled`, `dont_include_html`, `include_html`, and `include_all_resources`.",
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_mode_level": {
+				Description: "Caching level. Options are `disable`, `standard`, `smart`, and `all_resources`.",
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_mode_time": {
+				Description: "The time, in seconds, that you set for this option determines how often the cache is refreshed. Relevant for the `include_html` and `include_all_resources` levels only.",
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_response_cache_300x": {
+				Description: "When this option is checked Imperva will cache 301, 302, 303, 307, and 308 redirect response headers containing the target URI.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_response_cache_404_enabled": {
+				Description: "Whether or not to cache 404 responses.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_response_cache_404_time": {
+				Description: "The time in seconds to cache 404 responses.",
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_response_cache_empty_responses": {
+				Description: "Cache responses that don’t have a message body.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_response_cache_http_10_responses": {
+				Description: "Cache HTTP 1.0 type responses that don’t include the Content-Length header or chunking.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_response_cache_response_header_mode": {
+				Description: "The working mode for caching response headers. Options are `all` and `custom`.",
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_response_cache_response_headers": {
+				Description: "An array of strings representing the response headers to be cached when working in `custom` mode. If empty, no response headers are cached.",
+				Type:        schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Computed: true,
+				Optional: true,
+			},
+			"perf_response_cache_shield": {
+				Description: "Adds an intermediate cache between other Imperva PoPs and your origin servers to protect your servers from redundant requests.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_response_stale_content_mode": {
+				Description: "The working mode for serving stale content. Options are `disabled`, `adaptive`, and `custom`.",
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_response_stale_content_time": {
+				Description: "The time, in seconds, to serve stale content for when working in `custom` work mode.",
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_response_tag_response_header": {
+				Description: "Tag the response according to the value of this header. Specify which origin response header contains the cache tags in your resources.",
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_ttl_prefer_last_modified": {
+				Description: "Prefer 'Last Modified' over eTag. When this option is checked, Imperva prefers using Last Modified values (if available) over eTag values (recommended on multi-server setups).",
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Optional:    true,
+			},
+			"perf_ttl_use_shortest_caching": {
+				Description: "Use shortest caching duration in case of conflicts. By default, the longest duration is used in case of conflict between caching rules or modes. When this option is checked, Imperva uses the shortest duration in case of conflict.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Optional:    true,
+			},
 
 			// Computed Attributes
 			"site_creation_date": {
@@ -210,6 +339,7 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 	updateDataStorageRegion(client, d)
 	updateMaskingSettings(client, d)
 	updateLogLevel(client, d)
+	updatePerformanceSettings(client, d)
 
 	// Set the rest of the state from the resource read
 	return resourceSiteRead(d, m)
@@ -282,7 +412,35 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("hashing_enabled", maskingResponse.HashingEnabled)
 	d.Set("hash_salt", maskingResponse.HashSalt)
 
-	log.Printf("[INFO] Read Incapsula site for domain: %s\n", domain)
+	// Get the performance settings for the site
+	performanceSettingsResponse, _, err := client.GetPerformanceSettings(d.Id())
+	if err != nil {
+		log.Printf("[ERROR] Could not read Incapsula site masking settings for domain: %s and site id: %d, %s\n", domain, siteID, err)
+		return err
+	}
+	d.Set("perf_client_comply_no_cache", performanceSettingsResponse.ClientSide.ComplyNoCache)
+	d.Set("perf_client_enable_client_side_caching", performanceSettingsResponse.ClientSide.EnableClientSideCaching)
+	d.Set("perf_client_send_age_header", performanceSettingsResponse.ClientSide.SendAgeHeader)
+	d.Set("perf_key_comply_vary", performanceSettingsResponse.Key.ComplyVary)
+	d.Set("perf_key_unite_naked_full_cache", performanceSettingsResponse.Key.UniteNakedFullCache)
+	d.Set("perf_mode_https", performanceSettingsResponse.Mode.HTTPS)
+	d.Set("perf_mode_level", performanceSettingsResponse.Mode.Level)
+	d.Set("perf_mode_time", performanceSettingsResponse.Mode.Time)
+	d.Set("perf_response_cache_300x", performanceSettingsResponse.Response.Cache300X)
+	d.Set("perf_response_cache_404_enabled", performanceSettingsResponse.Response.Cache404.Enabled)
+	d.Set("perf_response_cache_404_time", performanceSettingsResponse.Response.Cache404.Time)
+	d.Set("perf_response_cache_empty_responses", performanceSettingsResponse.Response.CacheEmptyResponses)
+	d.Set("perf_response_cache_http_10_responses", performanceSettingsResponse.Response.CacheHTTP10Responses)
+	d.Set("perf_response_cache_response_header_mode", performanceSettingsResponse.Response.CacheResponseHeader.Mode)
+	d.Set("perf_response_cache_response_headers", performanceSettingsResponse.Response.CacheResponseHeader.Headers)
+	d.Set("perf_response_cache_shield", performanceSettingsResponse.Response.CacheShield)
+	d.Set("perf_response_stale_content_mode", performanceSettingsResponse.Response.StaleContent.Mode)
+	d.Set("perf_response_stale_content_time", performanceSettingsResponse.Response.StaleContent.Time)
+	d.Set("perf_response_tag_response_header", performanceSettingsResponse.Response.TagResponseHeader)
+	d.Set("perf_ttl_prefer_last_modified", performanceSettingsResponse.TTL.PreferLastModified)
+	d.Set("perf_ttl_use_shortest_caching", performanceSettingsResponse.TTL.UseShortestCaching)
+
+	log.Printf("[INFO] Finished reading Incapsula site for domain: %s\n", domain)
 
 	return nil
 }
@@ -294,6 +452,7 @@ func resourceSiteUpdate(d *schema.ResourceData, m interface{}) error {
 	updateDataStorageRegion(client, d)
 	updateMaskingSettings(client, d)
 	updateLogLevel(client, d)
+	updatePerformanceSettings(client, d)
 
 	// Set the rest of the state from the resource read
 	return resourceSiteRead(d, m)
@@ -370,6 +529,60 @@ func updateLogLevel(client *Client, d *schema.ResourceData) error {
 		err := client.UpdateLogLevel(d.Id(), logLevel)
 		if err != nil {
 			log.Printf("[ERROR] Could not update Incapsula site log level: %s for site_id: %s %s\n", logLevel, d.Id(), err)
+			return err
+		}
+	}
+	return nil
+}
+
+func updatePerformanceSettings(client *Client, d *schema.ResourceData) error {
+	if d.HasChange("perf_client_comply_no_cache") ||
+		d.HasChange("perf_client_enable_client_side_caching") ||
+		d.HasChange("perf_client_send_age_header") ||
+		d.HasChange("perf_key_comply_vary") ||
+		d.HasChange("perf_key_unite_naked_full_cache") ||
+		d.HasChange("perf_mode_https") ||
+		d.HasChange("perf_mode_level") ||
+		d.HasChange("perf_mode_time") ||
+		d.HasChange("perf_response_cache_300x") ||
+		d.HasChange("perf_response_cache_404_enabled") ||
+		d.HasChange("perf_response_cache_404_time") ||
+		d.HasChange("perf_response_cache_empty_responses") ||
+		d.HasChange("perf_response_cache_http_10_responses") ||
+		d.HasChange("perf_response_cache_response_header_mode") ||
+		d.HasChange("perf_response_cache_response_headers") ||
+		d.HasChange("perf_response_cache_shield") ||
+		d.HasChange("perf_response_stale_content_mode") ||
+		d.HasChange("perf_response_stale_content_time") ||
+		d.HasChange("perf_response_tag_response_header") ||
+		d.HasChange("perf_ttl_prefer_last_modified") ||
+		d.HasChange("perf_ttl_use_shortest_caching") {
+		performanceSettings := PerformanceSettings{}
+		performanceSettings.ClientSide.ComplyNoCache = d.Get("perf_client_comply_no_cache").(bool)
+		performanceSettings.ClientSide.EnableClientSideCaching = d.Get("perf_client_enable_client_side_caching").(bool)
+		performanceSettings.ClientSide.SendAgeHeader = d.Get("perf_client_send_age_header").(bool)
+		performanceSettings.Key.ComplyVary = d.Get("perf_key_comply_vary").(bool)
+		performanceSettings.Key.UniteNakedFullCache = d.Get("perf_key_unite_naked_full_cache").(bool)
+		performanceSettings.Mode.HTTPS = d.Get("perf_mode_https").(string)
+		performanceSettings.Mode.Level = d.Get("perf_mode_level").(string)
+		performanceSettings.Mode.Time = d.Get("perf_mode_time").(int)
+		performanceSettings.Response.Cache300X = d.Get("perf_response_cache_300x").(bool)
+		performanceSettings.Response.Cache404.Enabled = d.Get("perf_response_cache_404_enabled").(bool)
+		performanceSettings.Response.Cache404.Time = d.Get("perf_response_cache_404_time").(int)
+		performanceSettings.Response.CacheEmptyResponses = d.Get("perf_response_cache_empty_responses").(bool)
+		performanceSettings.Response.CacheHTTP10Responses = d.Get("perf_response_cache_http_10_responses").(bool)
+		performanceSettings.Response.CacheResponseHeader.Mode = d.Get("perf_response_cache_response_header_mode").(string)
+		performanceSettings.Response.CacheResponseHeader.Headers = d.Get("perf_response_cache_response_headers").([]interface{})
+		performanceSettings.Response.CacheShield = d.Get("perf_response_cache_shield").(bool)
+		performanceSettings.Response.StaleContent.Mode = d.Get("perf_response_stale_content_mode").(string)
+		performanceSettings.Response.StaleContent.Time = d.Get("perf_response_stale_content_time").(int)
+		performanceSettings.Response.TagResponseHeader = d.Get("perf_response_tag_response_header").(string)
+		performanceSettings.TTL.PreferLastModified = d.Get("perf_ttl_prefer_last_modified").(bool)
+		performanceSettings.TTL.UseShortestCaching = d.Get("perf_ttl_use_shortest_caching").(bool)
+
+		_, err := client.UpdatePerformanceSettings(d.Id(), &performanceSettings)
+		if err != nil {
+			log.Printf("[ERROR] Could not update Incapsula performance settings for site_id: %s %s\n", d.Id(), err)
 			return err
 		}
 	}
