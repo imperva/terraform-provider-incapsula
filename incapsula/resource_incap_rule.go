@@ -48,12 +48,12 @@ func resourceIncapRule() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			// Optional Arguments
 			"filter": {
 				Description: "The filter defines the conditions that trigger the rule action. For action `RULE_ACTION_SIMPLIFIED_REDIRECT` filter is not relevant. For other actions, if left empty, the rule is always run.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 			},
-			// Optional Arguments
 			"response_code": {
 				Description: "For `RULE_ACTION_REDIRECT` or `RULE_ACTION_SIMPLIFIED_REDIRECT` rule's response code, valid values are `302`, `301`, `303`, `307`, `308`. For `RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE` rule's response code, valid values are all 3-digits numbers. For `RULE_ACTION_CUSTOM_ERROR_RESPONSE`, valid values are `400`, `401`, `402`, `403`, `404`, `405`, `406`, `407`, `408`, `409`, `410`, `411`, `412`, `413`, `414`, `415`, `416`, `417`, `419`, `420`, `422`, `423`, `424`, `500`, `501`, `502`, `503`, `504`, `505`, `507`.",
 				Type:        schema.TypeInt,
