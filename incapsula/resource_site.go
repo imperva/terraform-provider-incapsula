@@ -555,55 +555,56 @@ func updateLogLevel(client *Client, d *schema.ResourceData) error {
 }
 
 func updatePerformanceSettings(client *Client, d *schema.ResourceData) error {
-	if d.HasChange("perf_client_comply_no_cache") ||
-		d.HasChange("perf_client_enable_client_side_caching") ||
-		d.HasChange("perf_client_send_age_header") ||
-		d.HasChange("perf_key_comply_vary") ||
-		d.HasChange("perf_key_unite_naked_full_cache") ||
-		d.HasChange("perf_mode_https") ||
-		d.HasChange("perf_mode_level") ||
-		d.HasChange("perf_mode_time") ||
-		d.HasChange("perf_response_cache_300x") ||
-		d.HasChange("perf_response_cache_404_enabled") ||
-		d.HasChange("perf_response_cache_404_time") ||
-		d.HasChange("perf_response_cache_empty_responses") ||
-		d.HasChange("perf_response_cache_http_10_responses") ||
-		d.HasChange("perf_response_cache_response_header_mode") ||
-		d.HasChange("perf_response_cache_response_headers") ||
-		d.HasChange("perf_response_cache_shield") ||
-		d.HasChange("perf_response_stale_content_mode") ||
-		d.HasChange("perf_response_stale_content_time") ||
-		d.HasChange("perf_response_tag_response_header") ||
-		d.HasChange("perf_ttl_prefer_last_modified") ||
-		d.HasChange("perf_ttl_use_shortest_caching") {
-		performanceSettings := PerformanceSettings{}
-		performanceSettings.ClientSide.ComplyNoCache = d.Get("perf_client_comply_no_cache").(bool)
-		performanceSettings.ClientSide.EnableClientSideCaching = d.Get("perf_client_enable_client_side_caching").(bool)
-		performanceSettings.ClientSide.SendAgeHeader = d.Get("perf_client_send_age_header").(bool)
-		performanceSettings.Key.ComplyVary = d.Get("perf_key_comply_vary").(bool)
-		performanceSettings.Key.UniteNakedFullCache = d.Get("perf_key_unite_naked_full_cache").(bool)
-		performanceSettings.Mode.HTTPS = d.Get("perf_mode_https").(string)
-		performanceSettings.Mode.Level = d.Get("perf_mode_level").(string)
-		performanceSettings.Mode.Time = d.Get("perf_mode_time").(int)
-		performanceSettings.Response.Cache300X = d.Get("perf_response_cache_300x").(bool)
-		performanceSettings.Response.Cache404.Enabled = d.Get("perf_response_cache_404_enabled").(bool)
-		performanceSettings.Response.Cache404.Time = d.Get("perf_response_cache_404_time").(int)
-		performanceSettings.Response.CacheEmptyResponses = d.Get("perf_response_cache_empty_responses").(bool)
-		performanceSettings.Response.CacheHTTP10Responses = d.Get("perf_response_cache_http_10_responses").(bool)
-		performanceSettings.Response.CacheResponseHeader.Mode = d.Get("perf_response_cache_response_header_mode").(string)
-		performanceSettings.Response.CacheResponseHeader.Headers = d.Get("perf_response_cache_response_headers").([]interface{})
-		performanceSettings.Response.CacheShield = d.Get("perf_response_cache_shield").(bool)
-		performanceSettings.Response.StaleContent.Mode = d.Get("perf_response_stale_content_mode").(string)
-		performanceSettings.Response.StaleContent.Time = d.Get("perf_response_stale_content_time").(int)
-		performanceSettings.Response.TagResponseHeader = d.Get("perf_response_tag_response_header").(string)
-		performanceSettings.TTL.PreferLastModified = d.Get("perf_ttl_prefer_last_modified").(bool)
-		performanceSettings.TTL.UseShortestCaching = d.Get("perf_ttl_use_shortest_caching").(bool)
+	// if d.HasChange("perf_client_comply_no_cache") ||
+	// 	d.HasChange("perf_client_enable_client_side_caching") ||
+	// 	d.HasChange("perf_client_send_age_header") ||
+	// 	d.HasChange("perf_key_comply_vary") ||
+	// 	d.HasChange("perf_key_unite_naked_full_cache") ||
+	// 	d.HasChange("perf_mode_https") ||
+	// 	d.HasChange("perf_mode_level") ||
+	// 	d.HasChange("perf_mode_time") ||
+	// 	d.HasChange("perf_response_cache_300x") ||
+	// 	d.HasChange("perf_response_cache_404_enabled") ||
+	// 	d.HasChange("perf_response_cache_404_time") ||
+	// 	d.HasChange("perf_response_cache_empty_responses") ||
+	// 	d.HasChange("perf_response_cache_http_10_responses") ||
+	// 	d.HasChange("perf_response_cache_response_header_mode") ||
+	// 	d.HasChange("perf_response_cache_response_headers") ||
+	// 	d.HasChange("perf_response_cache_shield") ||
+	// 	d.HasChange("perf_response_stale_content_mode") ||
+	// 	d.HasChange("perf_response_stale_content_time") ||
+	// 	d.HasChange("perf_response_tag_response_header") ||
+	// 	d.HasChange("perf_ttl_prefer_last_modified") ||
+	// 	d.HasChange("perf_ttl_use_shortest_caching") {
+	performanceSettings := PerformanceSettings{}
+	performanceSettings.ClientSide.ComplyNoCache = d.Get("perf_client_comply_no_cache").(bool)
+	performanceSettings.ClientSide.EnableClientSideCaching = d.Get("perf_client_enable_client_side_caching").(bool)
+	performanceSettings.ClientSide.SendAgeHeader = d.Get("perf_client_send_age_header").(bool)
+	performanceSettings.Key.ComplyVary = d.Get("perf_key_comply_vary").(bool)
+	performanceSettings.Key.UniteNakedFullCache = d.Get("perf_key_unite_naked_full_cache").(bool)
+	performanceSettings.Mode.HTTPS = d.Get("perf_mode_https").(string)
+	performanceSettings.Mode.Level = d.Get("perf_mode_level").(string)
+	performanceSettings.Mode.Time = d.Get("perf_mode_time").(int)
+	performanceSettings.Response.Cache300X = d.Get("perf_response_cache_300x").(bool)
+	performanceSettings.Response.Cache404.Enabled = d.Get("perf_response_cache_404_enabled").(bool)
+	performanceSettings.Response.Cache404.Time = d.Get("perf_response_cache_404_time").(int)
+	performanceSettings.Response.CacheEmptyResponses = d.Get("perf_response_cache_empty_responses").(bool)
+	performanceSettings.Response.CacheHTTP10Responses = d.Get("perf_response_cache_http_10_responses").(bool)
+	performanceSettings.Response.CacheResponseHeader.Mode = d.Get("perf_response_cache_response_header_mode").(string)
+	performanceSettings.Response.CacheResponseHeader.Headers = d.Get("perf_response_cache_response_headers").([]interface{})
+	performanceSettings.Response.CacheShield = d.Get("perf_response_cache_shield").(bool)
+	performanceSettings.Response.StaleContent.Mode = d.Get("perf_response_stale_content_mode").(string)
+	performanceSettings.Response.StaleContent.Time = d.Get("perf_response_stale_content_time").(int)
+	performanceSettings.Response.TagResponseHeader = d.Get("perf_response_tag_response_header").(string)
+	performanceSettings.TTL.PreferLastModified = d.Get("perf_ttl_prefer_last_modified").(bool)
+	performanceSettings.TTL.UseShortestCaching = d.Get("perf_ttl_use_shortest_caching").(bool)
 
-		_, err := client.UpdatePerformanceSettings(d.Id(), &performanceSettings)
-		if err != nil {
-			log.Printf("[ERROR] Could not update Incapsula performance settings for site_id: %s %s\n", d.Id(), err)
-			return err
-		}
+	_, err := client.UpdatePerformanceSettings(d.Id(), &performanceSettings)
+	if err != nil {
+		log.Printf("[ERROR] Could not update Incapsula performance settings for site_id: %s %s\n", d.Id(), err)
+		return err
 	}
-	return nil
+	// }
+	// return nil
+	return err
 }
