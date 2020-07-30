@@ -23,7 +23,7 @@ type PerformanceSettings struct {
 	Response struct {
 		StaleContent struct {
 			Mode string `json:"mode"`
-			Time int    `json:"time"`
+			Time int    `json:"time,omitempty"`
 		} `json:"stale_content"`
 		CacheShield         bool `json:"cache_shield"`
 		CacheResponseHeader struct {
@@ -36,7 +36,7 @@ type PerformanceSettings struct {
 		CacheHTTP10Responses bool   `json:"cache_http_10_responses"`
 		Cache404             struct {
 			Enabled bool `json:"enabled"`
-			Time    int  `json:"time"`
+			Time    int  `json:"time,omitempty"`
 		} `json:"cache_404"`
 	} `json:"response"`
 	TTL struct {
