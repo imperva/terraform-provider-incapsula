@@ -229,8 +229,9 @@ func resourceSite() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Computed: true,
-				Optional: true,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
 			"perf_response_cache_shield": {
 				Description: "Adds an intermediate cache between other Imperva PoPs and your origin servers to protect your servers from redundant requests.",
