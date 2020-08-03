@@ -92,6 +92,7 @@ func (c *Client) UpdatePerformanceSettings(siteID string, performanceSettings *P
 	}
 
 	// Post request to Incapsula
+	log.Printf("[DEBUG] Incapsula Update Incap Performance Settings JSON request: %s\n", string(performanceSettingsJSON))
 	req, err := http.NewRequest(
 		http.MethodPut,
 		fmt.Sprintf("%s/sites/%s/settings/cache?api_id=%s&api_key=%s", c.config.APIV2BaseURL, siteID, c.config.APIID, c.config.APIKey),
