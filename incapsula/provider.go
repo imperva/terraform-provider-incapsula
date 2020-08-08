@@ -70,11 +70,8 @@ func Provider() terraform.ResourceProvider {
 			"incapsula_data_center":             resourceDataCenter(),
 			"incapsula_data_center_server":      resourceDataCenterServer(),
 			"incapsula_custom_certificate":      resourceCertificate(),
-<<<<<<< HEAD
 			"incapsula_cache_response_headers":  resourceCacheResponseHeaders(),
-=======
 			"incapsula_cache_rule":              resourceCacheRule(),
->>>>>>> master
 		},
 
 		ConfigureFunc: configureProvider,

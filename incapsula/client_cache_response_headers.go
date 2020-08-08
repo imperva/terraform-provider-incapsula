@@ -12,7 +12,7 @@ import (
 // endpoints
 const advancedCacheEndpoint = "sites/performance/response-headers"
 
-// struc
+// struct
 type AddCacheHeaderResponse struct {
 	Res        int    `json:"res"`
 	ResMessage string `json:"res_message"`
