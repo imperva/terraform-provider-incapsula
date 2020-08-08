@@ -20,7 +20,7 @@ func (c *Client) GetMaskingSettings(siteID string) (*MaskingSettings, error) {
 	log.Printf("[INFO] Getting Incapsula Masking Settings for Site ID %s\n", siteID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.Get(fmt.Sprintf("%s/sites/%s/settings/masking?api_id=%s&api_key=%s", c.config.APIV2BaseURL, siteID, c.config.APIID, c.config.APIKey))
+	resp, err := c.httpClient.Get(fmt.Sprintf("%s/sites/%s/settings/masking?api_id=%s&api_key=%s", c.config.BaseURLRev2, siteID, c.config.APIID, c.config.APIKey))
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when reading masking settings for Site ID %s: %s", siteID, err)
 	}
@@ -59,7 +59,7 @@ func (c *Client) UpdateMaskingSettings(siteID string, maskingSettings *MaskingSe
 	// Put request to Incapsula
 	req, err := http.NewRequest(
 		http.MethodPost,
-		fmt.Sprintf("%s/sites/%s/settings/masking?api_id=%s&api_key=%s", c.config.APIV2BaseURL, siteID, c.config.APIID, c.config.APIKey),
+		fmt.Sprintf("%s/sites/%s/settings/masking?api_id=%s&api_key=%s", c.config.BaseURLRev2, siteID, c.config.APIID, c.config.APIKey),
 		bytes.NewReader(maskingSettingsJSON))
 	if err != nil {
 		return fmt.Errorf("Error preparing HTTP PUT for updating Incap masking settings for Site ID %s: %s", siteID, err)

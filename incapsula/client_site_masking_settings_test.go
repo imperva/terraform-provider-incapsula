@@ -44,7 +44,7 @@ func TestClientGetMaskingSettingsBadJSON(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	maskingSettings, err := client.GetMaskingSettings(siteID)
@@ -75,7 +75,7 @@ func TestClientGetMaskingSettingsInvalidSite(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	maskingSettings, err := client.GetMaskingSettings(siteID)
@@ -105,7 +105,7 @@ func TestClientGetMaskingSettingsValidSite(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	maskingSettings, err := client.GetMaskingSettings(siteID)
@@ -158,7 +158,7 @@ func TestClientUpdateMaskingSettingsInvalidSite(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	err := client.UpdateMaskingSettings(siteID, &maskingSettings)
@@ -186,7 +186,7 @@ func TestClientUpdateMaskingSettingsValidSite(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	err := client.UpdateMaskingSettings(siteID, &maskingSettings)
