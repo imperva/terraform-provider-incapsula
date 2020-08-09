@@ -22,8 +22,8 @@ type AddCacheHeaderResponse struct {
 }
 
 // ConfigureAdvanceCache adds an WAF Sec rule
-func (c *Client) ConfigureAdvanceCache(siteID int, cacheHeaders, cacheAllHeaders string) (*AddCacheHeaderResponse, error) {
-	log.Printf("[INFO] Configuring Incapsula Advance Cacheing site id: %d\n", siteID)
+func (c *Client) ConfigureAdvanceCaching(siteID int, cacheHeaders, cacheAllHeaders string) (*AddCacheHeaderResponse, error) {
+	log.Printf("[INFO] Configuring Incapsula Advance Caching site id: %d\n", siteID)
 
 	// Base URL values
 	values := url.Values{

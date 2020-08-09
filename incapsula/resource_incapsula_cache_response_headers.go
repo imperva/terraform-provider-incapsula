@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceCacheResponseHeaders() *schema.Resource {
@@ -47,7 +47,7 @@ func resourceCacheResponseHeadersAdd(d *schema.ResourceData, m interface{}) erro
 
 	log.Printf("[INFO] Creating Incapsula cache response headers: %s, %s\n", siteID, cacheHeaders)
 
-	_, err := client.ConfigureAdvanceCache(
+	_, err := client.ConfigureAdvanceCaching(
 		d.Get("site_id").(int),
 		d.Get("cache_headers").(string),
 		//		strings.Join(convertStringArr(d.Get("cache_headers").([]interface{})), ","), PR Fix/string to array #13
@@ -85,7 +85,7 @@ func resourceCacheResponseHeadersRead(d *schema.ResourceData, m interface{}) err
 		cacheHeaders := d.Get("cache_headers").(string)
 
 		// cache headers could be multiple values separated with comma
-		// handle this by splitting the values and interate through the values
+		// handle this by splitting the values and iterate through the values
 		s := strings.Split(cacheHeaders, ",")
 
 		for _, v := range s {
@@ -111,7 +111,7 @@ func resourceCacheResponseHeadersDelete(d *schema.ResourceData, m interface{}) e
 	log.Printf("[INFO] Resetting Incapsula cache response headers to default: %s\n", siteID)
 
 	// there is no delete handler, instead we send empty cache headers keys to the same api
-	_, err := client.ConfigureAdvanceCache(
+	_, err := client.ConfigureAdvanceCaching(
 		d.Get("site_id").(int),
 		"",
 		"",

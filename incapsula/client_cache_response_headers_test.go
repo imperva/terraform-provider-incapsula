@@ -13,7 +13,7 @@ func TestClientConfigureAdvanceCacheBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := 42
-	configureCacheHeadersResponse, err := client.ConfigureAdvanceCache(siteID, "", "")
+	configureCacheHeadersResponse, err := client.ConfigureAdvanceCaching(siteID, "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -38,7 +38,7 @@ func TestClientConfigureAdvanceCacheBadJSON(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 42
-	configureCacheHeadersResponse, err := client.ConfigureAdvanceCache(siteID, "", "")
+	configureCacheHeadersResponse, err := client.ConfigureAdvanceCaching(siteID, "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -62,7 +62,7 @@ func TestClientConfigureAdvanceCacheInvalidSite(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 42
-	configureCacheHeadersResponse, err := client.ConfigureAdvanceCache(siteID, "", "")
+	configureCacheHeadersResponse, err := client.ConfigureAdvanceCaching(siteID, "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -86,7 +86,7 @@ func TestClientConfigureAdvanceCacheValidSite(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 42
-	configureCacheHeadersResponse, err := client.ConfigureAdvanceCache(siteID, "", "")
+	configureCacheHeadersResponse, err := client.ConfigureAdvanceCaching(siteID, "", "")
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}

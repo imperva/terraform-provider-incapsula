@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 const cacheHeaderResponseResourceName = "incapsula_cache_response_headers.testacc-terraform-cache-response-header"
@@ -19,7 +19,7 @@ func TestAccIncapsulaCacheHeaderResponse_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaCacheHeaderResponseDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaCacheHeaderResponseConfig_basic(),
+				Config: testacccheckincapsulacacheheaderresponseconfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaCacheHeaderResponseExists(cacheHeaderResponseResourceName),
 					resource.TestCheckResourceAttr(cacheHeaderResponseResourceName, "cache_headers", cacheHeaderResponseName),
@@ -127,8 +127,8 @@ func testCheckIncapsulaCacheHeaderResponseExists(name string) resource.TestCheck
 	}
 }
 
-func testAccCheckIncapsulaCacheHeaderResponseConfig_basic() string {
-	return testAccCheckIncapsulaSiteConfig_basic(testAccDomain) + fmt.Sprintf(`
+func testAccCheckIncapsulaCacheHeaderResponseConfigBasic() string {
+	return testAccCheckIncapsulaSiteConfigBasic(testAccDomain) + fmt.Sprintf(`
 resource "incapsula_cache_response_headers" "testacc-terraform-cache-response-header" {
   site_id           = "${incapsula_site.testacc-terraform-site.id}"
   cache_headers     = "%s"
