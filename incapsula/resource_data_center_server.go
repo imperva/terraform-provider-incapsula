@@ -123,7 +123,7 @@ func resourceDataCenterServerRead(d *schema.ResourceData, m interface{}) error {
 
 	found := false
 
-	server_address_to_find := d.Get("server_address").(string)
+	serverAddressToFind := d.Get("server_address").(string)
 
 	for _, dataCenter := range listDataCentersResponse.DCs {
 		if dataCenter.ID == d.Get("dc_id").(string) {
@@ -132,7 +132,7 @@ func resourceDataCenterServerRead(d *schema.ResourceData, m interface{}) error {
 				// If data centers were edited manually in the portal
 				// Their IDs will change and not match tfstate
 				// But server's address must be unique across DCs
-				if server.ID == d.Id() || server.Address == server_address_to_find {
+				if server.ID == d.Id() || server.Address == serverAddressToFind {
 					d.Set("is_enabled", server.Enabled)
 					d.Set("server_address", server.Address)
 					d.Set("is_standby", server.IsStandBy)

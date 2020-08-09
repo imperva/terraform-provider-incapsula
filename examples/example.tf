@@ -16,7 +16,7 @@ resource "incapsula_site" "example-site" {
   data_storage_region    = "US"
 
   ####################################################################
-  # The remaining following parameters below are designated for updating the site after it has been created.
+  # The parameters below are designated for updating the site after it has been created.
   ####################################################################
   active                  = "bypass"
   ignore_ssl              = "true"
@@ -24,6 +24,30 @@ resource "incapsula_site" "example-site" {
   seal_location           = "api.seal_location.bottom_right"
   domain_redirect_to_full = "true"
   remove_ssl              = "false"
+
+  ####################################################################
+  # The parameters below are designated for performance settings.
+  ####################################################################
+  perf_client_comply_no_cache              = false
+  perf_client_enable_client_side_caching   = true
+  perf_client_send_age_header              = false
+  perf_key_comply_vary                     = false
+  perf_key_unite_naked_full_cache          = false
+  perf_mode_https                          = "dont_include_html"
+  perf_mode_level                          = "smart"
+  perf_mode_time                           = 300
+  perf_response_cache_300x                 = false
+  perf_response_cache_404_enabled          = false
+  perf_response_cache_404_time             = 0
+  perf_response_cache_empty_responses      = false
+  perf_response_cache_http_10_responses    = false
+  perf_response_cache_response_header_mode = "custom"
+  perf_response_cache_response_headers     = []
+  perf_response_cache_shield               = true
+  perf_response_stale_content_mode         = "adaptive"
+  perf_response_stale_content_time         = 0
+  perf_ttl_prefer_last_modified            = false
+  perf_ttl_use_shortest_caching            = false
 }
 
 ####################################################################

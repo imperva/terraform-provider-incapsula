@@ -19,7 +19,7 @@ func TestAccIncapsulaCacheHeaderResponse_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaCacheHeaderResponseDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testacccheckincapsulacacheheaderresponseconfigBasic(),
+				Config: testAccCheckIncapsulaCacheHeaderResponseConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaCacheHeaderResponseExists(cacheHeaderResponseResourceName),
 					resource.TestCheckResourceAttr(cacheHeaderResponseResourceName, "cache_headers", cacheHeaderResponseName),
@@ -29,13 +29,13 @@ func TestAccIncapsulaCacheHeaderResponse_Basic(t *testing.T) {
 				ResourceName:      cacheHeaderResponseResourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: testAccCheckStatecacheHeaderResponseId,
+				ImportStateIdFunc: testAccCheckStateCacheHeaderResponseId,
 			},
 		},
 	})
 }
 
-func testAccCheckStatecacheHeaderResponseId(s *terraform.State) (string, error) {
+func testAccCheckStateCacheHeaderResponseId(s *terraform.State) (string, error) {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "incapsula_cache_response_headers" {
 			continue
@@ -63,8 +63,8 @@ func testAccCheckIncapsulaCacheHeaderResponseDestroy(state *terraform.State) err
 			continue
 		}
 
-		siteIDstr := res.Primary.ID
-		if siteIDstr == "" {
+		siteIdStr := res.Primary.ID
+		if siteIdStr == "" {
 			return fmt.Errorf("Incapsula site ID does not exist")
 		}
 
@@ -76,11 +76,11 @@ func testAccCheckIncapsulaCacheHeaderResponseDestroy(state *terraform.State) err
 		listCacheHeaderResponse, err := client.SiteStatus("cache-response-header", siteID)
 		for _, cacheHeader := range listCacheHeaderResponse.PerformanceConfiguration.CacheHeaders {
 			if cacheHeader == cacheHeaderResponseName {
-				return fmt.Errorf("Incapsula cache header response: %s (site_id: %s) still exists", cacheHeaderResponseName, siteIDstr)
+				return fmt.Errorf("Incapsula cache header response: %s (site_id: %s) still exists", cacheHeaderResponseName, siteIdStr)
 			}
 		}
 		if err == nil {
-			return fmt.Errorf("Incapsula cache header response for: %s (site id: %s) still exists", testAccDomain, siteIDstr)
+			return fmt.Errorf("Incapsula cache header response for: %s (site id: %s) still exists", testAccDomain, siteIdStr)
 		}
 	}
 	return nil
@@ -98,8 +98,8 @@ func testCheckIncapsulaCacheHeaderResponseExists(name string) resource.TestCheck
 			return fmt.Errorf("Error parsing ID %v to int", siteRes.Primary.ID)
 		}
 
-		siteIDstr := siteRes.Primary.ID
-		if siteIDstr == "" {
+		siteIdStr := siteRes.Primary.ID
+		if siteIdStr == "" {
 			return fmt.Errorf("Incapsula site ID does not exist")
 		}
 
@@ -116,7 +116,7 @@ func testCheckIncapsulaCacheHeaderResponseExists(name string) resource.TestCheck
 		client := testAccProvider.Meta().(*Client)
 		listCacheHeaderResponse, err := client.SiteStatus("read-cache-responses", siteID)
 		if listCacheHeaderResponse == nil {
-			return fmt.Errorf("Incapsula cache header response: %s (site id: %s) does not exist\n%s", name, siteIDstr, err)
+			return fmt.Errorf("Incapsula cache header response: %s (site id: %s) does not exist\n%s", name, siteIdStr, err)
 		}
 		for _, cacheHeader := range listCacheHeaderResponse.PerformanceConfiguration.CacheHeaders {
 			if cacheHeader == cacheHeaderResponseName {

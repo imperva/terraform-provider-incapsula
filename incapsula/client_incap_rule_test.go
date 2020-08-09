@@ -14,7 +14,7 @@ import (
 ////////////////////////////////////////////////////////////////
 
 func TestClientAddIncapRuleBadConnection(t *testing.T) {
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", APIV2BaseURL: "badness.incapsula.com"}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
 
@@ -51,7 +51,7 @@ func TestClientAddIncapRuleBadJSON(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	rule := IncapRule{
@@ -88,7 +88,7 @@ func TestClientAddIncapRuleInvalidRule(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	rule := IncapRule{
@@ -123,7 +123,7 @@ func TestClientAddIncapRuleValidRule(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	rule := IncapRule{
@@ -149,7 +149,7 @@ func TestClientAddIncapRuleValidRule(t *testing.T) {
 ////////////////////////////////////////////////////////////////
 
 func TestClientReadIncapRuleBadConnection(t *testing.T) {
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", APIV2BaseURL: "badness.incapsula.com"}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
 	ruleID := 62
@@ -182,7 +182,7 @@ func TestClientReadIncapRuleBadJSON(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	readIncapRuleResponse, _, err := client.ReadIncapRule(siteID, ruleID)
@@ -214,7 +214,7 @@ func TestClientReadIncapRuleInvalidRule(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	readIncapRuleResponse, statusCode, err := client.ReadIncapRule(siteID, ruleID)
@@ -249,7 +249,7 @@ func TestClientReadIncapRuleValidRule(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	readIncapRuleResponse, statusCode, err := client.ReadIncapRule(siteID, ruleID)
@@ -272,7 +272,7 @@ func TestClientReadIncapRuleValidRule(t *testing.T) {
 ////////////////////////////////////////////////////////////////
 
 func TestClientUpdateIncapRuleBadConnection(t *testing.T) {
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", APIV2BaseURL: "badness.incapsula.com"}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
 	ruleID := 62
@@ -317,7 +317,7 @@ func TestClientUpdateIncapRuleBadJSON(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	updateIncapRuleResponse, err := client.UpdateIncapRule(siteID, ruleID, &rule)
@@ -355,7 +355,7 @@ func TestClientUpdateIncapRuleInvalidRule(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	updateIncapRuleResponse, err := client.UpdateIncapRule(siteID, ruleID, &rule)
@@ -393,7 +393,7 @@ func TestClientUpdateIncapRuleValidRule(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	updateIncapRuleResponse, err := client.UpdateIncapRule(siteID, ruleID, &rule)
@@ -413,7 +413,7 @@ func TestClientUpdateIncapRuleValidRule(t *testing.T) {
 ////////////////////////////////////////////////////////////////
 
 func TestClientDeleteIncapRuleBadConnection(t *testing.T) {
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", APIV2BaseURL: "badness.incapsula.com"}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
 	ruleID := 62
@@ -443,7 +443,7 @@ func TestClientDeleteIncapRuleInvalidRule(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	err := client.DeleteIncapRule(siteID, ruleID)
@@ -471,7 +471,7 @@ func TestClientDeleteIncapRuleValidRule(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	err := client.DeleteIncapRule(siteID, ruleID)

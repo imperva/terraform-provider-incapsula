@@ -14,7 +14,7 @@ import (
 ////////////////////////////////////////////////////////////////
 
 func TestClientAddCacheRuleBadConnection(t *testing.T) {
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", APIV2BaseURL: "badness.incapsula.com"}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
 
@@ -52,7 +52,7 @@ func TestClientAddCacheRuleBadJSON(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	rule := CacheRule{
@@ -90,7 +90,7 @@ func TestClientAddCacheRuleInvalidRule(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	rule := CacheRule{
@@ -125,7 +125,7 @@ func TestClientAddCacheRuleValidRule(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	rule := CacheRule{
@@ -152,7 +152,7 @@ func TestClientAddCacheRuleValidRule(t *testing.T) {
 ////////////////////////////////////////////////////////////////
 
 func TestClientReadCacheRuleBadConnection(t *testing.T) {
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", APIV2BaseURL: "badness.incapsula.com"}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
 	ruleID := 62
@@ -185,7 +185,7 @@ func TestClientReadCacheRuleBadJSON(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	readCacheRuleResponse, _, err := client.ReadCacheRule(siteID, ruleID)
@@ -217,7 +217,7 @@ func TestClientReadCacheRuleInvalidRule(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	readCacheRuleResponse, statusCode, err := client.ReadCacheRule(siteID, ruleID)
@@ -252,7 +252,7 @@ func TestClientReadCacheRuleValidRule(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	readCacheRuleResponse, statusCode, err := client.ReadCacheRule(siteID, ruleID)
@@ -275,7 +275,7 @@ func TestClientReadCacheRuleValidRule(t *testing.T) {
 ////////////////////////////////////////////////////////////////
 
 func TestClientUpdateCacheRuleBadConnection(t *testing.T) {
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", APIV2BaseURL: "badness.incapsula.com"}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
 	ruleID := 66772
@@ -319,7 +319,7 @@ func TestClientUpdateCacheRuleBadJSON(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	err := client.UpdateCacheRule(siteID, ruleID, &rule)
@@ -355,7 +355,7 @@ func TestClientUpdateCacheRuleInvalidRule(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	err := client.UpdateCacheRule(siteID, ruleID, &rule)
@@ -391,7 +391,7 @@ func TestClientUpdateCacheRuleValidRule(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	err := client.UpdateCacheRule(siteID, ruleID, &rule)
@@ -405,7 +405,7 @@ func TestClientUpdateCacheRuleValidRule(t *testing.T) {
 ////////////////////////////////////////////////////////////////
 
 func TestClientDeleteCacheRuleBadConnection(t *testing.T) {
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", APIV2BaseURL: "badness.incapsula.com"}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
 	ruleID := 62
@@ -436,7 +436,7 @@ func TestClientDeleteCacheRuleInvalidRule(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	err := client.DeleteCacheRule(siteID, ruleID)
@@ -465,7 +465,7 @@ func TestClientDeleteCacheRuleValidRule(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, APIV2BaseURL: server.URL}
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	err := client.DeleteCacheRule(siteID, ruleID)

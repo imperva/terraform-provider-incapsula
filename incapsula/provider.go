@@ -6,17 +6,14 @@ import (
 )
 
 var baseURL string
-var apiV2BaseURL string
+var baseURLRev2 string
+var baseURLAPI string
 var descriptions map[string]string
 
 func init() {
-	// Storing this in the provider rather than making it configurable
-	// This endpoint is unlikely to change in the near future
 	baseURL = "https://my.incapsula.com/api/prov/v1"
-
-	// Efforts on APIv2 are underway and newer resource are supported
-	// The other endpoints will eventually move over but we'll need the following for now
-	apiV2BaseURL = "https://my.imperva.com/api/prov/v2"
+	baseURLRev2 = "https://my.imperva.com/api/prov/v2"
+	baseURLAPI = "https://api.imperva.com"
 
 	descriptions = map[string]string{
 		"api_id": "The API identifier for API operations. You can retrieve this\n" +
@@ -34,10 +31,11 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	apiKey := d.Get("api_key").(string)
 
 	config := Config{
-		APIID:        apiID,
-		APIKey:       apiKey,
-		BaseURL:      baseURL,
-		APIV2BaseURL: apiV2BaseURL,
+		APIID:       apiID,
+		APIKey:      apiKey,
+		BaseURL:     baseURL,
+		BaseURLRev2: baseURLRev2,
+		BaseURLAPI:  baseURLAPI,
 	}
 
 	return config.Client()
@@ -62,16 +60,17 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"incapsula_site":                    resourceSite(),
 			"incapsula_acl_security_rule":       resourceACLSecurityRule(),
-			"incapsula_waf_security_rule":       resourceWAFSecurityRule(),
-			"incapsula_security_rule_exception": resourceSecurityRuleException(),
-			"incapsula_incap_rule":              resourceIncapRule(),
+			"incapsula_cache_rule":              resourceCacheRule(),
+			"incapsula_custom_certificate":      resourceCertificate(),
 			"incapsula_data_center":             resourceDataCenter(),
 			"incapsula_data_center_server":      resourceDataCenterServer(),
-			"incapsula_custom_certificate":      resourceCertificate(),
 			"incapsula_cache_response_headers":  resourceCacheResponseHeaders(),
-			"incapsula_cache_rule":              resourceCacheRule(),
+			"incapsula_incap_rule":              resourceIncapRule(),
+			"incapsula_policy":                  resourcePolicy(),
+			"incapsula_security_rule_exception": resourceSecurityRuleException(),
+			"incapsula_site":                    resourceSite(),
+			"incapsula_waf_security_rule":       resourceWAFSecurityRule(),
 		},
 
 		ConfigureFunc: configureProvider,
