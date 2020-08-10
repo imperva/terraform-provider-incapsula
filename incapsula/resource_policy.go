@@ -106,12 +106,12 @@ func resourcePolicyRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("description", policyGetResponse.Value.Description)
 
 	// JSON encode policy settings
-	policySettingsJSON, err := json.MarshalIndent(policyGetResponse.Value.PolicySettings, "", "    ")
+	policySettingsJSONBytes, err := json.MarshalIndent(policyGetResponse.Value.PolicySettings, "", "    ")
 	if err != nil {
-		log.Printf("[ERROR] Could not get marshal Incapsula policy settings: %s - %s - %s\n", policyID, err, policySettingsJSON)
+		log.Printf("[ERROR] Could not get marshal Incapsula policy settings: %s - %s - %s\n", policyID, err, policySettingsJSONBytes)
 		return err
 	}
-	d.Set("policy_settings", policySettingsJSON)
+	d.Set("policy_settings", string(policySettingsJSONBytes))
 
 	return nil
 }
