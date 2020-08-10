@@ -75,13 +75,13 @@ func resourcePolicyCreate(d *schema.ResourceData, m interface{}) error {
 	d.SetId(policyID)
 	log.Printf("[INFO] Created Incapsula policy with ID: %s\n", policyID)
 
-	return resourceDataCenterRead(d, m)
+	return resourcePolicyRead(d, m)
 }
 
 func resourcePolicyRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	policyID := d.Get("id").(string)
+	policyID := d.Id()
 	policyGetResponse, err := client.GetPolicy(policyID)
 
 	if err != nil {
@@ -102,7 +102,7 @@ func resourcePolicyRead(d *schema.ResourceData, m interface{}) error {
 func resourcePolicyUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	id, err := strconv.Atoi(d.Get("id").(string))
+	id, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return err
 	}

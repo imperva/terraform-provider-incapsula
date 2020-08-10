@@ -7,23 +7,22 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"time"
 )
 
 // Policy is a struct that encompasses all the properties for a policy
 type Policy struct {
 	Value struct {
-		ID                int       `json:"id"`
-		PolicyType        string    `json:"policyType"`
-		Name              string    `json:"name"`
-		Enabled           bool      `json:"enabled"`
-		Description       string    `json:"description"`
-		AccountID         int       `json:"accountId"`
-		LastModified      time.Time `json:"lastModified"`
-		LastModifiedBy    int       `json:"lastModifiedBy"`
-		LastUserModified  string    `json:"lastUserModified"`
-		NumberOfAssets    int       `json:"numberOfAssets"`
-		IsMarkedAsDefault bool      `json:"isMarkedAsDefault"`
+		ID                int    `json:"id"`
+		PolicyType        string `json:"policyType"`
+		Name              string `json:"name"`
+		Enabled           bool   `json:"enabled"`
+		Description       string `json:"description"`
+		AccountID         int    `json:"accountId"`
+		LastModified      string `json:"lastModified"`
+		LastModifiedBy    int    `json:"lastModifiedBy"`
+		LastUserModified  string `json:"lastUserModified"`
+		NumberOfAssets    int    `json:"numberOfAssets"`
+		IsMarkedAsDefault bool   `json:"isMarkedAsDefault"`
 	} `json:"value"`
 	IsError bool `json:"isError"`
 }
