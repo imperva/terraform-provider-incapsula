@@ -465,3 +465,29 @@ resource "incapsula_cache_response_headers" "example_cache_response_headers" {
   site_id = "${incapsula_site.example-site.id}"
   cache_headers = "server,x-v"
 }
+
+###################################################################
+# Policies
+###################################################################
+
+resource "incapsula_policy" "example-policy" {
+  name        = "Example Policy"
+  enabled     = true 
+  policy_type = "ACL"
+  description = "Example policy description"
+  policy_settings = <<POLICY
+[
+  {
+    "settingsAction": "BLOCK",
+    "policySettingType": "IP",
+    "data": {
+      "ips": [
+        "109.12.1.150",
+        "109.12.1.200"
+      ]
+    },
+    "policyDataExceptions": []
+  }
+]
+POLICY
+}

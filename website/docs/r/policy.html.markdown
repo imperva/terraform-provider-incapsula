@@ -18,6 +18,21 @@ resource "incapsula_policy" "example-policy" {
   enabled     = true 
   policy_type = "ACL"
   description = "Example policy description" 
+  policy_settings = <<POLICY
+[
+  {
+    "settingsAction": "BLOCK",
+    "policySettingType": "IP",
+    "data": {
+      "ips": [
+        "109.12.1.150",
+        "109.12.1.200"
+      ]
+    },
+    "policyDataExceptions": []
+  }
+]
+POLICY
 }
 ```
 
@@ -28,6 +43,7 @@ The following arguments are supported:
 * `name` - (Required) The policy name.
 * `enabled` - (Required) Enables the policy.
 * `policy_type` - (Required) The policy type. Possible values: ACL, WHITELIST.
+* `policy_settings` - (Required) The policy settings as JSON string. See Imperva documentation for help with constructing a correct value.
 * `account_id` - (Optional) Account ID of the policy.
 * `description` - (Optional) The policy description.
 
