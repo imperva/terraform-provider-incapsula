@@ -405,9 +405,22 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	}
 	d.Set("dns_a_record_value", dnsARecordValues)
 
-	// Set the GlobalSign verification (may not exist)
+	// Set the GlobalSign verification
 	if siteStatusResponse.Ssl.GeneratedCertificate.ValidationMethod == "dns" {
-		d.Set("domain_verification", siteStatusResponse.Ssl.GeneratedCertificate.ValidationData[0].SetDataTo[0])
+		dnsValidation := siteStatusResponse.Ssl.GeneratedCertificate.ValidationData.([]interface{})
+		dnsRecord := dnsValidation[0].(map[string]interface{})
+		setDataTo := dnsRecord["set_data_to"].([]interface{})[0]
+		d.Set("domain_verification", setDataTo)
+	}
+
+	// Set the HTML verification
+	if siteStatusResponse.Ssl.GeneratedCertificate.ValidationMethod == "html" {
+		htmlValidation := siteStatusResponse.Ssl.GeneratedCertificate.ValidationData.(map[string]interface{})
+		for _, value := range htmlValidation {
+			metaTag := value.([]interface{})[0]
+			d.Set("domain_verification", metaTag)
+			break
+		}
 	}
 
 	// Get the log level for the site

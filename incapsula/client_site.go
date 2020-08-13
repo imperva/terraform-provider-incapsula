@@ -26,6 +26,13 @@ type SiteUpdateResponse struct {
 	Res    int `json:"res"`
 }
 
+// SiteStatusDNSValidationData is DNS related validation data (HTML is a map[string][]string)
+type SiteStatusDNSValidationData struct {
+	DNSRecordName string   `json:"dns_record_name"`
+	SetTypeTo     string   `json:"set_type_to"`
+	SetDataTo     []string `json:"set_data_to"`
+}
+
 // SiteStatusResponse contains managed site information
 type SiteStatusResponse struct {
 	SiteID            int      `json:"site_id"`
@@ -136,15 +143,11 @@ type SiteStatusResponse struct {
 			Active bool `json:"active"`
 		} `json:"custom_certificate"`
 		GeneratedCertificate struct {
-			Ca               string `json:"ca"`
-			ValidationMethod string `json:"validation_method"`
-			ValidationData   []struct {
-				DNSRecordName string   `json:"dns_record_name"`
-				SetTypeTo     string   `json:"set_type_to"`
-				SetDataTo     []string `json:"set_data_to"`
-			} `json:"validation_data"`
-			San              []string `json:"san"`
-			ValidationStatus string   `json:"validation_status"`
+			Ca               string      `json:"ca"`
+			ValidationMethod string      `json:"validation_method"`
+			ValidationData   interface{} `json:"validation_data"`
+			San              []string    `json:"san"`
+			ValidationStatus string      `json:"validation_status"`
 		} `json:"generated_certificate"`
 	} `json:"ssl"`
 	SiteDualFactorSettings struct {

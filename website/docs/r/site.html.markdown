@@ -61,6 +61,14 @@ The following arguments are supported:
 * `site_ip` - (Optional) The web server IP/CNAME.
 * `force_ssl` - (Optional) Force SSL. This option is only available for sites with manually configured IP/CNAME and for specific accounts.
 * `logs_account_id` - (Optional) Account where logs should be stored. Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.
+* `active` - (Optional) Whether the site is active or bypassed by the Imperva network. Options are `active` and `bypass`.
+* `domain_validation` - (Optional) Sets the domain validation method that will be used to generate an SSL certificate. Options are `email`, `html`, and `dns`.
+* `approver` - (Optional) Sets the approver e-mail address that will be used to perform SSL domain validation.
+* `ignore_ssl` - (Optional) Sets the ignore SSL flag (if the site is in pending-select-approver state). Pass "true" or empty string in the value parameter.
+* `acceleration_level` - (Optional) Sets the acceleration level of the site. Options are `none`, `standard`, and `aggressive`.
+* `seal_location` - (Optional) Sets the seal location. Options are `api.seal_location.none`, `api.seal_location.bottom_left`, `api.seal_location.right_bottom`, `api.seal_location.left`, and `api.seal_location.right`.
+* `domain_redirect_to_full` - (Optional) Sets the redirect naked to full flag. Pass "true" or empty string in the value parameter.
+* `remove_ssl` - (Optional) Sets the remove SSL from site flag. Pass "true" or empty string in the value parameter.
 * `data_storage_region` - (Optional) The data region to use. Options are `APAC`, `AU`, `EU`, and `US`.
 * `hashing_enabled` - (Optional) Specify if hashing (masking setting) should be enabled.
 * `hash_salt` - (Optional) Specify the hash salt (masking setting), required if hashing is enabled. Maximum length of 64 characters.
@@ -98,4 +106,4 @@ The following attributes are exported:
 * `dns_cname_record_value` - The CNAME record value.
 * `dns_a_record_name` - The A record name.
 * `dns_a_record_value` - The A record value.
-* `domain_verification` - The domain verification (e.g. GlobalSign verification).
+* `domain_verification` - The domain verification (e.g. GlobalSign verification, HTML meta tag).
