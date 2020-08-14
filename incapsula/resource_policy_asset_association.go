@@ -11,7 +11,7 @@ func resourcePolicyAssetAssociation() *schema.Resource {
 	return &schema.Resource{
 		Create:   resourcePolicyAssetAssociationCreate,
 		Read:     resourcePolicyAssetAssociationNil,
-		Update:   resourcePolicyAssetAssociationNil,
+		Update:   resourcePolicyAssetAssociationUpdate,
 		Delete:   resourcePolicyAssetAssociationDelete,
 		Importer: nil,
 
@@ -59,6 +59,36 @@ func resourcePolicyAssetAssociationCreate(d *schema.ResourceData, m interface{})
 }
 
 func resourcePolicyAssetAssociationNil(d *schema.ResourceData, m interface{}) error {
+	return nil
+}
+
+func resourcePolicyAssetAssociationUpdate(d *schema.ResourceData, m interface{}) error {
+	// We can end up in a situation where a user can change a attribute after creation
+	// Since policy asset association stacks the associations, we'll need to remove the prior before creating the new one
+	client := m.(*Client)
+
+	oldPolicyID, newPolicyID := d.GetChange("policy_id")
+	oldAssetID, newAssetID := d.GetChange("asset_id")
+	oldAssetType, newAssetType := d.GetChange("asset_type")
+
+	// Delete the old
+	err := client.DeletePolicyAssetAssociation(oldPolicyID.(string), oldAssetID.(string), oldAssetType.(string))
+	if err != nil {
+		return err
+	}
+
+	// Add the new
+	err = client.AddPolicyAssetAssociation(newPolicyID.(string), newAssetID.(string), newAssetType.(string))
+	if err != nil {
+		log.Printf("[ERROR] Could not create Incapsula policy asset association: policy ID (%s) - asset ID (%s) - asset type (%s) - %s\n", newPolicyID.(string), newAssetID.(string), newAssetType.(string), err)
+		return err
+	}
+
+	// Re-generate synthetic ID
+	syntheticID := fmt.Sprintf("%s-%s-%s", newPolicyID.(string), newAssetID.(string), newAssetType.(string))
+	d.SetId(syntheticID)
+	log.Printf("[INFO] Created Incapsula policy asset association with ID: %s - policy ID (%s) - asset ID (%s) - asset type (%s)\n", syntheticID, newPolicyID.(string), newAssetID.(string), newAssetType.(string))
+
 	return nil
 }
 
