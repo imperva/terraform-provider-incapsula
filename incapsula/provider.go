@@ -23,19 +23,22 @@ func init() {
 		"api_key": "The API key for API operations. You can retrieve this\n" +
 			"from the Incapsula management console. Can be set via INCAPSULA_API_KEY " +
 			"environment variable.",
+
+		"base_url": "The base URL for API operations. Used for provider development.",
+
+		"base_url_rev_2": "The base URL (revision 2) for API operations. Used for provider development.",
+
+		"base_url_api": "The base URL (same as v2 but with different subdomain) for API operations. Used for provider development.",
 	}
 }
 
 func configureProvider(d *schema.ResourceData) (interface{}, error) {
-	apiID := d.Get("api_id").(string)
-	apiKey := d.Get("api_key").(string)
-
 	config := Config{
-		APIID:       apiID,
-		APIKey:      apiKey,
-		BaseURL:     baseURL,
-		BaseURLRev2: baseURLRev2,
-		BaseURLAPI:  baseURLAPI,
+		APIID:       d.Get("api_id").(string),
+		APIKey:      d.Get("api_key").(string),
+		BaseURL:     d.Get("base_url").(string),
+		BaseURLRev2: d.Get("base_url_rev_2").(string),
+		BaseURLAPI:  d.Get("base_url_api").(string),
 	}
 
 	return config.Client()
@@ -56,6 +59,24 @@ func Provider() terraform.ResourceProvider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("INCAPSULA_API_KEY", ""),
 				Description: descriptions["api_key"],
+			},
+			"base_url": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("INCAPSULA_BASE_URL", baseURL),
+				Description: descriptions["base_url"],
+			},
+			"base_url_rev_2": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("INCAPSULA_BASE_URL_REV_2", baseURLRev2),
+				Description: descriptions["base_url_rev_2"],
+			},
+			"base_url_api": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("INCAPSULA_BASE_URL_API", baseURLAPI),
+				Description: descriptions["base_url_api"],
 			},
 		},
 
