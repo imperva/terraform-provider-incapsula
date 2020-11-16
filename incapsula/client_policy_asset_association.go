@@ -49,7 +49,7 @@ func (c *Client) DeletePolicyAssetAssociation(policyID, assetID, assetType strin
 	}
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("Error from Incapsula service when deleting Policy Asset Association: %s", policyID, err)
+		return fmt.Errorf("Error from Incapsula service when deleting Policy Asset Association (%s): %s", policyID, err)
 	}
 
 	// Read the body
