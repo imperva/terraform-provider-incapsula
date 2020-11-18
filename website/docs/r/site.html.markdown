@@ -16,7 +16,7 @@ Sites are the core resource that is required by all other resources.
 ```hcl
 resource "incapsula_site" "example-site" {
   domain                 = "examplesite.com"
-  account_id             = "123"
+  account_id             = 123
   ref_id                 = "123"
   send_site_setup_emails = "false"
   site_ip                = "2.2.2.2"

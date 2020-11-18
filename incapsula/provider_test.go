@@ -1,44 +1,49 @@
 package incapsula
 
 import (
+	"context"
 	"os"
+	"sync"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-var testAccProviders map[string]terraform.ResourceProvider
+var testAccProviders map[string]*schema.Provider
 var testAccProvider *schema.Provider
+var testAccProviderConfigure sync.Once
 
 func init() {
-	testAccProvider = Provider().(*schema.Provider)
-	testAccProviders = map[string]terraform.ResourceProvider{
+	testAccProvider = Provider()
+	testAccProviders = map[string]*schema.Provider{
 		"incapsula": testAccProvider,
 	}
 }
 
 func TestProvider(t *testing.T) {
-	if err := Provider().(*schema.Provider).InternalValidate(); err != nil {
+	if err := Provider().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
 }
 
 func TestProvider_impl(t *testing.T) {
-	var _ terraform.ResourceProvider = Provider()
+	var _ *schema.Provider = Provider()
 }
 
 func testAccPreCheck(t *testing.T) {
-	if v := os.Getenv("INCAPSULA_API_ID"); v == "" {
-		t.Fatal("INCAPSULA_API_ID must be set for acceptance tests")
-	}
+	testAccProviderConfigure.Do(func() {
+		if v := os.Getenv("INCAPSULA_API_ID"); v == "" {
+			t.Fatal("INCAPSULA_API_ID must be set for acceptance tests")
+		}
 
-	if v := os.Getenv("INCAPSULA_API_KEY"); v == "" {
-		t.Fatal("INCAPSULA_API_KEY must be set for acceptance tests")
-	}
+		if v := os.Getenv("INCAPSULA_API_KEY"); v == "" {
+			t.Fatal("INCAPSULA_API_KEY must be set for acceptance tests")
+		}
 
-	err := testAccProvider.Configure(terraform.NewResourceConfigRaw(nil))
-	if err != nil {
-		t.Fatal(err)
-	}
+		err := testAccProvider.Configure(context.Background(), terraform.NewResourceConfigRaw(nil))
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
 }

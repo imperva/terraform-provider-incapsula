@@ -5,7 +5,7 @@ provider "incapsula" {
 
 resource "incapsula_site" "example-site" {
   domain                 = "your.fulldomain.com"
-  account_id             = "1014181"
+  account_id             = 1014181
   ref_id                 = "12345"
   send_site_setup_emails = "true"
   site_ip                = "1.2.3.4"

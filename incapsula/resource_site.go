@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceSite() *schema.Resource {
@@ -40,8 +40,9 @@ func resourceSite() *schema.Resource {
 			// Optional Arguments
 			"account_id": {
 				Description: "Numeric identifier of the account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.",
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 			},
 			"ref_id": {
 				Description: "Customer specific identifier for this operation.",
@@ -316,11 +317,11 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 
 	siteAddResponse, err := client.AddSite(
 		domain,
-		d.Get("account_id").(string),
 		d.Get("ref_id").(string),
 		d.Get("send_site_setup_emails").(string),
 		d.Get("site_ip").(string),
 		d.Get("force_ssl").(string),
+		d.Get("account_id").(int),
 	)
 
 	if err != nil {

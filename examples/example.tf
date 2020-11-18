@@ -8,7 +8,7 @@ resource "incapsula_site" "example-site" {
   # The first 6 parameters listed below are designated for initially creating the site in Incapsula.
   ####################################################################
   domain                 = ""
-  account_id             = "1234"
+  account_id             = 1234
   ref_id                 = "123456"
   send_site_setup_emails = "true"
   site_ip                = "10.10.10.11"

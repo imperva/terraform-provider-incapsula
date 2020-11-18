@@ -207,19 +207,24 @@ type SiteStatusResponse struct {
 }
 
 // AddSite adds a site to be managed by Incapsula
-func (c *Client) AddSite(domain, accountID, refID, sendSiteSetupEmails, siteIP, forceSSL string) (*SiteAddResponse, error) {
-	log.Printf("[INFO] Adding Incapsula site for domain: %s\n", domain)
+func (c *Client) AddSite(domain, refID, sendSiteSetupEmails, siteIP, forceSSL string, accountID int) (*SiteAddResponse, error) {
+	log.Printf("[INFO] Adding Incapsula site for domain: %s (account ID %d)\n", domain, accountID)
 
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteAdd), url.Values{
+	values := url.Values{
 		"api_id":                 {c.config.APIID},
 		"api_key":                {c.config.APIKey},
 		"domain":                 {domain},
-		"account_id":             {accountID},
 		"ref_id":                 {refID},
 		"send_site_setup_emails": {sendSiteSetupEmails},
 		"site_ip":                {siteIP},
 		"force_ssl":              {forceSSL},
-	})
+	}
+	if accountID != 0 {
+		values["account_id"] = make([]string, 1)
+		values["account_id"][0] = fmt.Sprint(accountID)
+	}
+
+	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteAdd), values)
 	if err != nil {
 		return nil, fmt.Errorf("Error adding site for domain %s: %s", domain, err)
 	}

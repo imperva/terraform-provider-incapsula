@@ -1,8 +1,7 @@
 package incapsula
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var baseURL string
@@ -32,7 +31,7 @@ func init() {
 	}
 }
 
-func configureProvider(d *schema.ResourceData) (interface{}, error) {
+func providerConfigure(d *schema.ResourceData, terraformVersion string) (interface{}, error) {
 	config := Config{
 		APIID:       d.Get("api_id").(string),
 		APIKey:      d.Get("api_key").(string),
@@ -44,9 +43,9 @@ func configureProvider(d *schema.ResourceData) (interface{}, error) {
 	return config.Client()
 }
 
-// Provider returns a terraform.ResourceProvider
-func Provider() terraform.ResourceProvider {
-	return &schema.Provider{
+// Provider returns a *schema.Provider.
+func Provider() *schema.Provider {
+	provider := &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"api_id": {
 				Type:        schema.TypeString,
@@ -93,7 +92,17 @@ func Provider() terraform.ResourceProvider {
 			"incapsula_site":                     resourceSite(),
 			"incapsula_waf_security_rule":        resourceWAFSecurityRule(),
 		},
-
-		ConfigureFunc: configureProvider,
 	}
+
+	provider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
+		terraformVersion := provider.TerraformVersion
+		if terraformVersion == "" {
+			// Terraform 0.12 introduced this field to the protocol
+			// We can therefore assume that if it's missing it's 0.10 or 0.11
+			terraformVersion = "0.11+compatible"
+		}
+		return providerConfigure(d, terraformVersion)
+	}
+
+	return provider
 }
