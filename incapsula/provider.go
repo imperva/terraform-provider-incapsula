@@ -79,6 +79,10 @@ func Provider() *schema.Provider {
 			},
 		},
 
+		DataSourcesMap: map[string]*schema.Resource{
+			"incapsula_role_abilities": dataSourceRoleAbilities(),
+		},
+
 		ResourcesMap: map[string]*schema.Resource{
 			"incapsula_acl_security_rule":        resourceACLSecurityRule(),
 			"incapsula_cache_rule":               resourceCacheRule(),
