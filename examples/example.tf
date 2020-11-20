@@ -87,70 +87,331 @@ resource "incapsula_data_center_server" "example-data-center-server" {
 }
 
 ###################################################################
-# Security Rules (ACLs) and Security Rule (ACLs) Exceptions/Whitelists
+# Policies (WHITELIST)
 ###################################################################
 
-# api.acl.blacklisted_countries Security Rule (one instance per site)
-resource "incapsula_acl_security_rule" "example-global-blacklist-country-rule" {
-  site_id   = incapsula_site.example-site.id
-  rule_id   = "api.acl.blacklisted_countries"
-  countries = "AI,AN"
+# incapsula_policy WHITELIST IP (create policy on account, associate with specific site(s) or sub-account(s))
+resource "incapsula_policy" "example-whitelist-ip-policy" {
+    name        = "Example WHITELIST IP Policy"
+    enabled     = true 
+    policy_type = "WHITELIST"
+    description = "Example WHITELIST IP Policy description"
+    policy_settings = <<POLICY
+    [
+      {
+        "settingsAction": "ALLOW",
+        "policySettingType": "IP",
+        "data": {
+          "ips": [
+            "1.2.3.4"
+          ]
+        }
+      }
+    ]
+    POLICY
 }
 
-# api.threats.blacklisted_countries Security Rule Sample Exception
-resource "incapsula_security_rule_exception" "example-waf-blacklisted-countries-rule-exception" {
-  site_id          = incapsula_site.example-site.id
-  rule_id          = "api.acl.blacklisted_countries"
-  client_app_types = "DataScraper,"
-  ips              = "1.2.3.6,1.2.3.7"
-  url_patterns     = "EQUALS,CONTAINS"
-  urls             = "/myurl,/myurl2"
+resource "incapsula_policy_asset_association" "example-whitelist-ip-asset-association" { 
+  policy_id = incapsula_policy.example-whitelist-ip-policy.id
+  asset_id = var.site_id
+  asset_type = "WEBSITE"
 }
 
-# api.acl.blacklisted_ips Security Rule (one instance per site)
-resource "incapsula_acl_security_rule" "example-global-blacklist-ip-rule" {
-  site_id = incapsula_site.example-site.id
-  rule_id = "api.acl.blacklisted_ips"
-  ips     = "192.168.1.1,192.168.1.2"
+###################################################################
+# Policies (ACLs)
+###################################################################
+
+# incapsula_policy ACL GEO (create policy on account, associate with specific site(s) or sub-account(s))
+# policyType: ACL, WHITELIST
+# policySettingType: IP, GEO, URL
+# settingsAction: BLOCK, ALLOW, ALERT, BLOCK_USER, BLOCK_IP, IGNORE
+# policySettings.data.url.pattern: CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS, NOT_PREFIX, NOT_SUFFIX, PREFIX, SUFFIX
+# exceptionType: GEO, IP, URL, CLIENT_ID, SITE_ID
+resource "incapsula_policy" "example-acl-geo-policy" {
+    name        = "Example ACL GEO Policy"
+    enabled     = true 
+    policy_type = "ACL"
+    description = "Example ACL GEO Policy description"
+    policy_settings = <<POLICY
+    [
+      {
+        "settingsAction": "BLOCK",
+        "policySettingType": "GEO",
+        "data": {
+          "geo": {
+            "countries": [
+              "AU"
+            ],
+            "continents": [
+              "EU"
+            ]
+          }
+        },
+        "policyDataExceptions": [
+          {
+            "data": [
+              {
+                "exceptionType": "GEO",
+                "values": [
+                  "TD"
+                ]
+              }
+            ],
+            "comment": "Policy Data Exception desc"
+          }
+        ]
+      }
+    ]
+    POLICY
 }
 
-# api.threats.blacklisted_ips Security Rule Sample Exception
-resource "incapsula_security_rule_exception" "example-waf-blacklisted-ips-rule-exception" {
-  site_id      = incapsula_site.example-site.id
-  rule_id      = "api.acl.blacklisted_ips"
-  client_apps  = "488,123"
-  countries    = "JM,US"
-  continents   = "NA,AF"
-  ips          = "1.2.3.6,1.2.3.7"
-  url_patterns = "EQUALS,CONTAINS"
-  urls         = "/myurl,/myurl2"
+resource "incapsula_policy_asset_association" "example-geo-policy-asset-association" { 
+  policy_id = incapsula_policy.example-acl-geo-policy.id
+  asset_id = var.site_id
+  asset_type = "WEBSITE"
 }
 
-# api.acl.blacklisted_urls Security Rule (one instance per site)
-resource "incapsula_acl_security_rule" "example-global-blacklist-url-rule" {
-  rule_id      = "api.acl.blacklisted_urls"
-  site_id      = incapsula_site.example-site.id
-  url_patterns = "CONTAINS,EQUALS"
-  urls         = "/alpha,/bravo"
+# incapsula_policy ACL URL (create policy on account, associate with specific site(s) or sub-account(s))
+resource "incapsula_policy" "example-acl-url-policy" {
+    name        = "Example ACL URL Policy"
+    enabled     = true 
+    policy_type = "ACL"
+    description = "Example ACL URL Policy description"
+    policy_settings = <<POLICY
+    [
+      {
+        "settingsAction": "BLOCK",
+        "policySettingType": "URL",
+        "data": {
+          "urls": [
+            {
+              "pattern": "EQUALS",
+              "url": "/someurl"
+            }
+          ]
+        },
+        "policyDataExceptions": [
+          {
+            "data": [
+              {
+                "exceptionType": "GEO", 
+                "values": [
+                  "US"
+                ]
+              }
+            ],
+            "comment": "Policy Data Exception comment"
+          }
+        ]
+      }
+    ]
+    POLICY
 }
 
-# api.acl.blacklisted_urls Security Rule Sample Exception
-resource "incapsula_security_rule_exception" "example-waf-blacklisted-urls-rule-exception" {
-  site_id      = incapsula_site.example-site.id
-  rule_id      = "api.acl.blacklisted_urls"
-  client_apps  = "488,123"
-  countries    = "JM,US"
-  continents   = "NA,AF"
-  ips          = "1.2.3.6,1.2.3.7"
-  url_patterns = "EQUALS,CONTAINS"
-  urls         = "/myurl,/myurl2"
+resource "incapsula_policy_asset_association" "example-acl-url-policy-asset-association" { 
+  policy_id = incapsula_policy.example-acl-url-policy.id
+  asset_id = var.site_id
+  asset_type = "WEBSITE"
 }
 
-# api.acl.whitelisted_ips Security Rule (one instance per site)
-resource "incapsula_acl_security_rule" "example-global-whitelist-ip-rule" {
-  rule_id = "api.acl.whitelisted_ips"
-  site_id = incapsula_site.example-site.id
-  ips     = "192.168.1.3,192.168.1.4"
+# incapsula_policy ACL IP (create policy on account, associate with specific site(s) or sub-account(s))
+resource "incapsula_policy" "example-acl-ip-policy" {
+    name        = "Example ACL IP Policy"
+    enabled     = true 
+    policy_type = "ACL"
+    description = "Example ACL IP Policy description"
+    policy_settings = <<POLICY
+    [
+      {
+        "settingsAction": "BLOCK",
+        "policySettingType": "IP",
+        "data": {
+            "ips": [
+                "1.2.3.4",
+                "1.2.3.5"
+            ]
+        },
+        "policyDataExceptions": [
+          {
+            "data": [
+              {
+                "exceptionType": "GEO",
+                "values": [
+                  "MU","US"
+                ]
+              }
+            ],
+            "comment": "Policy Data Exception Description"
+          }
+        ]
+      }
+    ]
+    POLICY
+}
+
+resource "incapsula_policy_asset_association" "example-acl-ip-policy-asset-association" { 
+  policy_id = incapsula_policy.example-acl-ip-policy.id
+  asset_id = var.site_id
+  asset_type = "WEBSITE"
+}
+
+# incapsula_policy ACL Kitchen Sink (create policy on account, associate with specific site(s) or sub-account(s))
+resource "incapsula_policy" "example-acl-kitchen-sink-policy" {
+    name        = "Example ACL Kitchen Sink Policy"
+    enabled     = true 
+    policy_type = "ACL"
+    description = "Example ACL Kitchen Sink Policy description"
+    policy_settings = <<POLICY
+    [
+      {
+        "settingsAction": "BLOCK",
+        "policySettingType": "GEO",
+        "data": {
+          "geo": {
+            "countries": [
+              "AU"
+            ],
+            "continents": [
+              "EU"
+            ]
+          }
+        },
+        "policyDataExceptions": [
+          {
+            "data": [
+              {
+                "exceptionType": "GEO",
+                "values": [
+                  "TD"
+                ]
+              },
+              {
+                "exceptionType": "IP",
+                "values": [
+                  "1.2.3.5"
+                ]
+              },
+              {
+                "exceptionType": "URL",
+                "values": [
+                  "/someurl4"
+                ]
+              },
+              {
+                "exceptionType": "CLIENT_ID",
+                "values": [
+                  "189"
+                ]
+              }
+            ],
+            "comment": "my desc"
+          }
+        ]
+      },
+      {
+          "settingsAction": "BLOCK",
+          "policySettingType": "URL",
+          "data": {
+              "urls": [
+                  {
+                      "pattern": "EQUALS",
+                      "url": "/someurl1"
+                  },
+                  {
+                      "pattern": "NOT_EQUALS",
+                      "url": "/someurl2"
+                  }
+              ]
+          },
+          "policyDataExceptions": [
+              {
+                  "data": [
+                      {
+                          "exceptionType": "GEO",
+                          "values": [
+                              "AT",
+                              "AO"
+                          ]
+                      },
+                      {
+                          "exceptionType": "IP",
+                          "values": [
+                              "1.2.3.4"
+                          ]
+                      },
+                      {
+                          "exceptionType": "URL",
+                          "values": [
+                              "/not-this-url"
+                          ]
+                      },
+                      {
+                          "exceptionType": "CLIENT_ID",
+                          "values": [
+                              "91",
+                              "362"
+                          ]
+                      },
+                      {
+                          "exceptionType": "SITE_ID",
+                          "values": [
+                              "27062879"
+                          ]
+                      }
+                  ],
+                  "comment": "my comment"
+              }
+          ]
+      },
+      {
+          "settingsAction": "BLOCK",
+          "policySettingType": "IP",
+          "data": {
+              "ips": [
+                  "1.2.3.4",
+                  "1.2.3.5"
+              ]
+          },
+          "policyDataExceptions": [
+              {
+                  "data": [
+                      {
+                          "exceptionType": "GEO",
+                          "values": [
+                              "MU"
+                          ]
+                      },
+                      {
+                          "exceptionType": "IP",
+                          "values": [
+                              "1.2.3.5"
+                          ]
+                      },
+                      {
+                          "exceptionType": "URL",
+                          "values": [
+                              "/someurl3"
+                          ]
+                      },
+                      {
+                          "exceptionType": "CLIENT_ID",
+                          "values": [
+                              "488"
+                          ]
+                      }
+                  ],
+                  "comment": "some desc"
+              }
+          ]
+      }
+    ]
+    POLICY
+}
+
+resource "incapsula_policy_asset_association" "example-acl-kitchen-sink-policy-asset-association" { 
+  policy_id = incapsula_policy.example-acl-kitchen-sink-policy.id
+  asset_id = var.site_id
+  asset_type = "WEBSITE"
 }
 
 ####################################################################
