@@ -12,10 +12,10 @@ import (
 // PolicySubmitted is struct that encompasses all the properties of a policy object to submit
 type PolicySubmitted struct {
 	Name                string          `json:"name"`
-	Description         string          `json:"description"`
 	Enabled             bool            `json:"enabled"`
-	AccountID           int             `json:"accountId,omitempty"`
 	PolicyType          string          `json:"policyType"`
+	Description         string          `json:"description"`
+	AccountID           int             `json:"accountId,omitempty"`
 	PolicySettings      []PolicySetting `json:"policySettings"`
 	DefaultPolicyConfig []struct {
 		ID        int    `json:"id"`
@@ -52,10 +52,10 @@ type PolicySetting struct {
 	SettingsAction    string `json:"settingsAction"`
 	PolicySettingType string `json:"policySettingType"`
 	Data              struct {
-		Geo *struct {
-			Empty      bool   `json:"empty,omitempty"`
-			Countries  string `json:"countries,omitempty"`
-			Continents string `json:"continents,omitempty"`
+		Geo struct {
+			Empty      bool     `json:"empty,omitempty"`
+			Countries  []string `json:"countries,omitempty"`
+			Continents []string `json:"continents,omitempty"`
 		} `json:"geo,omitempty"`
 		Ips  []string `json:"ips,omitempty"`
 		Urls []struct {
@@ -68,12 +68,12 @@ type PolicySetting struct {
 		ID               int `json:"id,omitempty"`
 		PolicySettingsID int `json:"policySettingsId,omitempty"`
 		Data             []struct {
-			ValidateExceptionData bool   `json:"validateExceptionData"`
-			ExceptionType         string `json:"exceptionType"`
-			Values                string `json:"values"`
-		} `json:"data"`
-		Comment string `json:"comment"`
-	} `json:"policyDataExceptions"`
+			ValidateExceptionData bool     `json:"validateExceptionData,omitempty"`
+			ExceptionType         string   `json:"exceptionType,omitempty"`
+			Values                []string `json:"values,omitempty"`
+		} `json:"data,omitempty"`
+		Comment string `json:"comment,omitempty"`
+	} `json:"policyDataExceptions,omitempty"`
 }
 
 // AddPolicy adds a policy to be managed by Incapsula
