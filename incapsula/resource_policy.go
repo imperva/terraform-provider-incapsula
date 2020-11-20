@@ -98,6 +98,18 @@ func resourcePolicyRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	// for i := 0; i < len(policyGetResponse.Value.PolicySettings); i++ {
+	// 	var emptyInt int
+	// 	// policySetting.ID = emptyInt
+	// 	delete(policyGetResponse.Value.PolicySettings[i], "json:\"policyId,omitempty\"")
+	// 	for j := 0; j < len(policyGetResponse.Value.PolicySettings[i].PolicyDataExceptions); j++ {
+	// 		&policyGetResponse.Value.PolicySettings[i].PolicyDataExceptions[j].ID = emptyInt
+	// 		&policyGetResponse.Value.PolicySettings[i].PolicyDataExceptions[j].PolicySettingsID = emptyInt
+	// 		// policyGetResponse.Value.PolicySettings[i].PolicyDataExceptions[j] = policyDataException
+	// 	}
+	// 	// policyGetResponse.Value.PolicySettings[i] = policySetting
+	// }
+
 	// Set computed values
 	d.Set("name", policyGetResponse.Value.Name)
 	d.Set("enabled", policyGetResponse.Value.Enabled)
