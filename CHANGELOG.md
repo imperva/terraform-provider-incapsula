@@ -1,4 +1,4 @@
-## 2.6.0 (Unreleased)
+## 2.6.0 (Released)
 
 * Add support for policy management
 
@@ -27,7 +27,7 @@
 * Improve documentation
 * Fix Incap Rule example bugs
 
-## 2.1.0 (Unreleased)
+## 2.1.0 (Released)
 
 Add checks for resource destruction during reads. The following resources have been updated:
 
@@ -40,7 +40,7 @@ Add checks for resource destruction during reads. The following resources have b
 * Site
 * WAF Security Rule
 
-## 2.0.0 (Unreleased)
+## 2.0.0 (Released)
 
 As we near certification readiness, we've made lots of changes to the provider. Backwards incompatible changes have been made to the Incap Rule resources. Please review the documentation. Changes below:
 
@@ -54,6 +54,6 @@ As we near certification readiness, we've made lots of changes to the provider. 
 * Migrate to standalone Terraform SDK
 * Started to improve consistency of error log messages (Site IDs, Rule IDs, etc.) 
 
-## 1.0.0 (Unreleased)
+## 1.0.0 (Released)
 
 Initial release of the Incapsula Terraform Provider.
