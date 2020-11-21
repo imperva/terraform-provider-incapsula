@@ -18,7 +18,6 @@ type PolicySubmitted struct {
 	PolicyType          string          `json:"policyType"`
 	PolicySettings      []PolicySetting `json:"policySettings"`
 	DefaultPolicyConfig []struct {
-		ID        int    `json:"id"`
 		AccountID int    `json:"accountId"`
 		AssetType string `json:"assetType"`
 		PolicyID  int    `json:"policyId"`
@@ -32,11 +31,10 @@ type PolicyExtended struct {
 		Name                string          `json:"name"`
 		Description         string          `json:"description"`
 		Enabled             bool            `json:"enabled"`
-		AccountID           int             `json:"accountId"`
+		AccountID           int             `json:"accountId,omitempty"`
 		PolicyType          string          `json:"policyType"`
 		PolicySettings      []PolicySetting `json:"policySettings"`
 		DefaultPolicyConfig []struct {
-			ID        int    `json:"id"`
 			AccountID int    `json:"accountId"`
 			AssetType string `json:"assetType"`
 			PolicyID  int    `json:"policyId"`
@@ -47,15 +45,12 @@ type PolicyExtended struct {
 
 // PolicySetting is a struct that encompasses all the properties of a policy setting
 type PolicySetting struct {
-	ID                int    `json:"id,omitempty"`
-	PolicyID          int    `json:"policyId,omitempty"`
 	SettingsAction    string `json:"settingsAction"`
 	PolicySettingType string `json:"policySettingType"`
 	Data              struct {
 		Geo *struct {
-			Empty      bool   `json:"empty,omitempty"`
-			Countries  string `json:"countries,omitempty"`
-			Continents string `json:"continents,omitempty"`
+			Countries  []string `json:"countries,omitempty"`
+			Continents []string `json:"continents,omitempty"`
 		} `json:"geo,omitempty"`
 		Ips  []string `json:"ips,omitempty"`
 		Urls []struct {
@@ -65,15 +60,13 @@ type PolicySetting struct {
 		HeaderValue string `json:"headerValue,omitempty"`
 	} `json:"data"`
 	PolicyDataExceptions []struct {
-		ID               int `json:"id,omitempty"`
-		PolicySettingsID int `json:"policySettingsId,omitempty"`
-		Data             []struct {
-			ValidateExceptionData bool   `json:"validateExceptionData"`
-			ExceptionType         string `json:"exceptionType"`
-			Values                string `json:"values"`
-		} `json:"data"`
-		Comment string `json:"comment"`
-	} `json:"policyDataExceptions"`
+		Data []struct {
+			ValidateExceptionData bool     `json:"validateExceptionData,omitempty"`
+			ExceptionType         string   `json:"exceptionType,omitempty"`
+			Values                []string `json:"values,omitempty"`
+		} `json:"data,omitempty"`
+		Comment string `json:"comment,omitempty"`
+	} `json:"policyDataExceptions,omitempty"`
 }
 
 // AddPolicy adds a policy to be managed by Incapsula

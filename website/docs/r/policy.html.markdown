@@ -13,26 +13,29 @@ Provides a Incapsula Policy resource.
 ## Example Usage
 
 ```hcl
-resource "incapsula_policy" "example-policy" {
-  name        = "Example policy"
-  enabled     = true 
-  policy_type = "ACL"
-  description = "Example policy description" 
-  policy_settings = <<POLICY
-[
-  {
-    "settingsAction": "BLOCK",
-    "policySettingType": "IP",
-    "data": {
-      "ips": [
-        "109.12.1.150",
-        "109.12.1.200"
-      ]
-    },
-    "policyDataExceptions": []
-  }
-]
-POLICY
+# policy_settings internal values:
+# policySettingType: IP, GEO, URL
+# settingsAction: BLOCK, ALLOW, ALERT, BLOCK_USER, BLOCK_IP, IGNORE
+# policySettings.data.url.pattern: CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS, NOT_PREFIX, NOT_SUFFIX, PREFIX, SUFFIX
+# exceptionType: GEO, IP, URL, CLIENT_ID, SITE_ID
+resource "incapsula_policy" "example-whitelist-ip-policy" {
+    name        = "Example WHITELIST IP Policy"
+    enabled     = true 
+    policy_type = "WHITELIST"
+    description = "Example WHITELIST IP Policy description"
+    policy_settings = <<POLICY
+    [
+      {
+        "settingsAction": "ALLOW",
+        "policySettingType": "IP",
+        "data": {
+          "ips": [
+            "1.2.3.4"
+          ]
+        }
+      }
+    ]
+    POLICY
 }
 ```
 

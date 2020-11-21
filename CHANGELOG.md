@@ -1,3 +1,7 @@
+## 2.6.0 (Unreleased)
+
+* Add support for policy management
+
 ## 2.5.0 (Unreleased)
 
 * Add support for performance settings in the `site` resource

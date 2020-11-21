@@ -2,6 +2,7 @@ package incapsula
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"strconv"
 
@@ -36,9 +37,20 @@ func resourcePolicy() *schema.Resource {
 				Required:    true,
 			},
 			"policy_settings": {
-				Description: "The policy settings as JSON string. See Imperva documentation for help with constructing a correct value.",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:      "The policy settings as JSON string. See Imperva documentation for help with constructing a correct value.",
+				Type:             schema.TypeString,
+				Required:         true,
+				DiffSuppressFunc: suppressEquivalentJSONStringDiffs,
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					// Check if valid JSON
+					d := val.(string)
+					var js interface{}
+					unMarshalErr := json.Unmarshal([]byte(d), &js)
+					if unMarshalErr != nil {
+						errs = append(errs, fmt.Errorf("%q must be a valid JSON policy, please check your syntax, got: %s, message: %s", key, d, unMarshalErr))
+					}
+					return
+				},
 			},
 			// Optional Arguments
 			"account_id": {
