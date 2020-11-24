@@ -23,7 +23,7 @@ jobs:
     - name: Setup env
       run: |
         export GOPATH=$HOME/go
-        echo "::set-env name=GOPATH::$GOPATH"
+        echo "GOPATH=$GOPATH" >> $GITHUB_ENV
         export GOBIN=$(go env GOPATH)/bin
         export PATH=$PATH:$GOPATH
         export PATH=$PATH:$GOBIN
