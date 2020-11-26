@@ -95,6 +95,7 @@ func Provider() *schema.Provider {
 			"incapsula_security_rule_exception":  resourceSecurityRuleException(),
 			"incapsula_site":                     resourceSite(),
 			"incapsula_waf_security_rule":        resourceWAFSecurityRule(),
+			"incapsula_account":                  resourceAccount(),
 		},
 	}
 
