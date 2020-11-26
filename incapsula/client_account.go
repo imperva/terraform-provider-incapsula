@@ -5,16 +5,44 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"net/url"
+	"strconv"
 )
 
 // Endpoints (unexported consts)
-const endpointAccount = "account"
+const endpointAccountAdd = "accounts/add"
+const endpointAccountStatus = "account"
+const endpointAccountUpdate = "accounts/configure"
+const endpointAccountDelete = "accounts/delete"
+
+// AccountAddResponse contains the relevant account information when adding an Incapsula Account
+type AccountAddResponse struct {
+	Account struct {
+		ParentID    int    `json:"parent_id"`
+		Email       string `json:"email"`
+		PlanID      string `json:"plan_id"`
+		AccountID   int    `json:"account_id"`
+		UserName    string `json:"user_name"`
+		AccountName string `json:"account_name"`
+		Logins      []struct {
+			LoginID       float64 `json:"login_id"`
+			Email         string  `json:"email"`
+			EmailVerified bool    `json:"email_verified"`
+		} `json:"logins"`
+	} `json:"account"`
+	Res int `json:"res"`
+}
+
+// AccountUpdateResponse contains the relevant account information when updating an Incapsula Account
+type AccountUpdateResponse struct {
+	AccountID int `json:"account_id"`
+	Res       int `json:"res"`
+}
 
 // AccountResponse contains account id
-type AccountResponse struct {
+type AccountStatusResponse struct {
 	Account struct {
+		ParentID     int    `json:"parent_id"`
 		Email        string `json:"email"`
 		PlanID       string `json:"plan_id"`
 		PlanName     string `json:"plan_name"`
@@ -33,6 +61,7 @@ type AccountResponse struct {
 		WildcardSANForNewSites       string `json:"wildcard_san_for_new_sites"`
 		NakedDomainSANForNewWWWSites bool   `json:"naked_domain_san_for_new_www_sites"`
 	} `json:"account"`
+	ParentID    int    `json:"parent_id"`
 	Email       string `json:"email"`
 	PlanID      string `json:"plan_id"`
 	PlanName    string `json:"plan_name"`
@@ -45,40 +74,44 @@ type AccountResponse struct {
 		Email         string  `json:"email"`
 		EmailVerified bool    `json:"email_verified"`
 	} `json:"logins"`
-	SupportLevel                 string `json:"support_level"`
-	SupportAllTLSVersions        bool   `json:"supprt_all_tls_versions"`
-	WildcardSANForNewSites       string `json:"wildcard_san_for_new_sites"`
-	NakedDomainSANForNewWWWSites bool   `json:"naked_domain_san_for_new_www_sites"`
-	Res                          int    `json:"res"`
-	ResMessage                   string `json:"res_message"`
+	SupportLevel                 string      `json:"support_level"`
+	SupportAllTLSVersions        bool        `json:"supprt_all_tls_versions"`
+	WildcardSANForNewSites       string      `json:"wildcard_san_for_new_sites"`
+	NakedDomainSANForNewWWWSites bool        `json:"naked_domain_san_for_new_www_sites"`
+	Res                          interface{} `json:"res"`
+	ResMessage                   string      `json:"res_message"`
 	DebugInfo                    struct {
 		IDInfo string `json:"id-info"`
 	} `json:"debug_info"`
 }
 
-// Client represents an internal client that brokers calls to the Incapsula API
-type Client struct {
-	config     *Config
-	httpClient *http.Client
-}
+// AddAccount adds an account to be managed by Incapsula
+func (c *Client) AddAccount(email, refID, userName, planID, accountName, logLevel string, logsAccountID int, parentID int) (*AccountAddResponse, error) {
+	log.Printf("[INFO] Adding Incapsula account for email: %s (account ID %d)\n", email, parentID)
 
-// NewClient creates a new client with the provided configuration
-func NewClient(config *Config) *Client {
-	client := &http.Client{}
-	return &Client{config: config, httpClient: client}
-}
+	values := url.Values{
+		"api_id":       {c.config.APIID},
+		"api_key":      {c.config.APIKey},
+		"email":        {email},
+		"user_name":    {userName},
+		"plan_id":      {planID},
+		"ref_id":       {refID},
+		"account_name": {accountName},
+		"log_level":    {logLevel},
+	}
+	if parentID != 0 {
+		values["parent_id"] = make([]string, 1)
+		values["parent_id"][0] = fmt.Sprint(parentID)
+	}
 
-// Verify checks the API credentials
-func (c *Client) Verify() (*AccountResponse, error) {
-	log.Println("[INFO] Checking API credentials against Incapsula API")
+	if logsAccountID != 0 {
+		values["logs_account_id"] = make([]string, 1)
+		values["logs_account_id"][0] = fmt.Sprint(logsAccountID)
+	}
 
-	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccount), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-	})
+	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountAdd), values)
 	if err != nil {
-		return nil, fmt.Errorf("Error checking account: %s", err)
+		return nil, fmt.Errorf("Error adding account for email %s: %s", email, err)
 	}
 
 	// Read the body
@@ -86,19 +119,144 @@ func (c *Client) Verify() (*AccountResponse, error) {
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
 	// Dump JSON
-	log.Printf("[DEBUG] Incapsula account JSON response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] Incapsula add account JSON response: %s\n", string(responseBody))
 
 	// Parse the JSON
-	var accountResponse AccountResponse
-	err = json.Unmarshal([]byte(responseBody), &accountResponse)
+	var accountAddResponse AccountAddResponse
+	err = json.Unmarshal([]byte(responseBody), &accountAddResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing account JSON response: %s", err)
+		return nil, fmt.Errorf("Error parsing add account JSON response for email %s: %s", email, err)
 	}
 
 	// Look at the response status code from Incapsula
-	if accountResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when checking account: %s", string(responseBody))
+	if accountAddResponse.Res != 0 {
+		return nil, fmt.Errorf("Error from Incapsula service when adding account for email %s: %s", email, string(responseBody))
 	}
 
-	return &accountResponse, nil
+	return &accountAddResponse, nil
+}
+
+// AccountStatus gets the Incapsula managed account's status
+func (c *Client) AccountStatus(accountID int) (*AccountStatusResponse, error) {
+	log.Printf("[INFO] Getting Incapsula account status for account id: %d\n", accountID)
+
+	// Post form to Incapsula
+	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountStatus), url.Values{
+		"api_id":     {c.config.APIID},
+		"api_key":    {c.config.APIKey},
+		"account_id": {strconv.Itoa(accountID)},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Error getting account status for account id %d: %s", accountID, err)
+	}
+
+	// Read the body
+	defer resp.Body.Close()
+	responseBody, err := ioutil.ReadAll(resp.Body)
+
+	// Dump JSON
+	log.Printf("[DEBUG] Incapsula account status JSON response: %s\n", string(responseBody))
+
+	// Parse the JSON
+	var accountStatusResponse AccountStatusResponse
+	err = json.Unmarshal([]byte(responseBody), &accountStatusResponse)
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing account status JSON response for account id %d: %s", accountID, err)
+	}
+
+	var resString string
+
+	if resNumber, ok := accountStatusResponse.Res.(float64); ok {
+		resString = fmt.Sprintf("%d", int(resNumber))
+	} else {
+		resString = accountStatusResponse.Res.(string)
+	}
+
+	// Look at the response status code from Incapsula
+	if resString != "0" {
+		return &accountStatusResponse, fmt.Errorf("Error from Incapsula service when getting account status for account id %d: %s", accountID, string(responseBody))
+	}
+
+	return &accountStatusResponse, nil
+}
+
+// UpdateAccount will update the specific param/value on the account resource
+func (c *Client) UpdateAccount(accountID, param, value string) (*AccountUpdateResponse, error) {
+	log.Printf("[INFO] Updating Incapsula account for accountID: %s\n", accountID)
+
+	// Post form to Incapsula
+	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountUpdate), url.Values{
+		"api_id":     {c.config.APIID},
+		"api_key":    {c.config.APIKey},
+		"account_id": {accountID},
+		"param":      {param},
+		"value":      {value},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Error updating param (%s) with value (%s) on account_id: %s: %s", param, value, accountID, err)
+	}
+
+	// Read the body
+	defer resp.Body.Close()
+	responseBody, err := ioutil.ReadAll(resp.Body)
+
+	// Dump JSON
+	log.Printf("[DEBUG] Incapsula update account JSON response: %s\n", string(responseBody))
+
+	// Parse the JSON
+	var accountUpdateResponse AccountUpdateResponse
+	err = json.Unmarshal([]byte(responseBody), &accountUpdateResponse)
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing update account JSON response for accountID %s: %s", accountID, err)
+	}
+
+	// Look at the response status code from Incapsula
+	if accountUpdateResponse.Res != 0 {
+		return nil, fmt.Errorf("Error from Incapsula service when updating account for accountID %s: %s", accountID, string(responseBody))
+	}
+
+	return &accountUpdateResponse, nil
+}
+
+// DeleteAccount deletes a account currently managed by Incapsula
+func (c *Client) DeleteAccount(accountID int) error {
+	// Specifically shaded this struct, no need to share across funcs or export
+	// We only care about the response code and possibly the message
+	type AccountDeleteResponse struct {
+		Res        int    `json:"res"`
+		ResMessage string `json:"res_message"`
+	}
+
+	log.Printf("[INFO] Deleting Incapsula account id: %d\n", accountID)
+
+	// Post form to Incapsula
+	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountDelete), url.Values{
+		"api_id":     {c.config.APIID},
+		"api_key":    {c.config.APIKey},
+		"account_id": {strconv.Itoa(accountID)},
+	})
+	if err != nil {
+		return fmt.Errorf("Error deleting account id: %d: %s", accountID, err)
+	}
+
+	// Read the body
+	defer resp.Body.Close()
+	responseBody, err := ioutil.ReadAll(resp.Body)
+
+	// Dump JSON
+	log.Printf("[DEBUG] Incapsula delete account JSON response: %s\n", string(responseBody))
+
+	// Parse the JSON
+	var accountDeleteResponse AccountDeleteResponse
+	err = json.Unmarshal([]byte(responseBody), &accountDeleteResponse)
+	if err != nil {
+		return fmt.Errorf("Error parsing delete account JSON response for account id: %d: %s", accountID, err)
+	}
+
+	// Look at the response status code from Incapsula
+	if accountDeleteResponse.Res != 0 {
+		return fmt.Errorf("Error from Incapsula service when deleting account id: %d: %s", accountID, string(responseBody))
+	}
+
+	return nil
 }
