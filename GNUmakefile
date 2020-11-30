@@ -15,7 +15,7 @@ build: fmtcheck
 
 build-github: fmtcheck
 	go build -o ${BINARY}
-	mv ./${BINARY} ${GOPATH}/bin
+	mv ${BINARY} ${GOPATH}/bin
 
 install: build
 	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${PKG_NAME}/${VERSION}/${OS_ARCH}
