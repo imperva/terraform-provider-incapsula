@@ -39,7 +39,7 @@ jobs:
       id: build
       run: |
         cd $GOPATH/src/github.com/terraform-providers/$REPO_NAME
-        make build
+        make build-github
         ls -l $GOPATH/bin
         echo ::set-output name=ARTIFACT_PATH::$GOPATH/bin
         echo ::set-output name=ARTIFACT_NAME::terraform-provider-incapsula
