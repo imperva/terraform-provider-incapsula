@@ -1,3 +1,8 @@
+## 2.6.1 (Released)
+
+* Provider has landed in the Terraform Registry
+* Cleared out old GitHub workflows
+
 ## 2.6.0 (Released)
 
 * Add support for policy management
