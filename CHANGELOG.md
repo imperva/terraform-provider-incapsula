@@ -1,3 +1,8 @@
+## 2.6.2 (Released)
+
+* Provider fixes `parameters` on SQL Injection Security Exception resource
+* Merged support for account creation (used by re-sellers) w/ fixes
+
 ## 2.6.1 (Released)
 
 * Provider has landed in the Terraform Registry
