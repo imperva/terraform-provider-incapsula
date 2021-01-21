@@ -1,10 +1,8 @@
 package incapsula
 
 import (
-	"fmt"
 	"log"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -28,14 +26,6 @@ func resourceAccount() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-					d := val.(string)
-					parts := strings.Split(d, "@")
-					if len(parts) == 2 {
-						errs = append(errs, fmt.Errorf("%q must be an email address (joe@example.com), got: %s", key, d))
-					}
-					return
-				},
 			},
 
 			// Optional Arguments
@@ -67,13 +57,12 @@ func resourceAccount() *schema.Resource {
 			},
 			"logs_account_id": {
 				Description: "Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.",
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Optional:    true,
 			},
 			"log_level": {
-				Description:  "The log level. Options are `full`, `security`, and `none`. Defaults to `none`.",
+				Description:  "The log level. Options are `full`, `security`, and `none`.",
 				Type:         schema.TypeString,
-				Default:      "none",
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"full", "security", "none"}, false),
 			},
