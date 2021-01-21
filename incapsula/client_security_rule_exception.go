@@ -27,7 +27,7 @@ var securityRuleExceptionParamMapping = map[string][]string{
 	ddosExceptionRuleID:                  {"client_apps", "countries", "ips", "url_patterns", "urls"},
 	illegalResourceAccessExceptionRuleID: {"client_apps", "countries", "ips", "url_patterns", "urls", "parameters"},
 	remoteFileInclusionExceptionRuleID:   {"client_apps", "countries", "ips", "url_patterns", "urls", "user_agents", "parameters"},
-	sqlInjectionExceptionRuleID:          {"client_apps", "countries", "ips", "url_patterns", "urls"},
+	sqlInjectionExceptionRuleID:          {"client_apps", "countries", "ips", "url_patterns", "urls", "parameters"},
 }
 
 // SecurityRuleExceptionCreateResponse provides exception_id of rule exception

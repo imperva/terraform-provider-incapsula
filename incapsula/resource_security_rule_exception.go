@@ -423,7 +423,7 @@ func resourceSecurityRuleExceptionUpdate(d *schema.ResourceData, m interface{}) 
 			d.Get("url_patterns").(string),
 			d.Get("urls").(string),
 			"",
-			"",
+			d.Get("parameters").(string),
 			whitelistID,
 		)
 		if err != nil {
