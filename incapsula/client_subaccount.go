@@ -98,7 +98,7 @@ func (c *Client) AddSubAccount(subAccountName, refID, logLevel string, logsAccou
 	return &subAccountAddResponse, nil
 }
 
-// ListDataCenters gets the Incapsula list of data centers
+// ListSubAccounts gets the Incapsula list of sub accounts
 func (c *Client) ListSubAccounts(AccountID int) (*SubAccountListResponse, error) {
 
 	log.Printf("[INFO] Getting Incapsula subaccounts for: %d)\n", AccountID)
