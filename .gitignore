@@ -9,3 +9,4 @@ terraform-provider-incapsula
 
 .idea/
 .tmp/
+tasks.json
