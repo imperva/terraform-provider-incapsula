@@ -47,7 +47,7 @@ func resourceSubAccount() *schema.Resource {
 				ForceNew:    true,
 			},
 			"log_level": {
-				Description:  "The log level. Options are `full`, `security`, and `none`. Defaults to `none`.",
+				Description:  "The log level. Options are `full`, `security`, `none` and `default`. Defaults to `default`.",
 				Type:         schema.TypeString,
 				Default:      "default",
 				Optional:     true,
