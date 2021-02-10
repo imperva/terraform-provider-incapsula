@@ -1,3 +1,7 @@
+## 2.7.1 (Released)
+
+* Fix documentation bug for origin POP codes
+
 ## 2.7.0 (Released)
 
 * Add support for setting the data center's origin POP with a new synthetic resource

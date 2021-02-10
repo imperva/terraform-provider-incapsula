@@ -22,7 +22,7 @@ resource "incapsula_data_center" "example-data-center" {
 
 resource "incapsula_origin_pop" "aws-east" {
   dc_id = incapsula_data_center.example-data-center.id
-  origin_pop = "IAD"
+  origin_pop = "iad"
 }
 ```
 
