@@ -159,3 +159,11 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - Unique identifier in the API for the Incap Rule.
+
+## Import
+
+Incap Rule can be imported using the `id`, e.g.:
+
+```
+$ terraform import incapsula_incap_rule.demo 1234
+```

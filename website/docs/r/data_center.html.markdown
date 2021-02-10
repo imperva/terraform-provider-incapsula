@@ -36,3 +36,11 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - Unique identifier in the API for the data center.
+
+## Import
+
+Data Center can be imported using the `id`, e.g.:
+
+```
+$ terraform import incapsula_data_center.demo 1234
+```

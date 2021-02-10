@@ -38,3 +38,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - Unique identifier for the Origin POP association.
+
+## Import
+
+Origin POP cannot be imported.

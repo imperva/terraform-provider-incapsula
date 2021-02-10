@@ -56,3 +56,11 @@ The following attributes are exported:
 
 * `id` - Unique identifier in the API for the policy.
 * `account_id` - Account ID of the policy.
+
+## Import
+
+Policy can be imported using the `id`, e.g.:
+
+```
+$ terraform import incapsula_policy.demo 1234
+```

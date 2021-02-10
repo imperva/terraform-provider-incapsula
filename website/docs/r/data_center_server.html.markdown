@@ -36,3 +36,11 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - Unique identifier in the API for the data center server.
+
+## Import
+
+Data Center Server can be imported using the role `site_id`, `dc_id`, and `server_id` separated by /, e.g.:
+
+```
+$ terraform import incapsula_data_center_server.demo site_id/dc_id/server_id
+```

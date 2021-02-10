@@ -2,6 +2,8 @@
 
 * Add support for setting the data center's origin POP with a new synthetic resource
 * Fix a bug on setting `is_content` on the `data_center` resource
+* Remove old `acl_security_rule` resource as it has been migrated to the `policy` resource
+* Update all documentation to include all import operations
 
 ## 2.6.2 (Released)
 

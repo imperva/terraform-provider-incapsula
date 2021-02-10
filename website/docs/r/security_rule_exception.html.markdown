@@ -1,14 +1,14 @@
 ---
 layout: "incapsula"
-page_title: "Incapsula: waf-security-rule-exception"
-sidebar_current: "docs-incapsula-resource-waf-security-rule-exception"
+page_title: "Incapsula: security-rule-exception"
+sidebar_current: "docs-incapsula-resource-security-rule-exception"
 description: |-
-  Provides a Incapsula WAF Security Rule Exception resource.
+  Provides a Incapsula Security Rule Exception resource.
 ---
 
 # incapsula_site
 
-Provides a Incapsula WAF Security Rule Exception resource.  Important to note that based on the rule_id the exception is being created for, that there are rule specific parameters that apply to each.  The example resources listed below include all of the supported resources for each rule_id or rule type, although it is not required to use all listed parameters when creating an exception. Exception parameters are optional but at least one is required.
+Provides a Incapsula Security Rule Exception resource.  Important to note that based on the rule_id the exception is being created for, that there are rule specific parameters that apply to each.  The example resources listed below include all of the supported resources for each rule_id or rule type, although it is not required to use all listed parameters when creating an exception. Exception parameters are optional but at least one is required.
 
 ## Example Usage
 
@@ -115,4 +115,12 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - Unique identifier in the API for the Incap Rule.
+* `id` - Unique identifier in the API for the Rule Exception ID.
+
+## Import
+
+Security Rule Exception can be imported using the role `site_id` and `rule_exception_id` separated by /, e.g.:
+
+```
+$ terraform import incapsula_security_rule_exception.demo site_id/rule_exception_id
+```

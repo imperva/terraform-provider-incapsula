@@ -33,3 +33,7 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - Unique identifier in the API for the policy asset association.
+
+## Import
+
+Policy Asset Association cannot be imported.

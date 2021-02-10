@@ -42,3 +42,11 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - Unique identifier in the API for the Cache Rule.
+
+## Import
+
+Cache Rule can be imported using the role `site_id` and `rule_id` separated by /, e.g.:
+
+```
+$ terraform import incapsula_cache_rule.demo site_id/rule_id
+```
