@@ -90,6 +90,7 @@ func Provider() *schema.Provider {
 			"incapsula_data_center":              resourceDataCenter(),
 			"incapsula_data_center_server":       resourceDataCenterServer(),
 			"incapsula_incap_rule":               resourceIncapRule(),
+			"incapsula_origin_pop":               resourceOriginPOP(),
 			"incapsula_policy":                   resourcePolicy(),
 			"incapsula_policy_asset_association": resourcePolicyAssetAssociation(),
 			"incapsula_security_rule_exception":  resourceSecurityRuleException(),

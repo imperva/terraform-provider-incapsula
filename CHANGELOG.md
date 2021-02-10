@@ -1,3 +1,8 @@
+## 2.7.0 (Released)
+
+* Add support for setting the data center's origin POP with a new synthetic resource
+* Fix a bug on setting `is_content` on the `data_center` resource
+
 ## 2.6.2 (Released)
 
 * Provider fixes `parameters` on SQL Injection Security Exception resource

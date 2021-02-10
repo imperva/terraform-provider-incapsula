@@ -59,6 +59,7 @@ func resourceDataCenter() *schema.Resource {
 				Description: "The data center will be available for specific resources (Forward Delivery Rules).",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 			},
 		},
 	}

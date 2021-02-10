@@ -305,6 +305,11 @@ func resourceSite() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"original_data_center_id": {
+				Description: "Numeric representation of the data center created with the site.",
+				Type:        schema.TypeInt,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -473,6 +478,20 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("perf_response_tag_response_header", performanceSettingsResponse.Response.TagResponseHeader)
 	d.Set("perf_ttl_prefer_last_modified", performanceSettingsResponse.TTL.PreferLastModified)
 	d.Set("perf_ttl_use_shortest_caching", performanceSettingsResponse.TTL.UseShortestCaching)
+
+	// Get the original data center ID (the first in the list of associated data centers)
+	listDataCentersResponse, err := client.ListDataCenters(d.Id())
+	if err != nil || len(listDataCentersResponse.DCs) == 0 {
+		log.Printf("[ERROR] Could not read Incapsula data centers for domain: %s and site id: %d, %s\n", domain, siteID, err)
+		return err
+	}
+
+	dataCenterID := listDataCentersResponse.DCs[0].ID
+	if dataCenterID == "" {
+		return fmt.Errorf("[ERROR] Incapsula Data Center missing for Site ID %s", d.Get("site_id"))
+	}
+	dcID, _ := strconv.Atoi(dataCenterID)
+	d.Set("original_data_center_id", dcID)
 
 	log.Printf("[INFO] Finished reading Incapsula site for domain: %s\n", domain)
 

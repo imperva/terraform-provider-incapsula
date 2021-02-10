@@ -107,3 +107,4 @@ The following attributes are exported:
 * `dns_a_record_name` - The A record name.
 * `dns_a_record_value` - The A record value.
 * `domain_verification` - The domain verification (e.g. GlobalSign verification, HTML meta tag).
+* `original_data_center_id` - Numeric representation of the data center created with the site.
