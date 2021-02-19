@@ -1,3 +1,7 @@
+## 2.7.2 (Released)
+
+* Fix documentation bug for `account` resource
+
 ## 2.7.1 (Released)
 
 * Fix documentation bug for origin POP codes
