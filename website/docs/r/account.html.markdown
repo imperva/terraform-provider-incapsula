@@ -6,7 +6,7 @@ description: |-
   Provides a Incapsula Account resource.
 ---
 
-# incapsula_site
+# incapsula_account
 
 Provides a Incapsula Account resource. 
 Accounts are the core resource that is required by site resources.
