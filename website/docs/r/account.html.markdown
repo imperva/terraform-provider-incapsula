@@ -9,7 +9,6 @@ description: |-
 # incapsula_account
 
 Provides a Incapsula Account resource. 
-Accounts are the core resource that is required by site resources.
 
 ## Example Usage
 
@@ -45,7 +44,7 @@ The following arguments are supported:
 * `plan_id` - (Optional) An identifier of the plan to assign to the new account. For example, ent100 for the Enterprise 100 plan.
 * `account_name` - (Optional) Account name.
 * `logs_account_id` - (Optional) Account where logs should be stored. Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.
-* `log_level` - (Optional) The log level. Options are `full`, `security`, and `none`. Defaults to `none`.
+* `log_level` - (Optional) The log level. Options are `full`, `security`, and `none`.
 * `data_storage_region` - (Optional) Default data region of the account for newly created sites. Options are `APAC`, `EU`, `US` and `DEFAULT`. Defaults to `DEFAULT`.
 * `support_all_tls_versions` - (Optional) Allow sites in the account to support all TLS versions for connectivity between clients (visitors) and the Imperva service.
 * `naked_domain_san_for_new_www_sites` - (Optional) Add naked domain SAN to Incapsula SSL certificates for new www sites. Options are `true` and `false`. Defaults to `true`.
