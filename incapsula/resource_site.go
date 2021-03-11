@@ -135,9 +135,9 @@ func resourceSite() *schema.Resource {
 				},
 			},
 			"log_level": {
-				Description: "The log level. Options are `full`, `security`, and `none`. Defaults to `none`.",
+				Description: "The log level. Options are `full`, `security`, and `none`.",
 				Type:        schema.TypeString,
-				Default:     "none",
+				Computed:    true,
 				Optional:    true,
 			},
 			"perf_client_comply_no_cache": {
