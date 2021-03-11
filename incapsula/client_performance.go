@@ -25,12 +25,12 @@ type PerformanceSettings struct {
 			Mode string `json:"mode"`
 			Time int    `json:"time,omitempty"`
 		} `json:"stale_content"`
-		CacheShield         bool `json:"cache_shield"`
+		CacheShield         bool `json:"cache_shield,omitempty"`
 		CacheResponseHeader struct {
 			Mode    string        `json:"mode"`
 			Headers []interface{} `json:"headers"`
 		} `json:"cache_response_header"`
-		TagResponseHeader    string `json:"tag_response_header"`
+		TagResponseHeader    string `json:"tag_response_header,omitempty"`
 		CacheEmptyResponses  bool   `json:"cache_empty_responses"`
 		Cache300X            bool   `json:"cache_300x"`
 		CacheHTTP10Responses bool   `json:"cache_http_10_responses"`
