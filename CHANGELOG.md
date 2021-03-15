@@ -1,3 +1,8 @@
+## 2.7.3 (Released)
+
+* Set the `log_level` in the `site` resource to be optional
+* Fix `omitempty` issues in `client_performance`
+
 ## 2.7.2 (Released)
 
 * Fix documentation bug for `account` resource

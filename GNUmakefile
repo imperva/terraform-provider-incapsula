@@ -5,7 +5,7 @@ HOSTNAME=registry.terraform.io
 NAMESPACE=terraform-providers
 PKG_NAME=incapsula
 BINARY=terraform-provider-${PKG_NAME}
-VERSION=2.7.2
+VERSION=2.7.3
 # OS_ARCH=darwin_amd64
 
 default: install
