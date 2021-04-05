@@ -17,7 +17,7 @@ func resourceSite() *schema.Resource {
 		Update: resourceSiteUpdate,
 		Delete: resourceSiteDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -270,7 +270,16 @@ func resourceSite() *schema.Resource {
 				Computed:    true,
 				Optional:    true,
 			},
-
+			"naked_domain_san": {
+				Description: "Use 'true' to add the naked domain SAN to a www site’s SSL certificate. Default value: true",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"wildcard_san": {
+				Description: "Use 'true' to add the wildcard SAN or 'false' to add the full domain SAN to the site’s SSL certificate. Default value: true",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			// Computed Attributes
 			"site_creation_date": {
 				Description: "Numeric representation of the site creation date.",
@@ -305,6 +314,11 @@ func resourceSite() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"dns_record_name": {
+				Description: "The TXT record that needs to be updated with the `domain_verification` value.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"original_data_center_id": {
 				Description: "Numeric representation of the data center created with the site.",
 				Type:        schema.TypeInt,
@@ -327,6 +341,8 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 		d.Get("site_ip").(string),
 		d.Get("force_ssl").(string),
 		d.Get("account_id").(int),
+		d.Get("naked_domain_san").(string),
+		d.Get("wildcard_san").(string),
 	)
 
 	if err != nil {
@@ -396,6 +412,10 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("site_creation_date", siteStatusResponse.SiteCreationDate)
 	d.Set("domain", siteStatusResponse.Domain)
 	d.Set("account_id", siteStatusResponse.AccountID)
+	//Joe Moore: adding the site_ip address(s), naked_domain_san,a dn wildcard_san to the stored state.
+	d.Set("site_ip", siteStatusResponse.Ips[0])
+	d.Set("naked_domain_san", siteStatusResponse.NakedDomainSanForNewWwwSites)
+	d.Set("wildcard_san", siteStatusResponse.WildcardSanForNewSites)
 
 	// Set the DNS information
 	dnsARecordValues := make([]string, 0)
@@ -416,7 +436,9 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 		dnsValidation := siteStatusResponse.Ssl.GeneratedCertificate.ValidationData.([]interface{})
 		dnsRecord := dnsValidation[0].(map[string]interface{})
 		setDataTo := dnsRecord["set_data_to"].([]interface{})[0]
+		dnsRecordName := dnsRecord["dns_record_name"].(interface{})
 		d.Set("domain_verification", setDataTo)
+		d.Set("dns_record_name", dnsRecordName)
 	}
 
 	// Set the HTML verification

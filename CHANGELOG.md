@@ -1,3 +1,11 @@
+## 2.7.4 (Unreleased)
+
+* Set the `dns_record_name` in the `site` resource
+* Adding the `naked_domain_san` in the `site` resource
+* Adding the `wildcard_san` in the `site` resource
+* Updating type `PerformanceSettings` struct to omit when empty all keys except the mode_level
+
+
 ## 2.7.3 (Released)
 
 * Set the `log_level` in the `site` resource to be optional

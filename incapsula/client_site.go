@@ -207,7 +207,7 @@ type SiteStatusResponse struct {
 }
 
 // AddSite adds a site to be managed by Incapsula
-func (c *Client) AddSite(domain, refID, sendSiteSetupEmails, siteIP, forceSSL string, accountID int) (*SiteAddResponse, error) {
+func (c *Client) AddSite(domain, refID, sendSiteSetupEmails, siteIP, forceSSL string, accountID int, nakedDomainSan string, wildcarSan string) (*SiteAddResponse, error) {
 	log.Printf("[INFO] Adding Incapsula site for domain: %s (account ID %d)\n", domain, accountID)
 
 	values := url.Values{
@@ -218,6 +218,8 @@ func (c *Client) AddSite(domain, refID, sendSiteSetupEmails, siteIP, forceSSL st
 		"send_site_setup_emails": {sendSiteSetupEmails},
 		"site_ip":                {siteIP},
 		"force_ssl":              {forceSSL},
+		"naked_domain_san":       {nakedDomainSan},
+		"wildcard_san":           {wildcarSan},
 	}
 	if accountID != 0 {
 		values["account_id"] = make([]string, 1)
