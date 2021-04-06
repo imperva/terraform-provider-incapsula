@@ -4,6 +4,9 @@
 * Adding the `naked_domain_san` in the `site` resource
 * Adding the `wildcard_san` in the `site` resource
 * Updating type `PerformanceSettings` struct to omit when empty all keys except the mode_level
+* Adding `txt_record_value_*` to the `site` resource
+* Updating the `site` resource value `site_ip` to be computed
+* Fixed the `site_ip` to store in state file
 
 
 ## 2.7.3 (Released)
