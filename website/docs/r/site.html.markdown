@@ -72,7 +72,14 @@ The following arguments are supported:
 * `data_storage_region` - (Optional) The data region to use. Options are `APAC`, `AU`, `EU`, and `US`.
 * `hashing_enabled` - (Optional) Specify if hashing (masking setting) should be enabled.
 * `hash_salt` - (Optional) Specify the hash salt (masking setting), required if hashing is enabled. Maximum length of 64 characters.
+* `txt_record_value_one` - (Optional) Create or modify a TXT records defined for the site in Cloud WAF.
+* `txt_record_value_two` - (Optional) Create or modify a second TXT records defined for the site in Cloud WAF.
+* `txt_record_value_three` - (Optional) Create or modify a third TXT records defined for the site in Cloud WAF.
+* `txt_record_value_four` - (Optional) Create or modify a fourth TXT records defined for the site in Cloud WAF.
+* `txt_record_value_five` - (Optional) Create or modify a fifth TXT records defined for the site in Cloud WAF.
 * `log_level` - (Optional) The log level. Options are `full`, `security`, and `none`.
+* `naked_domain_san` - (Optional) Use `true` to add the naked domain SAN to a www site’s SSL certificate. Default value: `true`
+* `wildcard_san` - (Optional) Use `true` to add the wildcard SAN or `false` to add the full domain SAN to the site’s SSL certificate. Default value: `true`
 * `perf_client_comply_no_cache` - (Optional) Comply with No-Cache and Max-Age directives in client requests. By default, these cache directives are ignored. Resources are dynamically profiled and re-configured to optimize performance.
 * `perf_client_enable_client_side_caching` - (Optional) Cache content on client browsers or applications. When not enabled, content is cached only on the Imperva proxies.
 * `perf_client_send_age_header` - (Optional) Send Cache-Control: max-age and Age headers.
@@ -107,6 +114,7 @@ The following attributes are exported:
 * `dns_a_record_name` - The A record name.
 * `dns_a_record_value` - The A record value.
 * `domain_verification` - The domain verification (e.g. GlobalSign verification, HTML meta tag).
+* `dns_record_name` - The TXT record that needs to be updated with the `domain_verification` value.
 * `original_data_center_id` - Numeric representation of the data center created with the site.
 
 ## Import

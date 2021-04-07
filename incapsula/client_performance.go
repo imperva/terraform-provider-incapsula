@@ -13,41 +13,41 @@ import (
 type PerformanceSettings struct {
 	Mode struct {
 		Level string `json:"level"`
-		HTTPS string `json:"https"`
+		HTTPS string `json:"https,omitempty"`
 		Time  int    `json:"time,omitempty"`
 	} `json:"mode"`
 	Key struct {
-		UniteNakedFullCache bool `json:"unite_naked_full_cache"`
-		ComplyVary          bool `json:"comply_vary"`
-	} `json:"key"`
+		UniteNakedFullCache bool `json:"unite_naked_full_cache,omitempty"`
+		ComplyVary          bool `json:"comply_vary,omitempty"`
+	} `json:"key,omitempty"`
 	Response struct {
 		StaleContent struct {
-			Mode string `json:"mode"`
+			Mode string `json:"mode,omitempty"`
 			Time int    `json:"time,omitempty"`
-		} `json:"stale_content"`
+		} `json:"stale_content,omitempty"`
 		CacheShield         bool `json:"cache_shield,omitempty"`
 		CacheResponseHeader struct {
-			Mode    string        `json:"mode"`
-			Headers []interface{} `json:"headers"`
-		} `json:"cache_response_header"`
+			Mode    string        `json:"mode,omitempty"`
+			Headers []interface{} `json:"headers,omitempty"`
+		} `json:"cache_response_header,omitempty"`
 		TagResponseHeader    string `json:"tag_response_header,omitempty"`
-		CacheEmptyResponses  bool   `json:"cache_empty_responses"`
-		Cache300X            bool   `json:"cache_300x"`
-		CacheHTTP10Responses bool   `json:"cache_http_10_responses"`
+		CacheEmptyResponses  bool   `json:"cache_empty_responses,omitempty"`
+		Cache300X            bool   `json:"cache_300x,omitempty"`
+		CacheHTTP10Responses bool   `json:"cache_http_10_responses,omitempty"`
 		Cache404             struct {
-			Enabled bool `json:"enabled"`
+			Enabled bool `json:"enabled,omitempty"`
 			Time    int  `json:"time,omitempty"`
-		} `json:"cache_404"`
-	} `json:"response"`
+		} `json:"cache_404,omitempty"`
+	} `json:"response,omitempty"`
 	TTL struct {
-		UseShortestCaching bool `json:"use_shortest_caching"`
-		PreferLastModified bool `json:"prefer_last_modified"`
-	} `json:"ttl"`
+		UseShortestCaching bool `json:"use_shortest_caching,omitempty"`
+		PreferLastModified bool `json:"prefer_last_modified,omitempty"`
+	} `json:"ttl,omitempty"`
 	ClientSide struct {
-		EnableClientSideCaching bool `json:"enable_client_side_caching"`
-		ComplyNoCache           bool `json:"comply_no_cache"`
-		SendAgeHeader           bool `json:"send_age_header"`
-	} `json:"client_side"`
+		EnableClientSideCaching bool `json:"enable_client_side_caching,omitempty"`
+		ComplyNoCache           bool `json:"comply_no_cache,omitempty"`
+		SendAgeHeader           bool `json:"send_age_header,omitempty"`
+	} `json:"client_side,omitempty"`
 }
 
 // GetPerformanceSettings gets the site performance settings
