@@ -17,7 +17,7 @@ func TestClientAddSiteBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	domain := "foo.com"
-	addSiteResponse, err := client.AddSite(domain, "", "", "", "", 0)
+	addSiteResponse, err := client.AddSite(domain, "", "", "", "", 0, false, false)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -41,7 +41,7 @@ func TestClientAddSiteBadJSON(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	domain := "foo.com"
-	addSiteResponse, err := client.AddSite(domain, "", "", "", "", 0)
+	addSiteResponse, err := client.AddSite(domain, "", "", "", "", 0, false, false)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -65,7 +65,7 @@ func TestClientAddSiteInvalidSite(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	domain := "foo.com"
-	addSiteResponse, err := client.AddSite(domain, "", "", "", "", 0)
+	addSiteResponse, err := client.AddSite(domain, "", "", "", "", 0, false, false)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -89,7 +89,7 @@ func TestClientAddSiteValidSite(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	domain := "foo.com"
-	addSiteResponse, err := client.AddSite(domain, "", "", "", "", 0)
+	addSiteResponse, err := client.AddSite(domain, "", "", "", "", 0, false, false)
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}

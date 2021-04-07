@@ -17,7 +17,7 @@ func resourceSite() *schema.Resource {
 		Update: resourceSiteUpdate,
 		Delete: resourceSiteDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -58,6 +58,7 @@ func resourceSite() *schema.Resource {
 				Description: "Manually set the web server IP/CNAME.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 			},
 			"force_ssl": {
 				Description: "If this value is true, manually set the site to support SSL. This option is only available for sites with manually configured IP/CNAME and for specific accounts.",
@@ -270,7 +271,41 @@ func resourceSite() *schema.Resource {
 				Computed:    true,
 				Optional:    true,
 			},
-
+			"txt_record_value_one": {
+				Description: "Create or modify a TXT records defined for the site in Cloud WAF.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"txt_record_value_two": {
+				Description: "Create or modify a TXT records defined for the site in Cloud WAF.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"txt_record_value_three": {
+				Description: "Create or modify a TXT records defined for the site in Cloud WAF.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"txt_record_value_four": {
+				Description: "Create or modify a TXT records defined for the site in Cloud WAF.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"txt_record_value_five": {
+				Description: "Create or modify a TXT records defined for the site in Cloud WAF.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"naked_domain_san": {
+				Description: "Use 'true' to add the naked domain SAN to a www site’s SSL certificate. Default value: true",
+				Type:        schema.TypeBool,
+				Optional:    true,
+			},
+			"wildcard_san": {
+				Description: "Use 'true' to add the wildcard SAN or 'false' to add the full domain SAN to the site’s SSL certificate. Default value: true",
+				Type:        schema.TypeBool,
+				Optional:    true,
+			},
 			// Computed Attributes
 			"site_creation_date": {
 				Description: "Numeric representation of the site creation date.",
@@ -305,6 +340,11 @@ func resourceSite() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"dns_record_name": {
+				Description: "The TXT record that needs to be updated with the `domain_verification` value.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"original_data_center_id": {
 				Description: "Numeric representation of the data center created with the site.",
 				Type:        schema.TypeInt,
@@ -327,6 +367,8 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 		d.Get("site_ip").(string),
 		d.Get("force_ssl").(string),
 		d.Get("account_id").(int),
+		d.Get("naked_domain_san").(bool),
+		d.Get("wildcard_san").(bool),
 	)
 
 	if err != nil {
@@ -367,6 +409,11 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	err = updateTXTRecords(client, d)
+	if err != nil {
+		return err
+	}
+
 	// Set the rest of the state from the resource read
 	return resourceSiteRead(d, m)
 }
@@ -396,6 +443,10 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("site_creation_date", siteStatusResponse.SiteCreationDate)
 	d.Set("domain", siteStatusResponse.Domain)
 	d.Set("account_id", siteStatusResponse.AccountID)
+	//Joe Moore: adding the site_ip address(s), naked_domain_san,a dn wildcard_san to the stored state.
+	d.Set("site_ip", siteStatusResponse.Ips[0])
+	d.Set("naked_domain_san", siteStatusResponse.NakedDomainSanForNewWwwSites)
+	d.Set("wildcard_san", siteStatusResponse.WildcardSanForNewSites)
 
 	// Set the DNS information
 	dnsARecordValues := make([]string, 0)
@@ -416,7 +467,9 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 		dnsValidation := siteStatusResponse.Ssl.GeneratedCertificate.ValidationData.([]interface{})
 		dnsRecord := dnsValidation[0].(map[string]interface{})
 		setDataTo := dnsRecord["set_data_to"].([]interface{})[0]
+		dnsRecordName := dnsRecord["dns_record_name"].(interface{})
 		d.Set("domain_verification", setDataTo)
+		d.Set("dns_record_name", dnsRecordName)
 	}
 
 	// Set the HTML verification
@@ -450,6 +503,18 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	}
 	d.Set("hashing_enabled", maskingResponse.HashingEnabled)
 	d.Set("hash_salt", maskingResponse.HashSalt)
+
+	// Get the TXT records for the site
+	txtResponse, err := client.GetTXTRecords(d.Id())
+	if err != nil {
+		log.Printf("[ERROR] Could not read Incapsula site TXT records for domain: %s and site id: %d, %s\n", domain, siteID, err)
+		return err
+	}
+	d.Set("txt_record_value_one", txtResponse.TxtRecordValueOne)
+	d.Set("txt_record_value_two", txtResponse.TxtRecordValueTwo)
+	d.Set("txt_record_value_three", txtResponse.TxtRecordValueThree)
+	d.Set("txt_record_value_four", txtResponse.TxtRecordValueFour)
+	d.Set("txt_record_value_five", txtResponse.TxtRecordValueFive)
 
 	// Get the performance settings for the site
 	performanceSettingsResponse, _, err := client.GetPerformanceSettings(d.Id())
@@ -526,6 +591,11 @@ func resourceSiteUpdate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	err = updateTXTRecords(client, d)
+	if err != nil {
+		return err
+	}
+
 	// Set the rest of the state from the resource read
 	return resourceSiteRead(d, m)
 }
@@ -589,6 +659,23 @@ func updateMaskingSettings(client *Client, d *schema.ResourceData) error {
 		err := client.UpdateMaskingSettings(d.Id(), &maskingSettings)
 		if err != nil {
 			log.Printf("[ERROR] Could not update Incapsula site masking settings for site_id: %s %s\n", d.Id(), err)
+			return err
+		}
+	}
+	return nil
+}
+
+func updateTXTRecords(client *Client, d *schema.ResourceData) error {
+	if d.HasChange("txt_record_value_one") ||
+		d.HasChange("txt_record_value_two") ||
+		d.HasChange("txt_record_value_three") ||
+		d.HasChange("txt_record_value_four") ||
+		d.HasChange("txt_record_value_five") {
+
+		_, err := client.UpdateTXTRecord(d.Id(), d.Get("txt_record_value_one").(string), d.Get("txt_record_value_two").(string),
+			d.Get("txt_record_value_three").(string), d.Get("txt_record_value_four").(string), d.Get("txt_record_value_five").(string))
+		if err != nil {
+			log.Printf("[ERROR] Could not update Incapsula site TXT record(s) for site_id: %s %s\n", d.Id(), err)
 			return err
 		}
 	}
