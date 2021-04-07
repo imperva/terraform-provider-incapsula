@@ -7,6 +7,7 @@
 * Adding `txt_record_value_*` to the `site` resource
 * Updating the `site` resource value `site_ip` to be computed
 * Fixed the `site_ip` to store in state file
+* Fix `data_storage_region` issue in `account` resource, `DEFAULT` to `US`
 
 
 ## 2.7.3 (Released)

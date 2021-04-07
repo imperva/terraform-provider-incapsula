@@ -93,9 +93,9 @@ func resourceAccount() *schema.Resource {
 			"data_storage_region": {
 				Description:  "Default data region of the account for newly created sites. Options are `APAC`, `EU`, `US` and `DEFAULT`. Defaults to `DEFAULT`.",
 				Type:         schema.TypeString,
-				Default:      "DEFAULT",
+				Default:      "US",
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"APAC", "EU", "US", "DEFAULT"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"APAC", "EU", "US", "AU"}, false),
 			},
 
 			// Computed Attributes
