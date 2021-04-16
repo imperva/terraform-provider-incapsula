@@ -1,72 +1,180 @@
 package incapsula
 
 import (
-	"fmt"
 	"log"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func resourceOriginPOP() *schema.Resource {
+func resourceTXTRecord() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourceOriginPOPUpdate,
-		Read:     resourceOriginPOPRead,
-		Update:   resourceOriginPOPUpdate,
-		Delete:   resourceOriginPOPDelete,
-		Importer: nil,
+		Create: resourceTXTRecordCreate,
+		Read:   resourceTXTRecordRead,
+		Update: resourceTXTRecordUpdate,
+		Delete: resourceTXTRecordDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 
 		Schema: map[string]*schema.Schema{
-			// Required Arguments
-			"dc_id": {
-				Description: "Numeric identifier of the data center.",
+			// Required Argument
+			"site_id": {
+				Description: "Numeric identifier of the site.",
 				Type:        schema.TypeInt,
 				Required:    true,
 			},
-			"origin_pop": {
-				Description: "The Origin POP code (must be lowercase), e.g: iad. Note, this field is create/update only. Reads are not supported as the API doesn't exist yet. Note that drift may happen.",
+			// Optional Arguments
+			"txt_record_value_one": {
+				Description: "New value for txt record number one.",
 				Type:        schema.TypeString,
-				Required:    true,
-				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-					// Check if valid JSON
-					d := val.(string)
-					if strings.ToLower(d) != d {
-						errs = append(errs, fmt.Errorf("%q must be lowercase, please check your origin POP code, got: %s", key, d))
-					}
-					return
-				},
+				Optional:    true,
+			},
+			"txt_record_value_two": {
+				Description: "New value for txt record number two.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"txt_record_value_three": {
+				Description: "New value for txt record number three.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"txt_record_value_four": {
+				Description: "New value for txt record number four.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"txt_record_value_five": {
+				Description: "New value for txt record number five.",
+				Type:        schema.TypeString,
+				Optional:    true,
 			},
 		},
 	}
 }
 
-func resourceOriginPOPUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceTXTRecordCreate(d *schema.ResourceData, m interface{}) error {
+	// Implement by create the TXT Records
+
 	client := m.(*Client)
-	dcID := d.Get("dc_id").(int)
-	originPOP := d.Get("origin_pop").(string)
+	siteID := d.Get("site_id").(int)
+	TXTRecordOne := d.Get("txt_record_value_one").(string)
+	TXTRecordTwo := d.Get("txt_record_value_two").(string)
+	TXTRecordThree := d.Get("txt_record_value_three").(string)
+	TXTRecordFour := d.Get("txt_record_value_four").(string)
+	TXTRecordFive := d.Get("txt_record_value_five").(string)
 
-	log.Printf("[INFO] Setting Incapsula origin POP: %s for data center: %d\n", originPOP, dcID)
+	log.Printf("[INFO] Setting Incapsula TXT Records: %s, %s, %s, %s, %s, for siteID: %d\n", TXTRecordOne, TXTRecordTwo, TXTRecordThree, TXTRecordFour, TXTRecordFive, siteID)
 
-	err := client.SetOriginPOP(dcID, originPOP)
+	_, err := client.CreateTXTRecord(siteID, TXTRecordOne, TXTRecordTwo, TXTRecordThree, TXTRecordFour, TXTRecordFive)
 
 	if err != nil {
-		log.Printf("[ERROR] Could not set Incapsula origin POP: %s for data center: %d: %s\n", originPOP, dcID, err)
+		log.Printf("[ERROR] Could not set Incapsula TXT Records: %s, %s, %s, %s, %s, for siteID: %d\n%s", TXTRecordOne, TXTRecordTwo, TXTRecordThree, TXTRecordFour, TXTRecordFive, siteID, err)
 		return err
 	}
 
 	// Set the ID
 	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
-	log.Printf("[INFO] Set Incapsula origin POP: %s for data center: %d\n", originPOP, dcID)
+	log.Printf("[INFO] Set Incapsula TXT Records: %s, %s, %s, %s, %s, for siteID: %d\n", TXTRecordOne, TXTRecordTwo, TXTRecordThree, TXTRecordFour, TXTRecordFive, siteID)
+
+	return resourceTXTRecordRead(d, m)
+}
+
+func resourceTXTRecordUpdate(d *schema.ResourceData, m interface{}) error {
+	client := m.(*Client)
+	siteID := d.Get("site_id").(int)
+
+	if (d.HasChange("txt_record_value_one") && d.Get("txt_record_value_one") != "") ||
+		(d.HasChange("txt_record_value_two") && d.Get("txt_record_value_two") != "") ||
+		(d.HasChange("txt_record_value_three") && d.Get("txt_record_value_three") != "") ||
+		(d.HasChange("txt_record_value_four") && d.Get("txt_record_value_four") != "") ||
+		(d.HasChange("txt_record_value_five") && d.Get("txt_record_value_five") != "") {
+
+		TXTRecordOne := d.Get("txt_record_value_one").(string)
+		TXTRecordTwo := d.Get("txt_record_value_two").(string)
+		TXTRecordThree := d.Get("txt_record_value_three").(string)
+		TXTRecordFour := d.Get("txt_record_value_four").(string)
+		TXTRecordFive := d.Get("txt_record_value_five").(string)
+
+		log.Printf("[INFO] Setting Incapsula TXT Records: %s, %s, %s, %s, %s, for siteID: %d\n", TXTRecordOne, TXTRecordTwo, TXTRecordThree, TXTRecordFour, TXTRecordFive, siteID)
+
+		_, err := client.UpdateTXTRecord(siteID, TXTRecordOne, TXTRecordTwo, TXTRecordThree, TXTRecordFour, TXTRecordFive)
+
+		if err != nil {
+			log.Printf("[ERROR] Could not set Incapsula TXT Records: %s, %s, %s, %s, %s, for siteID: %d\n%s", TXTRecordOne, TXTRecordTwo, TXTRecordThree, TXTRecordFour, TXTRecordFive, siteID, err)
+			return err
+		}
+
+		// Set the ID
+		d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
+		log.Printf("[INFO] Set Incapsula TXT Records: %s, %s, %s, %s, %s, for siteID: %d\n", TXTRecordOne, TXTRecordTwo, TXTRecordThree, TXTRecordFour, TXTRecordFive, siteID)
+	}
+	return resourceTXTRecordRead(d, m)
+}
+
+func resourceTXTRecordRead(d *schema.ResourceData, m interface{}) error {
+	// Implement by reading the TXTRecordResponse for the TXT Records
+	client := m.(*Client)
+
+	recordResponse, err := client.ReadTXTRecords(d.Get("site_id").(int))
+
+	// Gte TXT response object
+	if recordResponse != nil {
+		// Res can oscillate between strings and ints
+		if recordResponse.Res == 0 {
+			d.Set("txt_record_value_one", recordResponse.TxtRecordValueOne)
+			d.Set("txt_record_value_two", recordResponse.TxtRecordValueTwo)
+			d.Set("txt_record_value_three", recordResponse.TxtRecordValueThree)
+			d.Set("txt_record_value_four", recordResponse.TxtRecordValueFour)
+			d.Set("txt_record_value_five", recordResponse.TxtRecordValueFive)
+		}
+	}
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
-func resourceOriginPOPRead(d *schema.ResourceData, m interface{}) error {
-	return nil
-}
+func resourceTXTRecordDelete(d *schema.ResourceData, m interface{}) error {
+	// Implement by deleting the a TXT Record
 
-func resourceOriginPOPDelete(d *schema.ResourceData, m interface{}) error {
-	return nil
+	client := m.(*Client)
+	siteID := d.Get("site_id").(int)
+
+	if d.HasChange("txt_record_value_one") && d.Get("txt_record_value_one") == "" {
+		log.Printf("[INFO] Delete Incapsula TXT Record 1, for siteID: %d", siteID)
+		err := client.DeleteTXTRecord(siteID, "1")
+		if err != nil {
+			log.Printf("[ERROR] Could not delete Incapsula TXT Records 1, for siteID: %d\n%s", siteID, err)
+		}
+	} else if d.HasChange("txt_record_value_two") && d.Get("txt_record_value_two") == "" {
+		log.Printf("[INFO] Delete Incapsula TXT Record 2, for siteID: %d", siteID)
+		err := client.DeleteTXTRecord(siteID, "2")
+		if err != nil {
+			log.Printf("[ERROR] Could not delete Incapsula TXT Records 2, for siteID: %d\n%s", siteID, err)
+		}
+	} else if d.HasChange("txt_record_value_three") && d.Get("txt_record_value_three") == "" {
+		log.Printf("[INFO] Delete Incapsula TXT Record 3, for siteID: %d", siteID)
+		err := client.DeleteTXTRecord(siteID, "3")
+		if err != nil {
+			log.Printf("[ERROR] Could not delete Incapsula TXT Records 3, for siteID: %d\n%s", siteID, err)
+		}
+	} else if d.HasChange("txt_record_value_four") && d.Get("txt_record_value_four") == "" {
+		log.Printf("[INFO] Delete Incapsula TXT Record 4, for siteID: %d", siteID)
+		err := client.DeleteTXTRecord(siteID, "4")
+		if err != nil {
+			log.Printf("[ERROR] Could not delete Incapsula TXT Records 4, for siteID: %d\n%s", siteID, err)
+		}
+	} else if d.HasChange("txt_record_value_five") && d.Get("txt_record_value_five") == "" {
+		log.Printf("[INFO] Delete Incapsula TXT Record 5, for siteID: %d", siteID)
+		err := client.DeleteTXTRecord(siteID, "5")
+		if err != nil {
+			log.Printf("[ERROR] Could not delete Incapsula TXT Records 5, for siteID: %d\n%s", siteID, err)
+		}
+	}
+	return resourceTXTRecordRead(d, m)
 }

@@ -4,10 +4,11 @@
 * Adding the `naked_domain_san` in the `site` resource
 * Adding the `wildcard_san` in the `site` resource
 * Updating type `PerformanceSettings` struct to omit when empty all keys except the mode_level
-* Adding `txt_record_value_*` to the `site` resource
+* NEW - Adding `txt_record_value_*` resource
 * Updating the `site` resource value `site_ip` to be computed
 * Fixed the `site_ip` to store in state file
 * Fix `data_storage_region` issue in `account` resource, `DEFAULT` to `US`
+
 
 
 ## 2.7.3 (Released)

@@ -17,12 +17,12 @@ import (
 func TestClientGetTXTRecordsBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	siteID := "123"
-	txtRecords, err := client.GetTXTRecords(siteID)
+	siteID := 123
+	txtRecords, err := client.ReadTXTRecords(siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when reading TXT record(s) for Site ID %s", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when reading TXT record(s) for siteID: %d", siteID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 	if txtRecords != nil {
@@ -33,9 +33,9 @@ func TestClientGetTXTRecordsBadConnection(t *testing.T) {
 func TestClientGetTXTRecordsBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := "42"
+	siteID := 42
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/general/additionalTxtRecords?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%d/settings/general/additionalTxtRecords?api_id=%s&api_key=%s", siteID, apiID, apiKey)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -48,11 +48,11 @@ func TestClientGetTXTRecordsBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	txtSettings, err := client.GetTXTRecords(siteID)
+	txtSettings, err := client.ReadTXTRecords(siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing Incap TXT record(s) JSON response for Site ID %s", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing Incap TXT record(s) JSON response for siteID: %d", siteID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
 	if txtSettings != nil {
@@ -63,9 +63,9 @@ func TestClientGetTXTRecordsBadJSON(t *testing.T) {
 func TestClientGetTXTRecordsInvalidSite(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := "42"
+	siteID := 42
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/general/additionalTxtRecords?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%d/settings/general/additionalTxtRecords?api_id=%s&api_key=%s", siteID, apiID, apiKey)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
@@ -79,12 +79,12 @@ func TestClientGetTXTRecordsInvalidSite(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	txtSettings, err := client.GetTXTRecords(siteID)
+	txtSettings, err := client.ReadTXTRecords(siteID)
 	log.Print(err)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code %d from Incapsula service when reading TXT record(s) for Site ID %s", 404, siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code %d from Incapsula service when reading TXT record(s) for siteID: %d", 404, siteID)) {
 		t.Errorf("Should have received a bad site error, got: %s", err)
 	}
 	if txtSettings != nil {
@@ -95,9 +95,9 @@ func TestClientGetTXTRecordsInvalidSite(t *testing.T) {
 func TestClientGetTXTRecordsValidSite(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := "42"
+	siteID := 42
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/general/additionalTxtRecords?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%d/settings/general/additionalTxtRecords?api_id=%s&api_key=%s", siteID, apiID, apiKey)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -110,9 +110,16 @@ func TestClientGetTXTRecordsValidSite(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	txtSettings, err := client.GetTXTRecords(siteID)
-	log.Print(txtSettings.SiteID)
-	log.Print(txtSettings.TxtRecordValueTwo)
+	txtSettings, err := client.ReadTXTRecords(siteID)
+	log.Printf("Test Results: SiteID=%d, "+
+		"txt_record_value_one=%s, "+
+		"txt_record_value_two=%s, "+
+		"txt_record_value_three=%s, "+
+		"txt_record_value_four=%s, "+
+		"txt_record_value_five=%s", txtSettings.SiteID, txtSettings.TxtRecordValueOne,
+		txtSettings.TxtRecordValueTwo, txtSettings.TxtRecordValueThree, txtSettings.TxtRecordValueFour,
+		txtSettings.TxtRecordValueFive)
+
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
@@ -147,12 +154,12 @@ func TestClientGetTXTRecordsValidSite(t *testing.T) {
 func TestClientUpdateTXTRecordsBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	siteID := "123"
+	siteID := 123
 	_, err := client.UpdateTXTRecord(siteID, "test1", "test2", "test3", "test4", "test5")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when updating TXT record(s) for Site ID %s", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error updating TXT record(s) for siteID: %d", siteID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 }
@@ -160,9 +167,9 @@ func TestClientUpdateTXTRecordsBadConnection(t *testing.T) {
 func TestClientUpdateTXTRecordsInvalidSite(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := "42"
+	siteID := 42
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/general/additionalTxtRecords", siteID)
+	endpoint := fmt.Sprintf("/sites/%d/settings/general/additionalTxtRecords", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
@@ -180,7 +187,7 @@ func TestClientUpdateTXTRecordsInvalidSite(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code %d from Incapsula service when updating TXT record(s) for Site ID %s", 404, siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 404 from Incapsula service when updating TXT record(s) for siteID: %d", siteID)) {
 		t.Errorf("Should have received a bad site error, got: %s", err)
 	}
 }
@@ -189,9 +196,9 @@ func TestClientUpdateTXTRecordsValidSite(t *testing.T) {
 	log.Print("Start TestClientUpdateTXTRecordsValidSite")
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := "42"
+	siteID := 42
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/general/additionalTxtRecords", siteID)
+	endpoint := fmt.Sprintf("/sites/%d/settings/general/additionalTxtRecords", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {

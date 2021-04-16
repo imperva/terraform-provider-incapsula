@@ -1,28 +1,26 @@
 ---
 layout: "incapsula"
-page_title: "Incapsula: origin-pop"
-sidebar_current: "docs-incapsula-resource-origin-pop"
+page_title: "Incapsula: txt-record"
+sidebar_current: "docs-incapsula-resource-txt-record"
 description: |-
-  Provides a Incapsula Data Center Origin POP association resource.
+  Provides a Incapsula TXT Record(s) association resource.
 ---
 
-# incapsula_origin_pop
+# incapsula_txt_record
 
-Provides a Incapsula Origin POP association resource. 
+Provides a TXT Record(s) association resource. 
 
 ## Example Usage
 
 ```hcl
-resource "incapsula_data_center" "example-data-center" {
-  site_id = "${incapsula_site.example-site.id}"
-  name = "Example data center"
-  server_address = "8.8.4.4"
-  is_content = "true"
+resource "incapsula_site" "example-site" {
+  domain = "www.exmaple.com
 }
 
-resource "incapsula_origin_pop" "aws-east" {
-  dc_id = incapsula_data_center.example-data-center.id
-  origin_pop = "iad"
+resource "incapsula_txt_record" "test" {
+  site_id = incapsula_site.example-site.id
+  txt_record_value_one = "test1"
+  txt_record_value_two = "test2"
 }
 ```
 
@@ -30,15 +28,20 @@ resource "incapsula_origin_pop" "aws-east" {
 
 The following arguments are supported:
 
-* `dc_id` - (Required) Numeric identifier of the data center.
-* `origin_pop` - (Required) The Origin POP code (must be lowercase), e.g: `iad`. Note, this field is create/update only. Reads are not supported as the API doesn't exist yet. Note that drift may happen.
+* `site_id` - (Required) Numeric identifier of the site.
+* `txt_record_value_one` - (Optional) New value for txt record number one.
+* `txt_record_value_two` - (Optional) New value for txt record number two.
+* `txt_record_value_three` - (Optional) New value for txt record number three.
+* `txt_record_value_four` - (Optional) New value for txt record number four.
+* `txt_record_value_five` - (Optional) New value for txt record number five.
+
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-* `id` - Unique identifier for the Origin POP association.
+* `id` - Unique identifier for the TXT Records association.
 
 ## Import
 
-Origin POP cannot be imported.
+TXT Record(s) cannot be imported.
