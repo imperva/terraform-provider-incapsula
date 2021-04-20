@@ -72,11 +72,6 @@ The following arguments are supported:
 * `data_storage_region` - (Optional) The data region to use. Options are `APAC`, `AU`, `EU`, and `US`.
 * `hashing_enabled` - (Optional) Specify if hashing (masking setting) should be enabled.
 * `hash_salt` - (Optional) Specify the hash salt (masking setting), required if hashing is enabled. Maximum length of 64 characters.
-* `txt_record_value_one` - (Optional) Create or modify a TXT records defined for the site in Cloud WAF.
-* `txt_record_value_two` - (Optional) Create or modify a second TXT records defined for the site in Cloud WAF.
-* `txt_record_value_three` - (Optional) Create or modify a third TXT records defined for the site in Cloud WAF.
-* `txt_record_value_four` - (Optional) Create or modify a fourth TXT records defined for the site in Cloud WAF.
-* `txt_record_value_five` - (Optional) Create or modify a fifth TXT records defined for the site in Cloud WAF.
 * `log_level` - (Optional) The log level. Options are `full`, `security`, and `none`.
 * `naked_domain_san` - (Optional) Use `true` to add the naked domain SAN to a www site’s SSL certificate. Default value: `true`
 * `wildcard_san` - (Optional) Use `true` to add the wildcard SAN or `false` to add the full domain SAN to the site’s SSL certificate. Default value: `true`
