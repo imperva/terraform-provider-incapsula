@@ -3,7 +3,6 @@ package incapsula
 import (
 	"log"
 	"strconv"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -77,7 +76,7 @@ func resourceTXTRecordCreate(d *schema.ResourceData, m interface{}) error {
 
 	// Set the ID
 	d.SetId(d.Get("site_id").(string))
-	log.Printf("[INFO] Set Incapsula TXT Records: %s, %s, %s, %s, %s, for siteID: %d\n", TXTRecordOne, TXTRecordTwo, TXTRecordThree, TXTRecordFour, TXTRecordFive, siteID)
+	log.Printf("[INFO] Create Incapsula TXT Records: %s, %s, %s, %s, %s, for siteID: %d\n", TXTRecordOne, TXTRecordTwo, TXTRecordThree, TXTRecordFour, TXTRecordFive, siteID)
 
 	return resourceTXTRecordRead(d, m)
 }
@@ -108,8 +107,7 @@ func resourceTXTRecordUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 
 		// Set the ID
-		d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
-		log.Printf("[INFO] Set Incapsula TXT Records: %s, %s, %s, %s, %s, for siteID: %d\n", TXTRecordOne, TXTRecordTwo, TXTRecordThree, TXTRecordFour, TXTRecordFive, siteID)
+		log.Printf("[INFO] Update Incapsula TXT Records: %s, %s, %s, %s, %s, for siteID: %d\n", TXTRecordOne, TXTRecordTwo, TXTRecordThree, TXTRecordFour, TXTRecordFive, siteID)
 	}
 	return resourceTXTRecordRead(d, m)
 }
@@ -118,7 +116,8 @@ func resourceTXTRecordRead(d *schema.ResourceData, m interface{}) error {
 	// Implement by reading the TXTRecordResponse for the TXT Records
 	client := m.(*Client)
 
-	recordResponse, err := client.ReadTXTRecords(d.Get("site_id").(int))
+	id, _ := strconv.Atoi(d.Id())
+	recordResponse, err := client.ReadTXTRecords(id)
 
 	// Gte TXT response object
 	if recordResponse != nil {
@@ -141,40 +140,41 @@ func resourceTXTRecordRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceTXTRecordDelete(d *schema.ResourceData, m interface{}) error {
 	// Implement by deleting the a TXT Record
-
 	client := m.(*Client)
-	siteID := d.Get("site_id").(int)
+	id, _ := strconv.Atoi(d.Id())
 
 	if d.HasChange("txt_record_value_one") && d.Get("txt_record_value_one") == "" {
-		log.Printf("[INFO] Delete Incapsula TXT Record 1, for siteID: %d", siteID)
-		err := client.DeleteTXTRecord(siteID, "1")
+		log.Printf("[INFO] Delete Incapsula TXT Record 1, for siteID: %d", id)
+		err := client.DeleteTXTRecord(id, "1")
 		if err != nil {
-			log.Printf("[ERROR] Could not delete Incapsula TXT Records 1, for siteID: %d\n%s", siteID, err)
+			log.Printf("[ERROR] Could not delete Incapsula TXT Records 1, for siteID: %d\n%s", id, err)
 		}
 	} else if d.HasChange("txt_record_value_two") && d.Get("txt_record_value_two") == "" {
-		log.Printf("[INFO] Delete Incapsula TXT Record 2, for siteID: %d", siteID)
-		err := client.DeleteTXTRecord(siteID, "2")
+		log.Printf("[INFO] Delete Incapsula TXT Record 2, for siteID: %d", id)
+		err := client.DeleteTXTRecord(id, "2")
 		if err != nil {
-			log.Printf("[ERROR] Could not delete Incapsula TXT Records 2, for siteID: %d\n%s", siteID, err)
+			log.Printf("[ERROR] Could not delete Incapsula TXT Records 2, for siteID: %d\n%s", id, err)
 		}
 	} else if d.HasChange("txt_record_value_three") && d.Get("txt_record_value_three") == "" {
-		log.Printf("[INFO] Delete Incapsula TXT Record 3, for siteID: %d", siteID)
-		err := client.DeleteTXTRecord(siteID, "3")
+		log.Printf("[INFO] Delete Incapsula TXT Record 3, for siteID: %d", id)
+		err := client.DeleteTXTRecord(id, "3")
 		if err != nil {
-			log.Printf("[ERROR] Could not delete Incapsula TXT Records 3, for siteID: %d\n%s", siteID, err)
+			log.Printf("[ERROR] Could not delete Incapsula TXT Records 3, for siteID: %d\n%s", id, err)
 		}
 	} else if d.HasChange("txt_record_value_four") && d.Get("txt_record_value_four") == "" {
-		log.Printf("[INFO] Delete Incapsula TXT Record 4, for siteID: %d", siteID)
-		err := client.DeleteTXTRecord(siteID, "4")
+		log.Printf("[INFO] Delete Incapsula TXT Record 4, for siteID: %d", id)
+		err := client.DeleteTXTRecord(id, "4")
 		if err != nil {
-			log.Printf("[ERROR] Could not delete Incapsula TXT Records 4, for siteID: %d\n%s", siteID, err)
+			log.Printf("[ERROR] Could not delete Incapsula TXT Records 4, for siteID: %d\n%s", id, err)
 		}
 	} else if d.HasChange("txt_record_value_five") && d.Get("txt_record_value_five") == "" {
-		log.Printf("[INFO] Delete Incapsula TXT Record 5, for siteID: %d", siteID)
-		err := client.DeleteTXTRecord(siteID, "5")
+		log.Printf("[INFO] Delete Incapsula TXT Record 5, for siteID: %d", id)
+		err := client.DeleteTXTRecord(id, "5")
 		if err != nil {
-			log.Printf("[ERROR] Could not delete Incapsula TXT Records 5, for siteID: %d\n%s", siteID, err)
+			log.Printf("[ERROR] Could not delete Incapsula TXT Records 5, for siteID: %d\n%s", id, err)
 		}
 	}
+
+	// Will not nil the record, they will just be empty on a delete
 	return resourceTXTRecordRead(d, m)
 }
