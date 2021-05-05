@@ -271,40 +271,17 @@ func resourceSite() *schema.Resource {
 				Computed:    true,
 				Optional:    true,
 			},
-			"txt_record_value_one": {
-				Description: "Create or modify a TXT records defined for the site in Cloud WAF.",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"txt_record_value_two": {
-				Description: "Create or modify a TXT records defined for the site in Cloud WAF.",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"txt_record_value_three": {
-				Description: "Create or modify a TXT records defined for the site in Cloud WAF.",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"txt_record_value_four": {
-				Description: "Create or modify a TXT records defined for the site in Cloud WAF.",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"txt_record_value_five": {
-				Description: "Create or modify a TXT records defined for the site in Cloud WAF.",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
 			"naked_domain_san": {
 				Description: "Use 'true' to add the naked domain SAN to a www site’s SSL certificate. Default value: true",
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     "true",
 			},
 			"wildcard_san": {
 				Description: "Use 'true' to add the wildcard SAN or 'false' to add the full domain SAN to the site’s SSL certificate. Default value: true",
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     "true",
 			},
 			// Computed Attributes
 			"site_creation_date": {
@@ -409,11 +386,6 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	err = updateTXTRecords(client, d)
-	if err != nil {
-		return err
-	}
-
 	// Set the rest of the state from the resource read
 	return resourceSiteRead(d, m)
 }
@@ -504,18 +476,6 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("hashing_enabled", maskingResponse.HashingEnabled)
 	d.Set("hash_salt", maskingResponse.HashSalt)
 
-	// Get the TXT records for the site
-	txtResponse, err := client.GetTXTRecords(d.Id())
-	if err != nil {
-		log.Printf("[ERROR] Could not read Incapsula site TXT records for domain: %s and site id: %d, %s\n", domain, siteID, err)
-		return err
-	}
-	d.Set("txt_record_value_one", txtResponse.TxtRecordValueOne)
-	d.Set("txt_record_value_two", txtResponse.TxtRecordValueTwo)
-	d.Set("txt_record_value_three", txtResponse.TxtRecordValueThree)
-	d.Set("txt_record_value_four", txtResponse.TxtRecordValueFour)
-	d.Set("txt_record_value_five", txtResponse.TxtRecordValueFive)
-
 	// Get the performance settings for the site
 	performanceSettingsResponse, _, err := client.GetPerformanceSettings(d.Id())
 	if err != nil {
@@ -591,11 +551,6 @@ func resourceSiteUpdate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	err = updateTXTRecords(client, d)
-	if err != nil {
-		return err
-	}
-
 	// Set the rest of the state from the resource read
 	return resourceSiteRead(d, m)
 }
@@ -659,23 +614,6 @@ func updateMaskingSettings(client *Client, d *schema.ResourceData) error {
 		err := client.UpdateMaskingSettings(d.Id(), &maskingSettings)
 		if err != nil {
 			log.Printf("[ERROR] Could not update Incapsula site masking settings for site_id: %s %s\n", d.Id(), err)
-			return err
-		}
-	}
-	return nil
-}
-
-func updateTXTRecords(client *Client, d *schema.ResourceData) error {
-	if d.HasChange("txt_record_value_one") ||
-		d.HasChange("txt_record_value_two") ||
-		d.HasChange("txt_record_value_three") ||
-		d.HasChange("txt_record_value_four") ||
-		d.HasChange("txt_record_value_five") {
-
-		_, err := client.UpdateTXTRecord(d.Id(), d.Get("txt_record_value_one").(string), d.Get("txt_record_value_two").(string),
-			d.Get("txt_record_value_three").(string), d.Get("txt_record_value_four").(string), d.Get("txt_record_value_five").(string))
-		if err != nil {
-			log.Printf("[ERROR] Could not update Incapsula site TXT record(s) for site_id: %s %s\n", d.Id(), err)
 			return err
 		}
 	}
