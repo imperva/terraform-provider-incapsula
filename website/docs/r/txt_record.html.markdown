@@ -14,7 +14,7 @@ Provides a TXT Record(s) association resource.
 
 ```hcl
 resource "incapsula_site" "example-site" {
-  domain = "www.exmaple.com
+  domain = "www.example.com"
 }
 
 resource "incapsula_txt_record" "test" {
