@@ -44,4 +44,8 @@ The following attributes are exported:
 
 ## Import
 
-TXT Record(s) cannot be imported.
+TXT Records can be imported using the `site_id`, e.g.:
+
+```
+$ terraform import incapsula_txt_record.demo 1234
+```

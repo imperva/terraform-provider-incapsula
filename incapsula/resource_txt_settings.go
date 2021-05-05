@@ -76,7 +76,7 @@ func resourceTXTRecordCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// Set the ID
-	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
+	d.SetId(d.Get("site_id").(string))
 	log.Printf("[INFO] Set Incapsula TXT Records: %s, %s, %s, %s, %s, for siteID: %d\n", TXTRecordOne, TXTRecordTwo, TXTRecordThree, TXTRecordFour, TXTRecordFive, siteID)
 
 	return resourceTXTRecordRead(d, m)
