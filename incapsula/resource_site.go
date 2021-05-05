@@ -419,6 +419,9 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("site_ip", siteStatusResponse.Ips[0])
 	d.Set("naked_domain_san", siteStatusResponse.NakedDomainSanForNewWwwSites)
 	d.Set("wildcard_san", siteStatusResponse.WildcardSanForNewSites)
+	//Joe Moore: adding acceleration_level, active to be set properly Issue#73
+	d.Set("acceleration_level", siteStatusResponse.AccelerationLevel)
+	d.Set("active", siteStatusResponse.Active)
 
 	// Set the DNS information
 	dnsARecordValues := make([]string, 0)
