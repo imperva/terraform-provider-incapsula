@@ -14,7 +14,7 @@ Provides a TXT Record(s) association resource.
 
 ```hcl
 resource "incapsula_site" "example-site" {
-  domain = "www.exmaple.com
+  domain = "www.example.com"
 }
 
 resource "incapsula_txt_record" "test" {
@@ -44,4 +44,8 @@ The following attributes are exported:
 
 ## Import
 
-TXT Record(s) cannot be imported.
+TXT Records can be imported using the `site_id`, e.g.:
+
+```
+$ terraform import incapsula_txt_record.demo 1234
+```
