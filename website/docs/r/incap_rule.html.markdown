@@ -6,7 +6,7 @@ description: |-
   Provides a Incapsula Incap Rule resource.
 ---
 
-# incapsula_site
+# incapsula_incap_rule
 
 Provides a Incapsula Incap Rule resource. 
 Incap Rules include security, delivery, and rate rules.
