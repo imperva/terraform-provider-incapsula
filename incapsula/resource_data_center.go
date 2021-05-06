@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -93,6 +94,10 @@ func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 	// Set the dc ID
 	d.SetId(dataCenterAddResponse.DataCenterID)
 
+	// There may be a timing/race condition here
+	// Set an arbitrary period to sleep
+	time.Sleep(3 * time.Second)
+
 	return resourceDataCenterRead(d, m)
 }
 
@@ -158,6 +163,10 @@ func resourceDataCenterUpdate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	// There may be a timing/race condition here
+	// Set an arbitrary period to sleep
+	time.Sleep(3 * time.Second)
+
 	return nil
 }
 
@@ -173,6 +182,10 @@ func resourceDataCenterDelete(d *schema.ResourceData, m interface{}) error {
 	// Set the ID to empty
 	// Implicitly clears the resource
 	d.SetId("")
+
+	// There may be a timing/race condition here
+	// Set an arbitrary period to sleep
+	time.Sleep(3 * time.Second)
 
 	return nil
 }
