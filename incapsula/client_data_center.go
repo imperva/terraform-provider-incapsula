@@ -164,12 +164,16 @@ func (c *Client) EditDataCenter(dcID, name, isContent, isEnabled string) (*DataC
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterEdit), values)
 	if err != nil {
-		return nil, fmt.Errorf("Error editing data center  for dcID: %s: %s", dcID, err)
+		return nil, fmt.Errorf("Error editing data center for dcID: %s: %s", dcID, err)
 	}
 
 	// Read the body
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
+
+	// Dump the Headers
+	contentTypeHeader := resp.Header["Content-Type"]
+	log.Printf("[DEBUG] Incapsula edit data center content type header: %s\n", contentTypeHeader)
 
 	// Dump JSON
 	log.Printf("[DEBUG] Incapsula edit data center JSON response: %s\n", string(responseBody))
@@ -178,7 +182,7 @@ func (c *Client) EditDataCenter(dcID, name, isContent, isEnabled string) (*DataC
 	var dataCenterEditResponse DataCenterEditResponse
 	err = json.Unmarshal([]byte(responseBody), &dataCenterEditResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing edit dta center JSON response for dcID %s: %s", dcID, err)
+		return nil, fmt.Errorf("Error parsing edit data center JSON response for dcID %s: %s", dcID, err)
 	}
 
 	// Res can sometimes oscillate between a string and number
