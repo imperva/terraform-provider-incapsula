@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -62,6 +63,10 @@ func resourceDataCenter() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+		},
+
+		Timeouts: &schema.ResourceTimeout{
+			Update: schema.DefaultTimeout(1 * time.Minute),
 		},
 	}
 }
@@ -152,22 +157,20 @@ func resourceDataCenterRead(d *schema.ResourceData, m interface{}) error {
 func resourceDataCenterUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	_, err := client.EditDataCenter(
-		d.Id(),
-		d.Get("name").(string),
-		d.Get("is_content").(string),
-		d.Get("is_enabled").(string),
-	)
+	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		_, err := client.EditDataCenter(
+			d.Id(),
+			d.Get("name").(string),
+			d.Get("is_content").(string),
+			d.Get("is_enabled").(string),
+		)
 
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			return resource.RetryableError(fmt.Errorf("Error updating datacenter: %s", err))
+		}
 
-	// There may be a timing/race condition here
-	// Set an arbitrary period to sleep
-	time.Sleep(3 * time.Second)
-
-	return nil
+		return resource.NonRetryableError(resourceDataCenterRead(d, m))
+	})
 }
 
 func resourceDataCenterDelete(d *schema.ResourceData, m interface{}) error {
