@@ -74,6 +74,7 @@ func resourceSite() *schema.Resource {
 				Description: "active or bypass.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 			},
 			"domain_validation": {
 				Description: "email or html or dns.",
@@ -94,6 +95,7 @@ func resourceSite() *schema.Resource {
 				Description: "none | standard | aggressive.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 			},
 			"seal_location": {
 				Description: "api.seal_location.bottom_left | api.seal_location.none | api.seal_location.right_bottom | api.seal_location.right | api.seal_location.left | api.seal_location.bottom_right | api.seal_location.bottom.",
@@ -415,11 +417,9 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("site_creation_date", siteStatusResponse.SiteCreationDate)
 	d.Set("domain", siteStatusResponse.Domain)
 	d.Set("account_id", siteStatusResponse.AccountID)
-	//Joe Moore: adding the site_ip address(s), naked_domain_san,a dn wildcard_san to the stored state.
 	d.Set("site_ip", siteStatusResponse.Ips[0])
 	d.Set("naked_domain_san", siteStatusResponse.NakedDomainSanForNewWwwSites)
 	d.Set("wildcard_san", siteStatusResponse.WildcardSanForNewSites)
-	//Joe Moore: adding acceleration_level, active to be set properly Issue#73
 	d.Set("acceleration_level", siteStatusResponse.AccelerationLevel)
 	d.Set("active", siteStatusResponse.Active)
 
