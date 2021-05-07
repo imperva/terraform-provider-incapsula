@@ -66,6 +66,7 @@ func resourceDataCenter() *schema.Resource {
 		},
 
 		Timeouts: &schema.ResourceTimeout{
+			Delete: schema.DefaultTimeout(1 * time.Minute),
 			Update: schema.DefaultTimeout(1 * time.Minute),
 		},
 	}
@@ -166,7 +167,7 @@ func resourceDataCenterUpdate(d *schema.ResourceData, m interface{}) error {
 		)
 
 		if err != nil {
-			return resource.RetryableError(fmt.Errorf("Error updating datacenter: %s", err))
+			return resource.RetryableError(fmt.Errorf("Error updating data center %s for Site ID %s: %s", d.Id(), d.Get("site_id"), err))
 		}
 
 		return nil
@@ -176,19 +177,17 @@ func resourceDataCenterUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceDataCenterDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	err := client.DeleteDataCenter(d.Id())
+	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		err := client.DeleteDataCenter(d.Id())
 
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			return resource.RetryableError(fmt.Errorf("Error deleting data center %s for Site ID %s: %s", d.Id(), d.Get("site_id"), err))
+		}
 
-	// Set the ID to empty
-	// Implicitly clears the resource
-	d.SetId("")
+		// Set the ID to empty
+		// Implicitly clears the resource
+		d.SetId("")
 
-	// There may be a timing/race condition here
-	// Set an arbitrary period to sleep
-	time.Sleep(3 * time.Second)
-
-	return nil
+		return nil
+	})
 }
