@@ -570,7 +570,7 @@ func resourceSiteDelete(d *schema.ResourceData, m interface{}) error {
 
 	log.Printf("[INFO] Deleting Incapsula site for domain: %s\n", domain)
 
-	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	return resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
 		err := client.DeleteSite(domain, siteID)
 
 		if err != nil {

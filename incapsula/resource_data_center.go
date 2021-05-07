@@ -76,8 +76,11 @@ func resourceDataCenter() *schema.Resource {
 func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
+	var dataCenterAddResponse *DataCenterAddResponse
+	var err error
+
 	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
-		dataCenterAddResponse, err := client.AddDataCenter(
+		dataCenterAddResponse, err = client.AddDataCenter(
 			d.Get("site_id").(string),
 			d.Get("name").(string),
 			d.Get("server_address").(string),
@@ -89,11 +92,13 @@ func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 			return resource.RetryableError(fmt.Errorf("Error creating data center for site (%s): %s", d.Get("site_id"), err))
 		}
 
-		// Set the dc ID
-		d.SetId(dataCenterAddResponse.DataCenterID)
-
-		return resource.NonRetryableError(resourceDataCenterRead(d, m))
+		return nil
 	})
+
+	// Set the dc ID
+	d.SetId(dataCenterAddResponse.DataCenterID)
+
+	return resourceDataCenterRead(d, m)
 }
 
 func resourceDataCenterRead(d *schema.ResourceData, m interface{}) error {
@@ -111,6 +116,8 @@ func resourceDataCenterRead(d *schema.ResourceData, m interface{}) error {
 		} else {
 			resString = listDataCentersResponse.Res.(string)
 		}
+		// This should never happen during data center creation
+		// This is likely to happen if someone deletes the data center via the UI, SDK, or API
 		if resString == "9413" {
 			log.Printf("[INFO] Incapsula Site ID %s has already been deleted: %s\n", d.Get("site_id"), err)
 			d.SetId("")
@@ -147,7 +154,7 @@ func resourceDataCenterRead(d *schema.ResourceData, m interface{}) error {
 func resourceDataCenterUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	return resource.Retry(d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
 		_, err := client.EditDataCenter(
 			d.Id(),
 			d.Get("name").(string),
@@ -166,7 +173,7 @@ func resourceDataCenterUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceDataCenterDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	return resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
 		err := client.DeleteDataCenter(d.Id())
 
 		if err != nil {
