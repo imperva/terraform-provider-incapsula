@@ -98,6 +98,10 @@ func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 	// Set the dc ID
 	d.SetId(dataCenterAddResponse.DataCenterID)
 
+	// There may be a timing/race condition here
+	// Set an arbitrary period to sleep
+	time.Sleep(3 * time.Second)
+
 	return resourceDataCenterRead(d, m)
 }
 
