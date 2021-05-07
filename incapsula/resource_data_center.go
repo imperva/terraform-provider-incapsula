@@ -66,6 +66,7 @@ func resourceDataCenter() *schema.Resource {
 		},
 
 		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(1 * time.Minute),
 			Delete: schema.DefaultTimeout(1 * time.Minute),
 			Update: schema.DefaultTimeout(1 * time.Minute),
 		},
@@ -75,36 +76,24 @@ func resourceDataCenter() *schema.Resource {
 func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	dataCenterAddResponse, err := client.AddDataCenter(
-		d.Get("site_id").(string),
-		d.Get("name").(string),
-		d.Get("server_address").(string),
-		d.Get("is_content").(string),
-	)
+	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		dataCenterAddResponse, err := client.AddDataCenter(
+			d.Get("site_id").(string),
+			d.Get("name").(string),
+			d.Get("server_address").(string),
+			d.Get("is_content").(string),
+			d.Get("is_enabled").(string),
+		)
 
-	if err != nil {
-		return err
-	}
-
-	if d.Get("is_enabled") != "" {
-		if d.Get("is_enabled") != "" {
-			log.Printf("[INFO] Updating data center datacenter_id (%s) with is_enabled (%s)\n", dataCenterAddResponse.DataCenterID, d.Get("is_enabled").(string))
-		}
-		_, err := client.EditDataCenter(dataCenterAddResponse.DataCenterID, d.Get("name").(string), d.Get("is_content").(string), d.Get("is_enabled").(string))
 		if err != nil {
-			log.Printf("[ERROR] Could not update data center datacenter_id (%s) with is_enabled (%s) %s\n", dataCenterAddResponse.DataCenterID, d.Get("is_enabled").(string), err)
-			return err
+			return resource.RetryableError(fmt.Errorf("Error creating data center for site (%s): %s", d.Get("site_id"), err))
 		}
-	}
 
-	// Set the dc ID
-	d.SetId(dataCenterAddResponse.DataCenterID)
+		// Set the dc ID
+		d.SetId(dataCenterAddResponse.DataCenterID)
 
-	// There may be a timing/race condition here
-	// Set an arbitrary period to sleep
-	time.Sleep(3 * time.Second)
-
-	return resourceDataCenterRead(d, m)
+		return resource.NonRetryableError(resourceDataCenterRead(d, m))
+	})
 }
 
 func resourceDataCenterRead(d *schema.ResourceData, m interface{}) error {

@@ -45,7 +45,7 @@ type DataCenterEditResponse struct {
 }
 
 // AddDataCenter adds an incap rule to be managed by Incapsula
-func (c *Client) AddDataCenter(siteID, name, serverAddress, isContent string) (*DataCenterAddResponse, error) {
+func (c *Client) AddDataCenter(siteID, name, serverAddress, isContent, isEnabled string) (*DataCenterAddResponse, error) {
 	log.Printf("[INFO] Adding Incapsula data center for siteID: %s\n", siteID)
 
 	// Post form to Incapsula
@@ -56,6 +56,7 @@ func (c *Client) AddDataCenter(siteID, name, serverAddress, isContent string) (*
 		"name":           {name},
 		"server_address": {serverAddress},
 		"is_content":     {isContent},
+		"is_enabled":     {isEnabled},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when adding data center for siteID %s: %s", siteID, err)
