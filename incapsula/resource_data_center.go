@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -63,40 +64,43 @@ func resourceDataCenter() *schema.Resource {
 				Computed:    true,
 			},
 		},
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(1 * time.Minute),
+			Delete: schema.DefaultTimeout(1 * time.Minute),
+			Update: schema.DefaultTimeout(1 * time.Minute),
+		},
 	}
 }
 
 func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	dataCenterAddResponse, err := client.AddDataCenter(
-		d.Get("site_id").(string),
-		d.Get("name").(string),
-		d.Get("server_address").(string),
-		d.Get("is_content").(string),
-	)
+	var dataCenterAddResponse *DataCenterAddResponse
+	var err error
+
+	err = resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+		dataCenterAddResponse, err = client.AddDataCenter(
+			d.Get("site_id").(string),
+			d.Get("name").(string),
+			d.Get("server_address").(string),
+			d.Get("is_content").(string),
+			d.Get("is_enabled").(string),
+		)
+
+		if err != nil {
+			return resource.RetryableError(fmt.Errorf("Error creating data center for site (%s): %s", d.Get("site_id"), err))
+		}
+
+		return nil
+	})
 
 	if err != nil {
 		return err
 	}
 
-	if d.Get("is_enabled") != "" {
-		if d.Get("is_enabled") != "" {
-			log.Printf("[INFO] Updating data center datacenter_id (%s) with is_enabled (%s)\n", dataCenterAddResponse.DataCenterID, d.Get("is_enabled").(string))
-		}
-		_, err := client.EditDataCenter(dataCenterAddResponse.DataCenterID, d.Get("name").(string), d.Get("is_content").(string), d.Get("is_enabled").(string))
-		if err != nil {
-			log.Printf("[ERROR] Could not update data center datacenter_id (%s) with is_enabled (%s) %s\n", dataCenterAddResponse.DataCenterID, d.Get("is_enabled").(string), err)
-			return err
-		}
-	}
-
 	// Set the dc ID
 	d.SetId(dataCenterAddResponse.DataCenterID)
-
-	// There may be a timing/race condition here
-	// Set an arbitrary period to sleep
-	time.Sleep(3 * time.Second)
 
 	return resourceDataCenterRead(d, m)
 }
@@ -116,6 +120,8 @@ func resourceDataCenterRead(d *schema.ResourceData, m interface{}) error {
 		} else {
 			resString = listDataCentersResponse.Res.(string)
 		}
+		// This should never happen during data center creation
+		// This is likely to happen if someone deletes the data center via the UI, SDK, or API
 		if resString == "9413" {
 			log.Printf("[INFO] Incapsula Site ID %s has already been deleted: %s\n", d.Get("site_id"), err)
 			d.SetId("")
@@ -152,40 +158,36 @@ func resourceDataCenterRead(d *schema.ResourceData, m interface{}) error {
 func resourceDataCenterUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	_, err := client.EditDataCenter(
-		d.Id(),
-		d.Get("name").(string),
-		d.Get("is_content").(string),
-		d.Get("is_enabled").(string),
-	)
+	return resource.Retry(d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
+		_, err := client.EditDataCenter(
+			d.Id(),
+			d.Get("name").(string),
+			d.Get("is_content").(string),
+			d.Get("is_enabled").(string),
+		)
 
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			return resource.RetryableError(fmt.Errorf("Error updating data center %s for Site ID %s: %s", d.Id(), d.Get("site_id"), err))
+		}
 
-	// There may be a timing/race condition here
-	// Set an arbitrary period to sleep
-	time.Sleep(3 * time.Second)
-
-	return nil
+		return nil
+	})
 }
 
 func resourceDataCenterDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	err := client.DeleteDataCenter(d.Id())
+	return resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		err := client.DeleteDataCenter(d.Id())
 
-	if err != nil {
-		return err
-	}
+		if err != nil {
+			return resource.RetryableError(fmt.Errorf("Error deleting data center %s for Site ID %s: %s", d.Id(), d.Get("site_id"), err))
+		}
 
-	// Set the ID to empty
-	// Implicitly clears the resource
-	d.SetId("")
+		// Set the ID to empty
+		// Implicitly clears the resource
+		d.SetId("")
 
-	// There may be a timing/race condition here
-	// Set an arbitrary period to sleep
-	time.Sleep(3 * time.Second)
-
-	return nil
+		return nil
+	})
 }

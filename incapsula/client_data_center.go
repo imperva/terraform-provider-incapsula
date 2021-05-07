@@ -45,7 +45,7 @@ type DataCenterEditResponse struct {
 }
 
 // AddDataCenter adds an incap rule to be managed by Incapsula
-func (c *Client) AddDataCenter(siteID, name, serverAddress, isContent string) (*DataCenterAddResponse, error) {
+func (c *Client) AddDataCenter(siteID, name, serverAddress, isContent, isEnabled string) (*DataCenterAddResponse, error) {
 	log.Printf("[INFO] Adding Incapsula data center for siteID: %s\n", siteID)
 
 	// Post form to Incapsula
@@ -56,6 +56,7 @@ func (c *Client) AddDataCenter(siteID, name, serverAddress, isContent string) (*
 		"name":           {name},
 		"server_address": {serverAddress},
 		"is_content":     {isContent},
+		"is_enabled":     {isEnabled},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when adding data center for siteID %s: %s", siteID, err)
@@ -164,21 +165,25 @@ func (c *Client) EditDataCenter(dcID, name, isContent, isEnabled string) (*DataC
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterEdit), values)
 	if err != nil {
-		return nil, fmt.Errorf("Error editing data center  for dcID: %s: %s", dcID, err)
+		return nil, fmt.Errorf("Error editing data center (%s): %s", dcID, err)
 	}
 
 	// Read the body
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
+	// Dump the Headers
+	contentTypeHeader := resp.Header["Content-Type"]
+	log.Printf("[DEBUG] Incapsula edit data center content type header (%s): %s\n", dcID, contentTypeHeader)
+
 	// Dump JSON
-	log.Printf("[DEBUG] Incapsula edit data center JSON response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] Incapsula edit data center JSON response (%s): %s\n", dcID, string(responseBody))
 
 	// Parse the JSON
 	var dataCenterEditResponse DataCenterEditResponse
 	err = json.Unmarshal([]byte(responseBody), &dataCenterEditResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing edit dta center JSON response for dcID %s: %s", dcID, err)
+		return nil, fmt.Errorf("Error parsing edit data center JSON response (%s): %s", dcID, err)
 	}
 
 	// Res can sometimes oscillate between a string and number
@@ -193,7 +198,7 @@ func (c *Client) EditDataCenter(dcID, name, isContent, isEnabled string) (*DataC
 
 	// Look at the response status code from Incapsula
 	if resString != "0" {
-		return nil, fmt.Errorf("Error from Incapsula service when editing data center for dcID %s: %s", dcID, string(responseBody))
+		return nil, fmt.Errorf("Error from Incapsula service when editing data center (%s): %s", dcID, string(responseBody))
 	}
 
 	return &dataCenterEditResponse, nil
@@ -217,21 +222,25 @@ func (c *Client) DeleteDataCenter(dcID string) error {
 		"dc_id":   {dcID},
 	})
 	if err != nil {
-		return fmt.Errorf("Error deleting data center (dc_id: %s): %s", dcID, err)
+		return fmt.Errorf("Error deleting data center (%s): %s", dcID, err)
 	}
 
 	// Read the body
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
+	// Dump the Headers
+	contentTypeHeader := resp.Header["Content-Type"]
+	log.Printf("[DEBUG] Incapsula edit data center content type header (%s): %s\n", dcID, contentTypeHeader)
+
 	// Dump JSON
-	log.Printf("[DEBUG] Incapsula delete data center JSON response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] Incapsula delete data center JSON response (%s): %s\n", dcID, string(responseBody))
 
 	// Parse the JSON
 	var dataCenterDeleteResponse DataCenterDeleteResponse
 	err = json.Unmarshal([]byte(responseBody), &dataCenterDeleteResponse)
 	if err != nil {
-		return fmt.Errorf("Error parsing delete data center JSON response (dc_id: %s): %s", dcID, err)
+		return fmt.Errorf("Error parsing delete data center JSON response (%s): %s", dcID, err)
 	}
 
 	// Res can sometimes oscillate between a string and number
@@ -249,5 +258,5 @@ func (c *Client) DeleteDataCenter(dcID string) error {
 		return nil
 	}
 
-	return fmt.Errorf("Error from Incapsula service when deleting data center (dc_id: %s): %s", dcID, string(responseBody))
+	return fmt.Errorf("Error from Incapsula service when deleting data center (%s): %s", dcID, string(responseBody))
 }

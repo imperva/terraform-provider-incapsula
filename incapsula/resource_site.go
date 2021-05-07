@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -330,6 +331,10 @@ func resourceSite() *schema.Resource {
 				Computed:    true,
 			},
 		},
+
+		Timeouts: &schema.ResourceTimeout{
+			Delete: schema.DefaultTimeout(1 * time.Minute),
+		},
 	}
 }
 
@@ -565,20 +570,21 @@ func resourceSiteDelete(d *schema.ResourceData, m interface{}) error {
 
 	log.Printf("[INFO] Deleting Incapsula site for domain: %s\n", domain)
 
-	err := client.DeleteSite(domain, siteID)
+	return resource.Retry(d.Timeout(schema.TimeoutDelete), func() *resource.RetryError {
+		err := client.DeleteSite(domain, siteID)
 
-	if err != nil {
-		log.Printf("[ERROR] Could not delete Incapsula site for domain: %s, %s\n", domain, err)
-		return err
-	}
+		if err != nil {
+			return resource.RetryableError(fmt.Errorf("Error deleting site (%s) for domain %s: %s", d.Id(), domain, err))
+		}
 
-	// Set the ID to empty
-	// Implicitly clears the resource
-	d.SetId("")
+		// Set the ID to empty
+		// Implicitly clears the resource
+		d.SetId("")
 
-	log.Printf("[INFO] Deleted Incapsula site for domain: %s\n", domain)
+		log.Printf("[INFO] Deleted site (%s) for domain %s\n", d.Id(), domain)
 
-	return nil
+		return nil
+	})
 }
 
 func updateAdditionalSiteProperties(client *Client, d *schema.ResourceData) error {
