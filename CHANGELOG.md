@@ -1,4 +1,4 @@
-## 2.7.4 (Unreleased)
+## 2.7.4 (Released)
 
 * Add retry logic to `site` and `data_center` resources
 * Set the `dns_record_name` in the `site` resource
@@ -8,7 +8,7 @@
 * Add `txt_record_value_*` resource
 * Update the `site` resource value `site_ip` to be computed
 * Fix the `site_ip` to store in state file
-* Fix `data_storage_region` issue in `account` resource, `DEFAULT` to `US`
+* Fix `data_storage_region` issue in `account` resource, defaults to `US`
 
 ## 2.7.3 (Released)
 
