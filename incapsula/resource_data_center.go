@@ -79,7 +79,7 @@ func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 	var dataCenterAddResponse *DataCenterAddResponse
 	var err error
 
-	return resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
+	err = resource.Retry(d.Timeout(schema.TimeoutCreate), func() *resource.RetryError {
 		dataCenterAddResponse, err = client.AddDataCenter(
 			d.Get("site_id").(string),
 			d.Get("name").(string),
@@ -95,12 +95,12 @@ func resourceDataCenterCreate(d *schema.ResourceData, m interface{}) error {
 		return nil
 	})
 
+	if err != nil {
+		return err
+	}
+
 	// Set the dc ID
 	d.SetId(dataCenterAddResponse.DataCenterID)
-
-	// There may be a timing/race condition here
-	// Set an arbitrary period to sleep
-	time.Sleep(3 * time.Second)
 
 	return resourceDataCenterRead(d, m)
 }
