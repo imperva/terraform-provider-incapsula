@@ -169,7 +169,7 @@ func resourceDataCenterUpdate(d *schema.ResourceData, m interface{}) error {
 			return resource.RetryableError(fmt.Errorf("Error updating datacenter: %s", err))
 		}
 
-		return resource.NonRetryableError(resourceDataCenterRead(d, m))
+		return nil
 	})
 }
 
