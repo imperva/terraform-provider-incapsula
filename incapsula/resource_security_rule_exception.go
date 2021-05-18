@@ -48,6 +48,8 @@ func resourceSecurityRuleException() *schema.Resource {
 
 				d.Set("site_id", siteID)
 				d.Set("rule_id", ruleID)
+				d.SetId(ruleExceptionID)
+
 				return []*schema.ResourceData{d}, nil
 			},
 		},
