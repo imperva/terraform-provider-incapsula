@@ -37,6 +37,7 @@ func resourceIncapRule() *schema.Resource {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"name": {
 				Description: "Rule name",
@@ -83,6 +84,7 @@ func resourceIncapRule() *schema.Resource {
 				Description: "Data center to forward request to. Applies only for `RULE_ACTION_FORWARD_TO_DC`.",
 				Type:        schema.TypeInt,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"rate_context": {
 				Description: "The context of the rate counter. Possible values `IP` or `Session`. Applies only to rules using `RULE_ACTION_RATE`.",

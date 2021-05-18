@@ -24,6 +24,7 @@ func resourceOriginPOP() *schema.Resource {
 				Description: "Numeric identifier of the data center.",
 				Type:        schema.TypeInt,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"origin_pop": {
 				Description: "The Origin POP code (must be lowercase), e.g: iad. Note, this field is create/update only. Reads are not supported as the API doesn't exist yet. Note that drift may happen.",

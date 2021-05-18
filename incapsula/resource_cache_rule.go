@@ -37,6 +37,7 @@ func resourceCacheRule() *schema.Resource {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"name": {
 				Description: "Rule name",

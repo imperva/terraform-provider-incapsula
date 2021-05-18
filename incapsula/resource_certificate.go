@@ -10,7 +10,7 @@ func resourceCertificate() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceCertificateCreate,
 		Read:   resourceCertificateRead,
-		Update: resourceCertificateUpdate,
+		Update: nil,
 		Delete: resourceCertificateDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
@@ -25,6 +25,7 @@ func resourceCertificate() *schema.Resource {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"certificate": {
 				Description: "The certificate file in base64 format.",

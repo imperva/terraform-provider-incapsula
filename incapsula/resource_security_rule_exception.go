@@ -58,11 +58,13 @@ func resourceSecurityRuleException() *schema.Resource {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeInt,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"rule_id": {
 				Description: "The identifier of the security rule, e.g api.threats.cross_site_scripting.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"client_app_types": {
 				Description:      "A comma separated list of client application types,",

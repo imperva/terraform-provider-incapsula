@@ -53,14 +53,14 @@ type SiteStatusResponse struct {
 		SetTypeTo     string   `json:"set_type_to"`
 		SetDataTo     []string `json:"set_data_to"`
 	} `json:"original_dns"`
-	Warnings                     []interface{} `json:"warnings"`
-	Active                       string        `json:"active"`
-	SupportAllTLSVersions        bool          `json:"support_all_tls_versions"`
-	WildcardSanForNewSites       bool          `json:"wildcard_san_for_new_sites"`
-	NakedDomainSanForNewWwwSites bool          `json:"naked_domain_san_for_new_www_sites"`
-	AdditionalErrors             []interface{} `json:"additionalErrors"`
-	DisplayName                  string        `json:"display_name"`
-	Security                     struct {
+	Warnings                             []interface{} `json:"warnings"`
+	Active                               string        `json:"active"`
+	SupportAllTLSVersions                bool          `json:"support_all_tls_versions"`
+	UseWildcardSanInsteadOfFullDomainSan bool          `json:"use_wildcard_san_instead_of_full_domain_san"`
+	AddNakedDomainSan                    bool          `json:"add_naked_domain_san"`
+	AdditionalErrors                     []interface{} `json:"additionalErrors"`
+	DisplayName                          string        `json:"display_name"`
+	Security                             struct {
 		Waf struct {
 			Rules []struct {
 				Action                 string `json:"action,omitempty"`

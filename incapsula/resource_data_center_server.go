@@ -38,11 +38,13 @@ func resourceDataCenterServer() *schema.Resource {
 				Description: "Numeric identifier of the data center server to operate on.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"site_id": {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 
 			// Optional Arguments

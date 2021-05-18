@@ -23,6 +23,7 @@ func resourceTXTRecord() *schema.Resource {
 				Description: "Numeric identifier of the site.",
 				Type:        schema.TypeInt,
 				Required:    true,
+				ForceNew:    true,
 			},
 			// Optional Arguments
 			"txt_record_value_one": {

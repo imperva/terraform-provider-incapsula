@@ -58,6 +58,7 @@ func resourcePolicy() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"description": {
 				Description: "The policy description.",

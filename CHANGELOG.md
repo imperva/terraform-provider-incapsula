@@ -1,4 +1,9 @@
-## 2.7.4 (Unreleased)
+## 2.7.5 (Unreleased)
+* Fixed `naked_domain_san` and `wildcard_san` on the `site` resource.
+* Adding edit `server_address` ability to `data_center` resource.
+* Updating several resources parameters to include `ForceNew`.
+
+## 2.7.4 (Released)
 
 * Add retry logic to `site` and `data_center` resources
 * Set the `dns_record_name` in the `site` resource
