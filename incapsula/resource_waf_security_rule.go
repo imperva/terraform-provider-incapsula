@@ -52,11 +52,13 @@ func resourceWAFSecurityRule() *schema.Resource {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeInt,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"rule_id": {
 				Description: "The identifier of the WAF rule, e.g api.threats.cross_site_scripting.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 
 			// Required for rule_id: api.threats.backdoor, api.threats.cross_site_scripting, api.threats.illegal_resource_access, api.threats.remote_file_inclusion, api.threats.sql_injection

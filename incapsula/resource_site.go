@@ -44,6 +44,7 @@ func resourceSite() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
+				ForceNew:    true,
 			},
 			"ref_id": {
 				Description: "Customer specific identifier for this operation.",
@@ -54,6 +55,7 @@ func resourceSite() *schema.Resource {
 				Description: "If this value is false, end users will not get emails about the add site process such as DNS instructions and SSL setup.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"site_ip": {
 				Description: "Manually set the web server IP/CNAME.",
@@ -65,11 +67,13 @@ func resourceSite() *schema.Resource {
 				Description: "If this value is true, manually set the site to support SSL. This option is only available for sites with manually configured IP/CNAME and for specific accounts.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"logs_account_id": {
 				Description: "Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"active": {
 				Description: "active or bypass.",
@@ -143,6 +147,7 @@ func resourceSite() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"perf_client_comply_no_cache": {
 				Description: "Comply with No-Cache and Max-Age directives in client requests. By default, these cache directives are ignored. Resources are dynamically profiled and re-configured to optimize performance.",
@@ -279,12 +284,14 @@ func resourceSite() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     "true",
+				ForceNew:    true,
 			},
 			"wildcard_san": {
 				Description: "Use 'true' to add the wildcard SAN or 'false' to add the full domain SAN to the site’s SSL certificate. Default value: true",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     "true",
+				ForceNew:    true,
 			},
 			// Computed Attributes
 			"site_creation_date": {
@@ -422,9 +429,9 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("site_creation_date", siteStatusResponse.SiteCreationDate)
 	d.Set("domain", siteStatusResponse.Domain)
 	d.Set("account_id", siteStatusResponse.AccountID)
-	d.Set("site_ip", siteStatusResponse.Ips[0])
-	d.Set("naked_domain_san", siteStatusResponse.NakedDomainSanForNewWwwSites)
-	d.Set("wildcard_san", siteStatusResponse.WildcardSanForNewSites)
+	//d.Set("site_ip", siteStatusResponse.Ips[0])
+	d.Set("naked_domain_san", siteStatusResponse.AddNakedDomainSan)
+	d.Set("wildcard_san", siteStatusResponse.UseWildcardSanInsteadOfFullDomainSan)
 	d.Set("acceleration_level", siteStatusResponse.AccelerationLevel)
 	d.Set("active", siteStatusResponse.Active)
 
@@ -519,12 +526,23 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	if len(listDataCentersResponse.DCs[0].Servers) == 0 {
+		log.Printf("[ERROR] Could not read Incapsula data center servers for domain: %s and site id: %d, %s\n", domain, siteID, err)
+		return err
+	}
+
 	dataCenterID := listDataCentersResponse.DCs[0].ID
 	if dataCenterID == "" {
 		return fmt.Errorf("[ERROR] Incapsula Data Center missing for Site ID %s", d.Get("site_id"))
 	}
 	dcID, _ := strconv.Atoi(dataCenterID)
 	d.Set("original_data_center_id", dcID)
+
+	siteIP := listDataCentersResponse.DCs[0].Servers[0].Address
+	if siteIP == "" {
+		return fmt.Errorf("[ERROR] Incapsula Data Center missing server address for Site ID %s", d.Get("site_id"))
+	}
+	d.Set("site_ip", siteIP)
 
 	log.Printf("[INFO] Finished reading Incapsula site for domain: %s\n", domain)
 
@@ -588,7 +606,7 @@ func resourceSiteDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func updateAdditionalSiteProperties(client *Client, d *schema.ResourceData) error {
-	updateParams := [7]string{"acceleration_level", "active", "approver", "domain_redirect_to_full", "domain_validation", "ignore_ssl", "remove_ssl"}
+	updateParams := [9]string{"acceleration_level", "active", "approver", "domain_redirect_to_full", "domain_validation", "ignore_ssl", "remove_ssl", "ref_id", "site_ip"}
 	for i := 0; i < len(updateParams); i++ {
 		param := updateParams[i]
 		if d.HasChange(param) && d.Get(param) != "" {

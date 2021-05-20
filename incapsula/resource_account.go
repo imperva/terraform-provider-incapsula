@@ -25,7 +25,6 @@ func resourceAccount() *schema.Resource {
 				Description: "Email address. For example: joe@example.com.",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 			},
 
 			// Optional Arguments
@@ -34,6 +33,7 @@ func resourceAccount() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Computed:    true,
+				ForceNew:    true,
 			},
 			"ref_id": {
 				Description: "Customer specific identifier for this operation.",
@@ -44,6 +44,7 @@ func resourceAccount() *schema.Resource {
 				Description: "The account owner's name. For example: John Doe.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"plan_id": {
 				Description: "An identifier of the plan to assign to the new account. For example, ent100 for the Enterprise 100 plan.",
@@ -54,11 +55,13 @@ func resourceAccount() *schema.Resource {
 				Description: "Account name.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"logs_account_id": {
 				Description: "Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.",
 				Type:        schema.TypeInt,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"log_level": {
 				Description:  "The log level. Options are `full`, `security`, and `none`.",
@@ -213,7 +216,7 @@ func resourceAccountRead(d *schema.ResourceData, m interface{}) error {
 func resourceAccountUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	updateParams := [3]string{"email ", "plan_id", "ref_id"}
+	updateParams := [7]string{"email", "plan_id", "ref_id", "error_page_template", "support_all_tls_versions", "naked_domain_san_for_new_www_sites", "wildcard_san_for_new_sites"}
 	for i := 0; i < len(updateParams); i++ {
 		param := updateParams[i]
 		if d.HasChange(param) && d.Get(param) != "" {

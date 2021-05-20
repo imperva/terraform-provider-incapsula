@@ -38,6 +38,7 @@ func resourceDataCenter() *schema.Resource {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"name": {
 				Description: "The new data center's name.",
@@ -48,6 +49,7 @@ func resourceDataCenter() *schema.Resource {
 				Description: "The server's address. Possible values: IP, CNAME.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 
 			// Optional Arguments
