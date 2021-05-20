@@ -1,4 +1,4 @@
-## 2.7.5 (Unreleased)
+## 2.7.5 (Released)
 * Fixed `naked_domain_san` and `wildcard_san` on the `site` resource.
 * Adding edit `server_address` ability to `data_center` resource.
 * Updating several resources parameters to include `ForceNew`.
@@ -13,7 +13,7 @@
 * Add `txt_record_value_*` resource
 * Update the `site` resource value `site_ip` to be computed
 * Fix the `site_ip` to store in state file
-* Fix `data_storage_region` issue in `account` resource, `DEFAULT` to `US`
+* Fix `data_storage_region` issue in `account` resource, defaults to `US`
 
 ## 2.7.3 (Released)
 

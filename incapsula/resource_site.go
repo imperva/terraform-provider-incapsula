@@ -595,11 +595,11 @@ func resourceSiteDelete(d *schema.ResourceData, m interface{}) error {
 			return resource.RetryableError(fmt.Errorf("Error deleting site (%s) for domain %s: %s", d.Id(), domain, err))
 		}
 
+		log.Printf("[INFO] Deleted site (%s) for domain %s\n", d.Id(), domain)
+
 		// Set the ID to empty
 		// Implicitly clears the resource
 		d.SetId("")
-
-		log.Printf("[INFO] Deleted site (%s) for domain %s\n", d.Id(), domain)
 
 		return nil
 	})
