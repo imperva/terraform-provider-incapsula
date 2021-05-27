@@ -1,11 +1,17 @@
 package incapsula
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 )
+
+type PolicyAssetAssociationStatus struct {
+	Value   bool `json:"value"`
+	IsError bool `json:"isError"`
+}
 
 // AddPolicyAssetAssociation adds a policy to be managed by Incapsula
 func (c *Client) AddPolicyAssetAssociation(policyID, assetID, assetType string) error {
@@ -65,4 +71,35 @@ func (c *Client) DeletePolicyAssetAssociation(policyID, assetID, assetType strin
 	}
 
 	return nil
+}
+
+func (c *Client) isPolicyAssetAssociated(policyID, assetID, assetType string) (bool, error) {
+	log.Printf("[INFO] Checking Policy Asset Association: %s-%s-%s\n", policyID, assetID, assetType)
+
+	// Check with Policies if the association exist
+	resp, err := c.httpClient.Get(fmt.Sprintf("%s/policies/v2/policies/%s/assets/%s/%s?api_id=%s&api_key=%s", c.config.BaseURLAPI, policyID, assetType, assetID, c.config.APIID, c.config.APIKey))
+	if err != nil {
+		return false, fmt.Errorf("error from Incapsula service when checking if Policy Asset Association exist: %s-%s-%s, err: %s", policyID, assetID, assetType, err)
+	}
+
+	// Read the body
+	defer resp.Body.Close()
+	responseBody, err := ioutil.ReadAll(resp.Body)
+
+	log.Printf("[DEBUG] Incapsula isPolicyAssetAssociated for: %s-%s-%s , response is: %s\n", policyID, assetID, assetType, string(responseBody))
+
+	// Check the response code
+	// If policy asset is not associated 404 will be returned from policies
+	if resp.StatusCode != 200 {
+		return false, fmt.Errorf("Error status code %d from Incapsula service when checking the reading Policy Asset Association: %s-%s-%s, response is: %s", resp.StatusCode, policyID, assetID, assetType, string(responseBody))
+	}
+
+	// Parse the JSON
+	var policyAssetAssociationStatus PolicyAssetAssociationStatus
+	err = json.Unmarshal([]byte(responseBody), &policyAssetAssociationStatus)
+	if err != nil {
+		return false, fmt.Errorf("error parsing Policy Asset Association JSON response for Policy Asset Association: %d-%s-%s: %s\nresponse: %s, err: %s", resp.StatusCode, policyID, assetID, assetType, err, string(responseBody))
+	}
+
+	return true, nil
 }
