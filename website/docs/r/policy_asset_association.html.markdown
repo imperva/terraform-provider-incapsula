@@ -36,4 +36,4 @@ The following attributes are exported:
 
 ## Import
 
-Policy Asset Association cannot be imported.
+terraform import incapsula_policy_asset_association.example-policy-asset-association policy_id/asset_id/asset_type
