@@ -2,18 +2,20 @@ package incapsula
 
 import (
 	"fmt"
-	"log"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
+	"strings"
 )
 
 func resourcePolicyAssetAssociation() *schema.Resource {
 	return &schema.Resource{
-		Create:   resourcePolicyAssetAssociationCreate,
-		Read:     resourcePolicyAssetAssociationNil,
-		Update:   nil,
-		Delete:   resourcePolicyAssetAssociationDelete,
-		Importer: nil,
+		Create: resourcePolicyAssetAssociationCreate,
+		Read:   resourcePolicyAssetAssociationRead,
+		Update: nil,
+		Delete: resourcePolicyAssetAssociationDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
@@ -61,7 +63,31 @@ func resourcePolicyAssetAssociationCreate(d *schema.ResourceData, m interface{})
 	return nil
 }
 
-func resourcePolicyAssetAssociationNil(d *schema.ResourceData, m interface{}) error {
+func resourcePolicyAssetAssociationRead(d *schema.ResourceData, m interface{}) error {
+	client := m.(*Client)
+
+	policyID := strings.Split(d.Id(), "/")[0]
+	assetID := strings.Split(d.Id(), "/")[1]
+	assetType := strings.Split(d.Id(), "/")[2]
+
+	log.Printf("[INFO] Trying to read Incapsula Policy Asset Association: %s-%s-%s\n", policyID, assetID, assetType)
+	var isAssociated, err = client.isPolicyAssetAssociated(policyID, assetID, assetType)
+
+	if err != nil {
+		log.Printf("[ERROR] Could not read Incapsula Policy Asset Association: %s-%s-%s, err: %s\n", policyID, assetID, assetType, err)
+		return err
+	}
+
+	if isAssociated {
+		log.Printf("[INFO] Successfully read Policy Asset Association exist: %s-%s-%s\n", policyID, assetID, assetType)
+		syntheticID := fmt.Sprintf("%s-%s-%s", policyID, assetID, assetType)
+
+		d.Set("asset_id", assetID)
+		d.Set("asset_type", assetType)
+		d.Set("policy_id", policyID)
+		d.SetId(syntheticID)
+	}
+
 	return nil
 }
 
