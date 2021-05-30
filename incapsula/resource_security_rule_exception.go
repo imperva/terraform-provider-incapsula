@@ -22,6 +22,15 @@ const sqlInjectionExceptionRuleID = "api.threats.sql_injection"
 const ddosExceptionRuleID = "api.threats.ddos"
 const botAccessControlExceptionRuleID = "api.threats.bot_access_control"
 
+const exceptionTypeUrl = "api.rule_exception_type.url"
+const exceptionTypeHttpParameter = "api.rule_exception_type.http_parameter"
+const exceptionTypeIp = "api.rule_exception_type.client_ip"
+const exceptionTypeCountry = "api.rule_exception_type.country"
+const exceptionTypeContinent = "api.rule_exception_type.continent"
+const exceptionTypeClientAppType = "api.rule_exception_type.client_app_type"
+const exceptionTypeUserAgent = "api.rule_exception_type.user_agent"
+const exceptionTypeClientAppId = "api.rule_exception_type.client_app_id"
+
 // DeleteSecurityRuleExceptionResponse contains the response code for deleting a security exception
 type DeleteSecurityRuleExceptionResponse struct {
 	Res int `json:"res"`
@@ -36,8 +45,8 @@ func resourceSecurityRuleException() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				idSlice := strings.Split(d.Id(), "/")
-				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
-					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id/rule_id", d.Id())
+				if len(idSlice) != 3 || idSlice[0] == "" || idSlice[1] == "" || idSlice[2] == "" {
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id/rule_id/rule_exception_id", d.Id())
 				}
 
 				siteID, err := strconv.Atoi(idSlice[0])
@@ -48,6 +57,7 @@ func resourceSecurityRuleException() *schema.Resource {
 
 				d.Set("site_id", siteID)
 				d.Set("rule_id", ruleID)
+				d.SetId(idSlice[2])
 				return []*schema.ResourceData{d}, nil
 			},
 		},
@@ -212,10 +222,35 @@ func resourceSecurityRuleExceptionRead(d *schema.ResourceData, m interface{}) er
 				for _, exception := range entry.Exceptions {
 					if exception.ID == whitelistID {
 						for _, value := range exception.Values {
-							d.Set(value.ID, value.Name)
-							exceptionFound = true
-							break
+							switch value.ID {
+							case exceptionTypeUrl:
+								var urlPatternList []string
+								var urlList []string
+								for _, url := range value.Urls {
+									urlList = append(urlList, url.Value)
+									urlPatternList = append(urlPatternList, url.Pattern)
+								}
+								d.Set("url_patterns", strings.Join(urlPatternList, ","))
+								d.Set("urls", strings.Join(urlList, ","))
+							case exceptionTypeCountry:
+								d.Set("countries", strings.Join(value.Geo.Countries, ","))
+							case exceptionTypeContinent:
+								d.Set("continents", strings.Join(value.Geo.Continents, ","))
+							case exceptionTypeClientAppId:
+								d.Set("client_apps", strings.Join(value.ClientApps, ","))
+							case exceptionTypeClientAppType:
+								d.Set("client_app_types", strings.Join(value.ClientAppTypes, ","))
+							case exceptionTypeHttpParameter:
+								d.Set("parameters", strings.Join(value.Parameters, ","))
+							case exceptionTypeIp:
+								d.Set("ips", strings.Join(value.Ips, ","))
+							case exceptionTypeUserAgent:
+								d.Set("user_agents", strings.Join(value.UserAgents, ","))
+
+							}
 						}
+						exceptionFound = true
+						break
 					}
 				}
 			}
