@@ -80,7 +80,7 @@ func resourcePolicyAssetAssociationRead(d *schema.ResourceData, m interface{}) e
 
 	if isAssociated {
 		log.Printf("[INFO] Successfully read Policy Asset Association exist: %s-%s-%s\n", policyID, assetID, assetType)
-		syntheticID := fmt.Sprintf("%s-%s-%s", policyID, assetID, assetType)
+		syntheticID := fmt.Sprintf("%s/%s/%s", policyID, assetID, assetType)
 
 		d.Set("asset_id", assetID)
 		d.Set("asset_type", assetType)
