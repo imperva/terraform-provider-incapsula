@@ -86,6 +86,16 @@ func resourceIncapRule() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
+			"port_forwarding_context": {
+				Description: "Context for port forwarding. \"Use Port Value\" or \"Use Header Name\". Applies only for `RULE_ACTION_FORWARD_TO_PORT`.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"port_forwarding_value": {
+				Description: "Port number or header name for port forwarding. Applies only for `RULE_ACTION_FORWARD_TO_PORT`.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"rate_context": {
 				Description: "The context of the rate counter. Possible values `IP` or `Session`. Applies only to rules using `RULE_ACTION_RATE`.",
 				Type:        schema.TypeString,
@@ -111,6 +121,21 @@ func resourceIncapRule() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"multiple_deletions": {
+				Description: "Delete multiple header occurrences. Applies only to rules using `RULE_ACTION_DELETE_HEADER` and `RULE_ACTION_RESPONSE_DELETE_HEADER`.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+			},
+			"override_waf_rule": {
+				Description: "The setting to override. Possible values: SQL Injection, Remote File Inclusion, Cross Site Scripting, Illegal Resource Access.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"override_waf_action": {
+				Description: "The action for the override rule. Possible values: Alert Only, Block Request, Block User, Block IP, Ignore.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -119,20 +144,25 @@ func resourceIncapRuleCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	rule := IncapRule{
-		Name:                d.Get("name").(string),
-		Action:              d.Get("action").(string),
-		Filter:              d.Get("filter").(string),
-		ResponseCode:        d.Get("response_code").(int),
-		AddMissing:          d.Get("add_missing").(bool),
-		From:                d.Get("from").(string),
-		To:                  d.Get("to").(string),
-		RewriteName:         d.Get("rewrite_name").(string),
-		DCID:                d.Get("dc_id").(int),
-		RateContext:         d.Get("rate_context").(string),
-		RateInterval:        d.Get("rate_interval").(int),
-		ErrorType:           d.Get("error_type").(string),
-		ErrorResponseFormat: d.Get("error_response_format").(string),
-		ErrorResponseData:   d.Get("error_response_data").(string),
+		Name:                  d.Get("name").(string),
+		Action:                d.Get("action").(string),
+		Filter:                d.Get("filter").(string),
+		ResponseCode:          d.Get("response_code").(int),
+		AddMissing:            d.Get("add_missing").(bool),
+		From:                  d.Get("from").(string),
+		To:                    d.Get("to").(string),
+		RewriteName:           d.Get("rewrite_name").(string),
+		DCID:                  d.Get("dc_id").(int),
+		PortForwardingContext: d.Get("port_forwarding_context").(string),
+		PortForwardingValue:   d.Get("port_forwarding_value").(string),
+		RateContext:           d.Get("rate_context").(string),
+		RateInterval:          d.Get("rate_interval").(int),
+		ErrorType:             d.Get("error_type").(string),
+		ErrorResponseFormat:   d.Get("error_response_format").(string),
+		ErrorResponseData:     d.Get("error_response_data").(string),
+		MultipleDeletions:     d.Get("multiple_deletions").(bool),
+		OverrideWafRule:       d.Get("override_waf_rule").(string),
+		OverrideWafAction:     d.Get("override_waf_action").(string),
 	}
 
 	ruleWithID, err := client.AddIncapRule(d.Get("site_id").(string), &rule)
@@ -177,11 +207,16 @@ func resourceIncapRuleRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("to", rule.To)
 	d.Set("rewrite_name", rule.RewriteName)
 	d.Set("dc_id", rule.DCID)
+	d.Set("port_forwarding_context", rule.PortForwardingContext)
+	d.Set("port_forwarding_value", rule.PortForwardingValue)
 	d.Set("rate_context", rule.RateContext)
 	d.Set("rate_interval", rule.RateInterval)
 	d.Set("error_type", rule.ErrorType)
 	d.Set("error_response_format", rule.ErrorResponseFormat)
 	d.Set("error_response_data", rule.ErrorResponseData)
+	d.Set("multiple_deletions", rule.MultipleDeletions)
+	d.Set("override_waf_rule", rule.OverrideWafRule)
+	d.Set("override_waf_action", rule.OverrideWafAction)
 
 	return nil
 }
@@ -190,20 +225,25 @@ func resourceIncapRuleUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	rule := IncapRule{
-		Name:                d.Get("name").(string),
-		Action:              d.Get("action").(string),
-		Filter:              d.Get("filter").(string),
-		ResponseCode:        d.Get("response_code").(int),
-		AddMissing:          d.Get("add_missing").(bool),
-		From:                d.Get("from").(string),
-		To:                  d.Get("to").(string),
-		RewriteName:         d.Get("rewrite_name").(string),
-		DCID:                d.Get("dc_id").(int),
-		RateContext:         d.Get("rate_context").(string),
-		RateInterval:        d.Get("rate_interval").(int),
-		ErrorType:           d.Get("error_type").(string),
-		ErrorResponseFormat: d.Get("error_response_format").(string),
-		ErrorResponseData:   d.Get("error_response_data").(string),
+		Name:                  d.Get("name").(string),
+		Action:                d.Get("action").(string),
+		Filter:                d.Get("filter").(string),
+		ResponseCode:          d.Get("response_code").(int),
+		AddMissing:            d.Get("add_missing").(bool),
+		From:                  d.Get("from").(string),
+		To:                    d.Get("to").(string),
+		RewriteName:           d.Get("rewrite_name").(string),
+		DCID:                  d.Get("dc_id").(int),
+		PortForwardingContext: d.Get("port_forwarding_context").(string),
+		PortForwardingValue:   d.Get("port_forwarding_value").(string),
+		RateContext:           d.Get("rate_context").(string),
+		RateInterval:          d.Get("rate_interval").(int),
+		ErrorType:             d.Get("error_type").(string),
+		ErrorResponseFormat:   d.Get("error_response_format").(string),
+		ErrorResponseData:     d.Get("error_response_data").(string),
+		MultipleDeletions:     d.Get("multiple_deletions").(bool),
+		OverrideWafRule:       d.Get("override_waf_rule").(string),
+		OverrideWafAction:     d.Get("override_waf_action").(string),
 	}
 
 	ruleID, err := strconv.Atoi(d.Id())
