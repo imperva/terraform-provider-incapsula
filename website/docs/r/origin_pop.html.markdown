@@ -22,6 +22,7 @@ resource "incapsula_data_center" "example-data-center" {
 
 resource "incapsula_origin_pop" "aws-east" {
   dc_id = incapsula_data_center.example-data-center.id
+  site_id = incapsula_site.example-site.id
   origin_pop = "iad"
 }
 ```
@@ -41,4 +42,4 @@ The following attributes are exported:
 
 ## Import
 
-Origin POP cannot be imported.
+terraform import incapsula_origin_pop.aws-east site_id/dc_id

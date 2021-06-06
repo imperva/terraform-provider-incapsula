@@ -35,6 +35,7 @@ type DataCenterListResponse struct {
 		Name        string `json:"name"`
 		ContentOnly string `json:"contentOnly"`
 		IsActive    string `json:"isActive"`
+		OriginPop   string `json:"originPop"`
 	} `json:"DCs"`
 }
 
