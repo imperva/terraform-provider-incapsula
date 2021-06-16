@@ -76,19 +76,11 @@ func resourceDataCenterServerCreate(d *schema.ResourceData, m interface{}) error
 		d.Get("dc_id").(string),
 		d.Get("server_address").(string),
 		d.Get("is_standby").(string),
+		d.Get("is_enabled").(string),
 	)
 
 	if err != nil {
 		return err
-	}
-
-	if d.Get("is_enabled") != "" {
-		log.Printf("[INFO] Updating data center server server_id (%s) with is_enabled (%s)\n", dataCenterServerAddResponse.ServerID, d.Get("is_enabled").(string))
-		_, err := client.EditDataCenterServer(dataCenterServerAddResponse.ServerID, d.Get("server_address").(string), d.Get("is_standby").(string), d.Get("is_enabled").(string))
-		if err != nil {
-			log.Printf("[ERROR] Could not update data center server server_id (%s) with is_enabled (%s) %s\n", dataCenterServerAddResponse.ServerID, d.Get("is_enabled").(string), err)
-			return err
-		}
 	}
 
 	// Set the server ID
