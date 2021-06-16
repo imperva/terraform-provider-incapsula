@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/url"
+	"strconv"
 )
 
 // Endpoints (unexported consts)
@@ -26,8 +27,13 @@ type DataCenterServerEditResponse struct {
 }
 
 // AddDataCenterServer adds an incap data center server to be managed by Incapsula
-func (c *Client) AddDataCenterServer(dcID, serverAddress, isStandby string) (*DataCenterServerAddResponse, error) {
+func (c *Client) AddDataCenterServer(dcID, serverAddress, isStandby string, isEnabled string) (*DataCenterServerAddResponse, error) {
 	log.Printf("[INFO] Adding Incapsula data center server for dcID: %s\n", dcID)
+
+	bIsEnabled, err := strconv.ParseBool(isEnabled)
+	if err != nil {
+		return nil, fmt.Errorf("Error from Incapsula service when adding data center server for dcID %s: %s", dcID, err)
+	}
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServerAdd), url.Values{
@@ -36,6 +42,7 @@ func (c *Client) AddDataCenterServer(dcID, serverAddress, isStandby string) (*Da
 		"dc_id":          {dcID},
 		"server_address": {serverAddress},
 		"is_standby":     {isStandby},
+		"is_disabled":    {strconv.FormatBool(!bIsEnabled)},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when adding data center server for dcID %s: %s", dcID, err)

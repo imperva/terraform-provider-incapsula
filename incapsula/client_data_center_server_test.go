@@ -17,7 +17,7 @@ func TestClientAddDataCenterServerBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	dcID := "42"
-	addDataCenterServerResponse, err := client.AddDataCenterServer(dcID, "", "")
+	addDataCenterServerResponse, err := client.AddDataCenterServer(dcID, "", "", "true")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -41,7 +41,7 @@ func TestClientAddDataCenterServerBadJSON(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	dcID := "42"
-	addDataCenterServerResponse, err := client.AddDataCenterServer(dcID, "", "")
+	addDataCenterServerResponse, err := client.AddDataCenterServer(dcID, "", "", "false")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -65,7 +65,7 @@ func TestClientAddDataCenterServerInvalidRule(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	dcID := "42"
-	addDataCenterServerResponse, err := client.AddDataCenterServer(dcID, "", "")
+	addDataCenterServerResponse, err := client.AddDataCenterServer(dcID, "", "", "true")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -89,7 +89,7 @@ func TestClientAddDataCenterServerValidRule(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	dcID := "42"
-	addDataCenterServerResponse, err := client.AddDataCenterServer(dcID, "", "")
+	addDataCenterServerResponse, err := client.AddDataCenterServer(dcID, "", "", "false")
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
