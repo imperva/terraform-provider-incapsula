@@ -42,4 +42,8 @@ The following attributes are exported:
 
 ## Import
 
-terraform import incapsula_origin_pop.aws-east site_id/dc_id
+Origin Pop can be imported using the `site_id` and `dc_id` separated by /, e.g.:
+
+```
+$ terraform import incapsula_origin_pop.aws-east site_id/dc_id
+```
