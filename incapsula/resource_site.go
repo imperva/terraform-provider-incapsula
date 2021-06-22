@@ -373,7 +373,7 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 
 	// There may be a timing/race condition here
 	// Set an arbitrary period to sleep
-	time.Sleep(3 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	err = updateAdditionalSiteProperties(client, d)
 	if err != nil {
