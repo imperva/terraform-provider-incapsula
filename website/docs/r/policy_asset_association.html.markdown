@@ -36,4 +36,9 @@ The following attributes are exported:
 
 ## Import
 
-terraform import incapsula_policy_asset_association.example-policy-asset-association policy_id/asset_id/asset_type
+Policy can be imported using the `policy_id`, `asset_id` and `asset_type` e.g.:
+
+```
+$ terraform import incapsula_policy_asset_association.example-policy-asset-association policy_id/asset_id/asset_type
+```
+
