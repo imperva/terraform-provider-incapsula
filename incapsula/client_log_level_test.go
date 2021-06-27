@@ -18,7 +18,8 @@ func TestClientUpdateLogLevelBadConnection(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
 	logLevel := "full"
-	err := client.UpdateLogLevel(siteID, logLevel)
+	logsAccountId := "123"
+	err := client.UpdateLogLevel(siteID, logLevel, logsAccountId)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -40,7 +41,8 @@ func TestClientUpdateLogLevelBadJSON(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := "42"
 	logLevel := "full"
-	err := client.UpdateLogLevel(siteID, logLevel)
+	logsAccountId := "123"
+	err := client.UpdateLogLevel(siteID, logLevel, logsAccountId)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -62,7 +64,8 @@ func TestClientUpdateLogLevelInvalidSite(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := "42"
 	logLevel := "full"
-	err := client.UpdateLogLevel(siteID, logLevel)
+	logsAccountId := "123"
+	err := client.UpdateLogLevel(siteID, logLevel, logsAccountId)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -84,7 +87,8 @@ func TestClientUpdateLogLevelValidSite(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := "42"
 	logLevel := "full"
-	err := client.UpdateLogLevel(siteID, logLevel)
+	logsAccountId := "123"
+	err := client.UpdateLogLevel(siteID, logLevel, logsAccountId)
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
