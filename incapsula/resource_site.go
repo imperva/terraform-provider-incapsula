@@ -360,6 +360,7 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 		d.Get("account_id").(int),
 		d.Get("naked_domain_san").(bool),
 		d.Get("wildcard_san").(bool),
+		d.Get("logs_account_id").(string),
 	)
 
 	if err != nil {
@@ -648,11 +649,13 @@ func updateMaskingSettings(client *Client, d *schema.ResourceData) error {
 }
 
 func updateLogLevel(client *Client, d *schema.ResourceData) error {
-	if d.HasChange("log_level") {
+	if d.HasChange("log_level") ||
+		d.HasChange("logs_account_id") {
 		logLevel := d.Get("log_level").(string)
-		err := client.UpdateLogLevel(d.Id(), logLevel)
+		logsAccountId := d.Get("logs_account_id").(string)
+		err := client.UpdateLogLevel(d.Id(), logLevel, logsAccountId)
 		if err != nil {
-			log.Printf("[ERROR] Could not update Incapsula site log level: %s for site_id: %s %s\n", logLevel, d.Id(), err)
+			log.Printf("[ERROR] Could not update Incapsula site log level: %s and logs account id: %s for site_id: %s %s\n", logLevel, logsAccountId, d.Id(), err)
 			return err
 		}
 	}

@@ -11,12 +11,13 @@ import (
 const endpointSiteLogLevel = "sites/setlog"
 
 // UpdateLogLevel will update the site log level
-func (c *Client) UpdateLogLevel(siteID, logLevel string) error {
+func (c *Client) UpdateLogLevel(siteID, logLevel, logsAccountId string) error {
 	type LogLevelResponse struct {
 		Res        int    `json:"res"`
 		ResMessage string `json:"res_message"`
 		DebugInfo  struct {
-			LogLevel string `json:"log_level"`
+			LogLevel      string `json:"log_level,omitempty"`
+			LogsAccountId string `json:"logs_account_id,omitempty"`
 		} `json:"debug_info"`
 	}
 
@@ -24,10 +25,11 @@ func (c *Client) UpdateLogLevel(siteID, logLevel string) error {
 
 	// Post form to Incapsula
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteLogLevel), url.Values{
-		"api_id":    {c.config.APIID},
-		"api_key":   {c.config.APIKey},
-		"site_id":   {siteID},
-		"log_level": {logLevel},
+		"api_id":          {c.config.APIID},
+		"api_key":         {c.config.APIKey},
+		"site_id":         {siteID},
+		"log_level":       {logLevel},
+		"logs_account_id": {logsAccountId},
 	})
 	if err != nil {
 		return fmt.Errorf("Error updating log level (%s) on site_id: %s: %s", logLevel, siteID, err)

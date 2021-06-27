@@ -287,11 +287,13 @@ func updateAdditionalAccountProperties(client *Client, d *schema.ResourceData) e
 }
 
 func updateAccountLogLevel(client *Client, d *schema.ResourceData) error {
-	if d.HasChange("log_level") {
+	if d.HasChange("log_level") ||
+		d.HasChange("logs_account_id") {
 		logLevel := d.Get("log_level").(string)
-		err := client.UpdateLogLevel(d.Id(), logLevel)
+		logsAccountId := d.Get("logs_account_id").(string)
+		err := client.UpdateLogLevel(d.Id(), logLevel, logsAccountId)
 		if err != nil {
-			log.Printf("[ERROR] Could not update Incapsula account log level: %s for account_id: %s %s\n", logLevel, d.Id(), err)
+			log.Printf("[ERROR] Could not update Incapsula account log level: %s and log account id: %s for account_id: %s %s\n", logLevel, logsAccountId, d.Id(), err)
 			return err
 		}
 	}
