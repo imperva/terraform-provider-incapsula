@@ -106,6 +106,7 @@ func resourceSite() *schema.Resource {
 				Description: "api.seal_location.bottom_left | api.seal_location.none | api.seal_location.right_bottom | api.seal_location.right | api.seal_location.left | api.seal_location.bottom_right | api.seal_location.bottom.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Default:     "api.seal_location.none",
 			},
 			"domain_redirect_to_full": {
 				Description: "true or empty string.",
@@ -435,6 +436,7 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("wildcard_san", siteStatusResponse.UseWildcardSanInsteadOfFullDomainSan)
 	d.Set("acceleration_level", siteStatusResponse.AccelerationLevel)
 	d.Set("active", siteStatusResponse.Active)
+	d.Set("seal_location", siteStatusResponse.SealLocation.ID)
 
 	// Set the DNS information
 	dnsARecordValues := make([]string, 0)
@@ -607,7 +609,7 @@ func resourceSiteDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func updateAdditionalSiteProperties(client *Client, d *schema.ResourceData) error {
-	updateParams := [9]string{"acceleration_level", "active", "approver", "domain_redirect_to_full", "domain_validation", "ignore_ssl", "remove_ssl", "ref_id", "site_ip"}
+	updateParams := [10]string{"acceleration_level", "active", "approver", "domain_redirect_to_full", "domain_validation", "ignore_ssl", "remove_ssl", "ref_id", "site_ip", "seal_location"}
 	for i := 0; i < len(updateParams); i++ {
 		param := updateParams[i]
 		if d.HasChange(param) && d.Get(param) != "" {
