@@ -2,7 +2,6 @@ package incapsula
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"hash/crc32"
 	"log"
@@ -415,11 +414,7 @@ func resourceDataCentersConfigurationRead(d *schema.ResourceData, m interface{})
 			return nil
 		}
 
-		out, err := json.Marshal(responseDTO.Errors)
-		if err != nil {
-			panic(err)
-		}
-		return fmt.Errorf("Error getting Data Centers configuration for site (%s): %s", d.Get("site_id"), string(out))
+		return fmt.Errorf("Error getting Data Centers configuration for site (%s): %s", d.Get("site_id"), responseDTO.Errors)
 	}
 
 	d.Set("site_lb_algorithm", responseDTO.Data[0].SiteLbAlgorithm)
@@ -490,11 +485,7 @@ func resourceDataCentersConfigurationDelete(d *schema.ResourceData, m interface{
 	}
 
 	if responseDTO.Errors != nil && len(responseDTO.Errors) > 0 && responseDTO.Errors[0].Status != "404" {
-		out, err := json.Marshal(responseDTO.Errors)
-		if err != nil {
-			panic(err)
-		}
-		return fmt.Errorf("Error deleting Data Centers configuration for site (%s): %s", d.Get("site_id"), string(out))
+		return fmt.Errorf("Error deleting Data Centers configuration for site (%s): %s", d.Get("site_id"), responseDTO.Errors)
 	}
 
 	d.SetId("")
@@ -514,11 +505,11 @@ func resourceDataCentersConfigurationOriginServerHash(v interface{}) int {
 	}
 
 	if v, ok := m["is_enabled"]; ok {
-		buf.WriteString(fmt.Sprintf("%t-", v.(bool)))
+		buf.WriteString(fmt.Sprintf("%b-", v.(bool)))
 	}
 
 	if v, ok := m["is_active"]; ok {
-		buf.WriteString(fmt.Sprintf("%t-", v.(bool)))
+		buf.WriteString(fmt.Sprintf("%b-", v.(bool)))
 	}
 
 	return PositiveHash(buf.String())
@@ -549,19 +540,19 @@ func resourceDataCentersConfigurationDataCenterHash(v interface{}) int {
 	}
 
 	if v, ok := m["is_enabled"]; ok {
-		buf.WriteString(fmt.Sprintf("%t-", v.(bool)))
+		buf.WriteString(fmt.Sprintf("%b-", v.(bool)))
 	}
 
 	if v, ok := m["is_active"]; ok {
-		buf.WriteString(fmt.Sprintf("%t-", v.(bool)))
+		buf.WriteString(fmt.Sprintf("%b-", v.(bool)))
 	}
 
 	if v, ok := m["is_content"]; ok {
-		buf.WriteString(fmt.Sprintf("%t-", v.(bool)))
+		buf.WriteString(fmt.Sprintf("%b-", v.(bool)))
 	}
 
 	if v, ok := m["is_rest_of_the_world"]; ok {
-		buf.WriteString(fmt.Sprintf("%t-", v.(bool)))
+		buf.WriteString(fmt.Sprintf("%b-", v.(bool)))
 	}
 
 	if v, ok := m["geo_locations"]; ok {
@@ -584,11 +575,11 @@ func resourceDataCentersConfigurationDataCenterHash(v interface{}) int {
 		}
 
 		if v, ok := os["is_enabled"]; ok {
-			buf.WriteString(fmt.Sprintf("%t-", v.(bool)))
+			buf.WriteString(fmt.Sprintf("%b-", v.(bool)))
 		}
 
 		if v, ok := os["is_active"]; ok {
-			buf.WriteString(fmt.Sprintf("%t-", v.(bool)))
+			buf.WriteString(fmt.Sprintf("%b-", v.(bool)))
 		}
 	}
 

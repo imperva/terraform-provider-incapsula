@@ -80,15 +80,12 @@ func (c *Client) PutDataCentersConfiguration(siteID string, requestDTO DataCente
 		fmt.Sprintf("%s/sites/%s/data-centers-configuration", baseURLv3, siteID),
 		bytes.NewReader(dcsJSON))
 	if err != nil {
-		return nil, fmt.Errorf("Error preparing HTTP PUT for updating Data Centers configuration with ID %s: %s", siteID, err)
+		return nil, fmt.Errorf("Error preparing HTTP PUT for updating Data Centers configuration with ID %d: %s", siteID, err)
 	}
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.Header.Set("x-api-id", c.config.APIID)
 	req.Header.Set("x-api-key", c.config.APIKey)
 	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("Error executing update Data Centers configuration request for siteID %s: %s", siteID, err)
-	}
 
 	// Read the body
 	defer resp.Body.Close()
@@ -118,15 +115,12 @@ func (c *Client) GetDataCentersConfiguration(siteID string) (*DataCentersConfigu
 		http.MethodGet,
 		fmt.Sprintf("%s/sites/%s/data-centers-configuration", baseURLv3, siteID), nil)
 	if err != nil {
-		return nil, fmt.Errorf("Error preparing HTTP GET for getting Data Centers configuration with ID %s: %s", siteID, err)
+		return nil, fmt.Errorf("Error preparing HTTP GET for getting Data Centers configuration with ID %d: %s", siteID, err)
 	}
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.Header.Set("x-api-id", c.config.APIID)
 	req.Header.Set("x-api-key", c.config.APIKey)
 	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("Error executing get Data Centers configuration request for siteID %s: %s", siteID, err)
-	}
 
 	// Read the body
 	defer resp.Body.Close()
@@ -140,6 +134,15 @@ func (c *Client) GetDataCentersConfiguration(siteID string) (*DataCentersConfigu
 	err = json.Unmarshal([]byte(responseBody), &responseDTO)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing data centers list JSON response for siteID: %s %s\nresponse: %s", siteID, err, string(responseBody))
+	}
+
+	// Look at the response status code from Incapsula
+	if responseDTO.Errors != nil && len(responseDTO.Errors) > 0 {
+		out, err := json.Marshal(responseDTO.Errors)
+		if err != nil {
+			panic(err)
+		}
+		return &responseDTO, fmt.Errorf("Error from Incapsula service when getting data centers configuration (site_id: %s): %s", siteID, string(out))
 	}
 
 	return &responseDTO, nil
