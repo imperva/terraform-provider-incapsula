@@ -14,7 +14,7 @@ Provides a Incapsula Data Center resource.
 
 ```hcl
 resource "incapsula_data_center" "example-data-center" {
-  site_id = "${incapsula_site.example-site.id}"
+  site_id = incapsula_site.example-site.id
   name = "Example data center"
   server_address = "8.8.4.4"
   is_content = "true"
