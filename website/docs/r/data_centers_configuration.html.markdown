@@ -10,7 +10,7 @@ description: |-
 
 Provides a Incapsula Data Centers Configuration resource. 
 Each Site must have one or more Data Centers.
-Each Data Center must have one or more Origin Servers.
+Each Data Center must have one or more Origin Servers
 Both Load Balancing and Failover can be configured for both Data Centers and Origin Servers.
 Each Data Center can be assigned to serve a specific list of Geo locations.
 Or be dedicated to serve requests that were routed using AD Forward Rules.
@@ -170,7 +170,7 @@ The following Data Center arguments are supported:
 * `ip_mode` - (Optional) SINGLE_IP supports multiple processes on same origin server each listening to a different port, MULTIPLE_IP (the default) support multiple origin servers all listening to same port.
 * `web_servers_per_server` - (Optional) When IP mode = SINGLE_IP, number of web servers (processes) per server. Each web server listens to different port. E.g. when web_servers_per_server = 5, HTTP traffic will use ports 80-84 while HTTPS traffic will use ports 443-447. Default: 1.
 * `dc_lb_algorithm` - (Optional) How to load balance between the servers of this data center. One of: LB_LEAST_PENDING_REQUESTS (the default), LB_LEAST_OPEN_CONNECTIONS, LB_SOURCE_IP_HASH, RANDOM, WEIGHTED.
-* `weight` - (Optional) When site_lb_algorithm = WEIGHTED_LB, the weight in percentage of this Data Center. Then, total weight of all Data Centers must be 100.
+* `weight` - (Optional) When site_lb_algorithm = WEIGHTED_LB, the weight in pecentage of this Data Center. Then, total weight of all Data Centers must be 100.
 * `is_enabled` - (Optional) When true (the default), this Data Center is enabled. I.e. can serve requests.
 * `is_active` - (Optional) When true (the default), this Data Center is active. When false, this Data center will Standby. Automatic failover will happen only if all active Data Centers are not available.
 * `is_content` - (Optional) When true, this Data Center will only serve requests that were routed using AD Forward rules. If true, it must also be enabled.
@@ -181,8 +181,8 @@ The following Data Center arguments are supported:
 For each `data_center` sub resource, at least one `origin_server` sub resource must be defined.
 The following Origin Server arguments are supported: 
 
-* `address` - (Required) Server Address specified as: ipv4, ipv6, or DNS server name. 
-* `weight` - (Optional) When dc_lb_algorithm = WEIGHTED, the weight in percentage of this Origin Server. Then, total weight of all Data Center's Origin Servers must be 100.
+* `address` - (Required) Server Address speciied as: ipv4, ipv6, or DNS server name. 
+* `weight` - (Optional) When dc_lb_algorithm = WEIGHTED, the weight in pecentage of this Origin Server. Then, total weight of all Data Center's Origin Servers must be 100.
 * `is_enabled` - (Optional) When true (the default), this Origin Server is enabled. I.e. can serve requests.
 * `is_active` - (Optional) When true (the default), this Origin Server is active. When false, this Origin Server will Standby until failover is performed.
 
