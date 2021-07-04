@@ -505,11 +505,11 @@ func resourceDataCentersConfigurationOriginServerHash(v interface{}) int {
 	}
 
 	if v, ok := m["is_enabled"]; ok {
-		buf.WriteString(fmt.Sprintf("%b-", v.(bool)))
+		buf.WriteString(fmt.Sprintf("%t-", v.(bool)))
 	}
 
 	if v, ok := m["is_active"]; ok {
-		buf.WriteString(fmt.Sprintf("%b-", v.(bool)))
+		buf.WriteString(fmt.Sprintf("%t-", v.(bool)))
 	}
 
 	return PositiveHash(buf.String())
@@ -540,19 +540,19 @@ func resourceDataCentersConfigurationDataCenterHash(v interface{}) int {
 	}
 
 	if v, ok := m["is_enabled"]; ok {
-		buf.WriteString(fmt.Sprintf("%b-", v.(bool)))
+		buf.WriteString(fmt.Sprintf("%t-", v.(bool)))
 	}
 
 	if v, ok := m["is_active"]; ok {
-		buf.WriteString(fmt.Sprintf("%b-", v.(bool)))
+		buf.WriteString(fmt.Sprintf("%t-", v.(bool)))
 	}
 
 	if v, ok := m["is_content"]; ok {
-		buf.WriteString(fmt.Sprintf("%b-", v.(bool)))
+		buf.WriteString(fmt.Sprintf("%t-", v.(bool)))
 	}
 
 	if v, ok := m["is_rest_of_the_world"]; ok {
-		buf.WriteString(fmt.Sprintf("%b-", v.(bool)))
+		buf.WriteString(fmt.Sprintf("%t-", v.(bool)))
 	}
 
 	if v, ok := m["geo_locations"]; ok {
@@ -575,11 +575,11 @@ func resourceDataCentersConfigurationDataCenterHash(v interface{}) int {
 		}
 
 		if v, ok := os["is_enabled"]; ok {
-			buf.WriteString(fmt.Sprintf("%b-", v.(bool)))
+			buf.WriteString(fmt.Sprintf("%t-", v.(bool)))
 		}
 
 		if v, ok := os["is_active"]; ok {
-			buf.WriteString(fmt.Sprintf("%b-", v.(bool)))
+			buf.WriteString(fmt.Sprintf("%t-", v.(bool)))
 		}
 	}
 
