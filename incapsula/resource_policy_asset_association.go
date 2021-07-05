@@ -56,7 +56,7 @@ func resourcePolicyAssetAssociationCreate(d *schema.ResourceData, m interface{})
 	}
 
 	// Generate synthetic ID
-	syntheticID := fmt.Sprintf("%s-%s-%s", policyID, assetID, assetType)
+	syntheticID := fmt.Sprintf("%s/%s/%s", policyID, assetID, assetType)
 	d.SetId(syntheticID)
 	log.Printf("[INFO] Created Incapsula policy asset association with ID: %s - policy ID (%s) - asset ID (%s) - asset type (%s)\n", syntheticID, policyID, assetID, assetType)
 
