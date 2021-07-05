@@ -2,6 +2,7 @@ package incapsula
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"hash/crc32"
 	"log"
@@ -414,7 +415,11 @@ func resourceDataCentersConfigurationRead(d *schema.ResourceData, m interface{})
 			return nil
 		}
 
-		return fmt.Errorf("Error getting Data Centers configuration for site (%s): %s", d.Get("site_id"), responseDTO.Errors)
+		out, err := json.Marshal(responseDTO.Errors)
+		if err != nil {
+			panic(err)
+		}
+		return fmt.Errorf("Error getting Data Centers configuration for site (%s): %s", d.Get("site_id"), string(out))
 	}
 
 	d.Set("site_lb_algorithm", responseDTO.Data[0].SiteLbAlgorithm)
@@ -485,7 +490,11 @@ func resourceDataCentersConfigurationDelete(d *schema.ResourceData, m interface{
 	}
 
 	if responseDTO.Errors != nil && len(responseDTO.Errors) > 0 && responseDTO.Errors[0].Status != "404" {
-		return fmt.Errorf("Error deleting Data Centers configuration for site (%s): %s", d.Get("site_id"), responseDTO.Errors)
+		out, err := json.Marshal(responseDTO.Errors)
+		if err != nil {
+			panic(err)
+		}
+		return fmt.Errorf("Error deleting Data Centers configuration for site (%s): %s", d.Get("site_id"), string(out))
 	}
 
 	d.SetId("")
