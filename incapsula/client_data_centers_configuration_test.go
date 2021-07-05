@@ -3,6 +3,7 @@ package incapsula
 import (
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
@@ -12,7 +13,7 @@ import (
 // AddDataCenter Tests
 ////////////////////////////////////////////////////////////////
 
-func TestClientAddDataCentersConfigurationBadConnection(t *testing.T) {
+func TestClientPutDataCentersConfigurationBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
@@ -29,25 +30,25 @@ func TestClientAddDataCentersConfigurationBadConnection(t *testing.T) {
 	}
 }
 
-/*
-func TestClientAddDataCentersConfigurationBadJSON(t *testing.T) {
+func TestClientPutDataCentersConfigurationBadJSON(t *testing.T) {
 	siteID := "42"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/v3/sites/%s/data-centers-configurations", siteID) {
-			t.Errorf("Should have have hit /v3/sites/%s/data-centers-configurations endpoint. Got: %s", siteID, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/api/prov/v3/sites/%s/data-centers-configuration", siteID) {
+			t.Errorf("Should have have hit /api/prov/v3/sites/%s/data-centers-configurations endpoint. "+
+				"Got: %s", siteID, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL + "/api/prov/v1"}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	requestDTO := DataCentersConfigurationDTO{}
 	responseDTO, err := client.PutDataCentersConfiguration(siteID, requestDTO)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing update Data Centers configuration JSON request for siteID %s", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing update Data Centers configuration JSON response for siteID %s", siteID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
 	if responseDTO != nil {
@@ -55,51 +56,63 @@ func TestClientAddDataCentersConfigurationBadJSON(t *testing.T) {
 	}
 }
 
-func TestClientAddDataCenterInvalidRule(t *testing.T) {
+func TestClientPutDataCenterInvalidDcConfiguration(t *testing.T) {
+	siteID := "42"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterAdd) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterAdd, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/api/prov/v3/sites/%s/data-centers-configuration", siteID) {
+			t.Errorf("Should have have hit /api/prov/v3/sites/%s/data-centers-configurations endpoint. "+
+				"Got: %s", siteID, req.URL.String())
 		}
-		rw.Write([]byte(`{"rule_id":"0","res":"1"}`))
+		rw.Write([]byte(`{"errors":[{"status": "406"}]}`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL + "/api/prov/v1"}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := "42"
-	addDataCenterResponse, err := client.AddDataCenter(siteID, "", "", "", "")
-	if err == nil {
-		t.Errorf("Should have received an error")
+	requestDTO := DataCentersConfigurationDTO{}
+	responseDTO, err := client.PutDataCentersConfiguration(siteID, requestDTO)
+	if err != nil {
+		t.Errorf("Should not receive an error. Got: %s", err.Error())
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding data center for siteID %s", siteID)) {
-		t.Errorf("Should have received a bad incap rule error, got: %s", err)
+	if responseDTO == nil || responseDTO.Errors == nil || len(responseDTO.Errors) < 1 {
+		t.Errorf("Should have received a response DTO instance with at least one error item")
+		return
 	}
-	if addDataCenterResponse != nil {
-		t.Errorf("Should have received a nil addDataCenterResponse instance")
+	if responseDTO.Errors[0].Status != "406" {
+		t.Errorf("Should have received a bad DC configuration error, got: %s", err)
 	}
 }
 
-func TestClientAddDataCenterValidRule(t *testing.T) {
+func TestClientPutDataCenterValidDcConfiguration(t *testing.T) {
+	siteID := "42"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterAdd) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterAdd, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/api/prov/v3/sites/%s/data-centers-configuration", siteID) {
+			t.Errorf("Should have have hit /api/prov/v3/sites/%s/data-centers-configurations endpoint. "+
+				"Got: %s", siteID, req.URL.String())
 		}
-		rw.Write([]byte(`{"rule_id":"123","res":"0"}`))
+		rw.Write([]byte(`{"data":[{"dataCenterMode":"SINGLE_DC","dataCenters":[{"name":"New DC","servers":[{"address":"1.2.3.4"}]}]}]}`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL + "/api/prov/v1"}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := "42"
-	addDataCenterResponse, err := client.AddDataCenter(siteID, "", "", "", "")
+	requestDTO := DataCentersConfigurationDTO{}
+	responseDTO, err := client.PutDataCentersConfiguration(siteID, requestDTO)
 	if err != nil {
-		t.Errorf("Should not have received an error")
+		t.Errorf("Should not have received an error. Got: %s", err.Error())
 	}
-	if addDataCenterResponse == nil {
-		t.Errorf("Should not have received a nil addDataCenterResponse instance")
+	if responseDTO == nil {
+		t.Errorf("Should not have received a nil response DTO instance")
+		return
 	}
-	if addDataCenterResponse.Res != "0" {
-		t.Errorf("Response code doesn't match")
+	if responseDTO.Data == nil || len(responseDTO.Data) < 1 || responseDTO.Data[0].DataCenters == nil ||
+		len(responseDTO.Data[0].DataCenters) < 1 || responseDTO.Data[0].DataCenters[0].OriginServers == nil ||
+		len(responseDTO.Data[0].DataCenters[0].OriginServers) < 1 {
+		t.Errorf("Response must contain one Data Center, which contains one Origin Server. Items: %d", len(responseDTO.Data))
+		t.Errorf("Response must contain one Data Center, which contains one Origin Server. Data Centers: %d",
+			len(responseDTO.Data[0].DataCenters))
+		t.Errorf("Response must contain one Data Center, which contains one Origin Server. Origin Servers: %d",
+			len(responseDTO.Data[0].DataCenters[0].OriginServers))
 	}
 }
 
@@ -107,91 +120,102 @@ func TestClientAddDataCenterValidRule(t *testing.T) {
 // ListDataCenters Tests
 ////////////////////////////////////////////////////////////////
 
-func TestClientListDataCentersBadConnection(t *testing.T) {
+func TestClientGetDataCentersConfigurationBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
-	listDataCentersResponse, err := client.ListDataCenters(siteID)
+	responseDTO, err := client.GetDataCentersConfiguration(siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error getting data centers for siteID %s", siteID)) {
-		t.Errorf("Should have received an client error, got: %s", err)
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf(
+		"Error executing get Data Centers configuration request for siteID %s", siteID)) {
+		t.Errorf("Should have received a client error, got: %s", err)
 	}
-	if listDataCentersResponse != nil {
-		t.Errorf("Should have received a nil listDataCentersResponse instance")
+	if responseDTO != nil {
+		t.Errorf("Should have received a nil responseDTO instance")
 	}
 }
 
-func TestClientListDataCentersBadJSON(t *testing.T) {
+func TestClientGetDataCentersConfigurationBadJSON(t *testing.T) {
+	siteID := "42"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterList) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterList, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/api/prov/v3/sites/%s/data-centers-configuration", siteID) {
+			t.Errorf("Should have have hit /api/prov/v3/sites/%s/data-centers-configurations endpoint. "+
+				"Got: %s", siteID, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL + "/api/prov/v1"}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := "42"
-	listDataCentersResponse, err := client.ListDataCenters(siteID)
+	responseDTO, err := client.GetDataCentersConfiguration(siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
 	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing data centers list JSON response for siteID: %s", siteID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
-	if listDataCentersResponse != nil {
-		t.Errorf("Should have received a nil listDataCentersResponse instance")
+	if responseDTO != nil {
+		t.Errorf("Should have received a nil responseDTO instance")
 	}
 }
 
-func TestClientListDataCentersInvalidRequest(t *testing.T) {
+func TestClientGetDataCentersConfigurationInvalidRequest(t *testing.T) {
+	siteID := "42"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterList) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterList, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/api/prov/v3/sites/%s/data-centers-configuration", siteID) {
+			t.Errorf("Should have have hit /api/prov/v3/sites/%s/data-centers-configurations endpoint. "+
+				"Got: %s", siteID, req.URL.String())
 		}
-		rw.Write([]byte(`{"res":"1","res_message":"fail"}`))
+		rw.Write([]byte(`{"errors":[{"status": "404"}]}`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL + "/api/prov/v1"}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := "42"
-	listDataCentersResponse, err := client.ListDataCenters(siteID)
-	if err == nil {
-		t.Errorf("Should have received an error")
+	responseDTO, err := client.GetDataCentersConfiguration(siteID)
+	if err != nil {
+		t.Errorf("Should not receive an error. Got: %s", err.Error())
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when getting data centers list (site_id: %s", siteID)) {
-		t.Errorf("Should have received a bad site error, got: %s", err)
+	if responseDTO == nil || responseDTO.Errors == nil || len(responseDTO.Errors) < 1 {
+		t.Errorf("Should have received a response DTO instance with at least one error item")
+		return
 	}
-	if listDataCentersResponse == nil {
-		t.Errorf("Should have received a listDataCentersResponse instance")
+	if responseDTO.Errors[0].Status != "404" {
+		t.Errorf("Should have received a bad DC configuration error, got: %s", err)
 	}
 }
 
-func TestClientListDataCentersValidRequest(t *testing.T) {
+func TestClientGetDataCentersConfigurationValidRequest(t *testing.T) {
+	siteID := "42"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointDataCenterList) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointDataCenterList, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/api/prov/v3/sites/%s/data-centers-configuration", siteID) {
+			t.Errorf("Should have have hit /api/prov/v3/sites/%s/data-centers-configurations endpoint. "+
+				"Got: %s", siteID, req.URL.String())
 		}
-		rw.Write([]byte(`{"res":"0"}`))
+		rw.Write([]byte(`{"data":[{"dataCenterMode":"SINGLE_DC","dataCenters":[{"name":"New DC","servers":[{"address":"1.2.3.4"}]}]}]}`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL + "/api/prov/v1"}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := "42"
-	listDataCentersResponse, err := client.ListDataCenters(siteID)
+	responseDTO, err := client.GetDataCentersConfiguration(siteID)
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
-	if listDataCentersResponse == nil {
-		t.Errorf("Should not have received a nil listDataCentersResponse instance")
+	if responseDTO == nil {
+		t.Errorf("Should not have received a nil responseDTO instance")
 	}
 
-	if listDataCentersResponse.Res != "0" {
-		t.Errorf("Response code doesn't match")
+	if responseDTO.Data == nil || len(responseDTO.Data) < 1 || responseDTO.Data[0].DataCenters == nil ||
+		len(responseDTO.Data[0].DataCenters) < 1 || responseDTO.Data[0].DataCenters[0].OriginServers == nil ||
+		len(responseDTO.Data[0].DataCenters[0].OriginServers) < 1 {
+		t.Errorf("Response must contain one Data Center, which contains one Origin Server. Items: %d", len(responseDTO.Data))
+		t.Errorf("Response must contain one Data Center, which contains one Origin Server. Data Centers: %d",
+			len(responseDTO.Data[0].DataCenters))
+		t.Errorf("Response must contain one Data Center, which contains one Origin Server. Origin Servers: %d",
+			len(responseDTO.Data[0].DataCenters[0].OriginServers))
 	}
-} */
+}
