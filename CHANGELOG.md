@@ -1,3 +1,12 @@
+## 2.8.0 (Released)
+* Add new `incap_rule` properties and `RULE_ACTION_FORWARD_TO_PORT` action
+* Fix `security_rule_exception` import
+* Fix redundant `data_center_server` when `enabled=false`
+* Fix `origin_pop` import
+* Add `policy_asset_association` import
+* Fix `site` resource to use the `logs_account_id` for various methods (read/update)
+* Fix `site` resource to read/update `seal_location`
+
 ## 2.7.5 (Released)
 * Fixed `naked_domain_san` and `wildcard_san` on the `site` resource.
 * Adding edit `server_address` ability to `data_center` resource.
