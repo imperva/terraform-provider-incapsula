@@ -35,15 +35,16 @@ type SiteStatusDNSValidationData struct {
 
 // SiteStatusResponse contains managed site information
 type SiteStatusResponse struct {
-	SiteID            int      `json:"site_id"`
-	Status            string   `json:"status"`
-	Domain            string   `json:"domain"`
-	RefID             string   `json:"ref_id,omitempty"`
-	AccountID         int      `json:"account_id"`
-	AccelerationLevel string   `json:"acceleration_level"`
-	SiteCreationDate  int64    `json:"site_creation_date"`
-	Ips               []string `json:"ips"`
-	DNS               []struct {
+	SiteID               int      `json:"site_id"`
+	Status               string   `json:"status"`
+	Domain               string   `json:"domain"`
+	RefID                string   `json:"ref_id,omitempty"`
+	AccountID            int      `json:"account_id"`
+	AccelerationLevel    string   `json:"acceleration_level"`
+	AccelerationLevelRaw string   `json:"acceleration_level_raw"`
+	SiteCreationDate     int64    `json:"site_creation_date"`
+	Ips                  []string `json:"ips"`
+	DNS                  []struct {
 		DNSRecordName string   `json:"dns_record_name"`
 		SetTypeTo     string   `json:"set_type_to"`
 		SetDataTo     []string `json:"set_data_to"`
