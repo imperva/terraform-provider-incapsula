@@ -434,7 +434,7 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	//d.Set("site_ip", siteStatusResponse.Ips[0])
 	d.Set("naked_domain_san", siteStatusResponse.AddNakedDomainSan)
 	d.Set("wildcard_san", siteStatusResponse.UseWildcardSanInsteadOfFullDomainSan)
-	d.Set("acceleration_level", siteStatusResponse.AccelerationLevel)
+	d.Set("acceleration_level", siteStatusResponse.AccelerationLevelRaw)
 	d.Set("active", siteStatusResponse.Active)
 	d.Set("seal_location", siteStatusResponse.SealLocation.ID)
 
