@@ -106,7 +106,6 @@ func resourceSite() *schema.Resource {
 				Description: "api.seal_location.bottom_left | api.seal_location.none | api.seal_location.right_bottom | api.seal_location.right | api.seal_location.left | api.seal_location.bottom_right | api.seal_location.bottom.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "api.seal_location.none",
 			},
 			"domain_redirect_to_full": {
 				Description: "true or empty string.",
