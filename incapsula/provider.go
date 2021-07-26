@@ -81,6 +81,7 @@ func Provider() *schema.Provider {
 
 		DataSourcesMap: map[string]*schema.Resource{
 			"incapsula_role_abilities": dataSourceRoleAbilities(),
+			"incapsula_data_center":    dataSourceDataCenter(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
