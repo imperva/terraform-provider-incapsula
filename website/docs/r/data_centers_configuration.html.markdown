@@ -97,8 +97,8 @@ resource "incapsula_data_centers_configuration" "example-geo-assigned-data-cente
 ### Multiple Data Centers with different capacities plus a dedicated Data Center for handling AD forward rules' traffic 
 
 ```hcl
-resource "incapsula_data_centers_configuration" "example-geo-assigned-data-centers-configuration" {
-  site_id = incapsula_site.example-geo-assigned-site.id
+resource "incapsula_data_centers_configuration" "example-weighted-data-centers-configuration" {
+  site_id = incapsula_site.example-weighted-site.id
   is_persistent = true
   site_lb_algorithm = "WEIGHTED_LB"
   site_topology = "MULTIPLE_DC"
@@ -174,8 +174,8 @@ The following Data Center arguments are supported:
 * `is_enabled` - (Optional) When true (the default), this Data Center is enabled. I.e. can serve requests.
 * `is_active` - (Optional) When true (the default), this Data Center is active. When false, this Data center will Standby. Automatic failover will happen only if all active Data Centers are not available.
 * `is_content` - (Optional) When true, this Data Center will only serve requests that were routed using AD Forward rules. If true, it must also be enabled.
-* `is_rest_of_the_world` - (Optional) When true and site_lb_algorithm = GEO_PREFERRED or GEO_REQUIRED, exactly one data center must have is_rest_of_the_world = true. This data center will handle traffic from any region that is not assigned to a specific data center.
-* `geo_locations` - (Optional) Commma separated list of geo regions that this data center will serve. Mandatory if site_lb_algorithm = GEO_PREFERRED or GEO_REQUIRED. E.g. "ASIA,AFRICA". Allowed regions: EUROPE, AUSTRALIA, US_EAST, US_WEST, AFRICA, ASIA, SOUTH_AMERICA, NORTH_AMERICA.
+* `is_rest_of_the_world` - (Optional) When true and site_lb_algorithm = GEO_PREFERRED or GEO_REQUIRED, this data center will handle traffic from any region that is not assigned to a specific data center. Exactly one data center must have is_rest_of_the_world = true. 
+* `geo_locations` - (Optional) Comma separated list of geo regions that this data center will serve. Mandatory if site_lb_algorithm = GEO_PREFERRED or GEO_REQUIRED. E.g. "ASIA,AFRICA". Allowed regions: EUROPE, AUSTRALIA, US_EAST, US_WEST, AFRICA, ASIA, SOUTH_AMERICA, NORTH_AMERICA.
 * `origin_pop` - (Optional) The ID of the PoP that serves as an access point between Imperva and the customer’s origin server. E.g. "lax", for Los Angeles. When not specified, all Imperva PoPs can send traffic to this data center. The list of available PoPs is documented at: <https://docs.imperva.com/bundle/cloud-application-security/page/more/pops.htm>.
 
 For each `data_center` sub resource, at least one `origin_server` sub resource must be defined.
