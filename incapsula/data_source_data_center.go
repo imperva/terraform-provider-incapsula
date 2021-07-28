@@ -32,12 +32,17 @@ func dataSourceDataCenter() *schema.Resource {
 				Optional:    true,
 			},
 			"filter_by_is_enabled": {
-				Description: "Filter by whether Data Center is enabled or disabled",
+				Description: "Filter by whether Data Center is enabled",
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
 			"filter_by_is_active": {
-				Description: "Filter by whether Data Center is active or standby mode",
+				Description: "Filter by whether Data Center is active",
+				Type:        schema.TypeBool,
+				Optional:    true,
+			},
+			"filter_by_is_standby": {
+				Description: "Filter by whether Data Center is standby",
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
@@ -142,22 +147,25 @@ func dataSourceDataCenterRead(ctx context.Context, d *schema.ResourceData, m int
 				continue
 			}
 		}
-		if v, ok := d.GetOk("filter_by_id"); ok && v != *dc.ID {
+		if v, ok := d.GetOk("filter_by_id"); ok && (v != *dc.ID) {
 			continue
 		}
-		if v, ok := d.GetOk("filter_by_name"); ok && v != dc.Name {
+		if v, ok := d.GetOk("filter_by_name"); ok && (v != dc.Name) {
 			continue
 		}
-		if v, ok := d.GetOk("filter_by_is_enabled"); ok && v != dc.IsEnabled {
+		if v, ok := d.GetOk("filter_by_is_enabled"); ok && (v != dc.IsEnabled) {
 			continue
 		}
-		if v, ok := d.GetOk("filter_by_is_active"); ok && v != dc.IsActive {
+		if v, ok := d.GetOk("filter_by_is_active"); ok && (v != dc.IsActive) {
 			continue
 		}
-		if v, ok := d.GetOk("filter_by_is_rest_of_the_world"); ok && v != dc.IsRestOfTheWorld {
+		if v, ok := d.GetOk("filter_by_is_standby"); ok && (v == dc.IsActive) {
 			continue
 		}
-		if v, ok := d.GetOk("filter_by_is_content"); ok && v != dc.IsContent {
+		if v, ok := d.GetOk("filter_by_is_rest_of_the_world"); ok && (v != dc.IsRestOfTheWorld) {
+			continue
+		}
+		if v, ok := d.GetOk("filter_by_is_content"); ok && (v != dc.IsContent) {
 			continue
 		}
 
