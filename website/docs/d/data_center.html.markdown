@@ -79,10 +79,14 @@ The following arguments are supported:
 * `filter_by_id` - (Optional) Filters by the numeric unique internal Data Center id.
 * `filter_by_name` - (Optional) string value - Filters by Data Center name. DC Name is unique per Site.
 * `filter_by_is_enabled` - (Optional) boolean value - Filters by is_enabled.
-* `filter_by_is_active` - (Optional) boolean value - Filters by is_active. False value will provide the single standby DC.
+* `filter_by_is_active` - (Optional) boolean value - Filters by is_active == true. 
+* `filter_by_is_standby` - (Optional) boolean value - Filters by is_active == false. 
 * `filter_by_is_rest_of_the_world` - (Optional) boolean value - Filters by is_rest_of_the_world. True value will provide the single rest-of-the-world DC.
 * `filter_by_is_content` - (Optional) boolean value - Filters by is_content. True value will provide the single content DC (handles only traffic routed by AD forward-to-dc rule).
 * `filter_by_geo_location` - (Optional) string value - One of: EUROPE, AUSTRALIA, US_EAST, US_WEST, AFRICA, ASIA, SOUTH_AMERICA, NORTH_AMERICA. If no DC is assigned to handle traffic from the specified region, then qualify the the single rest-of-the-world DC, 
+
+The five boolean filters accept true value only.
+To get the standby Data Center: use `filter_by_is_standby = true` (instead of `filter_by_is_active = false` which will be ignored).
 
 ## Attributes Reference
 
