@@ -26,11 +26,9 @@ func (c *Client) GetAccountDataStorageRegion(accountID string) (*AccountDataStor
 	log.Printf("[INFO] Getting default Incapsula data storage region for account: %s\n", accountID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountDataStorageRegionGet), url.Values{
-		"api_id":     {c.config.APIID},
-		"api_key":    {c.config.APIKey},
-		"account_id": {accountID},
-	})
+	values := url.Values{"account_id": {accountID}}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountDataStorageRegionGet)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting default data storage region for account id: %s: %s", accountID, err)
 	}
@@ -62,12 +60,12 @@ func (c *Client) UpdateAccountDataStorageRegion(accountID, region string) (*Acco
 	log.Printf("[INFO] Updating Incapsula default data storage region (%s) for accountID: %s\n", region, accountID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountDataStorageRegionUpdate), url.Values{
-		"api_id":              {c.config.APIID},
-		"api_key":             {c.config.APIKey},
+	values := url.Values{
 		"account_id":          {accountID},
 		"data_storage_region": {region},
-	})
+	}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountDataStorageRegionUpdate)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error updating data storage region with value (%s) on account_id: %s: %s", region, accountID, err)
 	}

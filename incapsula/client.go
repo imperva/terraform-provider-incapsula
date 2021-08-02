@@ -1,35 +1,40 @@
 package incapsula
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 )
+
+const contentTypeApplicationUrlEncoded = "application/x-www-form-urlencoded"
+const contentTypeApplicationJson = "application/json"
 
 // Client represents an internal client that brokers calls to the Incapsula API
 type Client struct {
-	config     *Config
-	httpClient *http.Client
+	config          *Config
+	httpClient      *http.Client
+	providerVersion string
 }
 
 // NewClient creates a new client with the provided configuration
 func NewClient(config *Config) *Client {
 	client := &http.Client{}
-	return &Client{config: config, httpClient: client}
+	return &Client{config: config, httpClient: client, providerVersion: "2.9.0"}
 }
 
 // Verify checks the API credentials
 func (c *Client) Verify() (*AccountStatusResponse, error) {
 	log.Println("[INFO] Checking API credentials against Incapsula API")
 
-	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountStatus), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-	})
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountStatus)
+	data := url.Values{}
+
+	resp, err := c.PostFormWithHeaders(reqURL, data)
 	if err != nil {
 		return nil, fmt.Errorf("Error checking account: %s", err)
 	}
@@ -62,4 +67,41 @@ func (c *Client) Verify() (*AccountStatusResponse, error) {
 	}
 
 	return &accountStatusResponse, nil
+}
+
+func (c *Client) PostFormWithHeaders(url string, data url.Values) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(data.Encode()))
+	if err != nil {
+		return nil, fmt.Errorf("Error preparing request: %s", err)
+	}
+
+	SetHeaders(c, req, contentTypeApplicationUrlEncoded)
+
+	return c.httpClient.Do(req)
+}
+
+func (c *Client) DoJsonRequestWithHeaders(method string, url string, data []byte) (*http.Response, error) {
+	req, err := PrepareJsonRequest(method, url, data)
+	if err != nil {
+		return nil, fmt.Errorf("Error preparing request: %s", err)
+	}
+
+	SetHeaders(c, req, contentTypeApplicationJson)
+
+	return c.httpClient.Do(req)
+}
+
+func PrepareJsonRequest(method string, url string, data []byte) (*http.Request, error) {
+	if data == nil {
+		return http.NewRequest(method, url, nil)
+	}
+
+	return http.NewRequest(method, url, bytes.NewReader(data))
+}
+
+func SetHeaders(c *Client, req *http.Request, contentType string) {
+	req.Header.Set("Content-Type", contentType)
+	req.Header.Set("x-api-id", c.config.APIID)
+	req.Header.Set("x-api-key", c.config.APIKey)
+	req.Header.Set("x-tf-provider-ver", c.providerVersion)
 }

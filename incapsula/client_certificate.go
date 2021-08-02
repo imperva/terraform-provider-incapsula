@@ -45,8 +45,6 @@ func (c *Client) AddCertificate(siteID, certificate, privateKey, passphrase stri
 	log.Printf("[INFO] Adding custom certificate for site_id: %s", siteID)
 
 	values := url.Values{
-		"api_id":      {c.config.APIID},
-		"api_key":     {c.config.APIKey},
 		"site_id":     {siteID},
 		"certificate": {certificate},
 	}
@@ -60,7 +58,8 @@ func (c *Client) AddCertificate(siteID, certificate, privateKey, passphrase stri
 	}
 
 	// Post to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointCertificateAdd), values)
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointCertificateAdd)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when adding custom certificate for site_id %s: %s", siteID, err)
 	}
@@ -92,11 +91,9 @@ func (c *Client) ListCertificates(siteID string) (*CertificateListResponse, erro
 	log.Printf("[INFO] Getting Incapsula site custom certificates (site_id: %s)\n", siteID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointCertificateList), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-		"site_id": {siteID},
-	})
+	values := url.Values{"site_id": {siteID}}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointCertificateList)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting custom certificates for site_id %s: %s", siteID, err)
 	}
@@ -130,8 +127,6 @@ func (c *Client) EditCertificate(siteID, certificate, privateKey, passphrase str
 	log.Printf("[INFO] Editing custom certificate for Incapsula site_id: %s\n", siteID)
 
 	values := url.Values{
-		"api_id":      {c.config.APIID},
-		"api_key":     {c.config.APIKey},
 		"site_id":     {siteID},
 		"certificate": {b64Certificate},
 	}
@@ -145,7 +140,8 @@ func (c *Client) EditCertificate(siteID, certificate, privateKey, passphrase str
 	}
 
 	// Post to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointCertificateEdit), values)
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointCertificateEdit)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error editing custom certificate for site_id: %s: %s", siteID, err)
 	}
@@ -184,11 +180,9 @@ func (c *Client) DeleteCertificate(siteID string) error {
 	log.Printf("[INFO] Deleting Incapsula custom certificate for site_id: %s\n", siteID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointCertificateDelete), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-		"site_id": {siteID},
-	})
+	values := url.Values{"site_id": {siteID}}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointCertificateDelete)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return fmt.Errorf("Error deleting custom certificate for site_id: %s %s", siteID, err)
 	}

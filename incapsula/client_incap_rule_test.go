@@ -41,7 +41,7 @@ func TestClientAddIncapRuleBadJSON(t *testing.T) {
 	apiKey := "bar"
 	siteID := "42"
 
-	endpoint := fmt.Sprintf("/sites/%s/rules?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/rules", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -77,7 +77,7 @@ func TestClientAddIncapRuleInvalidRule(t *testing.T) {
 	apiKey := "bar"
 	siteID := "42"
 
-	endpoint := fmt.Sprintf("/sites/%s/rules?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/rules", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(406)
@@ -112,7 +112,7 @@ func TestClientAddIncapRuleValidRule(t *testing.T) {
 	apiKey := "bar"
 	siteID := "42"
 
-	endpoint := fmt.Sprintf("/sites/%s/rules?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/rules", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -172,7 +172,7 @@ func TestClientReadIncapRuleBadJSON(t *testing.T) {
 	siteID := "42"
 	ruleID := 62
 
-	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/rules/%d", siteID, ruleID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -203,7 +203,7 @@ func TestClientReadIncapRuleInvalidRule(t *testing.T) {
 	siteID := "42"
 	ruleID := 29010333
 
-	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/rules/%d", siteID, ruleID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
@@ -238,7 +238,7 @@ func TestClientReadIncapRuleValidRule(t *testing.T) {
 	siteID := "42"
 	ruleID := 290109
 
-	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/rules/%d", siteID, ruleID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -307,7 +307,7 @@ func TestClientUpdateIncapRuleBadJSON(t *testing.T) {
 		Filter: "Full-URL == \"/someurl\"",
 	}
 
-	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/rules/%d", siteID, ruleID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -344,7 +344,7 @@ func TestClientUpdateIncapRuleInvalidRule(t *testing.T) {
 		Filter: "Full-URL == \"/someurl\"",
 	}
 
-	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/rules/%d", siteID, ruleID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
@@ -382,7 +382,7 @@ func TestClientUpdateIncapRuleValidRule(t *testing.T) {
 		Filter: "Full-URL == \"/someurl\"",
 	}
 
-	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/rules/%d", siteID, ruleID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -433,7 +433,7 @@ func TestClientDeleteIncapRuleInvalidRule(t *testing.T) {
 	siteID := "42"
 	ruleID := 11111
 
-	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/rules/%d", siteID, ruleID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
@@ -461,7 +461,7 @@ func TestClientDeleteIncapRuleValidRule(t *testing.T) {
 	siteID := "42"
 	ruleID := 290109
 
-	endpoint := fmt.Sprintf("/sites/%s/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/rules/%d", siteID, ruleID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)

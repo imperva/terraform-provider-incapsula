@@ -34,7 +34,7 @@ func TestClientGetMaskingSettingsBadJSON(t *testing.T) {
 	apiKey := "bar"
 	siteID := "42"
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/masking?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/masking", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -64,7 +64,7 @@ func TestClientGetMaskingSettingsInvalidSite(t *testing.T) {
 	apiKey := "bar"
 	siteID := "42"
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/masking?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/masking", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
@@ -95,7 +95,7 @@ func TestClientGetMaskingSettingsValidSite(t *testing.T) {
 	apiKey := "bar"
 	siteID := "42"
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/masking?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/masking", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -147,7 +147,7 @@ func TestClientUpdateMaskingSettingsInvalidSite(t *testing.T) {
 	siteID := "42"
 	maskingSettings := MaskingSettings{HashingEnabled: true, HashSalt: "salt"}
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/masking?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/masking", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
@@ -176,7 +176,7 @@ func TestClientUpdateMaskingSettingsValidSite(t *testing.T) {
 	siteID := "42"
 	maskingSettings := MaskingSettings{HashingEnabled: true, HashSalt: "salt"}
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/masking?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/masking", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {

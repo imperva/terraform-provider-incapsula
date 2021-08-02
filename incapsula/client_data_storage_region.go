@@ -26,11 +26,9 @@ func (c *Client) GetDataStorageRegion(siteID string) (*DataStorageRegionResponse
 	log.Printf("[INFO] Getting Incapsula data storage region for site: %s\n", siteID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataStorageRegionGet), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-		"site_id": {siteID},
-	})
+	values := url.Values{"site_id": {siteID}}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataStorageRegionGet)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting data storage region for site id: %s: %s", siteID, err)
 	}
@@ -62,12 +60,12 @@ func (c *Client) UpdateDataStorageRegion(siteID, region string) (*DataStorageReg
 	log.Printf("[INFO] Updating Incapsula site data storage region (%s) for siteID: %s\n", region, siteID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataStorageRegionUpdate), url.Values{
-		"api_id":              {c.config.APIID},
-		"api_key":             {c.config.APIKey},
+	values := url.Values{
 		"site_id":             {siteID},
 		"data_storage_region": {region},
-	})
+	}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataStorageRegionUpdate)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error updating data storage region with value (%s) on site_id: %s: %s", region, siteID, err)
 	}

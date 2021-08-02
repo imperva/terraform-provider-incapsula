@@ -35,7 +35,7 @@ func TestClientGetTXTRecordsBadJSON(t *testing.T) {
 	apiKey := "bar"
 	siteID := 42
 
-	endpoint := fmt.Sprintf("/sites/%d/settings/general/additionalTxtRecords?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%d/settings/general/additionalTxtRecords", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -65,7 +65,7 @@ func TestClientGetTXTRecordsInvalidSite(t *testing.T) {
 	apiKey := "bar"
 	siteID := 42
 
-	endpoint := fmt.Sprintf("/sites/%d/settings/general/additionalTxtRecords?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%d/settings/general/additionalTxtRecords", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
@@ -97,7 +97,7 @@ func TestClientGetTXTRecordsValidSite(t *testing.T) {
 	apiKey := "bar"
 	siteID := 42
 
-	endpoint := fmt.Sprintf("/sites/%d/settings/general/additionalTxtRecords?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%d/settings/general/additionalTxtRecords", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {

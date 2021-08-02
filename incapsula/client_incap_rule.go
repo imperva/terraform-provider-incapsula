@@ -1,7 +1,6 @@
 package incapsula
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -48,10 +47,8 @@ func (c *Client) AddIncapRule(siteID string, rule *IncapRule) (*IncapRuleWithID,
 	}
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.Post(
-		fmt.Sprintf("%s/sites/%s/rules?api_id=%s&api_key=%s", c.config.BaseURLRev2, siteID, c.config.APIID, c.config.APIKey),
-		"application/json",
-		bytes.NewReader(ruleJSON))
+	reqURL := fmt.Sprintf("%s/sites/%s/rules", c.config.BaseURLRev2, siteID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, ruleJSON)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when adding Incap Rule for Site ID %s: %s", siteID, err)
 	}
@@ -83,7 +80,8 @@ func (c *Client) ReadIncapRule(siteID string, ruleID int) (*IncapRuleWithID, int
 	log.Printf("[INFO] Getting Incapsula Incap Rule %d for Site ID %s\n", ruleID, siteID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.Get(fmt.Sprintf("%s/sites/%s/rules/%d?api_id=%s&api_key=%s", c.config.BaseURLRev2, siteID, ruleID, c.config.APIID, c.config.APIKey))
+	reqURL := fmt.Sprintf("%s/sites/%s/rules/%d", c.config.BaseURLRev2, siteID, ruleID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, 0, fmt.Errorf("Error from Incapsula service when reading Incap Rule %d for Site ID %s: %s", ruleID, siteID, err)
 	}
@@ -120,14 +118,8 @@ func (c *Client) UpdateIncapRule(siteID string, ruleID int, rule *IncapRule) (*I
 	}
 
 	// Put request to Incapsula
-	req, err := http.NewRequest(
-		http.MethodPut,
-		fmt.Sprintf("%s/sites/%s/rules/%d?api_id=%s&api_key=%s", c.config.BaseURLRev2, siteID, ruleID, c.config.APIID, c.config.APIKey),
-		bytes.NewReader(ruleJSON))
-	if err != nil {
-		return nil, fmt.Errorf("Error preparing HTTP PUT for updating Incap Rule %d for Site ID %s: %s", ruleID, siteID, err)
-	}
-	resp, err := c.httpClient.Do(req)
+	reqURL := fmt.Sprintf("%s/sites/%s/rules/%d", c.config.BaseURLRev2, siteID, ruleID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, ruleJSON)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when updating Incap Rule %d for Site ID %s: %s", ruleID, siteID, err)
 	}
@@ -159,14 +151,8 @@ func (c *Client) DeleteIncapRule(siteID string, ruleID int) error {
 	log.Printf("[INFO] Deleting Incapsula Incap Rule %d for Site ID %s\n", ruleID, siteID)
 
 	// Delete request to Incapsula
-	req, err := http.NewRequest(
-		http.MethodDelete,
-		fmt.Sprintf("%s/sites/%s/rules/%d?api_id=%s&api_key=%s", c.config.BaseURLRev2, siteID, ruleID, c.config.APIID, c.config.APIKey),
-		nil)
-	if err != nil {
-		return fmt.Errorf("Error preparing HTTP DELETE for deleting Incap Rule %d for Site ID %s: %s", ruleID, siteID, err)
-	}
-	resp, err := c.httpClient.Do(req)
+	reqURL := fmt.Sprintf("%s/sites/%s/rules/%d", c.config.BaseURLRev2, siteID, ruleID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil)
 	if err != nil {
 		return fmt.Errorf("Error from Incapsula service when deleting Incap Rule %d for Site ID %s: %s", ruleID, siteID, err)
 	}
