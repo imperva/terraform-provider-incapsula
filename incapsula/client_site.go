@@ -212,8 +212,6 @@ func (c *Client) AddSite(domain, refID, sendSiteSetupEmails, siteIP, forceSSL st
 	log.Printf("[INFO] Adding Incapsula site for domain: %s (account ID %d)\n", domain, accountID)
 
 	values := url.Values{
-		"api_id":                 {c.config.APIID},
-		"api_key":                {c.config.APIKey},
 		"domain":                 {domain},
 		"ref_id":                 {refID},
 		"send_site_setup_emails": {sendSiteSetupEmails},
@@ -228,7 +226,8 @@ func (c *Client) AddSite(domain, refID, sendSiteSetupEmails, siteIP, forceSSL st
 		values["account_id"][0] = fmt.Sprint(accountID)
 	}
 
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteAdd), values)
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteAdd)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error adding site for domain %s: %s", domain, err)
 	}
@@ -260,11 +259,9 @@ func (c *Client) SiteStatus(domain string, siteID int) (*SiteStatusResponse, err
 	log.Printf("[INFO] Getting Incapsula site status for domain: %s (site id: %d)\n", domain, siteID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteStatus), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-		"site_id": {strconv.Itoa(siteID)},
-	})
+	values := url.Values{"site_id": {strconv.Itoa(siteID)}}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteStatus)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting site status for domain %s (site id: %d): %s", domain, siteID, err)
 	}
@@ -304,13 +301,13 @@ func (c *Client) UpdateSite(siteID, param, value string) (*SiteUpdateResponse, e
 	log.Printf("[INFO] Updating Incapsula site for siteID: %s\n", siteID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
+	values := url.Values{
 		"site_id": {siteID},
 		"param":   {param},
 		"value":   {value},
-	})
+	}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error updating param (%s) with value (%s) on site_id: %s: %s", param, value, siteID, err)
 	}
@@ -349,11 +346,9 @@ func (c *Client) DeleteSite(domain string, siteID int) error {
 	log.Printf("[INFO] Deleting Incapsula site for domain: %s (site id: %d)\n", domain, siteID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteDelete), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-		"site_id": {strconv.Itoa(siteID)},
-	})
+	values := url.Values{"site_id": {strconv.Itoa(siteID)}}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteDelete)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return fmt.Errorf("Error deleting site for domain %s (site id: %d): %s", domain, siteID, err)
 	}

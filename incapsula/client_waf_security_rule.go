@@ -26,8 +26,6 @@ const customRuleDefaultActionID = "api.threats.customRule"
 func (c *Client) ConfigureWAFSecurityRule(siteID int, ruleID, securityRuleAction, activationMode, ddosTrafficThreshold, blockBadBots, challengeSuspectedBots string) (*SiteStatusResponse, error) {
 	// Base URL values
 	values := url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
 		"site_id": {strconv.Itoa(siteID)},
 		"rule_id": {ruleID},
 	}
@@ -49,7 +47,8 @@ func (c *Client) ConfigureWAFSecurityRule(siteID int, ruleID, securityRuleAction
 	}
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointWAFRuleConfigure), values)
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointWAFRuleConfigure)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error configuring WAF security rule rule_id (%s) for site_id (%d)", ruleID, siteID)
 	}

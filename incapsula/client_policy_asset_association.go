@@ -18,10 +18,8 @@ func (c *Client) AddPolicyAssetAssociation(policyID, assetID, assetType string) 
 	log.Printf("[INFO] Adding Incapsula Policy Asset Association: %s-%s-%s\n", policyID, assetID, assetType)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.Post(
-		fmt.Sprintf("%s/policies/v2/assets/%s/%s/policies/%s?api_id=%s&api_key=%s", c.config.BaseURLAPI, assetType, assetID, policyID, c.config.APIID, c.config.APIKey),
-		"application/json",
-		nil)
+	reqURL := fmt.Sprintf("%s/policies/v2/assets/%s/%s/policies/%s", c.config.BaseURLAPI, assetType, assetID, policyID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, nil)
 	if err != nil {
 		return fmt.Errorf("Error from Incapsula service when adding Policy Asset Association: %s", err)
 	}
@@ -46,14 +44,8 @@ func (c *Client) DeletePolicyAssetAssociation(policyID, assetID, assetType strin
 	log.Printf("[INFO] Deleting Incapsula Policy Asset Association: %s-%s-%s\n", policyID, assetID, assetType)
 
 	// Delete request to Incapsula
-	req, err := http.NewRequest(
-		http.MethodDelete,
-		fmt.Sprintf("%s/policies/v2/assets/%s/%s/policies/%s?api_id=%s&api_key=%s", c.config.BaseURLAPI, assetType, assetID, policyID, c.config.APIID, c.config.APIKey),
-		nil)
-	if err != nil {
-		return fmt.Errorf("Error preparing HTTP DELETE for deleting Policy Asset Association: %s", err)
-	}
-	resp, err := c.httpClient.Do(req)
+	reqURL := fmt.Sprintf("%s/policies/v2/assets/%s/%s/policies/%s", c.config.BaseURLAPI, assetType, assetID, policyID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil)
 	if err != nil {
 		return fmt.Errorf("Error from Incapsula service when deleting Policy Asset Association (%s): %s", policyID, err)
 	}
@@ -77,7 +69,8 @@ func (c *Client) isPolicyAssetAssociated(policyID, assetID, assetType string) (b
 	log.Printf("[INFO] Checking Policy Asset Association: %s-%s-%s\n", policyID, assetID, assetType)
 
 	// Check with Policies if the association exist
-	resp, err := c.httpClient.Get(fmt.Sprintf("%s/policies/v2/policies/%s/assets/%s/%s?api_id=%s&api_key=%s", c.config.BaseURLAPI, policyID, assetType, assetID, c.config.APIID, c.config.APIKey))
+	reqURL := fmt.Sprintf("%s/policies/v2/policies/%s/assets/%s/%s", c.config.BaseURLAPI, policyID, assetType, assetID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil)
 	if err != nil {
 		return false, fmt.Errorf("error from Incapsula service when checking if Policy Asset Association exist: %s-%s-%s, err: %s", policyID, assetID, assetType, err)
 	}

@@ -37,7 +37,7 @@ func ClientPolicyAssetAssociatedBase(t *testing.T, shouldBeAssociated bool) (boo
 	policyID := "11"
 	assetType := "WEBSITE"
 
-	endpoint := fmt.Sprintf("/policies/v2/policies/%s/assets/%s/%s?api_id=%s&api_key=%s", policyID, assetType, assetID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/policies/v2/policies/%s/assets/%s/%s", policyID, assetType, assetID)
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())

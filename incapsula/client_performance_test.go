@@ -34,7 +34,7 @@ func TestClientGetPerformanceSettingsBadJSON(t *testing.T) {
 	apiKey := "bar"
 	siteID := "42"
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/cache?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -64,7 +64,7 @@ func TestClientGetPerformanceSettingsInvalidSite(t *testing.T) {
 	apiKey := "bar"
 	siteID := "42"
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/cache?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
@@ -95,7 +95,7 @@ func TestClientGetPerformanceSettingsValidSite(t *testing.T) {
 	apiKey := "bar"
 	siteID := "42"
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/cache?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -146,7 +146,7 @@ func TestClientUpdatePerformanceSettingsInvalidSite(t *testing.T) {
 	performanceSettings := PerformanceSettings{}
 	performanceSettings.Mode.HTTPS = "include_all_resources"
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/cache?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
@@ -176,7 +176,7 @@ func TestClientUpdatePerformanceSettingsValidSite(t *testing.T) {
 	performanceSettings := PerformanceSettings{}
 	performanceSettings.Mode.HTTPS = "include_all_resources"
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/cache?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {

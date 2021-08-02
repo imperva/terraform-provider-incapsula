@@ -24,13 +24,13 @@ func (c *Client) UpdateLogLevel(siteID, logLevel, logsAccountId string) error {
 	log.Printf("[INFO] Updating Incapsula log level (%s) for siteID: %s\n", logLevel, siteID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteLogLevel), url.Values{
-		"api_id":          {c.config.APIID},
-		"api_key":         {c.config.APIKey},
+	values := url.Values{
 		"site_id":         {siteID},
 		"log_level":       {logLevel},
 		"logs_account_id": {logsAccountId},
-	})
+	}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteLogLevel)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return fmt.Errorf("Error updating log level (%s) on site_id: %s: %s", logLevel, siteID, err)
 	}

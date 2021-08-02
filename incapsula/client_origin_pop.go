@@ -19,22 +19,12 @@ type SetOriginPOPResponse struct {
 
 // SetOriginPOP sets the origin POP for given data center
 func (c *Client) SetOriginPOP(dcID int, originPOP string) error {
-	originPopModifyUrl := ""
+	reqURL := fmt.Sprintf("%s/sites/datacenter/origin-pop/modify?dc_id=%d", c.config.BaseURL, dcID)
 	if originPOP != "" {
-		originPopModifyUrl = fmt.Sprintf("%s/sites/datacenter/origin-pop/modify?api_id=%s&api_key=%s&origin_pop=%s&dc_id=%d", c.config.BaseURL, c.config.APIID, c.config.APIKey, originPOP, dcID)
-	} else { // setting the origin pop to NONE is done by not sending the origin_pop query param
-		originPopModifyUrl = fmt.Sprintf("%s/sites/datacenter/origin-pop/modify?api_id=%s&api_key=%s&dc_id=%d", c.config.BaseURL, c.config.APIID, c.config.APIKey, dcID)
+		reqURL = fmt.Sprintf("%s&origin_pop=%s", reqURL, originPOP)
 	}
-
 	// Post request to Incapsula
-	req, err := http.NewRequest(
-		http.MethodPost,
-		originPopModifyUrl,
-		nil)
-	if err != nil {
-		return fmt.Errorf("Error preparing HTTP POST for setting Incapsula origin POP: %s for data center: %d: %s", originPOP, dcID, err)
-	}
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, nil)
 	if err != nil {
 		return fmt.Errorf("Error from Incapsula service when setting origin POP: %s for data center: %d: %s", originPOP, dcID, err)
 	}

@@ -42,7 +42,7 @@ func TestClientAddCacheRuleBadJSON(t *testing.T) {
 	apiKey := "bar"
 	siteID := "42"
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -79,7 +79,7 @@ func TestClientAddCacheRuleInvalidRule(t *testing.T) {
 	apiKey := "bar"
 	siteID := "42"
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(406)
@@ -114,7 +114,7 @@ func TestClientAddCacheRuleValidRule(t *testing.T) {
 	apiKey := "bar"
 	siteID := "42"
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules?api_id=%s&api_key=%s", siteID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -175,7 +175,7 @@ func TestClientReadCacheRuleBadJSON(t *testing.T) {
 	siteID := "42"
 	ruleID := 62
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d", siteID, ruleID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -206,7 +206,7 @@ func TestClientReadCacheRuleInvalidRule(t *testing.T) {
 	siteID := "42"
 	ruleID := 29010333
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d", siteID, ruleID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
@@ -241,7 +241,7 @@ func TestClientReadCacheRuleValidRule(t *testing.T) {
 	siteID := "42"
 	ruleID := 66772
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d", siteID, ruleID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -309,7 +309,7 @@ func TestClientUpdateCacheRuleBadJSON(t *testing.T) {
 		Enabled: true,
 	}
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d", siteID, ruleID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -344,7 +344,7 @@ func TestClientUpdateCacheRuleInvalidRule(t *testing.T) {
 		Enabled: true,
 	}
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d", siteID, ruleID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
@@ -380,7 +380,7 @@ func TestClientUpdateCacheRuleValidRule(t *testing.T) {
 		Enabled: true,
 	}
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d", siteID, ruleID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -425,7 +425,7 @@ func TestClientDeleteCacheRuleInvalidRule(t *testing.T) {
 	siteID := "42"
 	ruleID := 11111
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d", siteID, ruleID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -454,7 +454,7 @@ func TestClientDeleteCacheRuleValidRule(t *testing.T) {
 	siteID := "42"
 	ruleID := 290109
 
-	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", siteID, ruleID, apiID, apiKey)
+	endpoint := fmt.Sprintf("/sites/%s/settings/cache/rules/%d", siteID, ruleID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)

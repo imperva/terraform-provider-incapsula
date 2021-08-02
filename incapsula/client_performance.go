@@ -1,7 +1,6 @@
 package incapsula
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -55,7 +54,8 @@ func (c *Client) GetPerformanceSettings(siteID string) (*PerformanceSettings, in
 	log.Printf("[INFO] Getting Incapsula Performance Settings for Site ID %s\n", siteID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.Get(fmt.Sprintf("%s/sites/%s/settings/cache?api_id=%s&api_key=%s", c.config.BaseURLRev2, siteID, c.config.APIID, c.config.APIKey))
+	reqURL := fmt.Sprintf("%s/sites/%s/settings/cache", c.config.BaseURLRev2, siteID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, 0, fmt.Errorf("Error from Incapsula service when reading Incap Performance Settings for Site ID %s: %s", siteID, err)
 	}
@@ -93,14 +93,8 @@ func (c *Client) UpdatePerformanceSettings(siteID string, performanceSettings *P
 
 	// Post request to Incapsula
 	log.Printf("[DEBUG] Incapsula Update Incap Performance Settings JSON request: %s\n", string(performanceSettingsJSON))
-	req, err := http.NewRequest(
-		http.MethodPut,
-		fmt.Sprintf("%s/sites/%s/settings/cache?api_id=%s&api_key=%s", c.config.BaseURLRev2, siteID, c.config.APIID, c.config.APIKey),
-		bytes.NewReader(performanceSettingsJSON))
-	if err != nil {
-		return nil, fmt.Errorf("Error preparing HTTP POST for updating Incap Performance Settings for Site ID %s: %s", siteID, err)
-	}
-	resp, err := c.httpClient.Do(req)
+	reqURL := fmt.Sprintf("%s/sites/%s/settings/cache", c.config.BaseURLRev2, siteID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, performanceSettingsJSON)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when updating Incap Performance Settings for Site ID %s: %s", siteID, err)
 	}

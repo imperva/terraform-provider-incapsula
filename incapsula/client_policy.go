@@ -1,7 +1,6 @@
 package incapsula
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -80,10 +79,8 @@ func (c *Client) AddPolicy(policySubmitted *PolicySubmitted) (*PolicyExtended, e
 
 	// Post form to Incapsula
 	log.Printf("[DEBUG] Incapsula Add Incap Policy JSON request: %s\n", string(policyJSON))
-	resp, err := c.httpClient.Post(
-		fmt.Sprintf("%s/policies/v2/policies?api_id=%s&api_key=%s", c.config.BaseURLAPI, c.config.APIID, c.config.APIKey),
-		"application/json",
-		bytes.NewReader(policyJSON))
+	reqURL := fmt.Sprintf("%s/policies/v2/policies", c.config.BaseURLAPI)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, policyJSON)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when adding Policy: %s", err)
 	}
@@ -115,7 +112,8 @@ func (c *Client) GetPolicy(policyID string) (*PolicyExtended, error) {
 	log.Printf("[INFO] Getting Incapsula Policy: %s\n", policyID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.Get(fmt.Sprintf("%s/policies/v2/policies/%s?extended=true&api_id=%s&api_key=%s", c.config.BaseURLAPI, policyID, c.config.APIID, c.config.APIKey))
+	reqURL := fmt.Sprintf("%s/policies/v2/policies/%s?extended=true", c.config.BaseURLAPI, policyID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when reading Policy for ID %s: %s", policyID, err)
 	}
@@ -153,15 +151,8 @@ func (c *Client) UpdatePolicy(policyID int, policySubmitted *PolicySubmitted) (*
 
 	// Post form to Incapsula
 	log.Printf("[DEBUG] Incapsula Update Incap Policy JSON request: %s\n", string(policyJSON))
-	req, err := http.NewRequest(
-		http.MethodPut,
-		fmt.Sprintf("%s/policies/v2/policies/%d?api_id=%s&api_key=%s", c.config.BaseURLAPI, policyID, c.config.APIID, c.config.APIKey),
-		bytes.NewReader(policyJSON))
-	if err != nil {
-		return nil, fmt.Errorf("Error preparing HTTP PUT for updating Incap Policy with ID %d: %s", policyID, err)
-	}
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-	resp, err := c.httpClient.Do(req)
+	reqURL := fmt.Sprintf("%s/policies/v2/policies/%d", c.config.BaseURLAPI, policyID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, policyJSON)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when updating Policy: %s", err)
 	}
@@ -193,14 +184,8 @@ func (c *Client) DeletePolicy(policyID string) error {
 	log.Printf("[INFO] Deleting Incapsula Policy for ID %s\n", policyID)
 
 	// Delete request to Incapsula
-	req, err := http.NewRequest(
-		http.MethodDelete,
-		fmt.Sprintf("%s/policies/v2/policies/%s?api_id=%s&api_key=%s", c.config.BaseURLAPI, policyID, c.config.APIID, c.config.APIKey),
-		nil)
-	if err != nil {
-		return fmt.Errorf("Error preparing HTTP DELETE for deleting Policy with ID %s: %s", policyID, err)
-	}
-	resp, err := c.httpClient.Do(req)
+	reqURL := fmt.Sprintf("%s/policies/v2/policies/%s", c.config.BaseURLAPI, policyID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil)
 	if err != nil {
 		return fmt.Errorf("Error from Incapsula service when deleting Policy with ID %s: %s", policyID, err)
 	}

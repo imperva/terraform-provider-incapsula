@@ -41,8 +41,6 @@ type SecurityRuleExceptionCreateResponse struct {
 func (c *Client) AddSecurityRuleException(siteID int, ruleID, clientAppTypes, clientApps, countries, continents, ips, urlPatterns, urls, userAgents, parameters string) (*SecurityRuleExceptionCreateResponse, error) {
 	// Base URL values
 	values := url.Values{
-		"api_id":            {c.config.APIID},
-		"api_key":           {c.config.APIKey},
 		"site_id":           {strconv.Itoa(siteID)},
 		"rule_id":           {ruleID},
 		"exception_id_only": {"true"},
@@ -80,7 +78,8 @@ func (c *Client) AddSecurityRuleException(siteID int, ruleID, clientAppTypes, cl
 	}
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointExceptionConfigure), values)
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointExceptionConfigure)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error configuring security rule exception rule_id (%s) for site_id (%d)", ruleID, siteID)
 	}
@@ -111,8 +110,6 @@ func (c *Client) AddSecurityRuleException(siteID int, ruleID, clientAppTypes, cl
 func (c *Client) EditSecurityRuleException(siteID int, ruleID, clientAppTypes, clientApps, countries, continents, ips, urlPatterns, urls, userAgents, parameters, whitelistID string) (*SiteStatusResponse, error) {
 	// Base URL values
 	values := url.Values{
-		"api_id":       {c.config.APIID},
-		"api_key":      {c.config.APIKey},
 		"site_id":      {strconv.Itoa(siteID)},
 		"rule_id":      {ruleID},
 		"whitelist_id": {whitelistID},
@@ -150,7 +147,8 @@ func (c *Client) EditSecurityRuleException(siteID int, ruleID, clientAppTypes, c
 	}
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointExceptionConfigure), values)
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointExceptionConfigure)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error configuring security rule exception rule_id (%s) for site_id (%d)", ruleID, siteID)
 	}
@@ -182,11 +180,9 @@ func (c *Client) ListSecurityRuleExceptions(siteID, ruleID string) (*SiteStatusR
 	log.Printf("[INFO] Getting Incapsula security rule exeptions for rule_id (%s) on site_id (%s)\n", ruleID, siteID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointExceptionList), url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-		"site_id": {siteID},
-	})
+	values := url.Values{"site_id": {siteID}}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointExceptionList)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting security rule exceptions for rule_id (%s) on siteID (%s): %s", ruleID, siteID, err)
 	}
@@ -233,8 +229,6 @@ func (c *Client) DeleteSecurityRuleException(siteID int, ruleID, whitelistID str
 
 	// Base URL values
 	values := url.Values{
-		"api_id":           {c.config.APIID},
-		"api_key":          {c.config.APIKey},
 		"site_id":          {strconv.Itoa(siteID)},
 		"rule_id":          {ruleID},
 		"whitelist_id":     {whitelistID},
@@ -242,7 +236,8 @@ func (c *Client) DeleteSecurityRuleException(siteID int, ruleID, whitelistID str
 	}
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointExceptionConfigure), values)
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointExceptionConfigure)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return fmt.Errorf("Error deleting security rule exception whitelist_id (%s) for rule_id (%s) for site_id (%d)", whitelistID, ruleID, siteID)
 	}

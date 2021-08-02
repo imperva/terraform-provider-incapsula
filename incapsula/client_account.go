@@ -90,8 +90,6 @@ func (c *Client) AddAccount(email, refID, userName, planID, accountName, logLeve
 	log.Printf("[INFO] Adding Incapsula account for email: %s (account ID %d)\n", email, parentID)
 
 	values := url.Values{
-		"api_id":       {c.config.APIID},
-		"api_key":      {c.config.APIKey},
 		"email":        {email},
 		"user_name":    {userName},
 		"plan_id":      {planID},
@@ -109,7 +107,8 @@ func (c *Client) AddAccount(email, refID, userName, planID, accountName, logLeve
 		values["logs_account_id"][0] = fmt.Sprint(logsAccountID)
 	}
 
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountAdd), values)
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountAdd)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error adding account for email %s: %s", email, err)
 	}
@@ -141,11 +140,9 @@ func (c *Client) AccountStatus(accountID int) (*AccountStatusResponse, error) {
 	log.Printf("[INFO] Getting Incapsula account status for account id: %d\n", accountID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountStatus), url.Values{
-		"api_id":     {c.config.APIID},
-		"api_key":    {c.config.APIKey},
-		"account_id": {strconv.Itoa(accountID)},
-	})
+	values := url.Values{"account_id": {strconv.Itoa(accountID)}}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountStatus)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting account status for account id %d: %s", accountID, err)
 	}
@@ -184,14 +181,13 @@ func (c *Client) AccountStatus(accountID int) (*AccountStatusResponse, error) {
 func (c *Client) UpdateAccount(accountID, param, value string) (*AccountUpdateResponse, error) {
 	log.Printf("[INFO] Updating Incapsula account for accountID: %s\n", accountID)
 
-	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountUpdate), url.Values{
-		"api_id":     {c.config.APIID},
-		"api_key":    {c.config.APIKey},
+	values := url.Values{
 		"account_id": {accountID},
 		"param":      {param},
 		"value":      {value},
-	})
+	}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountUpdate)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error updating param (%s) with value (%s) on account_id: %s: %s", param, value, accountID, err)
 	}
@@ -230,11 +226,9 @@ func (c *Client) DeleteAccount(accountID int) error {
 	log.Printf("[INFO] Deleting Incapsula account id: %d\n", accountID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountDelete), url.Values{
-		"api_id":     {c.config.APIID},
-		"api_key":    {c.config.APIKey},
-		"account_id": {strconv.Itoa(accountID)},
-	})
+	values := url.Values{"account_id": {strconv.Itoa(accountID)}}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountDelete)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return fmt.Errorf("Error deleting account id: %d: %s", accountID, err)
 	}

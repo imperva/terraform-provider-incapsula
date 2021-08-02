@@ -36,14 +36,14 @@ func (c *Client) AddDataCenterServer(dcID, serverAddress, isStandby string, isEn
 	}
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServerAdd), url.Values{
-		"api_id":         {c.config.APIID},
-		"api_key":        {c.config.APIKey},
+	values := url.Values{
 		"dc_id":          {dcID},
 		"server_address": {serverAddress},
 		"is_standby":     {isStandby},
 		"is_disabled":    {strconv.FormatBool(!bIsEnabled)},
-	})
+	}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServerAdd)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when adding data center server for dcID %s: %s", dcID, err)
 	}
@@ -85,14 +85,14 @@ func (c *Client) EditDataCenterServer(serverID, serverAddress, isStandby, isEnab
 	log.Printf("[INFO] Editing Incapsula data center server for serverID: %s\n", serverID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServerEdit), url.Values{
-		"api_id":         {c.config.APIID},
-		"api_key":        {c.config.APIKey},
+	values := url.Values{
 		"server_id":      {serverID},
 		"server_address": {serverAddress},
 		"is_standby":     {isStandby},
 		"is_enabled":     {isEnabled},
-	})
+	}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServerEdit)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return nil, fmt.Errorf("Error editing data center server for serverID: %s: %s", serverID, err)
 	}
@@ -141,11 +141,9 @@ func (c *Client) DeleteDataCenterServer(serverID string) error {
 	log.Printf("[INFO] Deleting Incapsula data center server ID: %s\n", serverID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServerDelete), url.Values{
-		"api_id":    {c.config.APIID},
-		"api_key":   {c.config.APIKey},
-		"server_id": {serverID},
-	})
+	values := url.Values{"server_id": {serverID}}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServerDelete)
+	resp, err := c.PostFormWithHeaders(reqURL, values)
 	if err != nil {
 		return fmt.Errorf("Error deleting data center server (server_id: %s): %s", serverID, err)
 	}

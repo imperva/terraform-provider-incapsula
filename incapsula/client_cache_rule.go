@@ -1,7 +1,6 @@
 package incapsula
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -40,10 +39,8 @@ func (c *Client) AddCacheRule(siteID string, rule *CacheRule) (*CacheRuleWithID,
 	log.Printf("[DEBUG] Incapsula Add Cache Rule JSON request body: %s\n", string(ruleJSON))
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.Post(
-		fmt.Sprintf("%s/sites/%s/settings/cache/rules?api_id=%s&api_key=%s", c.config.BaseURLRev2, siteID, c.config.APIID, c.config.APIKey),
-		"application/json",
-		bytes.NewReader(ruleJSON))
+	reqURL := fmt.Sprintf("%s/sites/%s/settings/cache/rules", c.config.BaseURLRev2, siteID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, ruleJSON)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when adding Cache Rule for Site ID %s: %s", siteID, err)
 	}
@@ -75,7 +72,8 @@ func (c *Client) ReadCacheRule(siteID string, ruleID int) (*CacheRuleWithID, int
 	log.Printf("[INFO] Getting Incapsula Cache Rule %d for Site ID %s\n", ruleID, siteID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.Get(fmt.Sprintf("%s/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", c.config.BaseURLRev2, siteID, ruleID, c.config.APIID, c.config.APIKey))
+	reqURL := fmt.Sprintf("%s/sites/%s/settings/cache/rules/%d", c.config.BaseURLRev2, siteID, ruleID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, 0, fmt.Errorf("Error from Incapsula service when reading Cache Rule %d for Site ID %s: %s", ruleID, siteID, err)
 	}
@@ -112,14 +110,8 @@ func (c *Client) UpdateCacheRule(siteID string, ruleID int, rule *CacheRule) err
 	}
 
 	// Put request to Incapsula
-	req, err := http.NewRequest(
-		http.MethodPut,
-		fmt.Sprintf("%s/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", c.config.BaseURLRev2, siteID, ruleID, c.config.APIID, c.config.APIKey),
-		bytes.NewReader(ruleJSON))
-	if err != nil {
-		return fmt.Errorf("Error preparing HTTP PUT for updating Cache Rule %d for Site ID %s: %s", ruleID, siteID, err)
-	}
-	resp, err := c.httpClient.Do(req)
+	reqURL := fmt.Sprintf("%s/sites/%s/settings/cache/rules/%d", c.config.BaseURLRev2, siteID, ruleID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, ruleJSON)
 	if err != nil {
 		return fmt.Errorf("Error from Incapsula service when updating Cache Rule %d for Site ID %s: %s", ruleID, siteID, err)
 	}
@@ -160,14 +152,8 @@ func (c *Client) DeleteCacheRule(siteID string, ruleID int) error {
 	log.Printf("[INFO] Deleting Incapsula Cache Rule %d for Site ID %s\n", ruleID, siteID)
 
 	// Delete request to Incapsula
-	req, err := http.NewRequest(
-		http.MethodDelete,
-		fmt.Sprintf("%s/sites/%s/settings/cache/rules/%d?api_id=%s&api_key=%s", c.config.BaseURLRev2, siteID, ruleID, c.config.APIID, c.config.APIKey),
-		nil)
-	if err != nil {
-		return fmt.Errorf("Error preparing HTTP DELETE for deleting Cache Rule %d for Site ID %s: %s", ruleID, siteID, err)
-	}
-	resp, err := c.httpClient.Do(req)
+	reqURL := fmt.Sprintf("%s/sites/%s/settings/cache/rules/%d", c.config.BaseURLRev2, siteID, ruleID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil)
 	if err != nil {
 		return fmt.Errorf("Error from Incapsula service when deleting Cache Rule %d for Site ID %s: %s", ruleID, siteID, err)
 	}
