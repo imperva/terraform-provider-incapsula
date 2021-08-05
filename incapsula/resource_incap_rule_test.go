@@ -19,7 +19,7 @@ func TestAccIncapsulaIncapRule_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaIncapRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaIncapRuleConfigBasic(),
+				Config: testAccCheckIncapsulaIncapRuleConfigBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaIncapRuleExists(incapRuleResourceName),
 					resource.TestCheckResourceAttr(incapRuleResourceName, "name", incapRuleName),
@@ -114,8 +114,8 @@ func testCheckIncapsulaIncapRuleExists(name string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckIncapsulaIncapRuleConfigBasic() string {
-	return testAccCheckIncapsulaSiteConfigBasic(testAccDomain) + fmt.Sprintf(`
+func testAccCheckIncapsulaIncapRuleConfigBasic(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "incapsula_incap_rule" "testacc-terraform-incap-rule" {
   name = "%s"
   site_id = "${incapsula_site.testacc-terraform-site.id}"

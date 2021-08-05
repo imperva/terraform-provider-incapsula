@@ -23,7 +23,7 @@ func testAccCheckWAFSecurityRuleCreateGoodConfigBackdoor(t *testing.T) {
 		CheckDestroy: testAccCheckWAFSecurityRuleDestroyBackdoor,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckWAFSecurityRuleGoodConfigBackdoor(),
+				Config: testAccCheckWAFSecurityRuleGoodConfigBackdoor(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceNameBackdoor),
 					resource.TestCheckResourceAttr(wafSecurityRuleResourceNameBackdoor, "name", wafSecurityRuleNameBackdoor),
@@ -46,7 +46,7 @@ func testAccCheckWAFSecurityRuleCreateGoodConfigDDoS(t *testing.T) {
 		CheckDestroy: testAccCheckWAFSecurityRuleDestroyDDoS,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckWAFSecurityRuleGoodConfigDDoS(),
+				Config: testAccCheckWAFSecurityRuleGoodConfigDDoS(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceNameDDoS),
 					resource.TestCheckResourceAttr(wafSecurityRuleResourceNameDDoS, "name", wafSecurityRuleResourceNameDDoS),
@@ -69,7 +69,7 @@ func testAccCheckWAFSecurityRuleCreateGoodConfigBots(t *testing.T) {
 		CheckDestroy: testAccCheckWAFSecurityRuleDestroyBots,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckWAFSecurityRuleGoodConfigBots(),
+				Config: testAccCheckWAFSecurityRuleGoodConfigBots(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceNameBotAccessControl),
 					resource.TestCheckResourceAttr(wafSecurityRuleResourceNameBotAccessControl, "name", wafSecurityRuleResourceNameBotAccessControl),
@@ -92,7 +92,7 @@ func testAccCheckWAFSecurityRuleCreateBadConfigBackdoor(t *testing.T) {
 		CheckDestroy: testAccCheckWAFSecurityRuleDestroyBackdoor,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckWAFSecurityRuleBadConfigBackdoor(),
+				Config: testAccCheckWAFSecurityRuleBadConfigBackdoor(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceNameBackdoor),
 					resource.TestCheckResourceAttr(wafSecurityRuleResourceNameBackdoor, "name", wafSecurityRuleResourceNameBackdoor),
@@ -115,7 +115,7 @@ func testAccCheckWAFSecurityRuleCreateBadConfigDDoS(t *testing.T) {
 		CheckDestroy: testAccCheckWAFSecurityRuleDestroyDDoS,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckWAFSecurityRuleBadConfigDDoS(),
+				Config: testAccCheckWAFSecurityRuleBadConfigDDoS(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceNameDDoS),
 					resource.TestCheckResourceAttr(wafSecurityRuleResourceNameDDoS, "name", wafSecurityRuleResourceNameDDoS),
@@ -138,7 +138,7 @@ func testAccCheckWAFSecurityRuleCreateBadConfigBots(t *testing.T) {
 		CheckDestroy: testAccCheckWAFSecurityRuleDestroyBots,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckWAFSecurityRuleBadConfigBots(),
+				Config: testAccCheckWAFSecurityRuleBadConfigBots(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckWAAFSecurityRuleExists(wafSecurityRuleResourceNameBotAccessControl),
 					resource.TestCheckResourceAttr(wafSecurityRuleResourceNameBotAccessControl, "name", wafSecurityRuleNameBots),
@@ -222,8 +222,8 @@ func testCheckWAAFSecurityRuleExists(name string) resource.TestCheckFunc {
 }
 
 // Good and bad WAF Security Rule configs
-func testAccCheckWAFSecurityRuleGoodConfigBackdoor() string {
-	return testAccCheckIncapsulaSiteConfigBasic(testAccDomain) + fmt.Sprintf("%s%s%s", `
+func testAccCheckWAFSecurityRuleGoodConfigBackdoor(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf("%s%s%s", `
 resource "incapsula_waf_security_rule" "example-waf-backdoor-rule" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.threats.backdoor"
@@ -232,8 +232,8 @@ resource "incapsula_waf_security_rule" "example-waf-backdoor-rule" {
 	)
 }
 
-func testAccCheckWAFSecurityRuleGoodConfigDDoS() string {
-	return testAccCheckIncapsulaSiteConfigBasic(testAccDomain) + fmt.Sprintf("%s%s%s", `
+func testAccCheckWAFSecurityRuleGoodConfigDDoS(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf("%s%s%s", `
 resource "incapsula_waf_security_rule" "example-waf-ddos-rule" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.threats.ddos"
@@ -243,8 +243,8 @@ resource "incapsula_waf_security_rule" "example-waf-ddos-rule" {
 	)
 }
 
-func testAccCheckWAFSecurityRuleGoodConfigBots() string {
-	return testAccCheckIncapsulaSiteConfigBasic(testAccDomain) + fmt.Sprintf("%s%s%s", `
+func testAccCheckWAFSecurityRuleGoodConfigBots(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf("%s%s%s", `
 resource "incapsula_waf_security_rule" "example-waf-bot-access-control-rule" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.threats.bot_access_control"
@@ -254,8 +254,8 @@ resource "incapsula_waf_security_rule" "example-waf-bot-access-control-rule" {
 	)
 }
 
-func testAccCheckWAFSecurityRuleBadConfigBackdoor() string {
-	return testAccCheckIncapsulaSiteConfigBasic(testAccDomain) + fmt.Sprintf("%s%s%s", `
+func testAccCheckWAFSecurityRuleBadConfigBackdoor(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf("%s%s%s", `
 resource "incapsula_waf_security_rule" "example-waf-backdoor-rule" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.threats.backdoor"
@@ -264,8 +264,8 @@ resource "incapsula_waf_security_rule" "example-waf-backdoor-rule" {
 	)
 }
 
-func testAccCheckWAFSecurityRuleBadConfigDDoS() string {
-	return testAccCheckIncapsulaSiteConfigBasic(testAccDomain) + fmt.Sprintf("%s%s%s", `
+func testAccCheckWAFSecurityRuleBadConfigDDoS(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf("%s%s%s", `
 resource "incapsula_waf_security_rule" "example-waf-ddos-rule" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.threats.ddos"
@@ -275,8 +275,8 @@ resource "incapsula_waf_security_rule" "example-waf-ddos-rule" {
 	)
 }
 
-func testAccCheckWAFSecurityRuleBadConfigBots() string {
-	return testAccCheckIncapsulaSiteConfigBasic(testAccDomain) + fmt.Sprintf("%s%s%s", `
+func testAccCheckWAFSecurityRuleBadConfigBots(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf("%s%s%s", `
 resource "incapsula_waf_security_rule" "example-waf-bot-access-control-rule" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.threats.bot_access_control"

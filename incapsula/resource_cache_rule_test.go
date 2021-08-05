@@ -19,7 +19,7 @@ func TestAccIncapsulaCacheRule_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaCacheRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaCacheRuleConfigBasic(),
+				Config: testAccCheckIncapsulaCacheRuleConfigBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaCacheRuleExists(cacheRuleResourceName),
 					resource.TestCheckResourceAttr(cacheRuleResourceName, "name", cacheRuleName),
@@ -114,8 +114,8 @@ func testCheckIncapsulaCacheRuleExists(name string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckIncapsulaCacheRuleConfigBasic() string {
-	return testAccCheckIncapsulaSiteConfigBasic(testAccDomain) + fmt.Sprintf(`
+func testAccCheckIncapsulaCacheRuleConfigBasic(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "incapsula_cache_rule" "testacc-terraform-cache-rule" {
 	name = "%s"
   site_id = "${incapsula_site.testacc-terraform-site.id}"

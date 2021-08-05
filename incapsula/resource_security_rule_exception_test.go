@@ -23,7 +23,7 @@ func testAccCheckSecurityRuleExceptionCreateValidRule(t *testing.T) {
 		CheckDestroy: testAccCheckSecurityRuleExceptionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckACLSecurityRuleExceptionGoodConfigBlacklistedCountries(),
+				Config: testAccCheckACLSecurityRuleExceptionGoodConfigBlacklistedCountries(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSecurityRuleExceptionExists(securityRuleExceptionResourceNameBlacklistedCountries),
 					resource.TestCheckResourceAttr(securityRuleExceptionResourceNameBlacklistedCountries, "name", securityRuleExceptionNameBlacklistedCountries),
@@ -46,7 +46,7 @@ func testAccCheckSecurityRuleExceptionCreateInvalidRuleID(t *testing.T) {
 		CheckDestroy: testAccCheckSecurityRuleExceptionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckACLSecurityRuleExceptionInvalidRuleIDBlacklistedCountries(),
+				Config: testAccCheckACLSecurityRuleExceptionInvalidRuleIDBlacklistedCountries(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSecurityRuleExceptionExists(securityRuleExceptionResourceNameBlacklistedCountries),
 					resource.TestCheckResourceAttr(securityRuleExceptionResourceNameBlacklistedCountries, "name", securityRuleExceptionNameBlacklistedCountries),
@@ -69,7 +69,7 @@ func testAccCheckSecurityRuleExceptionCreateInvalidParams(t *testing.T) {
 		CheckDestroy: testAccCheckSecurityRuleExceptionDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckACLSecurityRuleExceptionInvalidParamBlacklistedCountries(),
+				Config: testAccCheckACLSecurityRuleExceptionInvalidParamBlacklistedCountries(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSecurityRuleExceptionExists(securityRuleExceptionResourceNameBlacklistedCountries),
 					resource.TestCheckResourceAttr(securityRuleExceptionResourceNameBlacklistedCountries, "name", securityRuleExceptionNameBlacklistedCountries),
@@ -157,8 +157,8 @@ func testAccStateSecurityRuleExceptionID(s *terraform.State) (string, error) {
 }
 
 // Good Security Rule Exception configs
-func testAccCheckACLSecurityRuleExceptionGoodConfigBlacklistedCountries() string {
-	return testAccCheckIncapsulaSiteConfigBasic(testAccDomain) + fmt.Sprintf("%s%s", `
+func testAccCheckACLSecurityRuleExceptionGoodConfigBlacklistedCountries(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf("%s%s", `
 resource "incapsula_security_rule_exception" "example-waf-blacklisted-countries-rule-exception" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.acl.blacklisted_countries"
@@ -171,8 +171,8 @@ resource "incapsula_security_rule_exception" "example-waf-blacklisted-countries-
 }
 
 // Bad Security Rule Exception configs
-func testAccCheckACLSecurityRuleExceptionInvalidRuleIDBlacklistedCountries() string {
-	return testAccCheckIncapsulaSiteConfigBasic(testAccDomain) + fmt.Sprintf("%s%s", `
+func testAccCheckACLSecurityRuleExceptionInvalidRuleIDBlacklistedCountries(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf("%s%s", `
 resource "incapsula_security_rule_exception" "example-waf-blacklisted-countries-rule-exception" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "bad_rule_id"
@@ -184,8 +184,8 @@ resource "incapsula_security_rule_exception" "example-waf-blacklisted-countries-
 	)
 }
 
-func testAccCheckACLSecurityRuleExceptionInvalidParamBlacklistedCountries() string {
-	return testAccCheckIncapsulaSiteConfigBasic(testAccDomain) + fmt.Sprintf("%s%s", `
+func testAccCheckACLSecurityRuleExceptionInvalidParamBlacklistedCountries(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf("%s%s", `
 resource "incapsula_security_rule_exception" "example-waf-blacklisted-countries-rule-exception" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.acl.blacklisted_countries"
