@@ -1,3 +1,11 @@
+## 2.9.0 (Released)
+* Fix `acceleration_level` in the `site` resource
+* Fix support for `continents` in the `security_rule_exception` resource
+* Fix the default value for `seal_location` in the `site` resource
+* Fix documentation for the `security_rule_exception` resource
+* Support multiple component test accounts
+* Add TF provider version to HTTP client calls
+
 ## 2.8.0 (Released)
 * Add new `incap_rule` properties and `RULE_ACTION_FORWARD_TO_PORT` action
 * Fix `security_rule_exception` import
