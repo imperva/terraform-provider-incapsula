@@ -2,6 +2,7 @@ package incapsula
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"testing"
 
@@ -12,6 +13,13 @@ import (
 const testEmail = "example@example.com"
 const accountResourceName = "incapsula_account.test-terraform-account"
 
+func GenerateTestEmail(t *testing.T) string {
+	if v := os.Getenv("INCAPSULA_API_ID"); v == "" {
+		t.Fatal("INCAPSULA_API_ID must be set for acceptance tests")
+	}
+	return "id" + os.Getenv("INCAPSULA_API_ID") + "." + testEmail
+}
+
 func TestIncapsulaAccount_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -19,10 +27,10 @@ func TestIncapsulaAccount_Basic(t *testing.T) {
 		CheckDestroy: testCheckIncapsulaAccountDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCheckIncapsulaAccountConfigBasic(testEmail),
+				Config: testCheckIncapsulaAccountConfigBasic(GenerateTestEmail(t)),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaAccountExists(accountResourceName),
-					resource.TestCheckResourceAttr(accountResourceName, "email", testEmail),
+					resource.TestCheckResourceAttr(accountResourceName, "email", GenerateTestEmail(t)),
 				),
 			},
 		},
@@ -36,7 +44,7 @@ func TestIncapsulaAccount_ImportBasic(t *testing.T) {
 		CheckDestroy: testCheckIncapsulaAccountDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCheckIncapsulaAccountConfigBasic(testEmail),
+				Config: testCheckIncapsulaAccountConfigBasic(GenerateTestEmail(t)),
 			},
 			{
 				ResourceName:      "incapsula_account.test-terraform-account",
