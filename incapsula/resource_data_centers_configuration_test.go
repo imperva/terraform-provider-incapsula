@@ -23,7 +23,7 @@ func TestAccIncapsulaDataCentersConfiguration_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaDataCentersConfigurationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaDataCentersConfigurationBasic(),
+				Config: testAccCheckIncapsulaDataCentersConfigurationBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaDataCentersConfigurationExists(dataCentersConfigurationResourceName),
 					resource.TestCheckResourceAttr(dataCentersConfigurationResourceName, "site_topology", "SINGLE_DC"),
@@ -143,8 +143,8 @@ func testCheckIncapsulaDataCentersConfigurationExists(name string) resource.Test
 	}
 }
 
-func testAccCheckIncapsulaDataCentersConfigurationBasic() string {
-	return testAccCheckIncapsulaSiteConfigBasic(testAccDomain) + fmt.Sprintf(`
+func testAccCheckIncapsulaDataCentersConfigurationBasic(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "%s" "%s" {
   site_id = %s.id
   site_topology = "SINGLE_DC"

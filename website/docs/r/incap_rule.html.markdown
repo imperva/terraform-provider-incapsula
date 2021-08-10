@@ -72,12 +72,13 @@ resource "incapsula_incap_rule" "example-incap-rule-delete-header" {
 }
 
 # Incap Rule: Forward to Data Center (ADR)
+# For a more detailed example of how to reference a data center id, look at datasource incapsula_data_center  
 resource "incapsula_incap_rule" "example-incap-rule-fwd-to-data-center" {
   name = "Example incap rule forward to data center"
   site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_FORWARD_TO_DC"
   filter = "Full-URL == \"/someurl\""
-  dc_id = "${incapsula_data_center.example-data-center.id}"
+  dc_id = data.incapsula_data_center.example_content_dc.id
 }
 
 # Incap Rule: Redirect (ADR)

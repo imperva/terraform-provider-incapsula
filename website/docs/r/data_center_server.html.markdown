@@ -10,6 +10,9 @@ description: |-
 
 Provides a Incapsula Data Center Server resource. 
 
+This resource is deprecated. It will be removed in a future version. 
+Please use resource incapsula_data_centers_configuration instead.
+
 ## Example Usage
 
 ```hcl

@@ -1,7 +1,6 @@
 package incapsula
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -69,23 +68,8 @@ func (c *Client) PutDataCentersConfiguration(siteID string, requestDTO DataCente
 
 	baseURLv3 := c.config.BaseURL[:len(c.config.BaseURL)-3] + "/v3"
 	dcsJSON, err := json.Marshal(requestDTO)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to JSON marshal Data Centers configuration: %s", err)
-	}
-
-	// Prepare HTTP client PUT request to incapsula
-	log.Printf("[DEBUG] Incapsula Update Data Centers configuration request: %s\n", string(dcsJSON))
-	req, err := http.NewRequest(
-		http.MethodPut,
-		fmt.Sprintf("%s/sites/%s/data-centers-configuration", baseURLv3, siteID),
-		bytes.NewReader(dcsJSON))
-	if err != nil {
-		return nil, fmt.Errorf("Error preparing HTTP PUT for updating Data Centers configuration with ID %s: %s", siteID, err)
-	}
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-	req.Header.Set("x-api-id", c.config.APIID)
-	req.Header.Set("x-api-key", c.config.APIKey)
-	resp, err := c.httpClient.Do(req)
+	reqURL := fmt.Sprintf("%s/sites/%s/data-centers-configuration", baseURLv3, siteID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, dcsJSON)
 	if err != nil {
 		return nil, fmt.Errorf("Error executing update Data Centers configuration request for siteID %s: %s", siteID, err)
 	}
@@ -113,17 +97,8 @@ func (c *Client) GetDataCentersConfiguration(siteID string) (*DataCentersConfigu
 
 	// Get request to Incapsula
 	baseURLv3 := c.config.BaseURL[:len(c.config.BaseURL)-3] + "/v3"
-	// Prepare HTTP client PUT request to incapsula
-	req, err := http.NewRequest(
-		http.MethodGet,
-		fmt.Sprintf("%s/sites/%s/data-centers-configuration", baseURLv3, siteID), nil)
-	if err != nil {
-		return nil, fmt.Errorf("Error preparing HTTP GET for getting Data Centers configuration with ID %s: %s", siteID, err)
-	}
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-	req.Header.Set("x-api-id", c.config.APIID)
-	req.Header.Set("x-api-key", c.config.APIKey)
-	resp, err := c.httpClient.Do(req)
+	reqURL := fmt.Sprintf("%s/sites/%s/data-centers-configuration", baseURLv3, siteID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Error executing get Data Centers configuration request for siteID %s: %s", siteID, err)
 	}

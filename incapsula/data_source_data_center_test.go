@@ -26,7 +26,7 @@ func TestAccIncapsulaDataSourceDataCenter_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaDataSourceDataCenterConfigBasic(),
+				Config: testAccCheckIncapsulaDataSourceDataCenterConfigBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaDataSourceDataCenterExists(dataSourceDcResourceName1),
 					resource.TestCheckResourceAttr(dataSourceDcResourceName1, "origin_pop", "hkg"),
@@ -74,8 +74,8 @@ func testCheckIncapsulaDataSourceDataCenterExists(name string) resource.TestChec
 	}
 }
 
-func testAccCheckIncapsulaDataSourceDataCenterConfigBasic() string {
-	return testAccCheckIncapsulaSiteConfigBasic(testAccDomain) + fmt.Sprintf(`
+func testAccCheckIncapsulaDataSourceDataCenterConfigBasic(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "%s" "%s" {
   site_id = %s.id
   site_lb_algorithm = "GEO_PREFERRED"
