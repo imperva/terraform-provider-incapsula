@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
 // CacheRule is a struct that encompasses all the properties of a CacheRule
@@ -60,7 +61,7 @@ func (c *Client) AddCacheRule(siteID string, rule *CacheRule) (*CacheRuleWithID,
 	// Parse the JSON
 	var cacheRuleWithID CacheRuleWithID
 	err = json.Unmarshal([]byte(responseBody), &cacheRuleWithID)
-	if err != nil {
+	if err != nil || !strings.Contains(string(responseBody), "\"rule_id\":") {
 		return nil, fmt.Errorf("Error parsing Cache Rule JSON response for Site ID %s: %s\nresponse: %s", siteID, err, string(responseBody))
 	}
 

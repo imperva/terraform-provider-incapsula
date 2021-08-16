@@ -118,10 +118,10 @@ func testAccCheckIncapsulaCacheRuleConfigBasic(t *testing.T) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "incapsula_cache_rule" "testacc-terraform-cache-rule" {
 	name = "%s"
-  site_id = "${incapsula_site.testacc-terraform-site.id}"
+  	site_id = incapsula_site.testacc-terraform-site.id
 	action  = "HTTP_CACHE_MAKE_STATIC"
 	enabled = true
-	filter  = "isMobile == Yes"
+	filter  = "ParamExists == \"true\""
 	ttl     = 3600
 	depends_on = ["%s"]
 }`, cacheRuleName, siteResourceName,

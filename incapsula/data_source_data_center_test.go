@@ -21,17 +21,18 @@ const dataSourceDcName4 = "ds_dc_name_americas_and_is_content"
 const dataSourceDcResourceName4 = "data." + dataSourceDataCenterResource + "." + dataSourceDcName4
 
 func TestAccIncapsulaDataSourceDataCenter_Basic(t *testing.T) {
+	pops := ThreeValidPoPs()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaDataSourceDataCenterConfigBasic(t),
+				Config: testAccCheckIncapsulaDataSourceDataCenterConfigBasic(t, pops),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaDataSourceDataCenterExists(dataSourceDcResourceName1),
-					resource.TestCheckResourceAttr(dataSourceDcResourceName1, "origin_pop", "hkg"),
+					resource.TestCheckResourceAttr(dataSourceDcResourceName1, "origin_pop", pops[0]),
 					testCheckIncapsulaDataSourceDataCenterExists(dataSourceDcResourceName2),
-					resource.TestCheckResourceAttr(dataSourceDcResourceName2, "origin_pop", "lon"),
+					resource.TestCheckResourceAttr(dataSourceDcResourceName2, "origin_pop", pops[1]),
 					testCheckIncapsulaDataSourceDataCenterExists(dataSourceDcResourceName3),
 					resource.TestCheckResourceAttr(dataSourceDcResourceName3, "ip_mode", "SINGLE_IP"),
 					testCheckIncapsulaDataSourceDataCenterExists(dataSourceDcResourceName4),
@@ -74,7 +75,7 @@ func testCheckIncapsulaDataSourceDataCenterExists(name string) resource.TestChec
 	}
 }
 
-func testAccCheckIncapsulaDataSourceDataCenterConfigBasic(t *testing.T) string {
+func testAccCheckIncapsulaDataSourceDataCenterConfigBasic(t *testing.T, pops []string) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "%s" "%s" {
   site_id = %s.id
@@ -84,7 +85,7 @@ resource "%s" "%s" {
   data_center {
     is_rest_of_the_world = true
     name = "Rest of the world DC"
-    origin_pop = "hkg"
+    origin_pop = "%s"
 
     origin_server {
       address = "55.66.77.123"
@@ -107,7 +108,7 @@ resource "%s" "%s" {
   data_center  {
     geo_locations = "AFRICA,EUROPE,ASIA"
     name = "EMEA-DC1"
-    origin_pop = "lon"
+    origin_pop = "%s"
 
     origin_server {
       address = "54.74.193.120"
@@ -118,7 +119,7 @@ resource "%s" "%s" {
   data_center  {
     geo_locations = "US_EAST,US_WEST"
     name = "Americas DC"
-    origin_pop = "iad"
+    origin_pop = "%s"
 	is_content = true
 
     origin_server {
@@ -149,7 +150,7 @@ data "incapsula_data_center" "%s" {
   site_id = %s.id
   filter_by_name = "Americas DC"
   filter_by_is_content = true
-}`, dataCentersConfigurationResource, multipleDataCentersConfigurationName, siteResourceName, siteResourceName,
+}`, dataCentersConfigurationResource, multipleDataCentersConfigurationName, siteResourceName, pops[0], pops[1], pops[2], siteResourceName,
 		dataSourceDcName1, multipleDataCentersConfigurationResourceName, dataSourceDcName2, multipleDataCentersConfigurationResourceName,
 		dataSourceDcName3, multipleDataCentersConfigurationResourceName, dataSourceDcName4, multipleDataCentersConfigurationResourceName)
 }

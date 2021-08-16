@@ -102,8 +102,8 @@ func resourceSite() *schema.Resource {
 			"seal_location": {
 				Description: "api.seal_location.bottom_left | api.seal_location.none | api.seal_location.right_bottom | api.seal_location.right | api.seal_location.left | api.seal_location.bottom_right | api.seal_location.bottom.",
 				Type:        schema.TypeString,
-				Default:     "api.seal_location.none",
 				Optional:    true,
+				Computed:    true,
 			},
 			"domain_redirect_to_full": {
 				Description: "true or empty string.",
@@ -425,7 +425,6 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("site_creation_date", siteStatusResponse.SiteCreationDate)
 	d.Set("domain", siteStatusResponse.Domain)
 	d.Set("account_id", siteStatusResponse.AccountID)
-	//d.Set("site_ip", siteStatusResponse.Ips[0])
 	d.Set("naked_domain_san", siteStatusResponse.AddNakedDomainSan)
 	d.Set("wildcard_san", siteStatusResponse.UseWildcardSanInsteadOfFullDomainSan)
 	d.Set("acceleration_level", siteStatusResponse.AccelerationLevelRaw)
@@ -517,25 +516,24 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("perf_ttl_use_shortest_caching", performanceSettingsResponse.TTL.UseShortestCaching)
 
 	// Get the original data center ID (the first in the list of associated data centers)
-	listDataCentersResponse, err := client.ListDataCenters(d.Id())
-	if err != nil || len(listDataCentersResponse.DCs) == 0 {
+	dcsConfDTO, err := client.GetDataCentersConfiguration(d.Id())
+	if err != nil || len(dcsConfDTO.Data) == 0 || len(dcsConfDTO.Data[0].DataCenters) == 0 {
 		log.Printf("[ERROR] Could not read Incapsula data centers for domain: %s and site id: %d, %s\n", domain, siteID, err)
 		return err
 	}
 
-	if len(listDataCentersResponse.DCs[0].Servers) == 0 {
+	if len(dcsConfDTO.Data[0].DataCenters[0].OriginServers) == 0 {
 		log.Printf("[ERROR] Could not read Incapsula data center servers for domain: %s and site id: %d, %s\n", domain, siteID, err)
 		return err
 	}
 
-	dataCenterID := listDataCentersResponse.DCs[0].ID
-	if dataCenterID == "" {
+	dataCenterID := dcsConfDTO.Data[0].DataCenters[0].ID
+	if dataCenterID == nil {
 		return fmt.Errorf("[ERROR] Incapsula Data Center missing for Site ID %s", d.Get("site_id"))
 	}
-	dcID, _ := strconv.Atoi(dataCenterID)
-	d.Set("original_data_center_id", dcID)
+	d.Set("original_data_center_id", *dataCenterID)
 
-	siteIP := listDataCentersResponse.DCs[0].Servers[0].Address
+	siteIP := dcsConfDTO.Data[0].DataCenters[0].OriginServers[0].Address
 	if siteIP == "" {
 		return fmt.Errorf("[ERROR] Incapsula Data Center missing server address for Site ID %s", d.Get("site_id"))
 	}

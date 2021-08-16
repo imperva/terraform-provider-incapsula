@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -20,8 +21,22 @@ func GenerateTestEmail(t *testing.T) string {
 	return "id" + os.Getenv("INCAPSULA_API_ID") + "." + testEmail
 }
 
+func SkipIfAccountTypeIsResellerEndUser(t *testing.T) resource.ErrorCheckFunc {
+	return func(err error) error {
+		if err == nil {
+			return nil
+		}
+		if strings.Contains(err.Error(), "Operation not allowed") {
+			t.Skipf("skipping test since account type is RESELLER_END_USER. Error: %s", err.Error())
+		}
+
+		return err
+	}
+}
+
 func TestIncapsulaAccount_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		ErrorCheck:   SkipIfAccountTypeIsResellerEndUser(t),
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testCheckIncapsulaAccountDestroy,
@@ -39,6 +54,7 @@ func TestIncapsulaAccount_Basic(t *testing.T) {
 
 func TestIncapsulaAccount_ImportBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		ErrorCheck:   SkipIfAccountTypeIsResellerEndUser(t),
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testCheckIncapsulaAccountDestroy,
