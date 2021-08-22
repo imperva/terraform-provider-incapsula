@@ -14,6 +14,16 @@ var testAccProviders map[string]*schema.Provider
 var testAccProvider *schema.Provider
 var testAccProviderConfigure sync.Once
 
+func ThreeValidPoPs() []string {
+	validPoPs := []string{"hkg", "lon", "iad"}
+	if v := os.Getenv("INCAPSULA_BASE_URL"); v == "https://my.impervaservices.com/api/prov/v1" {
+		validPoPs[0] = "sus"
+		validPoPs[1] = "bst"
+		validPoPs[2] = "ogn"
+	}
+	return validPoPs
+}
+
 func init() {
 	testAccProvider = Provider()
 	testAccProviders = map[string]*schema.Provider{

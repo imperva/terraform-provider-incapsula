@@ -10,11 +10,14 @@ description: |-
 
 Provides a Incapsula Origin POP association resource. 
 
+This resource is deprecated. It will be removed in a future version. 
+Please use resource incapsula_data_centers_configuration instead.
+
 ## Example Usage
 
 ```hcl
 resource "incapsula_data_center" "example-data-center" {
-  site_id = "${incapsula_site.example-site.id}"
+  site_id = incapsula_site.example-site.id
   name = "Example data center"
   server_address = "8.8.4.4"
   is_content = "true"

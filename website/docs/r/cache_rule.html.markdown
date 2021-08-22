@@ -15,7 +15,7 @@ Provides a Incapsula Cache Rule resource.
 ```hcl
 resource "incapsula_cache_rule" "example-incap-cache-rule" {
   name = "Example cache rule"
-  site_id = "${incapsula_site.example-site.id}"
+  site_id = incapsula_site.example-site.id
   action = "HTTP_CACHE_MAKE_STATIC"
   filter = "isMobile == Yes"
   enabled = true

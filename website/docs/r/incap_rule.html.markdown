@@ -16,7 +16,7 @@ Incap Rules include security, delivery, and rate rules.
 ```hcl
 resource "incapsula_incap_rule" "example-incap-rule-alert" {
   name = "Example incap rule alert"
-  site_id = "${incapsula_site.example-site.id}"
+  site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_ALERT"
   filter = "Full-URL == \"/someurl\""
 }
@@ -24,7 +24,7 @@ resource "incapsula_incap_rule" "example-incap-rule-alert" {
 # Incap Rule: Require javascript support
 resource "incapsula_incap_rule" "example-incap-rule-require-js-support" {
   name = "Example incap rule require javascript support 3"
-  site_id = "${incapsula_site.example-site.id}"
+  site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_INTRUSIVE_HTML"
   filter = "Full-URL == \"/someurl\""
 }
@@ -32,7 +32,7 @@ resource "incapsula_incap_rule" "example-incap-rule-require-js-support" {
 # Incap Rule: Block IP
 resource "incapsula_incap_rule" "example-incap-rule-block-ip" {
   name = "Example incap rule block ip"
-  site_id = "${incapsula_site.example-site.id}"
+  site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_BLOCK_IP"
   filter = "Full-URL == \"/someurl\""
 }
@@ -40,7 +40,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-ip" {
 # Incap Rule: Block Request
 resource "incapsula_incap_rule" "example-incap-rule-block-request" {
   name = "Example incap rule block request"
-  site_id = "${incapsula_site.example-site.id}"
+  site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_BLOCK"
   filter = "Full-URL == \"/someurl\""
 }
@@ -48,7 +48,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-request" {
 # Incap Rule: Block Session
 resource "incapsula_incap_rule" "example-incap-rule-block-session" {
   name = "Example incap rule block session"
-  site_id = "${incapsula_site.example-site.id}"
+  site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_BLOCK_USER"
   filter = "Full-URL == \"/someurl\""
 }
@@ -56,7 +56,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-session" {
 # Incap Rule: Delete Cookie (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-delete-cookie" {
   name = "Example incap rule delete cookie"
-  site_id = "${incapsula_site.example-site.id}"
+  site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_DELETE_COOKIE"
   filter = "Full-URL == \"/someurl\""
   rewrite_name = "my_test_header"
@@ -65,25 +65,26 @@ resource "incapsula_incap_rule" "example-incap-rule-delete-cookie" {
 # Incap Rule: Delete Header (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-delete-header" {
   name = "Example incap rule delete header"
-  site_id = "${incapsula_site.example-site.id}"
+  site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_DELETE_HEADER"
   filter = "Full-URL == \"/someurl\""
   rewrite_name = "my_test_header"
 }
 
 # Incap Rule: Forward to Data Center (ADR)
+# For a more detailed example of how to reference a data center id, look at datasource incapsula_data_center  
 resource "incapsula_incap_rule" "example-incap-rule-fwd-to-data-center" {
   name = "Example incap rule forward to data center"
-  site_id = "${incapsula_site.example-site.id}"
+  site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_FORWARD_TO_DC"
   filter = "Full-URL == \"/someurl\""
-  dc_id = "${incapsula_data_center.example-data-center.id}"
+  dc_id = data.incapsula_data_center.example_content_dc.id
 }
 
 # Incap Rule: Redirect (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-redirect" {
   name = "Example incap rule redirect"
-  site_id = "${incapsula_site.example-site.id}"
+  site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_REDIRECT"
   filter = "Full-URL == \"/someurl\""
   response_code = "302"
@@ -94,7 +95,7 @@ resource "incapsula_incap_rule" "example-incap-rule-redirect" {
 # Incap Rule: Require Cookie Support (IncapRule)
 resource "incapsula_incap_rule" "example-incap-rule-require-cookie-support" {
   name = "Example incap rule require cookie support"
-  site_id = "${incapsula_site.example-site.id}"
+  site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_RETRY"
   filter = "Full-URL == \"/someurl\""
 }
@@ -102,7 +103,7 @@ resource "incapsula_incap_rule" "example-incap-rule-require-cookie-support" {
 # Incap Rule: Rewrite Cookie (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-rewrite-cookie" {
   name = "Example incap rule rewrite cookie"
-  site_id = "${incapsula_site.example-site.id}"
+  site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_REWRITE_COOKIE"
   filter = "Full-URL == \"/someurl\""
   add_missing = "true"
@@ -114,7 +115,7 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-cookie" {
 # Incap Rule: Rewrite Header (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-rewrite-header" {
   name = "Example incap rule rewrite header"
-  site_id = "${incapsula_site.example-site.id}"
+  site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_REWRITE_HEADER"
   filter = "Full-URL == \"/someurl\""
   add_missing = "true"
@@ -126,7 +127,7 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-header" {
 # Incap Rule: Rewrite URL (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-rewrite-url" {
   name = "ExampleRewriteURL"
-  site_id = "${incapsula_site.example-site.id}"
+  site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_REWRITE_URL"
   filter = "Full-URL == \"/someurl\""
   from = "*"

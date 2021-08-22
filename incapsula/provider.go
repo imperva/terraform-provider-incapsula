@@ -81,22 +81,24 @@ func Provider() *schema.Provider {
 
 		DataSourcesMap: map[string]*schema.Resource{
 			"incapsula_role_abilities": dataSourceRoleAbilities(),
+			"incapsula_data_center":    dataSourceDataCenter(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"incapsula_cache_rule":               resourceCacheRule(),
-			"incapsula_custom_certificate":       resourceCertificate(),
-			"incapsula_data_center":              resourceDataCenter(),
-			"incapsula_data_center_server":       resourceDataCenterServer(),
-			"incapsula_incap_rule":               resourceIncapRule(),
-			"incapsula_origin_pop":               resourceOriginPOP(),
-			"incapsula_policy":                   resourcePolicy(),
-			"incapsula_policy_asset_association": resourcePolicyAssetAssociation(),
-			"incapsula_security_rule_exception":  resourceSecurityRuleException(),
-			"incapsula_site":                     resourceSite(),
-			"incapsula_waf_security_rule":        resourceWAFSecurityRule(),
-			"incapsula_account":                  resourceAccount(),
-			"incapsula_txt_record":               resourceTXTRecord(),
+			"incapsula_cache_rule":                 resourceCacheRule(),
+			"incapsula_custom_certificate":         resourceCertificate(),
+			"incapsula_data_centers_configuration": resourceDataCentersConfiguration(),
+			"incapsula_data_center":                resourceDataCenter(),
+			"incapsula_data_center_server":         resourceDataCenterServer(),
+			"incapsula_incap_rule":                 resourceIncapRule(),
+			"incapsula_origin_pop":                 resourceOriginPOP(),
+			"incapsula_policy":                     resourcePolicy(),
+			"incapsula_policy_asset_association":   resourcePolicyAssetAssociation(),
+			"incapsula_security_rule_exception":    resourceSecurityRuleException(),
+			"incapsula_site":                       resourceSite(),
+			"incapsula_waf_security_rule":          resourceWAFSecurityRule(),
+			"incapsula_account":                    resourceAccount(),
+			"incapsula_txt_record":                 resourceTXTRecord(),
 		},
 	}
 

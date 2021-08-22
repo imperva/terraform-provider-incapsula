@@ -46,9 +46,10 @@ func TestAccIncapsulaSite_ImportBasic(t *testing.T) {
 				Config: testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)),
 			},
 			{
-				ResourceName:      "incapsula_site.testacc-terraform-site",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "incapsula_site.testacc-terraform-site",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"site_ip"},
 			},
 		},
 	})
