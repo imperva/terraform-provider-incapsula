@@ -58,7 +58,7 @@ The following arguments are supported:
 * `domain` - (Required) The fully qualified domain name of the site. For example: www.example.com, hello.example.com.
 * `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `send_site_setup_emails` - (Optional) If this value is false, end users will not get emails about the add site process such as DNS instructions and SSL setup.
-* `site_ip` - (Optional) The web server IP/CNAME.
+* `site_ip` - (Optional) The web server IP/CNAME. This field should be specified when creating a site and the domain does not yet exist or the domain already points to Imperva Cloud. When specified, its value will be used for adding site only. After site is already created this field will be ignored. To modify site ip, please use resource incapsula_data_centers_configuration instead.
 * `force_ssl` - (Optional) Force SSL. This option is only available for sites with manually configured IP/CNAME and for specific accounts.
 * `logs_account_id` - (Optional) Account where logs should be stored. Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `active` - (Optional) Whether the site is active or bypassed by the Imperva network. Options are `active` and `bypass`.

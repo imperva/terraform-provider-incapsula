@@ -105,7 +105,7 @@ func testCheckIncapsulaDataCentersConfigurationExists(name string) resource.Test
 
 		siteID, err := strconv.Atoi(siteIDString)
 		if err != nil {
-			return fmt.Errorf("Error parsing Rule ID %v to int", siteIDString)
+			return fmt.Errorf("Error parsing Site ID %v to int", siteIDString)
 		}
 
 		domain := siteRes.Primary.Attributes["domain"]

@@ -61,6 +61,14 @@ func resourceSite() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					// if both old and new value are not empty, then treat them as equals.
+					if old != "" && new != "" {
+						return true
+					}
+
+					return false
+				},
 			},
 			"force_ssl": {
 				Description: "If this value is true, manually set the site to support SSL. This option is only available for sites with manually configured IP/CNAME and for specific accounts.",
@@ -537,7 +545,10 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	if siteIP == "" {
 		return fmt.Errorf("[ERROR] Incapsula Data Center missing server address for Site ID %s", d.Get("site_id"))
 	}
-	d.Set("site_ip", siteIP)
+
+	if d.IsNewResource() || d.Get("site_ip") == "" {
+		d.Set("site_ip", siteIP)
+	}
 
 	log.Printf("[INFO] Finished reading Incapsula site for domain: %s\n", domain)
 
@@ -601,7 +612,7 @@ func resourceSiteDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func updateAdditionalSiteProperties(client *Client, d *schema.ResourceData) error {
-	updateParams := [10]string{"acceleration_level", "active", "approver", "domain_redirect_to_full", "domain_validation", "ignore_ssl", "remove_ssl", "ref_id", "site_ip", "seal_location"}
+	updateParams := [9]string{"acceleration_level", "active", "approver", "domain_redirect_to_full", "domain_validation", "ignore_ssl", "remove_ssl", "ref_id", "seal_location"}
 	for i := 0; i < len(updateParams); i++ {
 		param := updateParams[i]
 		if d.HasChange(param) && d.Get(param) != "" {

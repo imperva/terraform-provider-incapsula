@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"hash/crc32"
 	"log"
 	"strings"
@@ -33,49 +34,25 @@ func resourceDataCentersConfiguration() *schema.Resource {
 				ForceNew:    true,
 			},
 			"site_lb_algorithm": {
-				Description: "How to load balance between multiple Data Centers.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "BEST_CONNECTION_TIME",
-				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-					strVal := val.(string)
-					allowedVals := []string{"BEST_CONNECTION_TIME", "GEO_PREFERRED", "GEO_REQUIRED", "WEIGHTED_LB"}
-					if !isValidEnum(strVal, key, allowedVals) {
-						errs = append(errs, fmt.Errorf("%q must be one of: [%s]. Got: %s",
-							key, strings.Join(allowedVals, ","), strVal))
-					}
-					return
-				},
+				Description:  "How to load balance between multiple Data Centers.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "BEST_CONNECTION_TIME",
+				ValidateFunc: validation.StringInSlice([]string{"BEST_CONNECTION_TIME", "GEO_PREFERRED", "GEO_REQUIRED", "WEIGHTED_LB"}, false),
 			},
 			"fail_over_required_monitors": {
-				Description: "How many Imperva PoPs should assess Data Center as down before failover is performed.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "MOST",
-				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-					strVal := val.(string)
-					allowedVals := []string{"ONE", "MANY", "MOST", "ALL"}
-					if !isValidEnum(strVal, key, allowedVals) {
-						errs = append(errs, fmt.Errorf("%q must be one of: [%s]. Got: %s",
-							key, strings.Join(allowedVals, ","), strVal))
-					}
-					return
-				},
+				Description:  "How many Imperva PoPs should assess Data Center as down before failover is performed.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "MOST",
+				ValidateFunc: validation.StringInSlice([]string{"ONE", "MANY", "MOST", "ALL"}, false),
 			},
 			"site_topology": {
-				Description: "One of: 'SINGLE_SERVER' - No LB supported, 'SINGLE_DC' - Multiple servers on single Data Center, or 'MULTIPLE_DC' - Multiple Data Centers having multiple origin servers.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "SINGLE_DC",
-				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-					strVal := val.(string)
-					allowedVals := []string{"SINGLE_SERVER", "SINGLE_DC", "MULTIPLE_DC"}
-					if !isValidEnum(strVal, key, allowedVals) {
-						errs = append(errs, fmt.Errorf("%q must be one of: [%s]. Got: %s",
-							key, strings.Join(allowedVals, ","), strVal))
-					}
-					return
-				},
+				Description:  "One of: 'SINGLE_SERVER' - No LB supported, 'SINGLE_DC' - Multiple servers on single Data Center, or 'MULTIPLE_DC' - Multiple Data Centers having multiple origin servers.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "SINGLE_DC",
+				ValidateFunc: validation.StringInSlice([]string{"SINGLE_SERVER", "SINGLE_DC", "MULTIPLE_DC"}, false),
 			},
 			"min_available_servers_for_dc_up": {
 				Description: "The minimal number of available data center's servers to consider that data center as UP",
@@ -125,19 +102,11 @@ func resourceDataCentersConfiguration() *schema.Resource {
 						},
 
 						"ip_mode": {
-							Type:        schema.TypeString,
-							Description: "SINGLE_IP supports multiple processes on same origin server each listening to a different port, MULTIPLE_IP support multiple origin servers all listening to same port.",
-							Optional:    true,
-							Default:     "MULTIPLE_IP",
-							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-								strVal := val.(string)
-								allowedVals := []string{"SINGLE_IP", "MULTIPLE_IP"}
-								if !isValidEnum(strVal, key, allowedVals) {
-									errs = append(errs, fmt.Errorf("%q must be one of: [%s]. Got: %s",
-										key, strings.Join(allowedVals, ","), strVal))
-								}
-								return
-							},
+							Type:         schema.TypeString,
+							Description:  "SINGLE_IP supports multiple processes on same origin server each listening to a different port, MULTIPLE_IP support multiple origin servers all listening to same port.",
+							Optional:     true,
+							Default:      "MULTIPLE_IP",
+							ValidateFunc: validation.StringInSlice([]string{"SINGLE_IP", "MULTIPLE_IP"}, false),
 						},
 
 						"web_servers_per_server": {
@@ -148,19 +117,11 @@ func resourceDataCentersConfiguration() *schema.Resource {
 						},
 
 						"dc_lb_algorithm": {
-							Type:        schema.TypeString,
-							Description: "How to load balance between the servers of this data center.",
-							Optional:    true,
-							Default:     "LB_LEAST_PENDING_REQUESTS",
-							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-								strVal := val.(string)
-								allowedVals := []string{"LB_LEAST_PENDING_REQUESTS", "LB_LEAST_OPEN_CONNECTIONS", "LB_SOURCE_IP_HASH", "RANDOM", "WEIGHTED"}
-								if !isValidEnum(strVal, key, allowedVals) {
-									errs = append(errs, fmt.Errorf("%q must be one of: [%s]. Got: %s",
-										key, strings.Join(allowedVals, ","), strVal))
-								}
-								return
-							},
+							Type:         schema.TypeString,
+							Description:  "How to load balance between the servers of this data center.",
+							Optional:     true,
+							Default:      "LB_LEAST_PENDING_REQUESTS",
+							ValidateFunc: validation.StringInSlice([]string{"LB_LEAST_PENDING_REQUESTS", "LB_LEAST_OPEN_CONNECTIONS", "LB_SOURCE_IP_HASH", "RANDOM", "WEIGHTED"}, false),
 						},
 
 						"weight": {
