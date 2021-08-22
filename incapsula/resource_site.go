@@ -55,7 +55,6 @@ func resourceSite() *schema.Resource {
 				Description: "If this value is false, end users will not get emails about the add site process such as DNS instructions and SSL setup.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 			},
 			"site_ip": {
 				Description: "Manually set the web server IP/CNAME.",
@@ -67,13 +66,11 @@ func resourceSite() *schema.Resource {
 				Description: "If this value is true, manually set the site to support SSL. This option is only available for sites with manually configured IP/CNAME and for specific accounts.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 			},
 			"logs_account_id": {
 				Description: "Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 			},
 			"active": {
 				Description: "active or bypass.",
@@ -148,7 +145,6 @@ func resourceSite() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
-				ForceNew:    true,
 			},
 			"perf_client_comply_no_cache": {
 				Description: "Comply with No-Cache and Max-Age directives in client requests. By default, these cache directives are ignored. Resources are dynamically profiled and re-configured to optimize performance.",
@@ -285,14 +281,12 @@ func resourceSite() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     "true",
-				ForceNew:    true,
 			},
 			"wildcard_san": {
 				Description: "Use 'true' to add the wildcard SAN or 'false' to add the full domain SAN to the site’s SSL certificate. Default value: true",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     "true",
-				ForceNew:    true,
 			},
 			// Computed Attributes
 			"site_creation_date": {
