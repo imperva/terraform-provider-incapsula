@@ -244,6 +244,7 @@ func TestClientReadApiSecuritySiteConfigInvalidSiteConfig(t *testing.T) {
 		rw.Write([]byte(`{"value": "Specified site or account do not exist. Make sure you have a valid account and a valid site before attempting to execute an operation on an API",
 				"isError": true}`))
 	}))
+
 	defer server.Close()
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
