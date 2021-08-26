@@ -87,7 +87,6 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"incapsula_cache_rule":                 resourceCacheRule(),
 			"incapsula_custom_certificate":         resourceCertificate(),
-			"incapsula_data_centers_configuration": resourceDataCentersConfiguration(),
 			"incapsula_data_center":                resourceDataCenter(),
 			"incapsula_data_center_server":         resourceDataCenterServer(),
 			"incapsula_incap_rule":                 resourceIncapRule(),
@@ -99,6 +98,10 @@ func Provider() *schema.Provider {
 			"incapsula_waf_security_rule":          resourceWAFSecurityRule(),
 			"incapsula_account":                    resourceAccount(),
 			"incapsula_txt_record":                 resourceTXTRecord(),
+			"incapsula_api_security_site_config":   resourceApiSecuritySiteConfig(),
+			"incapsula_data_centers_configuration": resourceDataCentersConfiguration(),
+			//"incapsula_api_security_api_config":  resourceTXTRecord(),
+			//"incapsula_api_security_endpoint_config": resourceTXTRecord(),
 		},
 	}
 
