@@ -24,7 +24,6 @@ type ApiSecuritySiteConfigGetResponse struct {
 	IsError bool `json:"isError"`
 }
 
-// PolicySubmitted is struct that encompasses all the properties of a policy object to submit
 type ApiSecuritySiteConfigPostResponse struct {
 	Value struct {
 		SiteId int `json:"siteId"`

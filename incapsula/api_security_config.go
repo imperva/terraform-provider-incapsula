@@ -9,18 +9,15 @@ type ViolationActions struct {
 }
 
 type UserViolationActions struct {
-	//InvalidUrlViolationAction        string `json:"invalidUrlViolationAction"`
 	MissingParamViolationAction      string `json:"missingParamViolationAction"`
 	InvalidParamNameViolationAction  string `json:"invalidParamNameViolationAction"`
 	InvalidParamValueViolationAction string `json:"invalidParamValueViolationAction"`
 }
 
 type EndpointResponse struct {
-	Id     int    `json:"id"`
-	Path   string `json:"path"`
-	Method string `json:"method"`
-	//PiiList                      []string             `json:"piiList"`
+	Id                           int                  `json:"id"`
+	Path                         string               `json:"path"`
+	Method                       string               `json:"method"`
 	ViolationActions             UserViolationActions `json:"violationActions"`
 	SpecificationViolationAction string               `json:"specificationViolationAction"`
 }
-
