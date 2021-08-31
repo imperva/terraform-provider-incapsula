@@ -36,41 +36,42 @@ func TestAccIncapsulaApiSecuritySiteConfig_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(apiSiteConfigResource, "is_automatic_discovery_api_integration_enabled", "false"),
 				),
 			},
-			//{
-			//	ResourceName:      apiSiteConfigResource,
-			//	ImportState:       true,
-			//	ImportStateVerify: true,
-			//	ImportStateIdFunc: testACCStateApiSiteConfigID,
-			//},
+			{
+				ResourceName:      apiSiteConfigResource,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testACCStateApiSiteConfigID,
+			},
 		},
 	})
 }
 
-//func testACCStateApiSiteConfigID(s *terraform.State) (string, error) {
-//	//return "", fmt.Errorf("Resources: %v", s.RootModule().Resources)
-//	for _, rs := range s.RootModule().Resources {
-//		fmt.Errorf("Resource: %v", rs)
-//		if rs.Type != apiSiteConfigResourceName {
-//			continue
-//		}
-//
-//		//we don't need thi block because site_config doesn't have an ID
-//		ruleID, err := strconv.Atoi(rs.Primary.ID)
-//		if err != nil {
-//			return "", fmt.Errorf("Error parsing Cache Rule ID %v to int", rs.Primary.ID)
-//		}
-//
-//	//	siteID, err := strconv.Atoi(rs.Primary.Attributes["site_id"])
-//		//siteID, err := strconv.Atoi(rs.Primary.ID)
-//		//return "", fmt.Errorf("Extracting ID %v to int", rs.Primary.ID)
-//		if err != nil {
-//			return "", fmt.Errorf("Error parsing ID %v to int", rs.Primary.Attributes["site_id"])
-//		}
-//		fmt.Errorf("%d", ruleID)
-//		return fmt.Sprintf("%d", ruleID), nil
-//	}
-//	return "", fmt.Errorf("Error finding site_id")
-//}
+func testACCStateApiSiteConfigID(s *terraform.State) (string, error) {
+	//return "", fmt.Errorf("Resources: %v", s.RootModule().Resources)
+	for _, rs := range s.RootModule().Resources {
+		fmt.Errorf("Resource: %v", rs)
+		if rs.Type != apiSiteConfigResourceName {
+			continue
+		}
+
+		//we don't need thi block because site_config doesn't have an ID
+		ruleID, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return "", fmt.Errorf("Error parsing Cache Rule ID %v to int", rs.Primary.ID)
+		}
+
+		siteID, err := strconv.Atoi(rs.Primary.Attributes["site_id"])
+		siteID, err := strconv.Atoi(rs.Primary.ID)
+		//return "", fmt.Errorf("Extracting ID %v to int", rs.Primary.ID)
+		//todo compare ruleId to SiteID
+		if err != nil {
+			return "", fmt.Errorf("Error parsing ID %v to int", rs.Primary.Attributes["site_id"])
+		}
+		fmt.Errorf("%d", ruleID)
+		return fmt.Sprintf("%d", ruleID), nil
+	}
+	return "", fmt.Errorf("Error finding site_id")
+}
 
 func testCheckIncapsulaSiteConfigAttributeCorrect(resourceName, attrName string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {

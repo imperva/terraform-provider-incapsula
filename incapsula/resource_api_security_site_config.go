@@ -13,7 +13,7 @@ func resourceApiSecuritySiteConfig() *schema.Resource {
 		Read:   resourceApiSecuritySiteConfigRead,
 		Update: resourceApiSecuritySiteConfigUpdate,
 		Delete: resourceApiSecuritySiteConfigDelete,
-		Importer: &schema.ResourceImporter{
+		Importer: &schema.ResourceImporter{ //todo - check
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 
@@ -55,7 +55,7 @@ func resourceApiSecuritySiteConfig() *schema.Resource {
 				//RequiredWith:    []string{"api_only_site"},
 			},
 			"invalid_url_violation_action": {
-				Description: "The action taken when an invalid URL Violation occurs. Assigning DEFAULT will inherit the action from parent object, DEFAULT is not applicable for site-level configuration APIs.",
+				Description: "The action taken when an invalid URL Violation occurs. Actions available: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE", //todo - replace in each relevant param
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
@@ -105,8 +105,8 @@ func resourceApiSecuritySiteConfigUpdate(
 
 	payload := ApiSecuritySiteConfigPostPayload{
 		ApiOnlySite: d.Get("api_only_site").(bool),
-		IsAutomaticDiscoveryApiIntegrationEnabled: d.Get("is_automatic_discovery_api_integration_enabled").(bool),
-		NonApiRequestViolationAction:              d.Get("non_api_request_violation_action").(string),
+		//IsAutomaticDiscoveryApiIntegrationEnabled: d.Get("is_automatic_discovery_api_integration_enabled").(bool), //todo
+		NonApiRequestViolationAction: d.Get("non_api_request_violation_action").(string),
 		ViolationActions: ViolationActions{
 			InvalidUrlViolationAction:        d.Get("invalid_url_violation_action").(string),
 			InvalidMethodViolationAction:     d.Get("invalid_method_violation_action").(string),
@@ -120,7 +120,7 @@ func resourceApiSecuritySiteConfigUpdate(
 		&payload)
 
 	if err != nil {
-		log.Printf("[ERROR] Could not update Incapsula API-security site configuration on site id: %d - %s\n", d.Get("site_id"), err)
+		log.Printf("[ERROR] Could not update Incapsula API-security Site Configuration on site id: %d - %s\n", d.Get("site_id"), err)
 		return err
 	}
 
@@ -133,9 +133,9 @@ func resourceApiSecuritySiteConfigUpdate(
 
 func resourceApiSecuritySiteConfigRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siteID := d.Get("site_id")
+	siteID := d.Id() //todo atoi
 
-	apiSecuritySiteConfigGetResponse, err := client.ReadApiSecuritySiteConfig(siteID.(int))
+	apiSecuritySiteConfigGetResponse, err := client.ReadApiSecuritySiteConfig(siteID) //todo check
 	if err != nil {
 		log.Printf("[ERROR] Could not get Incapsula API-security site configuration for site ID: %s - %s\n", siteID, err)
 		return err
