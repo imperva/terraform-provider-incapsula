@@ -113,6 +113,12 @@ func resourceSite() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"restricted_cname_reuse": {
+				Description: "Use this option to allow Imperva to detect and add domains that are using the Imperva-provided CNAME (not recommended). One of: true | false",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+			},
 			"domain_redirect_to_full": {
 				Description: "true or empty string.",
 				Type:        schema.TypeString,
@@ -437,6 +443,7 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("wildcard_san", siteStatusResponse.UseWildcardSanInsteadOfFullDomainSan)
 	d.Set("acceleration_level", siteStatusResponse.AccelerationLevelRaw)
 	d.Set("active", siteStatusResponse.Active)
+	d.Set("restricted_cname_reuse", strconv.FormatBool(siteStatusResponse.RestrictedCnameReuse))
 	d.Set("seal_location", siteStatusResponse.SealLocation.ID)
 
 	// Set the DNS information
@@ -612,7 +619,7 @@ func resourceSiteDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func updateAdditionalSiteProperties(client *Client, d *schema.ResourceData) error {
-	updateParams := [9]string{"acceleration_level", "active", "approver", "domain_redirect_to_full", "domain_validation", "ignore_ssl", "remove_ssl", "ref_id", "seal_location"}
+	updateParams := [10]string{"acceleration_level", "active", "approver", "domain_redirect_to_full", "domain_validation", "ignore_ssl", "remove_ssl", "ref_id", "seal_location", "restricted_cname_reuse"}
 	for i := 0; i < len(updateParams); i++ {
 		param := updateParams[i]
 		if d.HasChange(param) && d.Get(param) != "" {

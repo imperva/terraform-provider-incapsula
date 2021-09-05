@@ -56,6 +56,7 @@ type SiteStatusResponse struct {
 	} `json:"original_dns"`
 	Warnings                             []interface{} `json:"warnings"`
 	Active                               string        `json:"active"`
+	RestrictedCnameReuse                 bool          `json:"restricted_cname_reuse,omitempty"`
 	SupportAllTLSVersions                bool          `json:"support_all_tls_versions"`
 	UseWildcardSanInsteadOfFullDomainSan bool          `json:"use_wildcard_san_instead_of_full_domain_san"`
 	AddNakedDomainSan                    bool          `json:"add_naked_domain_san"`

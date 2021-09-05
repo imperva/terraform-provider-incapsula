@@ -15,7 +15,7 @@ type CacheRule struct {
 	Action               string `json:"action"`
 	Filter               string `json:"filter"`
 	Enabled              bool   `json:"enabled"`
-	TTL                  int    `json:"ttl,omitempty"`
+	TTL                  int    `json:"ttl"`
 	IgnoredParams        string `json:"ignored_params,omitempty"`
 	Text                 string `json:"text,omitempty"`
 	DifferentiateByValue string `json:"differentiate_by_value,omitempty"`
