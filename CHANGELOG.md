@@ -1,3 +1,7 @@
+## 3.0.1 (Released)
+* Fix TTL attribute of incap_rule resource: enable zero as value
+* New attribute on site resource: strict_cname_reuse 
+
 ## 3.0.0 (Released)
 * New resource: data_centers_configuration
 * Remove unnecessary 'ForceNew' from attributes of site resource 
