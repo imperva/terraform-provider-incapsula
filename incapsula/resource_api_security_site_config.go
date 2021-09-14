@@ -1,6 +1,7 @@
 package incapsula
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 
@@ -14,7 +15,16 @@ func resourceApiSecuritySiteConfig() *schema.Resource {
 		Update: resourceApiSecuritySiteConfigUpdate,
 		Delete: resourceApiSecuritySiteConfigDelete,
 		Importer: &schema.ResourceImporter{ //todo - check
-			StateContext: schema.ImportStatePassthroughContext,
+			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				siteID, err := strconv.Atoi(d.Id())
+				if err != nil {
+					fmt.Errorf("failed to convert Site Id from import command, actual value: %s, expected numeric id", d.Id())
+				}
+
+				d.Set("site_id", siteID)
+				log.Printf("[DEBUG] Import  Site Config JSON for Site ID %d", siteID)
+				return []*schema.ResourceData{d}, nil
+			},
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -33,60 +43,59 @@ func resourceApiSecuritySiteConfig() *schema.Resource {
 			},
 
 			"site_name": {
-				Description: "The site name.",
+				Description: "The site name",
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
 			},
 			"api_only_site": {
-				Description: "",
+				Description: "", //todo api_only_site set description
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
 			"discovery_enabled": {
-				Description: "",
+				Description: "Parameter shows whether automatic API discovery is enabled",
 				Type:        schema.TypeBool,
-				Optional:    true,
+				Computed:    true,
 			},
 			"non_api_request_violation_action": {
-				Description: "",
+				Description: "", //todo add description
 				Type:        schema.TypeString,
 				Optional:    true,
-				//RequiredWith:    []string{"api_only_site"},
 			},
 			"invalid_url_violation_action": {
-				Description: "The action taken when an invalid URL Violation occurs. Actions available: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE", //todo - replace in each relevant param
+				Description: "The action taken when an invalid URL Violation occurs. Actions available: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"invalid_method_violation_action": {
-				Description: "The action taken when an invalid method Violation occurs. Assigning DEFAULT will inherit the action from parent object, DEFAULT is not applicable for site-level configuration APIs.",
+				Description: "The action taken when an invalid method Violation occurs. Actions available: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"missing_param_violation_action": {
-				Description: "The action taken when a missing parameter Violation occurs. Assigning DEFAULT will inherit the action from parent object, DEFAULT is not applicable for site-level configuration APIs.",
+				Description: "The action taken when a missing parameter Violation occurs. Actions available: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"invalid_param_value_violation_action": {
-				Description: "The action taken when an invalid parameter value Violation occurs. Assigning DEFAULT will inherit the action from parent object, DEFAULT is not applicable for site-level configuration APIs.",
+				Description: "The action taken when an invalid parameter value Violation occurs. Actions available: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"invalid_param_name_violation_action": {
-				Description: "The action taken when an invalid parameter value Violation occurs. Assigning DEFAULT will inherit the action from parent object, DEFAULT is not applicable for site-level configuration APIs.",
+				Description: "The action taken when an invalid parameter value Violation occurs. Actions available: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"last_modified": {
-				Description: "", //todo add description
+				Description: "The latest date when the resource was updated",
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Optional:    true,
 			},
 			"is_automatic_discovery_api_integration_enabled": {
-				Description: "",
+				Description: "Parameter shows whether automatic API discovery integration is enabled",
 				Type:        schema.TypeBool,
 				Required:    true,
 			},
@@ -102,10 +111,8 @@ func resourceApiSecuritySiteConfigCreate(d *schema.ResourceData, m interface{}) 
 func resourceApiSecuritySiteConfigUpdate(
 	d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-
 	payload := ApiSecuritySiteConfigPostPayload{
-		ApiOnlySite: d.Get("api_only_site").(bool),
-		//IsAutomaticDiscoveryApiIntegrationEnabled: d.Get("is_automatic_discovery_api_integration_enabled").(bool), //todo
+		ApiOnlySite:                  d.Get("api_only_site").(bool),
 		NonApiRequestViolationAction: d.Get("non_api_request_violation_action").(string),
 		ViolationActions: ViolationActions{
 			InvalidUrlViolationAction:        d.Get("invalid_url_violation_action").(string),
@@ -115,6 +122,7 @@ func resourceApiSecuritySiteConfigUpdate(
 			InvalidParamValueViolationAction: d.Get("invalid_param_value_violation_action").(string),
 		},
 	}
+
 	apiSecuritySiteConfigPostResponse, err := client.UpdateApiSecuritySiteConfig(
 		d.Get("site_id").(int),
 		&payload)
@@ -133,11 +141,11 @@ func resourceApiSecuritySiteConfigUpdate(
 
 func resourceApiSecuritySiteConfigRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siteID := d.Id() //todo atoi
+	siteId := d.Get("site_id")
 
-	apiSecuritySiteConfigGetResponse, err := client.ReadApiSecuritySiteConfig(siteID) //todo check
+	apiSecuritySiteConfigGetResponse, err := client.ReadApiSecuritySiteConfig(siteId.(int))
 	if err != nil {
-		log.Printf("[ERROR] Could not get Incapsula API-security site configuration for site ID: %s - %s\n", siteID, err)
+		log.Printf("[ERROR] Could not get Incapsula API-security site configuration for site ID: %d - %s\n", siteId, err)
 		return err
 	}
 
@@ -151,6 +159,8 @@ func resourceApiSecuritySiteConfigRead(d *schema.ResourceData, m interface{}) er
 	d.Set("invalid_url_violation_action", apiSecuritySiteConfigGetResponse.Value.ViolationActions.InvalidUrlViolationAction)
 	d.Set("missing_param_violation_action", apiSecuritySiteConfigGetResponse.Value.ViolationActions.MissingParamViolationAction)
 	d.Set("is_automatic_discovery_api_integration_enabled", apiSecuritySiteConfigGetResponse.Value.IsAutomaticDiscoveryApiIntegrationEnabled)
+	d.Set("non_api_request_violation_action", apiSecuritySiteConfigGetResponse.Value.NonApiRequestViolationAction)
+	d.Set("discovery_enabled", apiSecuritySiteConfigGetResponse.Value.DiscoveryEnabled)
 	return nil
 }
 

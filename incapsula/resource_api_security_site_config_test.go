@@ -13,19 +13,17 @@ const apiSiteConfigResourceName = "incapsula_api_security_site_config"
 const apiSiteConfigResource = apiSiteConfigResourceName + "." + apiSiteConfigName
 const apiSiteConfigName = "testacc-terraform-api-security-site-config"
 
-func TestAccIncapsulaApiSecuritySiteConfig_Basic(t *testing.T) {
+func TestAccIncapsulaApiSecuritySiteConfig_basic(t *testing.T) {
 	log.Printf("======================== BEGIN TEST ========================")
 	log.Printf("[DEBUG] Running test resource_api_security_site_config_test.TestAccIncapsulaApiSecuritySiteConfig_Basic")
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
-		//CheckDestroy: testAccCheckIncapsulaIncapRuleDestroy, //todo - don't do destroy because there's no option to delete site
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckApiSiteConfigBasic(t), //todo  change
 				Check: resource.ComposeTestCheckFunc(
-					testCheckIncapsulaSiteConfigAttributeCorrect(apiSiteConfigResource, "site_id"),
-					resource.TestCheckResourceAttr(apiSiteConfigResource, "site_id", "78865045"),
+					testCheckApiSecuritySiteConfigExists(apiSiteConfigResource),
 					resource.TestCheckResourceAttr(apiSiteConfigResource, "api_only_site", "true"),
 					resource.TestCheckResourceAttr(apiSiteConfigResource, "non_api_request_violation_action", "BLOCK_USER"),
 					resource.TestCheckResourceAttr(apiSiteConfigResource, "invalid_url_violation_action", "BLOCK_REQUEST"),
@@ -46,6 +44,27 @@ func TestAccIncapsulaApiSecuritySiteConfig_Basic(t *testing.T) {
 	})
 }
 
+func testCheckApiSecuritySiteConfigExists(name string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		res, ok := state.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("Incapsula Api Security Site Config resource not found: %s", name)
+		}
+		siteId, err := strconv.Atoi(res.Primary.ID)
+		if err != nil {
+			return fmt.Errorf("Error parsing ID %v to int", res.Primary.ID)
+		}
+
+		client := testAccProvider.Meta().(*Client)
+		_, err = client.ReadApiSecuritySiteConfig(siteId)
+		if err != nil {
+			fmt.Errorf("Incapsula Api Security Site Config doesn't exist")
+		}
+
+		return nil
+	}
+}
+
 func testACCStateApiSiteConfigID(s *terraform.State) (string, error) {
 	//return "", fmt.Errorf("Resources: %v", s.RootModule().Resources)
 	for _, rs := range s.RootModule().Resources {
@@ -61,47 +80,24 @@ func testACCStateApiSiteConfigID(s *terraform.State) (string, error) {
 		}
 
 		siteID, err := strconv.Atoi(rs.Primary.Attributes["site_id"])
-		siteID, err := strconv.Atoi(rs.Primary.ID)
-		//return "", fmt.Errorf("Extracting ID %v to int", rs.Primary.ID)
+		iD, err := strconv.Atoi(rs.Primary.ID)
 		//todo compare ruleId to SiteID
 		if err != nil {
 			return "", fmt.Errorf("Error parsing ID %v to int", rs.Primary.Attributes["site_id"])
 		}
-		fmt.Errorf("%d", ruleID)
+		if siteID != iD {
+			return "", fmt.Errorf("Incapsula API Security Site Config does not exist")
+		}
 		return fmt.Sprintf("%d", ruleID), nil
 	}
 	return "", fmt.Errorf("Error finding site_id")
 }
 
-func testCheckIncapsulaSiteConfigAttributeCorrect(resourceName, attrName string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		res, ok := state.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("Incapsula Api Securiy Cinfig resource not found: %s", resourceName)
-		}
-
-		siteID, ok := res.Primary.Attributes[attrName]
-		if !ok || siteID == "" {
-			return fmt.Errorf("Incapsula Site ID %s does not exist for API Site Config", siteID)
-		}
-		client := testAccProvider.Meta().(*Client)
-		siteIdInt, err := strconv.Atoi(siteID)
-		_, err = client.ReadApiSecuritySiteConfig(siteIdInt)
-		if err != nil {
-			return fmt.Errorf("Incapsula API Site Config: %s (site id: %s) does not exist", resourceName, siteID)
-		}
-
-		return nil
-	}
-}
-
-//		site_id = 78865045		todo - move id to variable
 func testAccCheckApiSiteConfigBasic(t *testing.T) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 	resource "incapsula_api_security_site_config" "%s" {
-		site_id = 78865045		
+		site_id = incapsula_site.testacc-terraform-site.id
 		api_only_site = "true"
-		discovery_enabled = "true"
 		non_api_request_violation_action = "BLOCK_USER"
 		invalid_url_violation_action = "BLOCK_REQUEST"
 		invalid_method_violation_action = "BLOCK_IP"
@@ -109,7 +105,8 @@ func testAccCheckApiSiteConfigBasic(t *testing.T) string {
 		invalid_param_value_violation_action = "IGNORE"
 		invalid_param_name_violation_action = "BLOCK_IP"
 		is_automatic_discovery_api_integration_enabled = "false"
+  		depends_on = ["%s"]
 	}`,
-		apiSiteConfigName,
+		apiSiteConfigName, siteResourceName,
 	)
 }

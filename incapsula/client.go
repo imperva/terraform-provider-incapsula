@@ -76,7 +76,6 @@ func (c *Client) PostFormWithHeaders(url string, data url.Values) (*http.Respons
 	}
 
 	SetHeaders(c, req, contentTypeApplicationUrlEncoded)
-
 	return c.httpClient.Do(req)
 }
 
@@ -87,7 +86,17 @@ func (c *Client) DoJsonRequestWithHeaders(method string, url string, data []byte
 	}
 
 	SetHeaders(c, req, contentTypeApplicationJson)
+	return c.httpClient.Do(req)
+}
 
+func (c *Client) DoJsonRequestWithHeadersForm(method string, url string, data []byte, header string) (*http.Response, error) {
+	req, err := PrepareJsonRequest(method, url, data)
+	if err != nil {
+		return nil, fmt.Errorf("Error preparing request: %s", err)
+	}
+
+	SetHeaders(c, req, contentTypeApplicationJson)
+	req.Header.Set("Content-Type", header)
 	return c.httpClient.Do(req)
 }
 

@@ -20,6 +20,7 @@ type ApiSecuritySiteConfigGetResponse struct {
 		LastModified                              int64            `json:"lastModified"`
 		ViolationActions                          ViolationActions `json:"violationActions"`
 		IsAutomaticDiscoveryApiIntegrationEnabled bool             `json:"isAutomaticDiscoveryApiIntegrationEnabled"`
+		DiscoveryEnabled                          bool             `json:"discoveryEnabled"`
 	} `json:"value"`
 	IsError bool `json:"isError"`
 }
