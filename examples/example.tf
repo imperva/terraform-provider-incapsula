@@ -717,7 +717,7 @@ POLICY
 
 resource "incapsula_api_security_site_configuration" "example-api-security-site-config" {
     site_id = 123
-    api_only_site = true
+    is_api_only_site = true
     non_api_request_violation_action = "ALERT_ONLY"
     invalid_url_violation_action = "BLOCK_REQUEST"
     invalid_method_violation_action = "BLOCK_IP"
@@ -739,6 +739,9 @@ resource "incapsula_api_security_api_configuration" "example-api-security-api-co
     missing_param_violation_action = "IGNORE"
     invalid_param_value_violation_action = "IGNORE"
     invalid_param_name_violation_action = "ALERT_ONLY"
+	description = "your site API description"
+	base_path = "/base/path"
+	host_name = "host.name.com"
 }
 
 ###################################################################

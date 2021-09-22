@@ -98,9 +98,9 @@ func Provider() *schema.Provider {
 			"incapsula_waf_security_rule":            resourceWAFSecurityRule(),
 			"incapsula_account":                      resourceAccount(),
 			"incapsula_txt_record":                   resourceTXTRecord(),
+			"incapsula_data_centers_configuration":   resourceDataCentersConfiguration(),
 			"incapsula_api_security_site_config":     resourceApiSecuritySiteConfig(),
 			"incapsula_api_security_api_config":      resourceApiSecurityApiConfig(),
-			"incapsula_data_centers_configuration":   resourceDataCentersConfiguration(),
 			"incapsula_api_security_endpoint_config": resourceApiSecurityEndpointConfig(),
 		},
 	}

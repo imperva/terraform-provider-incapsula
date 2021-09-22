@@ -22,7 +22,7 @@ resource "incapsula_api_security_api_config" "example-terraform-api-security-api
 	missing_param_violation_action = "BLOCK_IP"
 	invalid_param_value_violation_action = "BLOCK_REQUEST"
 	invalid_param_name_violation_action = "ALERT_ONLY"
-	description = "your site api description"
+	description = "your site API description"
 	base_path = "/base/path"
 	host_name = "host.name.com"
 }
