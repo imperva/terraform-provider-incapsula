@@ -13,14 +13,11 @@ const siteConfigUrl = "/api-security/config/site/"
 type ApiSecuritySiteConfigGetResponse struct {
 	Value struct {
 		SiteId                                    int              `json:"siteId"`
-		AccountId                                 int              `json:"accountId"`
-		SiteName                                  string           `json:"siteName"`
 		ApiOnlySite                               bool             `json:"apiOnlySite"`
 		NonApiRequestViolationAction              string           `json:"nonApiRequestViolationAction"`
 		LastModified                              int64            `json:"lastModified"`
 		ViolationActions                          ViolationActions `json:"violationActions"`
 		IsAutomaticDiscoveryApiIntegrationEnabled bool             `json:"isAutomaticDiscoveryApiIntegrationEnabled"`
-		DiscoveryEnabled                          bool             `json:"discoveryEnabled"`
 	} `json:"value"`
 	IsError bool `json:"isError"`
 }
@@ -34,10 +31,9 @@ type ApiSecuritySiteConfigPostResponse struct {
 
 type ApiSecuritySiteConfigPostPayload struct {
 	ApiOnlySite                               bool             `json:"apiOnlySite"`
-	SiteName                                  string           `json:"siteName"`
+	IsAutomaticDiscoveryApiIntegrationEnabled bool             `json:"isAutomaticDiscoveryApiIntegrationEnabled"`
 	NonApiRequestViolationAction              string           `json:"nonApiRequestViolationAction"`
 	ViolationActions                          ViolationActions `json:"violationActions"`
-	IsAutomaticDiscoveryApiIntegrationEnabled bool             `json:"isAutomaticDiscoveryApiIntegrationEnabled"`
 }
 
 // ReadApiSecuritySiteConfig gets the Api-Security Site Config

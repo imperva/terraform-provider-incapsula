@@ -18,12 +18,10 @@ const apiConfigUrl = "/api-security/api/"
 type ApiConfigurationResponse struct {
 	Id                           int              `json:"id"`
 	SiteId                       int              `json:"siteId"`
-	SiteName                     string           `json:"siteName"`
 	HostName                     string           `json:"hostName"`
 	BasePath                     string           `json:"basePath"`
 	Description                  string           `json:"description"`
 	LastModified                 int              `json:"lastModified"`
-	ApiSource                    string           `json:"apiSource"`
 	ViolationActions             ViolationActions `json:"violationActions"`
 	SpecificationViolationAction string           `json:"specificationViolationAction"`
 }
@@ -32,15 +30,12 @@ type ApiSecurityApiConfigGetResponse struct {
 		//ApiConfig ApiConfigurationResponse
 		Id                           int              `json:"id"`
 		SiteId                       int              `json:"siteId"`
-		SiteName                     string           `json:"siteName"`
 		HostName                     string           `json:"hostName"`
 		BasePath                     string           `json:"basePath"`
 		Description                  string           `json:"description"`
 		LastModified                 int              `json:"lastModified"`
-		ApiSource                    string           `json:"apiSource"`
 		ViolationActions             ViolationActions `json:"violationActions"`
 		SpecificationViolationAction string           `json:"specificationViolationAction"`
-		DiscoveryEnabled             string           `json:"discoveryEnabled"`
 	} `json:"value"`
 	IsError bool `json:"isError"`
 }
@@ -131,19 +126,17 @@ func (c *Client) CreateApiSecurityApiConfig(siteId int, apiConfigPayload *ApiSec
 		}
 	}
 
-	if apiConfigPayload.ApiSpecification != "" {
-		fw, err := writer.CreateFormFile("apiSpecification", filepath.Base("swagger"))
-		if err != nil {
-			log.Printf("failed to create %s formdata field", "apiSpecification")
-		}
-		fw.Write([]byte(apiConfigPayload.ApiSpecification))
+	fw, err = writer.CreateFormFile("apiSpecification", filepath.Base("swagger"))
+	if err != nil {
+		log.Printf("failed to create %s formdata field", "apiSpecification")
 	}
+	fw.Write([]byte(apiConfigPayload.ApiSpecification))
 
 	writer.Close()
 
 	reqURL := fmt.Sprintf("%s%s%d", c.config.BaseURLAPI, apiConfigUrl, siteId)
-	header := writer.FormDataContentType()
-	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, reqURL, body.Bytes(), header)
+	contentType := writer.FormDataContentType()
+	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, reqURL, body.Bytes(), contentType)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error adding API Security API Config for site %d: %s", siteId, err)
 	}
@@ -161,11 +154,6 @@ func (c *Client) CreateApiSecurityApiConfig(siteId int, apiConfigPayload *ApiSec
 	err = json.Unmarshal([]byte(responseBody), &apiAddResponse)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error parsing add API Security API Config JSON response for site id %d: %s", siteId, err)
-	}
-
-	// Look at the response status code from Incapsula
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Error from Incapsula service when adding account for siteId %s", string(responseBody))
 	}
 
 	return &apiAddResponse, nil
@@ -222,19 +210,18 @@ func (c *Client) UpdateApiSecurityApiConfig(siteId int, apiId string, apiConfigP
 			log.Printf("failed to write %s formdata field", "violationActions")
 		}
 	}
-	if apiConfigPayload.ApiSpecification != "" {
-		fw, err := writer.CreateFormFile("apiSpecification", filepath.Base("swagger"))
-		if err != nil {
-			log.Printf("failed to create %s formdata field", "apiSpecification")
-		}
-		fw.Write([]byte(apiConfigPayload.ApiSpecification))
+
+	fw, err = writer.CreateFormFile("apiSpecification", filepath.Base("swagger"))
+	if err != nil {
+		log.Printf("failed to create %s formdata field", "apiSpecification")
 	}
+	fw.Write([]byte(apiConfigPayload.ApiSpecification))
 
 	writer.Close()
 
 	reqURL := fmt.Sprintf("%s%s%d/%s", c.config.BaseURLAPI, apiConfigUrl, siteId, apiId)
-	header := writer.FormDataContentType()
-	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, reqURL, body.Bytes(), header)
+	contentType := writer.FormDataContentType()
+	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, reqURL, body.Bytes(), contentType)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error updating API Security API Config for site id %d, API id %s :%s", siteId, apiId, err)
 	}
@@ -288,7 +275,7 @@ func (c *Client) GetApiSecurityApiConfig(siteId int, apiId int) (*ApiSecurityApi
 
 // GetApiSecurityApiSwaggerConfig gets the Api-Security  API Config Swagger file content
 func (c *Client) GetApiSecurityApiSwaggerConfig(siteId int, apiId int) (*ApiSecurityApiConfigGetFileResponse, error) {
-	log.Printf("[INFO] Getting Incapsula Api-Security API Config for Site ID %d, API Config ID %d\n", siteId, apiId)
+	log.Printf("[INFO] Getting Incapsula Api-Security API Swagger Config for Site ID %d, API Config ID %d\n", siteId, apiId)
 
 	url := fmt.Sprintf("%s%sfile/%d/%d", c.config.BaseURLAPI, apiConfigUrl, siteId, apiId)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, url, nil)
@@ -328,8 +315,12 @@ func (c *Client) DeleteApiSecurityApiConfig(siteID int, apiID string) error {
 
 	// Read the body
 	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
 
+	responseBody, err := ioutil.ReadAll(resp.Body)
+	// Check the response code
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("[ERROR] Error status code %d from Incapsula service when deleting API Security API Config for Site ID %d, API Config ID %s: %s", resp.StatusCode, siteID, apiID, string(responseBody))
+	}
 	// Dump JSON
 	var apiSecurityApiConfigDeleteResponse ApiSecurityApiConfigDeleteResponse
 	err = json.Unmarshal([]byte(responseBody), &apiSecurityApiConfigDeleteResponse)
@@ -337,9 +328,5 @@ func (c *Client) DeleteApiSecurityApiConfig(siteID int, apiID string) error {
 		return fmt.Errorf("[ERROR] Error parsing delete API Secirity API Config JSON response for Site ID %d, API Config ID %s: %s", siteID, apiID, err)
 	}
 
-	// Check the response code
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("[ERROR] Error status code %d from Incapsula service when deleting API Security API Config for Site ID %d, API Config ID %s: %s", resp.StatusCode, siteID, apiID, string(responseBody))
-	}
 	return nil
 }

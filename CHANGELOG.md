@@ -1,8 +1,14 @@
+## 3.0.1 (Released)
+
+* New resources: api_security_api_config, api_security_endpoint_config, api_security_site_config
+
 ## 3.0.0 (Released)
+
 * New resource: data_centers_configuration
-* Remove unnecessary 'ForceNew' from attributes of site resource 
+* Remove unnecessary 'ForceNew' from attributes of site resource
 
 ## 2.9.0 (Released)
+
 * Fix `acceleration_level` in the `site` resource
 * Fix support for `continents` in the `security_rule_exception` resource
 * Fix the default value for `seal_location` in the `site` resource

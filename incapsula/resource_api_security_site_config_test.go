@@ -21,7 +21,7 @@ func TestAccIncapsulaApiSecuritySiteConfig_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckApiSiteConfigBasic(t), //todo  change
+				Config: testAccCheckApiSiteConfigBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckApiSecuritySiteConfigExists(apiSiteConfigResource),
 					resource.TestCheckResourceAttr(apiSiteConfigResource, "api_only_site", "true"),
@@ -66,7 +66,6 @@ func testCheckApiSecuritySiteConfigExists(name string) resource.TestCheckFunc {
 }
 
 func testACCStateApiSiteConfigID(s *terraform.State) (string, error) {
-	//return "", fmt.Errorf("Resources: %v", s.RootModule().Resources)
 	for _, rs := range s.RootModule().Resources {
 		fmt.Errorf("Resource: %v", rs)
 		if rs.Type != apiSiteConfigResourceName {
@@ -81,7 +80,7 @@ func testACCStateApiSiteConfigID(s *terraform.State) (string, error) {
 
 		siteID, err := strconv.Atoi(rs.Primary.Attributes["site_id"])
 		iD, err := strconv.Atoi(rs.Primary.ID)
-		//todo compare ruleId to SiteID
+
 		if err != nil {
 			return "", fmt.Errorf("Error parsing ID %v to int", rs.Primary.Attributes["site_id"])
 		}

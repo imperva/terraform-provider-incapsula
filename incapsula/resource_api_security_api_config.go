@@ -3,6 +3,7 @@ package incapsula
 import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
 	"strings"
@@ -43,15 +44,9 @@ func resourceApiSecurityApiConfig() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
 			"site_id": {
-				Description: "The site ID which API security is configured on.",
+				Description: "Numeric identifier of the site to operate on. ",
 				Type:        schema.TypeInt,
 				Required:    true,
-				ForceNew:    false,
-			},
-			"id": {
-				Description: "The API ID which API security is configured.",
-				Type:        schema.TypeString,
-				Computed:    true,
 				ForceNew:    true,
 			},
 			"api_specification": {
@@ -60,53 +55,47 @@ func resourceApiSecurityApiConfig() *schema.Resource {
 				Required:    true,
 			},
 			//Optional
-
-			"site_name": {
-				Description: "The site name",
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-			},
-
 			"validate_host": {
-				Description: "When set to true, verifies that the host name and site name match. Set to false in cases such as CNAME reuse or API management integrations where the host name and site name do not match. Default value : true.",
+				Description: "When set to true, verifies that the host name and site name match. Set to false in cases such as CNAME reuse or API management integrations where the host name and site name do not match. Default value : false",
 				Type:        schema.TypeBool,
 				Optional:    true,
-			},
-
-			"invalid_method_violation_action": {
-				Description: "The action taken when an invalid method Violation occurs. Assigning DEFAULT will inherit the action from parent object, DEFAULT is not applicable for site-level configuration APIs.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "ALERT_ONLY",
-			},
-
-			"missing_param_violation_action": {
-				Description: "The action taken when a missing parameter Violation occurs. Assigning DEFAULT will inherit the action from parent object, DEFAULT is not applicable for site-level configuration APIs.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "ALERT_ONLY",
-			},
-
-			"invalid_param_value_violation_action": {
-				Description: "The action taken when an invalid parameter value Violation occurs. Assigning DEFAULT will inherit the action from parent object, DEFAULT is not applicable for site-level configuration APIs.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "ALERT_ONLY",
-			},
-
-			"invalid_param_name_violation_action": {
-				Description: "The violation action taken when invalid request parameter name was sent. Possible values: Alert Only, Block Request, Block User, Block IP, Ignore.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "ALERT_ONLY",
+				Computed:    true,
 			},
 
 			"invalid_url_violation_action": {
-				Description: "The violation action taken when invalid URL was used. Possible values: Alert Only, Block Request, Block User, Block IP, Ignore.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "ALERT_ONLY",
+				Description:  "The violation action taken when invalid URL was used. Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT. Assigning DEFAULT will inherit the action from parent object",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "DEFAULT",
+				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE", "DEFAULT"}, false),
+			},
+			"invalid_method_violation_action": {
+				Description:  "The action taken when an invalid method Violation occurs. Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT. Assigning DEFAULT will inherit the action from parent object",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "DEFAULT",
+				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE", "DEFAULT"}, false),
+			},
+			"missing_param_violation_action": {
+				Description:  "The action taken when a missing parameter Violation occurs. Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT. Assigning DEFAULT will inherit the action from parent object",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "DEFAULT",
+				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE", "DEFAULT"}, false),
+			},
+			"invalid_param_value_violation_action": {
+				Description:  "The action taken when an invalid parameter value Violation occurs. Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT. Assigning DEFAULT will inherit the action from parent object",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "DEFAULT",
+				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE", "DEFAULT"}, false),
+			},
+			"invalid_param_name_violation_action": {
+				Description:  "The violation action taken when invalid request parameter name was sent. Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT. Assigning DEFAULT will inherit the action from parent object",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "DEFAULT",
+				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE", "DEFAULT"}, false),
 			},
 
 			"description": {
@@ -122,30 +111,15 @@ func resourceApiSecurityApiConfig() *schema.Resource {
 				Computed:    true,
 			},
 
-			"last_modified": {
-				Description: "The latest date when the resource was updated",
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Optional:    true,
-			},
-
 			"host_name": {
-				Description: "Host name from the swagger file",
+				Description: "The host name from the swagger file",
 				Type:        schema.TypeString,
 				Computed:    true,
-				Optional:    true,
 			},
 
-			"api_source": {
-				Description: "Parameter shows the way API was added. Possible values: USER, AUTO, MIXED",
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-			},
-
-			"discovery_enabled": {
-				Description: "Parameter indicates whether automatic API discovery is enabled",
-				Type:        schema.TypeString,
+			"last_modified": {
+				Description: "The last modified timestamp",
+				Type:        schema.TypeInt,
 				Computed:    true,
 			},
 		},
@@ -156,7 +130,6 @@ func resourceApiSecurityAPIConfigCreate(d *schema.ResourceData, m interface{}) e
 	client := m.(*Client)
 
 	payload := ApiSecurityApiConfigPostPayload{
-
 		ValidateHost:     false,
 		Description:      d.Get("description").(string),
 		ApiSpecification: d.Get("api_specification").(string),
@@ -202,7 +175,7 @@ func resourceApiSecurityAPIConfigUpdate(d *schema.ResourceData, m interface{}) e
 		},
 	}
 
-	apiSecurityApiConfigPostResponse, err := client.UpdateApiSecurityApiConfig(
+	_, err := client.UpdateApiSecurityApiConfig(
 		d.Get("site_id").(int),
 		d.Id(),
 		&payload)
@@ -212,10 +185,7 @@ func resourceApiSecurityAPIConfigUpdate(d *schema.ResourceData, m interface{}) e
 		return err
 	}
 
-	apiID := strconv.Itoa(apiSecurityApiConfigPostResponse.Value.ApiId)
-	d.SetId(apiID)
-	log.Printf("[INFO] Updated Incapsula API-security api configuration with ID: %s\n", apiID)
-
+	log.Printf("[INFO] Updated Incapsula API-security api configuration with ID: %s\n", d.Id())
 	return resourceApiSecurityAPIConfigRead(d, m)
 }
 
@@ -235,14 +205,12 @@ func resourceApiSecurityAPIConfigRead(d *schema.ResourceData, m interface{}) err
 		return err
 	}
 	// Set computed values
+	d.SetId(strconv.Itoa(apiSecurityApiConfigGetResponse.Value.Id))
 	d.Set("site_id", apiSecurityApiConfigGetResponse.Value.SiteId)
-	d.Set("id", strconv.Itoa(apiSecurityApiConfigGetResponse.Value.Id))
-	d.Set("site_name", apiSecurityApiConfigGetResponse.Value.SiteName)
 	d.Set("host_name", apiSecurityApiConfigGetResponse.Value.HostName)
 	d.Set("base_path", apiSecurityApiConfigGetResponse.Value.BasePath)
 	d.Set("description", apiSecurityApiConfigGetResponse.Value.Description)
 	d.Set("last_modified", apiSecurityApiConfigGetResponse.Value.LastModified)
-	d.Set("api_source", apiSecurityApiConfigGetResponse.Value.ApiSource)
 	d.Set("invalid_method_violation_action", apiSecurityApiConfigGetResponse.Value.ViolationActions.InvalidMethodViolationAction)
 	d.Set("invalid_url_violation_action", apiSecurityApiConfigGetResponse.Value.ViolationActions.InvalidUrlViolationAction)
 	d.Set("missing_param_violation_action", apiSecurityApiConfigGetResponse.Value.ViolationActions.MissingParamViolationAction)
@@ -264,10 +232,15 @@ func resourceApiSecurityAPIConfigRead(d *schema.ResourceData, m interface{}) err
 func resourceApiSecurityAPIConfigDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteID := d.Get("site_id").(int)
-	err := client.DeleteApiSecurityApiConfig(siteID, d.Id())
+	apiID, err := strconv.Atoi(d.Id())
+	if err != nil {
+		return fmt.Errorf("Error converting Api Security API configuration ID for site (%d). Expected numeric value, got %s", siteID, d.Id())
+	}
+
+	err = client.DeleteApiSecurityApiConfig(siteID, d.Id())
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Error deleting Api Security API configuration for site (%d), API Id (%d): %s", siteID, apiID, err)
 	}
 
 	// Set the ID to empty

@@ -89,14 +89,13 @@ func (c *Client) DoJsonRequestWithHeaders(method string, url string, data []byte
 	return c.httpClient.Do(req)
 }
 
-func (c *Client) DoJsonRequestWithHeadersForm(method string, url string, data []byte, header string) (*http.Response, error) {
+func (c *Client) DoJsonRequestWithHeadersForm(method string, url string, data []byte, contentType string) (*http.Response, error) {
 	req, err := PrepareJsonRequest(method, url, data)
 	if err != nil {
 		return nil, fmt.Errorf("Error preparing request: %s", err)
 	}
 
-	SetHeaders(c, req, contentTypeApplicationJson)
-	req.Header.Set("Content-Type", header)
+	SetHeaders(c, req, contentType)
 	return c.httpClient.Do(req)
 }
 

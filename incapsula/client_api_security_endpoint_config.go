@@ -68,8 +68,8 @@ func (c *Client) PostApiSecurityEndpointConfig(apiId, endpointId int, endpointCo
 
 	writer.Close()
 	url := fmt.Sprintf("%s%s%d"+"/"+"%d", c.config.BaseURLAPI, endpointConfigUrl, apiId, endpointId)
-	header := writer.FormDataContentType()
-	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, url, body.Bytes(), header)
+	contentType := writer.FormDataContentType()
+	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, url, body.Bytes(), contentType)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula service while updating Api Security Endpoint Configuration for API Config Id %d, API Config Id %d : %s", apiId, endpointId, err)
 	}
@@ -135,6 +135,7 @@ func (c *Client) GetApiSecurityAllEndpointsConfig(apiId int) (*ApiSecurityEndpoi
 	// Read the body
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
+
 	log.Printf("[DEBUG] Incapsula Read All Api-Security Endpoint Config JSON response: %s\n", string(responseBody))
 
 	// Check the response code
