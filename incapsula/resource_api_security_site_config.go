@@ -57,30 +57,35 @@ func resourceApiSecuritySiteConfig() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE"}, false),
+				Default:      "ALERT_ONLY",
 			},
 			"invalid_method_violation_action": {
 				Description:  "The action taken when an invalid method Violation occurs. Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE"}, false),
+				Default:      "ALERT_ONLY",
 			},
 			"missing_param_violation_action": {
 				Description:  "The action taken when a missing parameter Violation occurs. Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE"}, false),
+				Default:      "ALERT_ONLY",
 			},
 			"invalid_param_value_violation_action": {
 				Description:  "The action taken when an invalid parameter value Violation occurs. Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE"}, false),
+				Default:      "ALERT_ONLY",
 			},
 			"invalid_param_name_violation_action": {
 				Description:  "The action taken when an invalid parameter value Violation occurs. Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE"}, false),
+				Default:      "ALERT_ONLY",
 			},
 			"last_modified": {
 				Description: "The last modified timestamp",
@@ -135,7 +140,6 @@ func resourceApiSecuritySiteConfigRead(d *schema.ResourceData, m interface{}) er
 	}
 
 	// Set computed values
-	d.Set("api_only_site", apiSecuritySiteConfigGetResponse.Value.ApiOnlySite)
 	d.Set("invalid_method_violation_action", apiSecuritySiteConfigGetResponse.Value.ViolationActions.InvalidMethodViolationAction)
 	d.Set("invalid_param_name_violation_action", apiSecuritySiteConfigGetResponse.Value.ViolationActions.InvalidParamNameViolationAction)
 	d.Set("invalid_param_value_violation_action", apiSecuritySiteConfigGetResponse.Value.ViolationActions.InvalidParamValueViolationAction)
@@ -143,6 +147,7 @@ func resourceApiSecuritySiteConfigRead(d *schema.ResourceData, m interface{}) er
 	d.Set("missing_param_violation_action", apiSecuritySiteConfigGetResponse.Value.ViolationActions.MissingParamViolationAction)
 	d.Set("non_api_request_violation_action", apiSecuritySiteConfigGetResponse.Value.NonApiRequestViolationAction)
 	d.Set("is_automatic_discovery_api_integration_enabled", apiSecuritySiteConfigGetResponse.Value.IsAutomaticDiscoveryApiIntegrationEnabled)
+	d.Set("is_api_only_site", apiSecuritySiteConfigGetResponse.Value.ApiOnlySite)
 	return nil
 }
 

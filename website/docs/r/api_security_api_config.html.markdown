@@ -14,8 +14,8 @@ API Security API Config include violation actions set for specific API.
 ## Example Usage
 
 ```hcl
-resource "incapsula_api_security_api_config" "example-terraform-api-security-api-config" {
-	site_id = 123
+resource "incapsula_api_security_api_config" "demo-terraform-api-security-api-config" {
+	site_id = incapsula_api_security_site_config.demo-terraform-api-security-site-config.id
 	api_specification = "${file("path/to/your/swagger/file.yaml")}"    
 	invalid_url_violation_action = "IGNORE"
 	invalid_method_violation_action = "BLOCK_USER"
@@ -24,7 +24,6 @@ resource "incapsula_api_security_api_config" "example-terraform-api-security-api
 	invalid_param_name_violation_action = "ALERT_ONLY"
 	description = "your site API description"
 	base_path = "/base/path"
-	host_name = "host.name.com"
 }
 ```
 
@@ -55,20 +54,20 @@ The following arguments are supported:
   Possible values: `ALERT_ONLY`, `BLOCK_REQUEST`, `BLOCK_USER`, `BLOCK_IP`, `IGNORE`,`DEFAULT`.
 * `description` - (Optional) A description that will help recognize the API in the dashboard.
 * `base_path` - (Optional) Override the spec basePath / server base path with this value.
-* `host_name` - (Computed) The host name from the swagger file
-* `last_modified` - (Optional) The last modified timestamp.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
 * `id` - Unique identifier in the API for the API Security Site Configuration.
+* `host_name` - The API's host name
+* `last_modified` - (Optional) The last modified timestamp.
 
 ## Import
 
-API Security API Configuration can be imported using the site_id and api_id (id) separated by /, e.g.:
+API Security API Configuration can be imported using the site_id and then api_id (id) separated by /, e.g.:
 
 ```
-$ terraform import incapsula_api_security_api_config.example-terraform-api-security-api-config site_id/api_id
+$ terraform import incapsula_api_security_api_config.example-terraform-api-security-api-config 1234/100200
 
 ```

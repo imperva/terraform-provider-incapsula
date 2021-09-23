@@ -13,15 +13,15 @@ Provides an Incapsula API Security Site Config resource.
 
 ```hcl
 resource "incapsula_api_security_site_config" "demo-terraform-api-security-site-config" {
-  	site_id = 123
-  	api_only_site = "true"
+  	site_id = incapsula_site.example-site.id
+  	is_api_only_site = true
   	non_api_request_violation_action = "ALERT_ONLY"
-  	invalid_url_violation_action = "ALERT_ONLY"
-  	invalid_method_violation_action = "ALERT_ONLY"
-  	missing_param_violation_action = "ALERT_ONLY"
-  	invalid_param_value_violation_action = "ALERT_ONLY"
+  	invalid_url_violation_action = "BLOCK_IP"
+  	invalid_method_violation_action = "BLOCK_REQUEST"
+  	missing_param_violation_action = "DEFAULT"
+  	invalid_param_value_violation_action = "IGNORE"
   	invalid_param_name_violation_action = "ALERT_ONLY"
-	is_automatic_discovery_api_integration_enabled = "false"
+	is_automatic_discovery_api_integration_enabled = false
 }
 ```
 
@@ -45,18 +45,18 @@ The following arguments are supported:
   Possible values: `ALERT_ONLY`, `BLOCK_REQUEST`, `BLOCK_USER`, `BLOCK_IP`, `IGNORE`.
 * `invalid_param_name_violation_action` - (Optional) The action taken when an invalid parameter value Violation occurs.
   Possible values: `ALERT_ONLY`, `BLOCK_REQUEST`, `BLOCK_USER`, `BLOCK_IP`, `IGNORE`.
-* `last_modified` - (Optional) The last modified timestamp.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
 * `id` - Unique identifier in the API for the API Security Site Configuration.
+* `last_modified` - The last modified timestamp.
 
 ## Import
 
 API Security Site Configuration can be imported using the site_id
 
 ```
-$ terraform import incapsula_api_security_site_config.demo_site_config site_id
+$ terraform import incapsula_api_security_site_config.demo_site_config 1234
 ```

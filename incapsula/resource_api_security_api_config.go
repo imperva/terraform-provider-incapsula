@@ -216,7 +216,7 @@ func resourceApiSecurityAPIConfigRead(d *schema.ResourceData, m interface{}) err
 	d.Set("missing_param_violation_action", apiSecurityApiConfigGetResponse.Value.ViolationActions.MissingParamViolationAction)
 	d.Set("invalid_param_name_violation_action", apiSecurityApiConfigGetResponse.Value.ViolationActions.InvalidParamNameViolationAction)
 	d.Set("invalid_param_value_violation_action", apiSecurityApiConfigGetResponse.Value.ViolationActions.InvalidParamValueViolationAction)
-	//In current implementation validateHost value is always set as "false". Will be changed in next releases
+	//In current implementation validateHost value is always been set as "false". Will be changed in next releases
 	d.Set("validate_host", false)
 
 	apiSecurityApiConfigGetFileResponse, err := client.GetApiSecurityApiSwaggerConfig(siteID, apiID)

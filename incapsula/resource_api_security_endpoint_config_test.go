@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"log"
 	"strconv"
-	"strings"
 	"testing"
 )
 
@@ -14,7 +13,7 @@ const apiSecEndpointConfigResourceName = "incapsula_api_security_endpoint_config
 const apiSecEndpointConfigResource = apiSecEndpointConfigResourceName + "." + apiSecEndpointConfigName
 const apiSecEndpointConfigName = "testacc-terraform-api-security-endpoint-config"
 
-func TestAccIncapsulaApiSecurityEndpoint_Basic(t *testing.T) {
+func TestAccIncapsulaApiSecurityEndpointConfig_Basic(t *testing.T) {
 	log.Printf("========================BEGINTEST========================")
 	log.Printf("[DEBUG]Running test resource_api_security_endpoint_config_test.TestAccIncapsulaApiSecurityEndpoint_Basic")
 	resource.Test(t, resource.TestCase{
@@ -22,7 +21,7 @@ func TestAccIncapsulaApiSecurityEndpoint_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaApiSecurityEndpointConfigBasic(t),
+				Config: testAccCheckIncapsulaApiSecurityEndpointConfigBasic(t), //toda ad path + method
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaApiSecurityEndpointExists(apiSecEndpointConfigResource),
 					resource.TestCheckResourceAttr(apiSecEndpointConfigResource, "invalid_param_name_violation_action", "IGNORE"),
@@ -52,16 +51,12 @@ func testAccStateApiSecurityEndpointID(s *terraform.State) (string, error) {
 			fmt.Errorf("Failed to convert API Id,actual value:%s, expected numeric id", rs.Primary.Attributes["api_id"])
 		}
 
-		method := rs.Primary.Attributes["method"]
-		if method != "" {
-			fmt.Errorf("Empty Endpoint method is invalid for API Security Endoint config, API Id %d ", apiId)
-		}
-		path := rs.Primary.Attributes["path"]
-		if path != "" {
-			fmt.Errorf("Empty Endpoint path is invalid for API Security Endoint config, API Id %d", apiId)
+		endpointId, err := strconv.Atoi(rs.Primary.Attributes["id"])
+		if err != nil {
+			fmt.Errorf("Failed to convert API Id,actual value:%s, expected numeric id", rs.Primary.Attributes["api_id"])
 		}
 
-		return fmt.Sprintf("%d/%s/%s", apiId, method, strings.ReplaceAll(path, "/", "_")), nil
+		return fmt.Sprintf("%d/%d", apiId, endpointId), nil
 	}
 
 	return "", fmt.Errorf("Error finding API Security Endpoint ID")
@@ -102,28 +97,16 @@ func testCheckIncapsulaApiSecurityEndpointExists(name string) resource.TestCheck
 }
 
 func testAccCheckIncapsulaApiSecurityEndpointConfigBasic(t *testing.T) string {
-	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+	return testAccCheckApiConfigBasic(t) + fmt.Sprintf(`
 resource"%s""%s"{
-site_id=incapsula_site.testacc-terraform-site.id
-validate_host="false"
-description="first wagger collection"
-invalid_url_violation_action="IGNORE"
-invalid_method_violation_action="BLOCK_IP"
-missing_param_violation_action="IGNORE"
-invalid_param_value_violation_action="BLOCK_IP"
-invalid_param_name_violation_action="IGNORE"
-depends_on=["%s"]
-api_specification = %s
-}
-
-resource"%s""%s"{
-api_id=incapsula_api_security_api_config.testacc-terraform-api-security-api-config.id
+api_id=%s.id
+path = "/users"
+method = "GET"
 invalid_param_name_violation_action="IGNORE"
 invalid_param_value_violation_action="IGNORE"
-path="/users"
-method="GET"
 missing_param_violation_action="BLOCK_IP"
 depends_on=[%s]
-}`, apiSecApiConfigResourceName, apiSecApiConfigName, siteResourceName, swaggerFileContent, apiSecEndpointConfigResourceName, apiSecEndpointConfigName, apiSecApiConfigResource,
+}
+`, apiSecEndpointConfigResourceName, apiSecEndpointConfigName, apiSecApiConfigResource, apiSecApiConfigResource,
 	)
 }

@@ -24,11 +24,11 @@ func TestAccIncapsulaApiSecuritySiteConfig_basic(t *testing.T) {
 				Config: testAccCheckApiSiteConfigBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckApiSecuritySiteConfigExists(apiSiteConfigResource),
-					resource.TestCheckResourceAttr(apiSiteConfigResource, "api_only_site", "true"),
+					resource.TestCheckResourceAttr(apiSiteConfigResource, "is_api_only_site", "true"),
 					resource.TestCheckResourceAttr(apiSiteConfigResource, "non_api_request_violation_action", "BLOCK_USER"),
 					resource.TestCheckResourceAttr(apiSiteConfigResource, "invalid_url_violation_action", "BLOCK_REQUEST"),
 					resource.TestCheckResourceAttr(apiSiteConfigResource, "invalid_method_violation_action", "BLOCK_IP"),
-					resource.TestCheckResourceAttr(apiSiteConfigResource, "missing_param_violation_action", "IGNORE"),
+					resource.TestCheckResourceAttr(apiSiteConfigResource, "missing_param_violation_action", "ALERT_ONLY"),
 					resource.TestCheckResourceAttr(apiSiteConfigResource, "invalid_param_value_violation_action", "IGNORE"),
 					resource.TestCheckResourceAttr(apiSiteConfigResource, "invalid_param_name_violation_action", "BLOCK_IP"),
 					resource.TestCheckResourceAttr(apiSiteConfigResource, "is_automatic_discovery_api_integration_enabled", "false"),
@@ -96,14 +96,13 @@ func testAccCheckApiSiteConfigBasic(t *testing.T) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 	resource "incapsula_api_security_site_config" "%s" {
 		site_id = incapsula_site.testacc-terraform-site.id
-		api_only_site = "true"
+		is_api_only_site = true
 		non_api_request_violation_action = "BLOCK_USER"
 		invalid_url_violation_action = "BLOCK_REQUEST"
 		invalid_method_violation_action = "BLOCK_IP"
-		missing_param_violation_action = "IGNORE"
 		invalid_param_value_violation_action = "IGNORE"
 		invalid_param_name_violation_action = "BLOCK_IP"
-		is_automatic_discovery_api_integration_enabled = "false"
+		is_automatic_discovery_api_integration_enabled = false
   		depends_on = ["%s"]
 	}`,
 		apiSiteConfigName, siteResourceName,

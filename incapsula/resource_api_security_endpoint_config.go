@@ -11,7 +11,7 @@ import (
 
 func resourceApiSecurityEndpointConfig() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceApiSecurityEndpointConfigUpdate,
+		Create: resourceApiSecurityEndpointConfigCreate,
 		Read:   resourceApiSecurityEndpointConfigRead,
 		Update: resourceApiSecurityEndpointConfigUpdate,
 		Delete: resourceApiSecurityEndpointConfigDelete,
@@ -19,7 +19,7 @@ func resourceApiSecurityEndpointConfig() *schema.Resource {
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				idSlice := strings.Split(d.Id(), "/")
 				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
-					return nil, fmt.Errorf("unexpected format of API Security Endpoint ID (%q), expected api_id/method/path", d.Id())
+					return nil, fmt.Errorf("unexpected format of API Security Endpoint ID (%q), expected api_id/endpoint_id", d.Id())
 				}
 
 				apiId, err := strconv.Atoi(idSlice[0])
@@ -47,6 +47,17 @@ func resourceApiSecurityEndpointConfig() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"method": {
+				Description: "HTTP method that describes a specific endpoint. Possible values: POST, GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
+			"path": {
+				Description: "An URL path of specific endpoint ",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
+
 			// Optional Arguments
 			"missing_param_violation_action": {
 				Description:  "The action taken when an invalid URL Violation occurs. Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT. Assigning DEFAULT will inherit the action from parent object.",
@@ -71,18 +82,6 @@ func resourceApiSecurityEndpointConfig() *schema.Resource {
 				Default:      "DEFAULT",
 				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE", "DEFAULT"}, false),
 			},
-
-			"method": {
-				Description: "HTTP method that describes a specific endpoint. Possible values: POST, GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-
-			"path": {
-				Description: "An URL path of specific endpoint ",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
 		},
 	}
 }
@@ -90,25 +89,29 @@ func resourceApiSecurityEndpointConfig() *schema.Resource {
 func resourceApiSecurityEndpointConfigRead(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Read Incapsula API-security endpoint configuration for ID: %s", d.Id())
 	client := m.(*Client)
-	if d.Id() != "" {
-		endpointGetResponse, err := client.GetApiSecurityEndpointConfig(d.Get("api_id").(int), d.Id())
-		if err != nil {
-			log.Printf("[ERROR] Could not get Incapsula API-security endpoint: %s - %s\n", d.Get("id"), err)
-			return err
-		}
+	endpointGetResponse, err := client.GetApiSecurityEndpointConfig(d.Get("api_id").(int), d.Id())
+	if err != nil {
+		log.Printf("[ERROR] Could not get Incapsula API-security endpoint: %s - %s\n", d.Get("id"), err)
+		return err
+	}
 
-		d.Set("missing_param_violation_action", endpointGetResponse.Value.ViolationActions.MissingParamViolationAction)
-		d.Set("invalid_param_name_violation_action", endpointGetResponse.Value.ViolationActions.InvalidParamNameViolationAction)
-		d.Set("invalid_param_value_violation_action", endpointGetResponse.Value.ViolationActions.InvalidParamValueViolationAction)
-		d.Set("method", endpointGetResponse.Value.Method)
-		d.Set("path", endpointGetResponse.Value.Path)
-	} else {
+	d.Set("missing_param_violation_action", endpointGetResponse.Value.ViolationActions.MissingParamViolationAction)
+	d.Set("invalid_param_name_violation_action", endpointGetResponse.Value.ViolationActions.InvalidParamNameViolationAction)
+	d.Set("invalid_param_value_violation_action", endpointGetResponse.Value.ViolationActions.InvalidParamValueViolationAction)
+	d.Set("method", endpointGetResponse.Value.Method)
+	d.Set("path", endpointGetResponse.Value.Path)
+	return nil
+}
+
+func resourceApiSecurityEndpointConfigCreate(d *schema.ResourceData, m interface{}) error {
+	client := m.(*Client)
+	if d.Id() == "" {
 		endpointGetAllResponse, _ := client.GetApiSecurityAllEndpointsConfig(d.Get("api_id").(int))
 		var found bool
-		var endpoint ApiSecurityEndpointConfigGetResponse
+		var endpointId string
 		for _, entry := range endpointGetAllResponse.Value {
 			if entry.Path == d.Get("path").(string) && entry.Method == d.Get("method").(string) {
-				endpoint.Value = entry
+				endpointId = strconv.Itoa(entry.Id)
 				found = true
 				break
 			}
@@ -119,15 +122,11 @@ func resourceApiSecurityEndpointConfigRead(d *schema.ResourceData, m interface{}
 			d.SetId("")
 			return nil
 		}
-
-		d.Set("missing_param_violation_action", endpoint.Value.ViolationActions.MissingParamViolationAction)
-		d.Set("invalid_param_name_violation_action", endpoint.Value.ViolationActions.InvalidParamNameViolationAction)
-		d.Set("invalid_param_value_violation_action", endpoint.Value.ViolationActions.InvalidParamValueViolationAction)
-		d.Set("method", endpoint.Value.Method)
-		d.Set("path", endpoint.Value.Path)
+		log.Printf("found endpoint id %s", endpointId)
+		d.SetId(endpointId)
 	}
 
-	return nil
+	return resourceApiSecurityEndpointConfigUpdate(d, m)
 }
 
 func resourceApiSecurityEndpointConfigUpdate(d *schema.ResourceData, m interface{}) error {
@@ -141,29 +140,11 @@ func resourceApiSecurityEndpointConfigUpdate(d *schema.ResourceData, m interface
 		},
 	}
 
-	endpointGetAllResponse, err := client.GetApiSecurityAllEndpointsConfig(d.Get("api_id").(int))
+	endpointId, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("[ERROR] Could not get Incapsula API-security all endpoints for Api Id: %d", d.Get("api_id").(int))
+		fmt.Errorf("Endpoint ID should be numeric. Actual value: %s", d.Id())
 	}
-
-	var currentId int
-	var found bool
-
-	for _, entry := range endpointGetAllResponse.Value {
-		if entry.Path == d.Get("path").(string) && entry.Method == d.Get("method").(string) {
-			currentId = entry.Id
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		log.Printf("[INFO] API-security endpoint [%s %s] doesn't exist and will not be updated.", d.Get("method").(string), d.Get("path").(string))
-		d.SetId("")
-		return nil
-	}
-	log.Printf("found endpoint id %d", currentId)
-	_, err = client.PostApiSecurityEndpointConfig(d.Get("api_id").(int), currentId, &payload)
+	_, err = client.PostApiSecurityEndpointConfig(d.Get("api_id").(int), endpointId, &payload)
 
 	if err != nil {
 		return err

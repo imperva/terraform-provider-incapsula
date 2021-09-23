@@ -32,8 +32,8 @@ func TestAccIncapsulaApiSecurityApiConfig_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(apiSecApiConfigResource, "invalid_url_violation_action", "IGNORE"),
 					resource.TestCheckResourceAttr(apiSecApiConfigResource, "invalid_method_violation_action", "BLOCK_IP"),
 					resource.TestCheckResourceAttr(apiSecApiConfigResource, "missing_param_violation_action", "IGNORE"),
-					resource.TestCheckResourceAttr(apiSecApiConfigResource, "invalid_param_value_violation_action", "BLOCK_IP"),
-					resource.TestCheckResourceAttr(apiSecApiConfigResource, "invalid_param_name_violation_action", "IGNORE"),
+					resource.TestCheckResourceAttr(apiSecApiConfigResource, "invalid_param_value_violation_action", "DEFAULT"),
+					resource.TestCheckResourceAttr(apiSecApiConfigResource, "invalid_param_name_violation_action", "DEFAULT"),
 				),
 			},
 			{
@@ -127,19 +127,18 @@ func testCheckIncapsulaApiConfigExists() resource.TestCheckFunc {
 }
 
 func testAccCheckApiConfigBasic(t *testing.T) string {
-	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
-resource"%s""%s"{
-site_id=incapsula_site.testacc-terraform-site.id
-validate_host="false"
-description="first-api-security-collection"
-invalid_url_violation_action="IGNORE"
-invalid_method_violation_action="BLOCK_IP"
-missing_param_violation_action="IGNORE"
-invalid_param_value_violation_action="BLOCK_IP"
-invalid_param_name_violation_action="IGNORE"
-depends_on=["%s"]
-api_specification = %s
-}`,
-		apiSecApiConfigResourceName, apiSecApiConfigName, siteResourceName, swaggerFileContent,
+	return testAccCheckApiSiteConfigBasic(t) + fmt.Sprintf(`
+	resource"%s""%s"{
+	site_id=%s.id
+	validate_host="false"
+	description="first-api-security-collection"
+	invalid_url_violation_action="IGNORE"
+	invalid_method_violation_action="BLOCK_IP"
+	missing_param_violation_action="IGNORE"
+	invalid_param_value_violation_action="DEFAULT"
+	depends_on=["%s"]
+	api_specification = %s
+	}`,
+		apiSecApiConfigResourceName, apiSecApiConfigName, apiSiteConfigResource, apiSiteConfigResource, swaggerFileContent,
 	)
 }
