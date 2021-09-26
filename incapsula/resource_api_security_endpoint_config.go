@@ -105,26 +105,22 @@ func resourceApiSecurityEndpointConfigRead(d *schema.ResourceData, m interface{}
 
 func resourceApiSecurityEndpointConfigCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	if d.Id() == "" {
-		endpointGetAllResponse, _ := client.GetApiSecurityAllEndpointsConfig(d.Get("api_id").(int))
-		var found bool
-		var endpointId string
-		for _, entry := range endpointGetAllResponse.Value {
-			if entry.Path == d.Get("path").(string) && entry.Method == d.Get("method").(string) {
-				endpointId = strconv.Itoa(entry.Id)
-				found = true
-				break
-			}
+	endpointGetAllResponse, _ := client.GetApiSecurityAllEndpointsConfig(d.Get("api_id").(int))
+	var found bool
+	var endpointId string
+	for _, entry := range endpointGetAllResponse.Value {
+		if entry.Path == d.Get("path").(string) && entry.Method == d.Get("method").(string) {
+			endpointId = strconv.Itoa(entry.Id)
+			found = true
+			break
 		}
-
-		if !found {
-			log.Printf("[INFO] API-security endpoint [%s %s] doesn't exist and will not be updated.", d.Get("method").(string), d.Get("path").(string))
-			d.SetId("")
-			return nil
-		}
-		log.Printf("found endpoint id %s", endpointId)
-		d.SetId(endpointId)
 	}
+
+	if !found {
+		return fmt.Errorf("[ERROR] API-security endpoint [%s %s] doesn't exist and will not be updated.", d.Get("method").(string), d.Get("path").(string))
+	}
+	log.Printf("[DEBUG] found endpoint id %s", endpointId)
+	d.SetId(endpointId)
 
 	return resourceApiSecurityEndpointConfigUpdate(d, m)
 }

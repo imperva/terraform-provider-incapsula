@@ -33,18 +33,6 @@ func resourceApiSecuritySiteConfig() *schema.Resource {
 				Type:        schema.TypeInt,
 				Required:    true,
 			},
-			"is_api_only_site": {
-				Description: "", //todo api_only_site set description
-				Type:        schema.TypeBool,
-				Required:    true,
-			},
-			"non_api_request_violation_action": {
-				//todo add description
-				Description:  "Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE.",
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE"}, false),
-			},
 			"is_automatic_discovery_api_integration_enabled": {
 				Description: "Parameter shows whether automatic API discovery is enabled",
 				Type:        schema.TypeBool,
@@ -86,6 +74,17 @@ func resourceApiSecuritySiteConfig() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE"}, false),
 				Default:      "ALERT_ONLY",
+			},
+			"is_api_only_site": {
+				Description: "Apply positive security model for all traffic on the site. Applying the positive security model for all traffic on the site may lead to undesired request blocking.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+			},
+			"non_api_request_violation_action": {
+				Description:  "Action to be taken for traffic on the site that does not target the uploaded APIs. Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE"}, false),
 			},
 			"last_modified": {
 				Description: "The last modified timestamp",
