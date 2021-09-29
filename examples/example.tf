@@ -710,3 +710,49 @@ resource "incapsula_policy" "example-policy" {
 ]
 POLICY
 }
+
+###################################################################
+# API Security Site Configuration
+###################################################################
+
+resource "incapsula_api_security_site_configuration" "example-api-security-site-config" {
+    site_id = 123
+    is_api_only_site = true
+    non_api_request_violation_action = "ALERT_ONLY"
+    invalid_url_violation_action = "BLOCK_REQUEST"
+    invalid_method_violation_action = "BLOCK_IP"
+    missing_param_violation_action = "IGNORE"
+    invalid_param_value_violation_action = "IGNORE"
+    invalid_param_name_violation_action = "ALERT_ONLY"
+}
+
+###################################################################
+# API Security API Configuration
+###################################################################
+resource "incapsula_api_security_api_configuration" "example-api-security-api-config" {
+    site_id = 123
+    api_specification = "${file("/path/to/swagger/file.yaml")}"
+    validate_host = true
+    description = "put your description here"
+    invalid_url_violation_action = "BLOCK_REQUEST"
+    invalid_method_violation_action = "BLOCK_IP"
+    missing_param_violation_action = "IGNORE"
+    invalid_param_value_violation_action = "IGNORE"
+    invalid_param_name_violation_action = "ALERT_ONLY"
+	description = "your site API description"
+	base_path = "/base/path"
+	host_name = "host.name.com"
+}
+
+###################################################################
+# API Security Endpoint Configuration
+###################################################################
+
+resource "incapsula_api_security_endpoint_config" "example-api-security-endpoint-config" {
+    api_id = 123
+    path = "/res/{id}"
+    method = "GET"
+	invalid_param_name_violation_action = "IGNORE"
+	invalid_param_value_violation_action = "BLOCK_IP"
+    missing_param_violation_action = "BLOCK_IP"
+}

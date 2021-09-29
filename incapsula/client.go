@@ -24,6 +24,7 @@ type Client struct {
 // NewClient creates a new client with the provided configuration
 func NewClient(config *Config) *Client {
 	client := &http.Client{}
+
 	return &Client{config: config, httpClient: client, providerVersion: "3.0.1"}
 }
 
@@ -76,7 +77,6 @@ func (c *Client) PostFormWithHeaders(url string, data url.Values) (*http.Respons
 	}
 
 	SetHeaders(c, req, contentTypeApplicationUrlEncoded)
-
 	return c.httpClient.Do(req)
 }
 
@@ -87,7 +87,16 @@ func (c *Client) DoJsonRequestWithHeaders(method string, url string, data []byte
 	}
 
 	SetHeaders(c, req, contentTypeApplicationJson)
+	return c.httpClient.Do(req)
+}
 
+func (c *Client) DoJsonRequestWithHeadersForm(method string, url string, data []byte, contentType string) (*http.Response, error) {
+	req, err := PrepareJsonRequest(method, url, data)
+	if err != nil {
+		return nil, fmt.Errorf("Error preparing request: %s", err)
+	}
+
+	SetHeaders(c, req, contentType)
 	return c.httpClient.Do(req)
 }
 
