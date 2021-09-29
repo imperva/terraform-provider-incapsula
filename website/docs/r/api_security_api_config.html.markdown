@@ -5,7 +5,7 @@ sidebar_current: "docs-incapsula-resource-api-security-api-config"
 description: |- Provides a Incapsula API Security API Config resource.
 ---
 
-# incapsula_api_security_site_config
+# incapsula_api_security_api_config
 
 Provides an Incapsula API Security API Config resource.
 
@@ -16,7 +16,8 @@ API Security API Config include violation actions set for specific API.
 ```hcl
 resource "incapsula_api_security_api_config" "demo-terraform-api-security-api-config" {
 	site_id = incapsula_api_security_site_config.demo-terraform-api-security-site-config.id
-	api_specification = "${file("path/to/your/swagger/file.yaml")}"    
+	api_specification = "${file("path/to/your/swagger/file.yaml")}"
+	validate_host = true    
 	invalid_url_violation_action = "IGNORE"
 	invalid_method_violation_action = "BLOCK_USER"
 	missing_param_violation_action = "BLOCK_IP"

@@ -28,7 +28,7 @@ resource "incapsula_api_security_endpoint_config" "demo-api-security-endpoint-co
 
 The following arguments are supported:
 
-* `api_id` - (Required) Numeric identifier of the API to operate on.
+* `api_id` - (Required) Numeric identifier of the API Security API Configuration to operate on.
 * `path` - (Required) An URL path of specific Endpoint.
 * `method` - (Required) HTTP method that describes a specific Endpoint.
 * `invalid_param_value_violation_action` - (Optional) The action taken when an invalid parameter value Violation occurs.
