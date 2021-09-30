@@ -33,11 +33,6 @@ func resourceApiSecuritySiteConfig() *schema.Resource {
 				Type:        schema.TypeInt,
 				Required:    true,
 			},
-			"is_automatic_discovery_api_integration_enabled": {
-				Description: "Parameter shows whether automatic API discovery is enabled",
-				Type:        schema.TypeBool,
-				Required:    true,
-			},
 
 			//Optional
 			"invalid_url_violation_action": {
@@ -102,7 +97,7 @@ func resourceApiSecuritySiteConfigUpdate(d *schema.ResourceData, m interface{}) 
 	payload := ApiSecuritySiteConfigPostPayload{
 		ApiOnlySite:                               d.Get("is_api_only_site").(bool),
 		NonApiRequestViolationAction:              d.Get("non_api_request_violation_action").(string),
-		IsAutomaticDiscoveryApiIntegrationEnabled: d.Get("is_automatic_discovery_api_integration_enabled").(bool),
+		IsAutomaticDiscoveryApiIntegrationEnabled: false,
 		ViolationActions: ViolationActions{
 			InvalidUrlViolationAction:        d.Get("invalid_url_violation_action").(string),
 			InvalidMethodViolationAction:     d.Get("invalid_method_violation_action").(string),
@@ -145,7 +140,6 @@ func resourceApiSecuritySiteConfigRead(d *schema.ResourceData, m interface{}) er
 	d.Set("invalid_url_violation_action", apiSecuritySiteConfigGetResponse.Value.ViolationActions.InvalidUrlViolationAction)
 	d.Set("missing_param_violation_action", apiSecuritySiteConfigGetResponse.Value.ViolationActions.MissingParamViolationAction)
 	d.Set("non_api_request_violation_action", apiSecuritySiteConfigGetResponse.Value.NonApiRequestViolationAction)
-	d.Set("is_automatic_discovery_api_integration_enabled", apiSecuritySiteConfigGetResponse.Value.IsAutomaticDiscoveryApiIntegrationEnabled)
 	d.Set("is_api_only_site", apiSecuritySiteConfigGetResponse.Value.ApiOnlySite)
 	return nil
 }

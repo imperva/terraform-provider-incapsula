@@ -27,7 +27,6 @@ func TestAccIncapsulaApiSecurityApiConfig_Basic(t *testing.T) {
 				Config: testAccCheckApiConfigBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaApiConfigExists(),
-					resource.TestCheckResourceAttr(apiSecApiConfigResource, "validate_host", "false"),
 					resource.TestCheckResourceAttr(apiSecApiConfigResource, "description", "first-api-security-collection"),
 					resource.TestCheckResourceAttr(apiSecApiConfigResource, "invalid_url_violation_action", "IGNORE"),
 					resource.TestCheckResourceAttr(apiSecApiConfigResource, "invalid_method_violation_action", "BLOCK_IP"),
@@ -130,7 +129,6 @@ func testAccCheckApiConfigBasic(t *testing.T) string {
 	return testAccCheckApiSiteConfigBasic(t) + fmt.Sprintf(`
 	resource"%s""%s"{
 	site_id=%s.id
-	validate_host="false"
 	description="first-api-security-collection"
 	invalid_url_violation_action="IGNORE"
 	invalid_method_violation_action="BLOCK_IP"

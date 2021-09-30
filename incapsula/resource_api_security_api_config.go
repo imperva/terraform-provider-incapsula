@@ -54,14 +54,8 @@ func resourceApiSecurityApiConfig() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			//Optional
-			"validate_host": {
-				Description: "When set to true, verifies that the host name and site name match. Set to false in cases such as CNAME reuse or API management integrations where the host name and site name do not match. Default value : false",
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-			},
 
+			//Optional
 			"invalid_url_violation_action": {
 				Description:  "The violation action taken when invalid URL was used. Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT. Assigning DEFAULT will inherit the action from parent object",
 				Type:         schema.TypeString,
@@ -216,8 +210,6 @@ func resourceApiSecurityAPIConfigRead(d *schema.ResourceData, m interface{}) err
 	d.Set("missing_param_violation_action", apiSecurityApiConfigGetResponse.Value.ViolationActions.MissingParamViolationAction)
 	d.Set("invalid_param_name_violation_action", apiSecurityApiConfigGetResponse.Value.ViolationActions.InvalidParamNameViolationAction)
 	d.Set("invalid_param_value_violation_action", apiSecurityApiConfigGetResponse.Value.ViolationActions.InvalidParamValueViolationAction)
-	//In current implementation validateHost value is always been set as "false". Will be changed in next releases
-	d.Set("validate_host", false)
 
 	apiSecurityApiConfigGetFileResponse, err := client.GetApiSecurityApiSwaggerConfig(siteID, apiID)
 	if err != nil {
