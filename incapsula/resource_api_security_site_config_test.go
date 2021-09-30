@@ -95,6 +95,7 @@ func testAccCheckApiSiteConfigBasic(t *testing.T) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 	resource "incapsula_api_security_site_config" "%s" {
 		site_id = incapsula_site.testacc-terraform-site.id
+		is_automatic_discovery_api_integration_enabled = false
 		is_api_only_site = true
 		non_api_request_violation_action = "BLOCK_USER"
 		invalid_url_violation_action = "BLOCK_REQUEST"
