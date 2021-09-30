@@ -236,7 +236,7 @@ func (c *Client) UpdateApiSecurityApiConfig(siteId int, apiId string, apiConfigP
 		responseText := string(responseBody)
 
 		if strings.Contains(responseText, "Updating the API was unsuccessful because the new API specification contains fields, as indicated below, that do not match the existing API specification.") {
-			return nil, fmt.Errorf("%s. Please, run the following terraform command: terraform destroy -target api_security_api_config.your_resource_name and try to apply changes again", responseText)
+			return nil, fmt.Errorf("Error from Incapsula service while updating API Security API for siteId %d, API id %s : %s. \nPlease, run the following terraform command: terraform destroy -target api_security_api_config.your_resource_name\nThen try to apply changes again", siteId, apiId, responseText)
 		}
 		return nil, fmt.Errorf("Error from Incapsula service while updating API Security API for siteId %d, API id %s : %s", siteId, apiId, responseText)
 	}
