@@ -24,7 +24,8 @@ type Client struct {
 // NewClient creates a new client with the provided configuration
 func NewClient(config *Config) *Client {
 	client := &http.Client{}
-	return &Client{config: config, httpClient: client, providerVersion: "3.1.0"}
+
+	return &Client{config: config, httpClient: client, providerVersion: "3.0.1"}
 }
 
 // Verify checks the API credentials
