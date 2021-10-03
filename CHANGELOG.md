@@ -1,6 +1,6 @@
-## 3.1.0
+## 3.1.0 (Released)
 
-* New resources: api_security_api_config, api_security_endpoint_config, api_security_site_config
+* Support API-Security with new resources: api_security_api_config, api_security_endpoint_config, api_security_site_config
 
 ## 3.0.1 (Released)
 
