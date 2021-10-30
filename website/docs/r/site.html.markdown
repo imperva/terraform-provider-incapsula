@@ -37,7 +37,7 @@ resource "incapsula_site" "example-site" {
   perf_mode_time                           = 1000
   perf_response_cache_300x                 = true
   perf_response_cache_404_enabled          = true
-  perf_response_cache_404_time             = 1000
+  perf_response_cache_404_time             = 60
   perf_response_cache_empty_responses      = true
   perf_response_cache_http_10_responses    = true
   perf_response_cache_response_header_mode = "custom"
@@ -86,7 +86,8 @@ The following arguments are supported:
 * `perf_mode_time` - (Optional) The time, in seconds, that you set for this option determines how often the cache is refreshed. Relevant for the `include_html` and `include_all_resources` levels only.
 * `perf_response_cache_300x` - (Optional) When this option is checked Imperva will cache 301, 302, 303, 307, and 308 redirect response headers containing the target URI.
 * `perf_response_cache_404_enabled` - (Optional) Whether or not to cache 404 responses.
-* `perf_response_cache_404_time` - (Optional) The time in seconds to cache 404 responses.
+* `perf_response_cache_404_time` - (Optional) The time in seconds to cache 404 responses. Value should be divisible by
+  60.
 * `perf_response_cache_empty_responses` - (Optional) Cache responses that don’t have a message body.
 * `perf_response_cache_http_10_responses` - (Optional) Cache HTTP 1.0 type responses that don’t include the Content-Length header or chunking.
 * `perf_response_cache_response_header_mode` - (Optional) The working mode for caching response headers. Options are `all` and `custom`.

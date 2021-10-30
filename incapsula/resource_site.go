@@ -2,13 +2,13 @@ package incapsula
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceSite() *schema.Resource {
@@ -221,10 +221,11 @@ func resourceSite() *schema.Resource {
 				Optional:    true,
 			},
 			"perf_response_cache_404_time": {
-				Description: "The time in seconds to cache 404 responses.",
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Optional:    true,
+				Description:  "The time in seconds to cache 404 responses.",
+				Type:         schema.TypeInt,
+				Computed:     true,
+				Optional:     true,
+				ValidateFunc: validation.IntDivisibleBy(60),
 			},
 			"perf_response_cache_empty_responses": {
 				Description: "Cache responses that don’t have a message body.",
@@ -515,7 +516,7 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("perf_key_unite_naked_full_cache", performanceSettingsResponse.Key.UniteNakedFullCache)
 	d.Set("perf_mode_https", performanceSettingsResponse.Mode.HTTPS)
 	d.Set("perf_mode_level", performanceSettingsResponse.Mode.Level)
-	d.Set("perf_mode_time", performanceSettingsResponse.Mode.Time)
+	d.Set("perf_mode_time", performanceSettingsResponse.Response.StaleContent.Time)
 	d.Set("perf_response_cache_300x", performanceSettingsResponse.Response.Cache300X)
 	d.Set("perf_response_cache_404_enabled", performanceSettingsResponse.Response.Cache404.Enabled)
 	d.Set("perf_response_cache_404_time", performanceSettingsResponse.Response.Cache404.Time)
