@@ -128,6 +128,21 @@ func resourceApiSecurityEndpointConfigCreate(d *schema.ResourceData, m interface
 func resourceApiSecurityEndpointConfigUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
+	endpointGetAllResponse, _ := client.GetApiSecurityAllEndpointsConfig(d.Get("api_id").(int))
+	var found bool
+	var endpointId string
+	for _, entry := range endpointGetAllResponse.Value {
+		if entry.Path == d.Get("path").(string) && entry.Method == d.Get("method").(string) {
+			endpointId = strconv.Itoa(entry.Id)
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("[ERROR] API-security endpoint [%s %s] doesn't exist and will not be updated.", d.Get("method").(string), d.Get("path").(string))
+	}
+
 	payload := ApiSecurityEndpointConfigPostPayload{
 		ViolationActions: UserViolationActions{
 			MissingParamViolationAction:      d.Get("missing_param_violation_action").(string),
@@ -136,11 +151,12 @@ func resourceApiSecurityEndpointConfigUpdate(d *schema.ResourceData, m interface
 		},
 	}
 
-	endpointId, err := strconv.Atoi(d.Id())
+	endpointIdInt, err := strconv.Atoi(endpointId)
+
 	if err != nil {
 		fmt.Errorf("Endpoint ID should be numeric. Actual value: %s", d.Id())
 	}
-	_, err = client.PostApiSecurityEndpointConfig(d.Get("api_id").(int), endpointId, &payload)
+	_, err = client.PostApiSecurityEndpointConfig(d.Get("api_id").(int), endpointIdInt, &payload)
 
 	if err != nil {
 		return err
