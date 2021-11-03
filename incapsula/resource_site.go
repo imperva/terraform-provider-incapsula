@@ -346,6 +346,7 @@ func resourceSite() *schema.Resource {
 				Description: "Numeric representation of the data center created with the site.",
 				Type:        schema.TypeInt,
 				Computed:    true,
+				Deprecated:  "This parameter is deprecated. Please, use data_source_data_center instead.",
 			},
 		},
 
