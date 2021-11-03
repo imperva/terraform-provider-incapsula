@@ -51,11 +51,13 @@ func resourceApiSecurityEndpointConfig() *schema.Resource {
 				Description: "HTTP method that describes a specific endpoint. Possible values: POST, GET, PUT, PATCH, DELETE, HEAD, OPTIONS",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"path": {
 				Description: "An URL path of specific endpoint ",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 
 			// Optional Arguments
