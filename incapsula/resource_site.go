@@ -2,13 +2,13 @@ package incapsula
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceSite() *schema.Resource {
@@ -221,10 +221,11 @@ func resourceSite() *schema.Resource {
 				Optional:    true,
 			},
 			"perf_response_cache_404_time": {
-				Description: "The time in seconds to cache 404 responses.",
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Optional:    true,
+				Description:  "The time in seconds to cache 404 responses.",
+				Type:         schema.TypeInt,
+				Computed:     true,
+				Optional:     true,
+				ValidateFunc: validation.IntDivisibleBy(60),
 			},
 			"perf_response_cache_empty_responses": {
 				Description: "Cache responses that don’t have a message body.",
