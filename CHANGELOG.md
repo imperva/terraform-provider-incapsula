@@ -1,6 +1,13 @@
+## 3.1.1 (Released)
+
+* Fix `perf_response_cache_404_time` in the `site` resource. Validate if its value is divisible by 60
+* Make `original_data_center_id` deprecated in the `site` resource
+* Add "ForceNew" for `method` and `path` arguments in the `api_security_endpoint_config` resource
+
 ## 3.1.0 (Released)
 
-* Support API-Security with new resources: api_security_api_config, api_security_endpoint_config, api_security_site_config
+* Support API-Security with new resources: api_security_api_config, api_security_endpoint_config,
+  api_security_site_config
 
 ## 3.0.1 (Released)
 
