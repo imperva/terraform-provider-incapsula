@@ -28,7 +28,7 @@ The following arguments are supported:
 * `ref_id` - (Optional) Customer specific identifier for this operation.
 * `sub_account_name` - (Optional) SubAccount name.
 * `logs_account_id` - (Optional) Account where logs should be stored. Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.
-* `log_level` - (Optional) The log level. Options are `full`, `security`, `none` and `default` . Defaults to `default`.
+* `log_level` - (Optional) The log level. Options are `full`, `security`, `none`.
 
 ## Attributes Reference
 
