@@ -47,12 +47,12 @@ func resourceSubAccount() *schema.Resource {
 				ForceNew:    true,
 			},
 			"log_level": {
-				Description:  "The log level. Options are `full`, `security`, `none` and `default`. Defaults to `default`.",
+				Description:  "The log level. Options are `full`, `security`, and `none`.",
 				Type:         schema.TypeString,
-				Default:      "default",
+				Default:      "none",
 				Optional:     true,
 				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{"full", "security", "none", "default"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"full", "security", "none"}, false),
 			},
 
 			// Computed Attributes
