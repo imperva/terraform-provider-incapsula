@@ -16,8 +16,8 @@ Custom certificates must be one of the following formats: PFX, PEM, or CER.
 ```hcl
 resource "incapsula_custom_certificate" "custom-certificate" {
     site_id = incapsula_site.example-site.id
-    certificate = "${file("path/to/your/cert.crt")}"
-    private_key = "${file("path/to/your/private_key.key")}"
+    certificate = filebase64("${"path/to/your/cert.crt"}")
+    private_key = filebase64("${"path/to/your/private_key.key"}")
     passphrase = "yourpassphrase"
 }
 ```
