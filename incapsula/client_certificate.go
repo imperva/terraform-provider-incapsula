@@ -1,13 +1,11 @@
 package incapsula
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/url"
-	"strings"
 )
 
 // Endpoints (unexported consts)
@@ -35,12 +33,6 @@ type CertificateEditResponse struct {
 
 // AddCertificate adds a custom SSL certificate to a site in Incapsula
 func (c *Client) AddCertificate(siteID, certificate, privateKey, passphrase string) (*CertificateAddResponse, error) {
-	certificate = strings.TrimSpace(certificate)
-	_, err := base64.StdEncoding.DecodeString(certificate)
-	if err != nil {
-		// This is not a valid base64 encoded string
-		certificate = base64.StdEncoding.EncodeToString([]byte(certificate))
-	}
 
 	log.Printf("[INFO] Adding custom certificate for site_id: %s", siteID)
 
@@ -50,8 +42,7 @@ func (c *Client) AddCertificate(siteID, certificate, privateKey, passphrase stri
 	}
 
 	if privateKey != "" {
-		b64PrivateKey := base64.StdEncoding.EncodeToString([]byte(strings.TrimSpace(privateKey)))
-		values.Set("private_key", b64PrivateKey)
+		values.Set("private_key", privateKey)
 	}
 	if passphrase != "" {
 		values.Set("passphrase", passphrase)
@@ -122,18 +113,17 @@ func (c *Client) ListCertificates(siteID string) (*CertificateListResponse, erro
 
 // EditCertificate updates the custom certifiacte on an Incapsula site
 func (c *Client) EditCertificate(siteID, certificate, privateKey, passphrase string) (*CertificateEditResponse, error) {
-	b64Certificate := base64.StdEncoding.EncodeToString([]byte(strings.TrimSpace(certificate)))
 
 	log.Printf("[INFO] Editing custom certificate for Incapsula site_id: %s\n", siteID)
 
 	values := url.Values{
 		"site_id":     {siteID},
-		"certificate": {b64Certificate},
+		"certificate": {certificate},
 	}
 
 	if privateKey != "" {
-		b64PrivateKey := base64.StdEncoding.EncodeToString([]byte(strings.TrimSpace(privateKey)))
-		values.Set("private_key", b64PrivateKey)
+		values.Set("private_key", privateKey)
+
 	}
 	if passphrase != "" {
 		values.Set("passphrase", passphrase)

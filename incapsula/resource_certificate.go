@@ -10,7 +10,7 @@ func resourceCertificate() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceCertificateCreate,
 		Read:   resourceCertificateRead,
-		Update: nil,
+		Update: resourceCertificateUpdate,
 		Delete: resourceCertificateDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
@@ -31,21 +31,18 @@ func resourceCertificate() *schema.Resource {
 				Description: "The certificate file in base64 format.",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 			},
 			// Optional Arguments
 			"private_key": {
 				Description: "The private key of the certificate in base64 format. Optional in case of PFX certificate file format. This will be encoded in sha256 in terraform state.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Sensitive:   true,
 			},
 			"passphrase": {
 				Description: "The passphrase used to protect your SSL certificate. This will be encoded in sha256 in terraform state.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Sensitive:   true,
 			},
 		},
