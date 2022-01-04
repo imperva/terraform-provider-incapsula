@@ -1,3 +1,7 @@
+## 3.2.1 (Released)
+
+* Fix custom_certificate resource: remove 'ForceNew' and unecessary base64 encoding
+
 ## 3.1.1 (Released)
 
 * Fix `perf_response_cache_404_time` in the `site` resource. Validate if its value is divisible by 60
