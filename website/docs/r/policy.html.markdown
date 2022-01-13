@@ -20,6 +20,7 @@ Provides a Incapsula Policy resource.
 # settingsAction: BLOCK, ALLOW, ALERT, BLOCK_USER, BLOCK_IP, IGNORE
 # policySettings.data.url.pattern: CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS, NOT_PREFIX, NOT_SUFFIX, PREFIX, SUFFIX
 # exceptionType: GEO, IP, URL, CLIENT_ID, SITE_ID
+
 resource "incapsula_policy" "example-whitelist-ip-policy" {
     name        = "Example WHITELIST IP Policy"
     enabled     = true 
@@ -36,6 +37,48 @@ resource "incapsula_policy" "example-whitelist-ip-policy" {
           ]
         }
       }
+    ]
+    POLICY
+}
+
+
+resource "incapsula_policy" "example-waf-rule-illegal-resource-access-policy" {
+    name        = "Example WAF-RULE ILLEGAL RESOURCE ACCESS Policy"
+    enabled     = true 
+    policy_type = "WAF_RULES"
+    policy_settings = <<POLICY
+    [
+    {
+      "settingsAction": "BLOCK",
+      "policySettingType": "REMOTE_FILE_INCLUSION"
+
+    },
+    {
+      "settingsAction": "BLOCK",
+      "policySettingType": "ILLEGAL_RESOURCE_ACCESS",
+      "policyDataExceptions": [
+        {
+          "data": [
+            {
+              "exceptionType": "URL",
+              "values": [
+                "/cmd.exe"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "settingsAction": "BLOCK",
+      "policySettingType": "CROSS_SITE_SCRIPTING"
+      
+    },
+    {
+      "settingsAction": "BLOCK",
+      "policySettingType": "SQL_INJECTION"
+      
+    }
     ]
     POLICY
 }
