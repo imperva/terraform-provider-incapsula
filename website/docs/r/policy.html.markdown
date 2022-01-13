@@ -10,6 +10,8 @@ description: |-
 
 Provides a Incapsula Policy resource. 
 
+**Note**: We are currently rolling out the new WAF Rules policy type. It may not yet be available in your account.
+
 ## Example Usage
 
 ```hcl
@@ -45,7 +47,7 @@ The following arguments are supported:
 
 * `name` - (Required) The policy name.
 * `enabled` - (Required) Enables the policy.
-* `policy_type` - (Required) The policy type. Possible values: ACL, WHITELIST.
+* `policy_type` - (Required) The policy type. Possible values: ACL, WHITELIST, WAF_RULES.
 * `policy_settings` - (Required) The policy settings as JSON string. See Imperva documentation for help with constructing a correct value.
 * `account_id` - (Optional) Account ID of the policy.
 * `description` - (Optional) The policy description.
