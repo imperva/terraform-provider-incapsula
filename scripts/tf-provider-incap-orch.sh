@@ -157,9 +157,6 @@ variable \"incapsula_api_key\" {
 provider \"incapsula\" {
   api_id = var.incapsula_api_id
   api_key = var.incapsula_api_key
-  base_url = \"https://my.impervaservices.com/api/prov/v1\"
-  base_url_rev_2 = \"https://my.impervaservices.com/api/prov/v2\"
-  base_url_api = \"https://api.stage.impervaservices.com\"
 }" > $MAIN_TF
 
         chmod 777 $MAIN_TF
