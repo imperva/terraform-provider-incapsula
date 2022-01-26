@@ -1,12 +1,11 @@
 package incapsula
 
 import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
 	"time"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceSubAccount() *schema.Resource {
@@ -66,7 +65,7 @@ func resourceSubAccount() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 			},
-			"support_levels": {
+			"support_level": {
 				Description: "Support level",
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -77,31 +76,31 @@ func resourceSubAccount() *schema.Resource {
 
 func resourceSubAccountCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	sub_account_name := d.Get("sub_account_name").(string)
+	subAccountName := d.Get("sub_account_name").(string)
 
-	log.Printf("[INFO] Creating Incapsula subaccount: %s\n", sub_account_name)
+	log.Printf("[INFO] Creating Incapsula subaccount: %s\n", subAccountName)
 
 	log.Printf("[INFO] logs_account_id: %d\n", d.Get("logs_account_id").(int))
 	log.Printf("[INFO] log_level: %s\n", d.Get("log_level").(string))
 	log.Printf("[INFO] parent_id: %d\n", d.Get("parent_id").(int))
 
-	SubAccountAddResponse, err := client.AddSubAccount(
-		sub_account_name,
+	subAccountPayload := SubAccountPayload{subAccountName,
 		d.Get("ref_id").(string),
 		d.Get("log_level").(string),
 		d.Get("logs_account_id").(int),
-		d.Get("parent_id").(int),
-	)
+		d.Get("parent_id").(int)}
+
+	SubAccountAddResponse, err := client.AddSubAccount(&subAccountPayload)
 
 	if err != nil {
-		log.Printf("[ERROR] Could not create Incapsula subaccount %s, %s\n", sub_account_name, err)
+		log.Printf("[ERROR] Could not create Incapsula subaccount %s, %s\n", subAccountName, err)
 		return err
 	}
 
 	// Set the SubAccount ID
 	d.SetId(strconv.Itoa(SubAccountAddResponse.SubAccount.SubAccountID))
 	log.Printf("[DEBUG] Account id for new sub account : %d", SubAccountAddResponse.SubAccount.SubAccountID)
-	log.Printf("[INFO] Created Incapsula subaccount %s\n", sub_account_name)
+	log.Printf("[INFO] Created Incapsula subaccount %s\n", subAccountName)
 
 	// There may be a timing/race condition here
 	// Set an arbitrary period to sleep
@@ -111,7 +110,7 @@ func resourceSubAccountCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceSubAccountRead(d *schema.ResourceData, m interface{}) error {
-	// Implement by reading the ListDataCentersResponse for the data center
+	// Implement by reading the SubAccountListResponse for the sub account
 	client := m.(*Client)
 	subAccountID, _ := strconv.Atoi(d.Id())
 	listSubAccountsResponse, err := client.ListSubAccounts(d.Get("parent_id").(int))
@@ -127,8 +126,8 @@ func resourceSubAccountRead(d *schema.ResourceData, m interface{}) error {
 			log.Printf("[INFO] subaccount : %v\n", subAccount)
 			d.Set("sub_account_id", subAccount.SubAccountID)
 			d.Set("sub_account_name", subAccount.SubAccountName)
-			d.Set("is_for_special_ssl_configuration", subAccount.SpeicalSSL)
-			d.Set("support_levels", subAccount.SupportLevel)
+			d.Set("is_for_special_ssl_configuration", subAccount.SpecialSSL)
+			d.Set("support_level", subAccount.SupportLevel)
 			found = true
 			break
 		}

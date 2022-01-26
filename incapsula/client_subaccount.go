@@ -11,69 +11,75 @@ import (
 
 // Endpoints (unexported consts)
 const endpointSubAccountAdd = "subaccounts/add"
-const endpointSubAccountStatus = "accounts/listSubAccounts"
+const endpointSubAccountList = "accounts/listSubAccounts"
 const endpointSubAccountDelete = "subaccounts/delete"
+
+type SubAccount struct {
+	SubAccountID   int    `json:"sub_account_id"`
+	SubAccountName string `json:"sub_account_name"`
+	SpecialSSL     bool   `json:"is_for_special_ssl_configuration"`
+	SupportLevel   string `json:"support_level"`
+}
 
 // SubAccountAddResponse contains the relevant information when adding an Incapsula SubAccount
 type SubAccountAddResponse struct {
-	SubAccount struct {
-		SubAccountID   int    `json:"sub_account_id"`
-		SubAccountName string `json:"sub_account_name"`
-		SpeicalSSL     bool   `json:"is_for_special_ssl_configuration"`
-		SupportLevel   string `json:"support_level"`
-	} `json:"sub_account"`
-	Res int `json:"res"`
+	SubAccount SubAccount `json:"sub_account"`
+	Res        int        `json:"res"`
 }
 
-// DataCenterListResponse contains list of data centers and servers
+// SubAccountListResponse contains list of Incapsula SubAccount
 type SubAccountListResponse struct {
-	Res         interface{} `json:"res"`
-	SubAccounts []struct {
-		SubAccountID   int    `json:"sub_account_id"`
-		SubAccountName string `json:"sub_account_name"`
-		SpeicalSSL     bool   `json:"is_for_special_ssl_configuration"`
-		SupportLevel   string `json:"support_level"`
-		Logins         []struct {
-			LoginID       float64 `json:"login_id"`
-			Email         string  `json:"email"`
-			EmailVerified bool    `json:"email_verified"`
-		} `json:"logins"`
-	} `json:"resultList"`
+	SubAccounts []SubAccount `json:"resultList"`
+	Res         int          `json:"res"`
 }
 
-// AddSubAccount adds an subaccount to be managed by Incapsula
-func (c *Client) AddSubAccount(subAccountName, refID, logLevel string, logsAccountID int, parentID int) (*SubAccountAddResponse, error) {
-	log.Printf("[INFO] Adding Incapsula subaccount: %s\n", subAccountName)
+// SubAccountPayload contains the payload for Incapsula SubAccount creation
+type SubAccountPayload struct {
+	subAccountName string
+	refID          string
+	logLevel       string
+	logsAccountID  int
+	parentID       int
+}
+
+// AddSubAccount adds a SubAccount to be managed by Incapsula
+func (c *Client) AddSubAccount(subAccountPayload *SubAccountPayload) (*SubAccountAddResponse, error) {
+	log.Printf("[INFO] Adding Incapsula subaccount: %s\n", subAccountPayload.subAccountName)
 
 	values := url.Values{
 		"api_id":           {c.config.APIID},
 		"api_key":          {c.config.APIKey},
-		"ref_id":           {refID},
-		"sub_account_name": {subAccountName},
+		"sub_account_name": {subAccountPayload.subAccountName},
 	}
-	if parentID != 0 {
+
+	if subAccountPayload.refID != "" {
+		values["ref_id"] = make([]string, 1)
+		values["ref_id"][0] = fmt.Sprint(subAccountPayload.refID)
+	}
+
+	if subAccountPayload.parentID != 0 {
 		values["parent_id"] = make([]string, 1)
-		values["parent_id"][0] = fmt.Sprint(parentID)
+		values["parent_id"][0] = fmt.Sprint(subAccountPayload.parentID)
 	}
 
-	if logsAccountID != 0 {
+	if subAccountPayload.logsAccountID != 0 {
 		values["logs_account_id"] = make([]string, 1)
-		values["logs_account_id"][0] = fmt.Sprint(logsAccountID)
+		values["logs_account_id"][0] = fmt.Sprint(subAccountPayload.logsAccountID)
 	}
 
-	if logLevel != "" {
+	if subAccountPayload.logLevel != "" {
 		values["log_level"] = make([]string, 1)
-		values["log_level"][0] = fmt.Sprint(logLevel)
+		values["log_level"][0] = fmt.Sprint(subAccountPayload.logLevel)
 	}
 
-	log.Printf("[DEBUG] parent_id %d\n", parentID)
-	log.Printf("[DEBUG] logsAccountID %d\n", logsAccountID)
-	log.Printf("[DEBUG] logLevel %s\n", logLevel)
+	log.Printf("[DEBUG] parent_id %d\n", subAccountPayload.parentID)
+	log.Printf("[DEBUG] logsAccountID %d\n", subAccountPayload.logsAccountID)
+	log.Printf("[DEBUG] logLevel %s\n", subAccountPayload.logLevel)
 	log.Printf("[DEBUG] values %s\n", values)
 
 	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountAdd), values)
 	if err != nil {
-		return nil, fmt.Errorf("Error adding subaccount %s: %s", subAccountName, err)
+		return nil, fmt.Errorf("Error adding subaccount %s: %s", subAccountPayload.subAccountName, err)
 	}
 
 	// Read the body
@@ -87,37 +93,36 @@ func (c *Client) AddSubAccount(subAccountName, refID, logLevel string, logsAccou
 	var subAccountAddResponse SubAccountAddResponse
 	err = json.Unmarshal([]byte(responseBody), &subAccountAddResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing add subaccount JSON response for subaccount %s: %s", subAccountName, err)
+		return nil, fmt.Errorf("Error parsing add subaccount JSON response for subaccount %s: %s", subAccountPayload.subAccountName, err)
 	}
 
 	// Look at the response status code from Incapsula
 	if subAccountAddResponse.Res != 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when adding subaccount %s: %s", subAccountName, string(responseBody))
+		return nil, fmt.Errorf("Error from Incapsula service when adding subaccount %s: %s", subAccountPayload.subAccountName, string(responseBody))
 	}
 
 	return &subAccountAddResponse, nil
 }
 
-// ListSubAccounts gets the Incapsula list of sub accounts
-func (c *Client) ListSubAccounts(AccountID int) (*SubAccountListResponse, error) {
+// ListSubAccounts gets the Incapsula list of SubAccounts
+func (c *Client) ListSubAccounts(accountID int) (*SubAccountListResponse, error) {
 
-	log.Printf("[INFO] Getting Incapsula subaccounts for: %d)\n", AccountID)
+	log.Printf("[INFO] Getting Incapsula subaccounts for: %d)\n", accountID)
 
 	values := url.Values{
-		"api_id":    {c.config.APIID},
-		"api_key":   {c.config.APIKey},
-		"page_size": {strconv.Itoa(50)},
+		"api_id":  {c.config.APIID},
+		"api_key": {c.config.APIKey},
 	}
 
-	if AccountID != 0 {
+	if accountID != 0 {
 		values["account_id"] = make([]string, 1)
-		values["account_id"][0] = fmt.Sprint(AccountID)
+		values["account_id"][0] = fmt.Sprint(accountID)
 	}
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountStatus), values)
+	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountList), values)
 	if err != nil {
-		return nil, fmt.Errorf("Error getting subaccounts for account %d: %s", AccountID, err)
+		return nil, fmt.Errorf("Error getting subaccounts for account %d: %s", accountID, err)
 	}
 
 	// Read the body
@@ -131,7 +136,7 @@ func (c *Client) ListSubAccounts(AccountID int) (*SubAccountListResponse, error)
 	var subAccountListResponse SubAccountListResponse
 	err = json.Unmarshal([]byte(responseBody), &subAccountListResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing subaccounts list JSON response for accountid: %d %s\nresponse: %s", AccountID, err, string(responseBody))
+		return nil, fmt.Errorf("Error parsing subaccounts list JSON response for accountid: %d %s\nresponse: %s", accountID, err, string(responseBody))
 	}
 
 	log.Printf("[INFO] Array before loop : %v)\n", subAccountListResponse.SubAccounts)
@@ -145,9 +150,9 @@ func (c *Client) ListSubAccounts(AccountID int) (*SubAccountListResponse, error)
 		values["page_num"][0] = fmt.Sprint(count)
 		log.Printf("[INFO] values : %s)\n", values)
 
-		resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountStatus), values)
+		resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountList), values)
 		if err != nil {
-			return nil, fmt.Errorf("Error getting subaccounts for account %d: %s, page num: %d", AccountID, err, count)
+			return nil, fmt.Errorf("Error getting subaccounts for account %d: %s, page num: %d", accountID, err, count)
 		}
 
 		// Read the body
@@ -160,7 +165,12 @@ func (c *Client) ListSubAccounts(AccountID int) (*SubAccountListResponse, error)
 		tempSubAccountListResponse = SubAccountListResponse{}
 		err = json.Unmarshal([]byte(responseBody), &tempSubAccountListResponse)
 		if err != nil {
-			return nil, fmt.Errorf("Error parsing subaccounts list JSON response for accountid: %d %s\nresponse: %s", AccountID, err, string(responseBody))
+			return nil, fmt.Errorf("Error parsing subaccounts list JSON response for accountid: %d %s\nresponse: %s", accountID, err, string(responseBody))
+		}
+
+		// Look at the response status code from Incapsula
+		if tempSubAccountListResponse.Res != 0 {
+			return &tempSubAccountListResponse, fmt.Errorf("Error from Incapsula service when getting sub accounts list %d): %s", accountID, string(responseBody))
 		}
 
 		// add sub-accounts to reponse
@@ -173,25 +183,15 @@ func (c *Client) ListSubAccounts(AccountID int) (*SubAccountListResponse, error)
 		count += 1
 	}
 
-	// Res can sometimes oscillate between a string and number
-	// We need to add safeguards for this inside the provider
-	var resString string
-
-	if resNumber, ok := subAccountListResponse.Res.(float64); ok {
-		resString = fmt.Sprintf("%d", int(resNumber))
-	} else {
-		resString = subAccountListResponse.Res.(string)
-	}
-
 	// Look at the response status code from Incapsula
-	if resString != "0" {
-		return &subAccountListResponse, fmt.Errorf("Error from Incapsula service when getting sub accounts list %d): %s", AccountID, string(responseBody))
+	if subAccountListResponse.Res != 0 {
+		return &subAccountListResponse, fmt.Errorf("Error from Incapsula service when getting sub accounts list %d): %s", accountID, string(responseBody))
 	}
 
 	return &subAccountListResponse, nil
 }
 
-// DeleteAccount deletes a account currently managed by Incapsula
+// DeleteSubAccount deletes a SubAcccount currently managed by Incapsula
 func (c *Client) DeleteSubAccount(subAccountID int) error {
 	// Specifically shaded this struct, no need to share across funcs or export
 	// We only care about the response code and possibly the message

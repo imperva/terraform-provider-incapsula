@@ -195,7 +195,7 @@ func resourceAccountRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("ref_id", accountStatusResponse.Account.RefID)
 	d.Set("user_name", accountStatusResponse.Account.UserName)
 	d.Set("account_name", accountStatusResponse.Account.AccountName)
-	d.Set("support_levels", accountStatusResponse.Account.SupportLevel)
+	d.Set("support_level", accountStatusResponse.Account.SupportLevel)
 	d.Set("support_all_tls_versions", accountStatusResponse.Account.SupportAllTLSVersions)
 	d.Set("wildcard_san_for_new_sites", accountStatusResponse.Account.WildcardSANForNewSites)
 	d.Set("naked_domain_san_for_new_www_sites", accountStatusResponse.Account.NakedDomainSANForNewWWWSites)

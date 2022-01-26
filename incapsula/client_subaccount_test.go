@@ -16,7 +16,7 @@ import (
 func TestClientAddSubAccountBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	subAccountAddResponse, err := client.AddSubAccount("", "", "", 0, 0)
+	subAccountAddResponse, err := client.AddSubAccount(&SubAccountPayload{"", "", "", 0, 0})
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -39,8 +39,7 @@ func TestClientAddSubAccountBadJSON(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	subaccountName := "testsubaccount"
-	subAccountAddResponse, err := client.AddSubAccount(subaccountName, "", "", 0, 0)
+	subAccountAddResponse, err := client.AddSubAccount(&SubAccountPayload{"testsubaccount", "", "", 0, 0})
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -63,7 +62,7 @@ func TestClientAddSubAccountInvalidParent(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	subAccountAddResponse, err := client.AddSubAccount("", "", "", 0, 0)
+	subAccountAddResponse, err := client.AddSubAccount(&SubAccountPayload{"", "", "", 0, 0})
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}

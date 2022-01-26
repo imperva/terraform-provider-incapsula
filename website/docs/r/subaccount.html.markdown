@@ -6,7 +6,7 @@ description: |-
   Provides a Incapsula SubAccount resource.
 ---
 
-# incapsula_site
+# incapsula_subaccount
 
 Provides a Incapsula SubAccount resource. 
 
@@ -35,5 +35,14 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - Unique identifier in the API for the SubAccount.
+* `sub_account_id` - SubAccount ID
 * `is_for_special_ssl_configuration` - Is using special SSL configuration.
 * `support_level` - The CNAME record name.
+
+## Import
+
+SubAccount can be imported using the `id`, e.g.:
+
+```
+$ terraform import incapsula_subaccount.demo 1234
+```
