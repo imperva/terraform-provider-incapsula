@@ -65,3 +65,23 @@ In order to run the full suite of Acceptance tests, run `make testacc`.
 ```sh
 $ make testacc
 ```
+
+An automation script is provided for Mac darwin 64amd based developers that 
+encapsulates initial setups along make described commands.
+
+Brew is a pre-requisite for this script, as the main package manager to install 
+the dependent libraries such as Golang, Terraform and Git.
+More details about this script is provided as inner code comments and description.
+
+Script location **/scripts/tf-provider-incap-orch.sh**.
+
+Script installation command will clone this repository to /workspace folder
+as a first step and pull from git in subsequent runs.
+
+It's recommended to download the script to some directory in local machine and start
+with installation command execution
+
+```sh
+./tf-provider-incap-orch.sh -i "youApiID" "youApiKey"
+```
+

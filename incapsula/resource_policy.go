@@ -32,7 +32,7 @@ func resourcePolicy() *schema.Resource {
 				Required:    true,
 			},
 			"policy_type": {
-				Description: "The policy type. Possible values: ACL, WHITELIST.",
+				Description: "The policy type. Possible values: ACL, WHITELIST, WAF_RULES",
 				Type:        schema.TypeString,
 				Required:    true,
 			},

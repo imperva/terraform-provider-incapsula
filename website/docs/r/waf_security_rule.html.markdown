@@ -10,6 +10,9 @@ description: |-
 
 Provides a Incapsula WAF Security Rule resource. 
 
+**Note**: We are currently rolling out the new WAF Rules policy feature. After it is enabled for your account, the related settings are no longer available on this page. For more details, see
+ [Create and Manage Policies](https://docs.imperva.com/bundle/cloud-application-security/page/policies.htm).
+
 ## Example Usage
 
 ```hcl

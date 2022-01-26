@@ -10,6 +10,9 @@ description: |-
 
 Provides a Incapsula Security Rule Exception resource.  Important to note that based on the rule_id the exception is being created for, that there are rule specific parameters that apply to each.  The example resources listed below include all of the supported resources for each rule_id or rule type, although it is not required to use all listed parameters when creating an exception. Exception parameters are optional but at least one is required.
 
+**Note**: We are currently rolling out the new WAF Rules policy feature. After it is enabled for your account, the related settings are no longer available on this page. For more details, see
+ [Create and Manage Policies](https://docs.imperva.com/bundle/cloud-application-security/page/policies.htm).
+
 ## Example Usage
 
 ```hcl
