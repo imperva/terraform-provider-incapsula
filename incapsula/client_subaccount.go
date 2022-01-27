@@ -47,8 +47,6 @@ func (c *Client) AddSubAccount(subAccountPayload *SubAccountPayload) (*SubAccoun
 	log.Printf("[INFO] Adding Incapsula subaccount: %s\n", subAccountPayload.subAccountName)
 
 	values := url.Values{
-		"api_id":           {c.config.APIID},
-		"api_key":          {c.config.APIKey},
 		"sub_account_name": {subAccountPayload.subAccountName},
 	}
 
@@ -77,7 +75,7 @@ func (c *Client) AddSubAccount(subAccountPayload *SubAccountPayload) (*SubAccoun
 	log.Printf("[DEBUG] logLevel %s\n", subAccountPayload.logLevel)
 	log.Printf("[DEBUG] values %s\n", values)
 
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountAdd), values)
+	resp, err := c.PostFormWithHeaders(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountAdd), values)
 	if err != nil {
 		return nil, fmt.Errorf("Error adding subaccount %s: %s", subAccountPayload.subAccountName, err)
 	}
@@ -109,10 +107,7 @@ func (c *Client) ListSubAccounts(accountID int) (*SubAccountListResponse, error)
 
 	log.Printf("[INFO] Getting Incapsula subaccounts for: %d)\n", accountID)
 
-	values := url.Values{
-		"api_id":  {c.config.APIID},
-		"api_key": {c.config.APIKey},
-	}
+	values := map[string][]string{}
 
 	if accountID != 0 {
 		values["account_id"] = make([]string, 1)
@@ -120,7 +115,7 @@ func (c *Client) ListSubAccounts(accountID int) (*SubAccountListResponse, error)
 	}
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountList), values)
+	resp, err := c.PostFormWithHeaders(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountList), values)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting subaccounts for account %d: %s", accountID, err)
 	}
@@ -150,7 +145,7 @@ func (c *Client) ListSubAccounts(accountID int) (*SubAccountListResponse, error)
 		values["page_num"][0] = fmt.Sprint(count)
 		log.Printf("[INFO] values : %s)\n", values)
 
-		resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountList), values)
+		resp, err := c.PostFormWithHeaders(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountList), values)
 		if err != nil {
 			return nil, fmt.Errorf("Error getting subaccounts for account %d: %s, page num: %d", accountID, err, count)
 		}
@@ -203,9 +198,7 @@ func (c *Client) DeleteSubAccount(subAccountID int) error {
 	log.Printf("[INFO] Deleting Incapsula subaccount id: %d\n", subAccountID)
 
 	// Post form to Incapsula
-	resp, err := c.httpClient.PostForm(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountDelete), url.Values{
-		"api_id":         {c.config.APIID},
-		"api_key":        {c.config.APIKey},
+	resp, err := c.PostFormWithHeaders(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountDelete), url.Values{
 		"sub_account_id": {strconv.Itoa(subAccountID)},
 	})
 	if err != nil {
