@@ -14,6 +14,8 @@ VERSION=3.2.1
 default: install
 
 build: fmtcheck
+	export GO111MODULE="on"
+	go mod vendor
 	go build -o ${BINARY}
 
 build-github: fmtcheck
