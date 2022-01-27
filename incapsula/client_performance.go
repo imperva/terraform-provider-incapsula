@@ -6,7 +6,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 )
+
+const FORCE_RISKY_OP_HEADER_NAME = "force-risky-operation"
 
 // PerformanceSettings is a struct that encompasses all the properties for performance settings
 type PerformanceSettings struct {
@@ -93,8 +96,15 @@ func (c *Client) UpdatePerformanceSettings(siteID string, performanceSettings *P
 
 	// Post request to Incapsula
 	log.Printf("[DEBUG] Incapsula Update Incap Performance Settings JSON request: %s\n", string(performanceSettingsJSON))
+
+	var headers = map[string]string{}
+	if performanceSettings.Mode.HTTPS == "include_all_resources" && performanceSettings.Mode.Level == "all_resources" {
+		log.Printf("[DEBUG] Incapsula Update Incap Performance Settings  - adding header: %s\n", FORCE_RISKY_OP_HEADER_NAME)
+		headers[FORCE_RISKY_OP_HEADER_NAME] = strconv.FormatBool(true)
+	}
+
 	reqURL := fmt.Sprintf("%s/sites/%s/settings/cache", c.config.BaseURLRev2, siteID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, performanceSettingsJSON)
+	resp, err := c.DoJsonRequestWithCustomHeaders(http.MethodPut, reqURL, performanceSettingsJSON, headers)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when updating Incap Performance Settings for Site ID %s: %s", siteID, err)
 	}
