@@ -25,7 +25,7 @@ type Client struct {
 func NewClient(config *Config) *Client {
 	client := &http.Client{}
 
-	return &Client{config: config, httpClient: client, providerVersion: "3.2.1"}
+	return &Client{config: config, httpClient: client, providerVersion: "3.2.2"}
 }
 
 // Verify checks the API credentials
@@ -76,18 +76,23 @@ func (c *Client) PostFormWithHeaders(url string, data url.Values) (*http.Respons
 		return nil, fmt.Errorf("Error preparing request: %s", err)
 	}
 
-	SetHeaders(c, req, contentTypeApplicationUrlEncoded)
+	SetHeaders(c, req, contentTypeApplicationUrlEncoded, nil)
 	return c.httpClient.Do(req)
 }
 
-func (c *Client) DoJsonRequestWithHeaders(method string, url string, data []byte) (*http.Response, error) {
+func (c *Client) DoJsonRequestWithCustomHeaders(method string, url string, data []byte, headers map[string]string) (*http.Response, error) {
 	req, err := PrepareJsonRequest(method, url, data)
 	if err != nil {
 		return nil, fmt.Errorf("Error preparing request: %s", err)
 	}
 
-	SetHeaders(c, req, contentTypeApplicationJson)
+	SetHeaders(c, req, contentTypeApplicationJson, headers)
+
 	return c.httpClient.Do(req)
+}
+
+func (c *Client) DoJsonRequestWithHeaders(method string, url string, data []byte) (*http.Response, error) {
+	return c.DoJsonRequestWithCustomHeaders(method, url, data, nil)
 }
 
 func (c *Client) DoJsonRequestWithHeadersForm(method string, url string, data []byte, contentType string) (*http.Response, error) {
@@ -96,7 +101,7 @@ func (c *Client) DoJsonRequestWithHeadersForm(method string, url string, data []
 		return nil, fmt.Errorf("Error preparing request: %s", err)
 	}
 
-	SetHeaders(c, req, contentType)
+	SetHeaders(c, req, contentType, nil)
 	return c.httpClient.Do(req)
 }
 
@@ -108,9 +113,16 @@ func PrepareJsonRequest(method string, url string, data []byte) (*http.Request, 
 	return http.NewRequest(method, url, bytes.NewReader(data))
 }
 
-func SetHeaders(c *Client, req *http.Request, contentType string) {
+func SetHeaders(c *Client, req *http.Request, contentType string, customHeaders map[string]string) {
 	req.Header.Set("Content-Type", contentType)
 	req.Header.Set("x-api-id", c.config.APIID)
 	req.Header.Set("x-api-key", c.config.APIKey)
 	req.Header.Set("x-tf-provider-ver", c.providerVersion)
+
+	if customHeaders != nil {
+		for name, value := range customHeaders {
+			req.Header.Set(name, value)
+		}
+	}
+
 }
