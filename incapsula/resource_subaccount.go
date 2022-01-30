@@ -48,7 +48,6 @@ func resourceSubAccount() *schema.Resource {
 			"log_level": {
 				Description:  "The log level. Options are `full`, `security`, and `none`.",
 				Type:         schema.TypeString,
-				Default:      "none",
 				Optional:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice([]string{"full", "security", "none"}, false),
