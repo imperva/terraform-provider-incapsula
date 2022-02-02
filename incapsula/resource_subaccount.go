@@ -59,11 +59,6 @@ func resourceSubAccount() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 			},
-			"is_for_special_ssl_configuration": {
-				Description: "Is using SSL configuration",
-				Type:        schema.TypeBool,
-				Computed:    true,
-			},
 			"support_level": {
 				Description: "Support level",
 				Type:        schema.TypeString,
@@ -78,10 +73,10 @@ func resourceSubAccountCreate(d *schema.ResourceData, m interface{}) error {
 	subAccountName := d.Get("sub_account_name").(string)
 
 	log.Printf("[INFO] Creating Incapsula subaccount: %s\n", subAccountName)
-
 	log.Printf("[INFO] logs_account_id: %d\n", d.Get("logs_account_id").(int))
 	log.Printf("[INFO] log_level: %s\n", d.Get("log_level").(string))
 	log.Printf("[INFO] parent_id: %d\n", d.Get("parent_id").(int))
+	log.Printf("[INFO] ref_id: %s\n", d.Get("ref_id").(string))
 
 	subAccountPayload := SubAccountPayload{subAccountName,
 		d.Get("ref_id").(string),
@@ -125,8 +120,11 @@ func resourceSubAccountRead(d *schema.ResourceData, m interface{}) error {
 			log.Printf("[INFO] subaccount : %v\n", subAccount)
 			d.Set("sub_account_id", subAccount.SubAccountID)
 			d.Set("sub_account_name", subAccount.SubAccountName)
-			d.Set("is_for_special_ssl_configuration", subAccount.SpecialSSL)
 			d.Set("support_level", subAccount.SupportLevel)
+			d.Set("ref_id", subAccount.RefID)
+			d.Set("log_level", subAccount.LogLevel)
+			d.Set("parent_id", subAccount.ParentID)
+			d.Set("logs_account_id", subAccount.LogsAccountID)
 			found = true
 			break
 		}
