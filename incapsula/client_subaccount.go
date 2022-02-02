@@ -17,11 +17,11 @@ const endpointSubAccountDelete = "subaccounts/delete"
 type SubAccount struct {
 	SubAccountID   int    `json:"sub_account_id"`
 	SubAccountName string `json:"sub_account_name"`
-	RefID          string `json:"ref_id"`
-	LogLevel       string `json:"log_level"`
+	RefID          string `json:"ref_id,omitempty"`
+	LogLevel       string `json:"log_level,omitempty"`
 	SupportLevel   string `json:"support_level"`
 	ParentID       int    `json:"parent_id"`
-	LogsAccountID  int    `json:"logs_account_id"`
+	LogsAccountID  int    `json:"logs_account_id,omitempty"`
 }
 
 // SubAccountAddResponse contains the relevant information when adding an Incapsula SubAccount
