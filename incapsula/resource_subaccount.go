@@ -52,18 +52,6 @@ func resourceSubAccount() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice([]string{"full", "security", "none", "default"}, false),
 			},
-
-			// Computed Attributes
-			"sub_account_id": {
-				Description: "SubAccount ID",
-				Type:        schema.TypeInt,
-				Computed:    true,
-			},
-			"support_level": {
-				Description: "Support level",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
 		},
 	}
 }
@@ -118,9 +106,7 @@ func resourceSubAccountRead(d *schema.ResourceData, m interface{}) error {
 	for _, subAccount := range listSubAccountsResponse.SubAccounts {
 		if subAccount.SubAccountID == subAccountID {
 			log.Printf("[INFO] subaccount : %v\n", subAccount)
-			d.Set("sub_account_id", subAccount.SubAccountID)
 			d.Set("sub_account_name", subAccount.SubAccountName)
-			d.Set("support_level", subAccount.SupportLevel)
 			d.Set("ref_id", subAccount.RefID)
 			d.Set("log_level", subAccount.LogLevel)
 			d.Set("parent_id", subAccount.ParentID)

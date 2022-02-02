@@ -30,16 +30,6 @@ The following arguments are supported:
 * `logs_account_id` - (Optional) Account where logs should be stored. Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `log_level` - (Optional) The log level. Options are `full`, `security`, `none`, `default`.
 
-## Attributes Reference
-
-The following attributes are exported:
-
-* `id` - Unique identifier in the API for the SubAccount.
-* `sub_account_id` - SubAccount ID
-* `support_level` - The CNAME record name.
-
-## Import
-
 SubAccount can be imported using the `id`, e.g.:
 
 ```

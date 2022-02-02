@@ -111,8 +111,8 @@ func testCheckIncapsulaSubAccountExists() resource.TestCheckFunc {
 			return fmt.Errorf("Incapsula API SubAccount API ID does not exist for API SubAccount")
 		}
 
-		subAccountIDStr := res.Primary.Attributes["sub_account_id"]
-		subAccountID, _ := strconv.Atoi(subAccountIDStr)
+		subAccountIDStr := apiID
+		subAccountID, _ := strconv.Atoi(apiID)
 		if !ok || subAccountIDStr == "" {
 			return fmt.Errorf("Incapsula API SubAccount does not exists")
 		}
