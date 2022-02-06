@@ -9,6 +9,9 @@ description: |-
 # incapsula_subaccount
 
 Provides a Incapsula SubAccount resource. 
+Please note any change on this resource will force create a new SubAccount instance, 
+while non-supported terraform dependent resources won't auto create 
+(Users for example) 
 
 ## Example Usage
 
