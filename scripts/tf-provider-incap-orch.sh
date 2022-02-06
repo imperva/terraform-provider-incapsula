@@ -32,7 +32,6 @@
 USER=`whoami`
 ROOT=/Users/$USER
 GOPATH=$ROOT/workspace/go
-PROVIDER_PLUGIN=$GOPATH/plugins/registry.terraform.io/terraform-providers/incapsula
 PROVIDER_GIT=https://github.com/imperva/terraform-provider-incapsula.git
 PROVIDER_GIT_LOCAL=$GOPATH/src/github.com/terraform-providers/terraform-provider-incapsula
 TERRAFORM=$ROOT/workspace/terraform
@@ -116,7 +115,7 @@ install(){
     
     echo "provider_installation {
   filesystem_mirror {
-    path    = \"/Users/$USER/workspace/go/plugins\"
+    path    = \"/Users/$USER/.terraform.d/plugins\"
     include = [\"registry.terraform.io/terraform-providers/incapsula\"]
   }
 }" > ~/.terraformrc
@@ -124,14 +123,9 @@ install(){
     PROVIDER_VERSION=`git --git-dir=$PROVIDER_GIT_LOCAL/.git tag | tail -1 | cut -c2-`
     log_info "${FUNCNAME[0]}" "Git provider version $PROVIDER_VERSION"
 
-    mkdir -p $PROVIDER_PLUGIN/$PROVIDER_VERSION/darwin_amd64/
-    log_info "${FUNCNAME[0]}" "Provider binary path $PROVIDER_PLUGIN/$PROVIDER_VERSION/darwin_amd64/"
-
     log_info "${FUNCNAME[0]}" "Building local provider..."
-    make -C $PROVIDER_GIT_LOCAL fmt && make -C $PROVIDER_GIT_LOCAL build    
-    rm -rf $PROVIDER_PLUGIN/$PROVIDER_VERSION/darwin_amd64/ ||:
-    cp -r $PROVIDER_GIT_LOCAL/ $PROVIDER_PLUGIN/$PROVIDER_VERSION/darwin_amd64/
-
+    make -C $PROVIDER_GIT_LOCAL fmt && make -C $PROVIDER_GIT_LOCAL install    
+   
     if [ ! -f "$MAIN_TF" ]; 
     then 
         log_info "${FUNCNAME[0]}" "Created file $MAIN_TF"
@@ -173,13 +167,10 @@ incapsula_api_id = $INCAPSULA_API_ID" > $VARS_TF
 
 build(){
     log_entry ${FUNCNAME[0]}
-    make -C $PROVIDER_GIT_LOCAL fmt && make -C $PROVIDER_GIT_LOCAL build
+    make -C $PROVIDER_GIT_LOCAL fmt && make -C $PROVIDER_GIT_LOCAL install
 
     PROVIDER_VERSION=`grep "VERSION=" $PROVIDER_GIT_LOCAL/GNUmakefile | cut -d "=" -f2`
     log_info "${FUNCNAME[0]}" "Local provider version $PROVIDER_VERSION"
-    rm -rf $PROVIDER_PLUGIN/$PROVIDER_VERSION/darwin_amd64/ ||:
-    cp -r $PROVIDER_GIT_LOCAL/ $PROVIDER_PLUGIN/$PROVIDER_VERSION/darwin_amd64/ 
-    log_info "${FUNCNAME[0]}" "Provider binary path $PROVIDER_PLUGIN/$PROVIDER_VERSION/darwin_amd64/"
 
     sed -i '' "s/version = .*/version = \"${PROVIDER_VERSION}\"/" $MAIN_TF
 }
@@ -196,7 +187,6 @@ acceptance(){
 
 clean(){
     log_entry ${FUNCNAME[0]}
-    rm -rf $PROVIDER_PLUGIN/ ||:
     rm -rf $TERRAFORM/ ||:
     make -C $PROVIDER_GIT_LOCAL clean
 }

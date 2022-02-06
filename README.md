@@ -67,7 +67,8 @@ $ make testacc
 ```
 
 An automation script is provided for Mac darwin 64amd based developers that 
-encapsulates initial setups along make described commands.
+encapsulates initial setups along make described commands. 
+Please note that OS_ARCH=darwin_amd64 is uncommented in GNUmakefile for default Mac users, if needed for Linux users comment back and uncomment OS_ARCH=linux_amd64
 
 Brew is a pre-requisite for this script, as the main package manager to install 
 the dependent libraries such as Golang, Terraform and Git.

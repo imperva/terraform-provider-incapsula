@@ -8,7 +8,7 @@ BINARY=terraform-provider-${PKG_NAME}
 # Whenever bumping provider version, please update the version in incapsula/client.go (line 27) as well.
 VERSION=3.2.2
 
-# OS_ARCH=darwin_amd64
+OS_ARCH=darwin_amd64
 # OS_ARCH=linux_amd64
 
 default: install
