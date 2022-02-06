@@ -124,7 +124,7 @@ install(){
     log_info "${FUNCNAME[0]}" "Git provider version $PROVIDER_VERSION"
 
     log_info "${FUNCNAME[0]}" "Building local provider..."
-    make -C $PROVIDER_GIT_LOCAL fmt && make -C $PROVIDER_GIT_LOCAL build    
+    make -C $PROVIDER_GIT_LOCAL fmt && make -C $PROVIDER_GIT_LOCAL install    
    
     if [ ! -f "$MAIN_TF" ]; 
     then 
