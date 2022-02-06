@@ -1,7 +1,10 @@
+## 3.3.0 (Released)
+
+* SubAccount resource addition (incapsula_subaccount)
+
 ## 3.2.2 (Released)
 
 * Support 'force-risky-operation' header for cache settings
-
 
 ## 3.2.1 (Released)
 
