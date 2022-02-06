@@ -14,6 +14,8 @@ OS_ARCH=darwin_amd64
 default: install
 
 build: fmtcheck
+	export GO111MODULE="on"
+	go mod vendor
 	go build -o ${BINARY}
 
 build-github: fmtcheck
