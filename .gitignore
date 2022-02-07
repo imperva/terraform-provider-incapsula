@@ -6,7 +6,5 @@ examples/*.tfstate*
 examples/ignore
 incapsula/c.out
 terraform-provider-incapsula
-vendor/*
-go.sum
 .idea/
 .tmp/
