@@ -21,7 +21,7 @@ func resourceTXTRecord() *schema.Resource {
 			// Required Argument
 			"site_id": {
 				Description: "Numeric identifier of the site.",
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 			},
@@ -59,7 +59,12 @@ func resourceTXTRecordCreate(d *schema.ResourceData, m interface{}) error {
 	// Implement by create the TXT Records
 
 	client := m.(*Client)
-	siteID := d.Get("site_id").(int)
+	siteIDStr := d.Get("site_id").(string)
+	siteID, errConv := strconv.Atoi(siteIDStr)
+	if errConv != nil {
+		log.Printf("[ERROR] The site_id should be numeric. Currrent value: %s", siteIDStr)
+		return errConv
+	}
 	TXTRecordOne := d.Get("txt_record_value_one").(string)
 	TXTRecordTwo := d.Get("txt_record_value_two").(string)
 	TXTRecordThree := d.Get("txt_record_value_three").(string)
@@ -119,7 +124,7 @@ func resourceTXTRecordRead(d *schema.ResourceData, m interface{}) error {
 
 	id, _ := strconv.Atoi(d.Id())
 	recordResponse, err := client.ReadTXTRecords(id)
-
+	d.Set("site_id", d.Id())
 	// Gte TXT response object
 	if recordResponse != nil {
 		// Res can oscillate between strings and ints
