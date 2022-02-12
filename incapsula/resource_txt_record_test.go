@@ -50,10 +50,7 @@ func testACCStateTXTRecordDestroy(s *terraform.State) error {
 		if rs.Type != txtRecordResource {
 			continue
 		}
-		//return nil
 		siteID := rs.Primary.ID
-
-		//siteID := rs.Primary.Attributes["site_id"]
 		if siteID == "" {
 			fmt.Errorf("Parameter site_id was not found in resource %s", txtRecordResourceName)
 		}
@@ -61,7 +58,6 @@ func testACCStateTXTRecordDestroy(s *terraform.State) error {
 		if err != nil {
 			fmt.Errorf("failed to convert Site Id from import command, actual value : %s, expected numeric id", siteID)
 		}
-
 		recordResponse, err := client.ReadTXTRecords(siteIDInt)
 		if err == nil || strings.Contains(recordResponse.ResMessage, "no TXT records") {
 			return fmt.Errorf("Resource %s for Incapsula TXT Record : site ID %d still exists", txtRecordResourceName, siteIDInt)
@@ -86,10 +82,10 @@ func testACCStateTxtRecordID(s *terraform.State) (string, error) {
 
 func testCheckTxtRecordExists(name string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		res, _ := state.RootModule().Resources[name]
-		//if !ok {
-		//	return fmt.Errorf("Incapsula TXT Record resource not found: %s", name)
-		//}
+		res, ok := state.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("Incapsula TXT Record resource not found: %s", name)
+		}
 		siteId, err := strconv.Atoi(res.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("Error parsing ID %v to int", res.Primary.ID)
