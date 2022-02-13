@@ -59,7 +59,7 @@ func testACCStateTXTRecordDestroy(s *terraform.State) error {
 			fmt.Errorf("failed to convert Site Id from import command, actual value : %s, expected numeric id", siteID)
 		}
 		recordResponse, err := client.ReadTXTRecords(siteIDInt)
-		if err == nil || strings.Contains(recordResponse.ResMessage, "no TXT records") {
+		if err == nil || !strings.Contains(recordResponse.ResMessage, "no TXT records") {
 			return fmt.Errorf("Resource %s for Incapsula TXT Record : site ID %d still exists", txtRecordResourceName, siteIDInt)
 		}
 	}

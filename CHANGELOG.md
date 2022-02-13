@@ -1,3 +1,11 @@
+## 3.4.0 (Released)
+
+* Edit business logic, add acceptance test for incapsula_txt_record resource
+
+## 3.3.1 (Released)
+
+* No Changes were detected
+
 ## 3.3.0 (Released)
 
 * SubAccount resource addition (incapsula_subaccount)
