@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 // TXTResponse contains the relevant information when creating/updating/deleting a TXT record
@@ -62,6 +63,11 @@ func (c *Client) ReadTXTRecords(siteID int) (*TXTRecordResponse, error) {
 
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing Incap TXT record(s) JSON response for siteID: %d\n%s\nresponse: %s", siteID, err, string(responseBody))
+	}
+
+	response := []byte(responseBody)
+	if strings.Contains(string(response), "no TXT records") {
+		return nil, fmt.Errorf("[ERROR] The Text Records for Site ID %d does not exist", siteID)
 	}
 
 	return &txtRecords, nil
@@ -156,13 +162,13 @@ func (c *Client) UpdateTXTRecord(siteID int, txtRecordValueOne string, txtRecord
 
 // DeleteTXTRecord deletes TXT record(s) on the siteID.
 func (c *Client) DeleteTXTRecord(siteID int, recordNumber string) error {
-	log.Printf("[INFO] Delete Incapsula TXT record number %d for siteID %s\n ", siteID, recordNumber)
+	log.Printf("[INFO] Delete Incapsula TXT record number %s for siteID %d\n ", recordNumber, siteID)
 
-	// Post request to Incapsula
 	reqURL := fmt.Sprintf("%s/sites/%d/settings/general/additionalTxtRecords?record_number=%s", c.config.BaseURLRev2, siteID, recordNumber)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil)
 	if err != nil {
-		return fmt.Errorf("Error deleting TXT record(s) for siteID %d: %s", siteID, err)
+		log.Printf("[DEBUG] Error deleting TXT record for siteID %d: %s", siteID, err)
+		return fmt.Errorf("Error deleting TXT record for siteID %d", siteID)
 	}
 
 	// Read the body
@@ -172,9 +178,36 @@ func (c *Client) DeleteTXTRecord(siteID int, recordNumber string) error {
 	// Dump JSON
 	log.Printf("[DEBUG] Incapsula DeleteTXTRecord JSON response: %s\n", string(responseBody))
 
+	response := []byte(responseBody)
 	// Check the response code
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("Error status code %d from Incapsula service when deleting TXT record(s) for siteID %d: %s", resp.StatusCode, siteID, string(responseBody))
+	// The response code of successful request is 400
+	if resp.StatusCode != 400 && !strings.Contains(string(response), "OK") {
+		return fmt.Errorf("Error status code %d from Incapsula service when deleting TXT record for siteID %d: %s", resp.StatusCode, siteID, string(responseBody))
+	}
+
+	return nil
+}
+
+func (c *Client) DeleteTXTRecordAll(siteID int) error {
+	log.Printf("[INFO] Delete Incapsula All TXT records for siteID %s\n ", siteID)
+	reqURL := fmt.Sprintf("%s/sites/%d/settings/general/additionalTxtRecords/delete-all", c.config.BaseURLRev2, siteID)
+	
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil)
+	if err != nil {
+		return fmt.Errorf("Error deleting TXT records for siteID %d: %v", siteID, err)
+	}
+	// Read the body
+	defer resp.Body.Close()
+	responseBody, err := ioutil.ReadAll(resp.Body)
+
+	// Dump JSON
+	log.Printf("[DEBUG] Incapsula DeleteTXTRecords JSON response: %s\n", string(responseBody))
+
+	response := []byte(responseBody)
+	// Check the response code
+	if resp.StatusCode != 400 && !strings.Contains(string(response), "OK") {
+		return fmt.Errorf("Error status code %d from Incapsula service when deleting all "+
+			"TXT records for siteID %d: %s", resp.StatusCode, siteID, string(responseBody))
 	}
 
 	return nil
