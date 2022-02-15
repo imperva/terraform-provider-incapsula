@@ -1,4 +1,4 @@
-## 3.4.0 (Released)
+## 3.3.2 (Not Released)
 
 * Edit business logic, add acceptance test for incapsula_txt_record resource
 
