@@ -59,19 +59,16 @@ func testAccIncapsulaSubAccountDestroy(state *terraform.State) error {
 		subAccountIDStr := res.Primary.ID
 		subAccountID, _ := strconv.Atoi(subAccountIDStr)
 
-		listSubAccountsResponse, err := client.ListSubAccounts(0)
+		subAccount, err := client.GetSubAccount(0, subAccountID)
 		if err != nil {
 			return err
 		}
 
 		found := false
 
-		for _, subAccount := range listSubAccountsResponse.SubAccounts {
-			if subAccount.SubAccountID == subAccountID {
-				log.Printf("[INFO] subaccount : %v\n", subAccount)
-				found = true
-				break
-			}
+		if subAccount != nil && subAccount.SubAccountID == subAccountID {
+			log.Printf("[INFO] subaccount : %v\n", subAccount)
+			found = true
 		}
 
 		if found {
@@ -118,20 +115,17 @@ func testCheckIncapsulaSubAccountExists() resource.TestCheckFunc {
 		}
 
 		client := testAccProvider.Meta().(*Client)
-
-		listSubAccountsResponse, err := client.ListSubAccounts(0)
+		log.Printf("[INFO] **** subAccountID: %d", subAccountID)
+		subAccount, err := client.GetSubAccount(0, subAccountID)
 		if err != nil {
 			return err
 		}
 
 		found := false
 
-		for _, subAccount := range listSubAccountsResponse.SubAccounts {
-			if subAccount.SubAccountID == subAccountID {
-				log.Printf("[INFO] subaccount : %v\n", subAccount)
-				found = true
-				break
-			}
+		if subAccount != nil && subAccount.SubAccountID == subAccountID {
+			log.Printf("[INFO] subaccount : %v\n", subAccount)
+			found = true
 		}
 
 		if !found {
