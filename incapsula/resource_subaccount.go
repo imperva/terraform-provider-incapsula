@@ -5,7 +5,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
-	"time"
 )
 
 func resourceSubAccount() *schema.Resource {
@@ -69,8 +68,8 @@ func resourceSubAccountCreate(d *schema.ResourceData, m interface{}) error {
 	subAccountPayload := SubAccountPayload{subAccountName,
 		d.Get("ref_id").(string),
 		d.Get("log_level").(string),
-		d.Get("logs_account_id").(int),
-		d.Get("parent_id").(int)}
+		d.Get("parent_id").(int),
+		d.Get("logs_account_id").(int)}
 
 	SubAccountAddResponse, err := client.AddSubAccount(&subAccountPayload)
 
@@ -84,48 +83,33 @@ func resourceSubAccountCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[DEBUG] Account id for new sub account : %d", SubAccountAddResponse.SubAccount.SubAccountID)
 	log.Printf("[INFO] Created Incapsula subaccount %s\n", subAccountName)
 
-	// There may be a timing/race condition here
-	// Set an arbitrary period to sleep
-	time.Sleep(3 * time.Second)
-
-	return resourceSubAccountRead(d, m)
+	return nil
 }
 
 func resourceSubAccountRead(d *schema.ResourceData, m interface{}) error {
-	// Implement by reading the SubAccountListResponse for the sub account
 	client := m.(*Client)
 	subAccountID, _ := strconv.Atoi(d.Id())
-	listSubAccountsResponse, err := client.ListSubAccounts(d.Get("parent_id").(int))
+	subAccount, err := client.GetSubAccount(d.Get("parent_id").(int), subAccountID)
 
 	if err != nil {
 		return err
 	}
 
-	found := false
-
-	for _, subAccount := range listSubAccountsResponse.SubAccounts {
-		if subAccount.SubAccountID == subAccountID {
-			log.Printf("[INFO] subaccount : %v\n", subAccount)
-			d.Set("sub_account_name", subAccount.SubAccountName)
-			d.Set("ref_id", subAccount.RefID)
-			d.Set("log_level", subAccount.LogLevel)
-			d.Set("parent_id", subAccount.ParentID)
-			d.Set("logs_account_id", subAccount.LogsAccountID)
-			found = true
-			break
-		}
-	}
-
-	if !found {
+	if subAccount == nil {
 		log.Printf("[INFO] Incapsula subaccount %s has already been deleted: %s\n", d.Id(), err)
 		d.SetId("")
 		return nil
 	}
 
+	d.Set("sub_account_name", subAccount.SubAccountName)
+	d.Set("ref_id", subAccount.RefID)
+	d.Set("log_level", subAccount.LogLevel)
+	d.Set("parent_id", subAccount.ParentID)
+	d.Set("logs_account_id", subAccount.LogsAccountID)
+
 	log.Printf("[INFO] Finished reading Incapsula subaccount: %s\n", d.Id())
 
 	return nil
-
 }
 
 func resourceSubAccountDelete(d *schema.ResourceData, m interface{}) error {
