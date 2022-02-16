@@ -107,25 +107,13 @@ func (c *Client) AddSubAccount(subAccountPayload *SubAccountPayload) (*SubAccoun
 func (c *Client) GetSubAccount(parentAccountID int, subAccountID int) (*SubAccount, error) {
 
 	log.Printf("[INFO] Reading Incapsula subaccounts for id: %d)", subAccountID)
-	log.Printf("[INFO] Listing Incapsula subaccounts for: %d (if zero, will be determined by API key))", parentAccountID)
 
 	var count = 0
-	var subAccounts, error = c.sendListSubAccountsRequest(parentAccountID, count)
-	log.Printf("[INFO] read subAccouts list size in response: %d", len(subAccounts))
-	if error != nil {
-		return nil, error
-	}
-	for _, subAccount := range subAccounts {
-		if subAccount.SubAccountID == subAccountID {
-			log.Printf("[INFO] found subaccount : %v\n", subAccount)
-			return &subAccount, nil
-		}
-		count += 1
-	}
+	var shouldFetch = true
 	// Pagination (default page size 50)
-	for len(subAccounts) == PAGE_SIZE {
-		log.Printf("[DEBUG] didn't found subaccount %d, continue fetching for page: %d", subAccountID, count)
-		subAccounts, error = c.sendListSubAccountsRequest(parentAccountID, count)
+	for shouldFetch {
+		log.Printf("[DEBUG] looking for subaccount %d, fetching for page: %d", subAccountID, count)
+		var subAccounts, error = c.sendListSubAccountsRequest(parentAccountID, count)
 		if error != nil {
 			return nil, error
 		}
@@ -135,9 +123,10 @@ func (c *Client) GetSubAccount(parentAccountID int, subAccountID int) (*SubAccou
 				return &subAccount, nil
 			}
 		}
+		shouldFetch = len(subAccounts) == PAGE_SIZE
 		count += 1
 	}
-	log.Printf("[DEBUG] didn't found subaccount %d returning nil", subAccountID)
+	log.Printf("[DEBUG] didn't find subaccount %d returning nil", subAccountID)
 	return nil, nil
 }
 
