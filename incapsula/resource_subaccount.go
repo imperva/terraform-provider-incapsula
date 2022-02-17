@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
+	"time"
 )
 
 func resourceSubAccount() *schema.Resource {
@@ -83,7 +84,11 @@ func resourceSubAccountCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[DEBUG] Account id for new sub account : %d", SubAccountAddResponse.SubAccount.SubAccountID)
 	log.Printf("[INFO] Created Incapsula subaccount %s\n", subAccountName)
 
-	return nil
+	// There may be a timing/race condition here
+	// Set an arbitrary period to sleep
+	time.Sleep(3 * time.Second)
+
+	return resourceSubAccountRead(d, m)
 }
 
 func resourceSubAccountRead(d *schema.ResourceData, m interface{}) error {
