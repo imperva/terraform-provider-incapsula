@@ -70,7 +70,7 @@ func testACCStateApiSecurityApiConfigDestroy(s *terraform.State) error {
 
 		_, err = client.GetApiSecurityApiConfig(siteIDInt, apiID)
 		if err == nil {
-			return fmt.Errorf("Resource%sforIncapsulaApiSecurityApi:ApiId%d,siteID%dstillexists", apiSecApiConfigResourceName, apiID, siteIDInt)
+			return fmt.Errorf("Resource %s for Incapsula Api Security Api:  Api Id %d, site ID %d still exists", apiSecApiConfigResourceName, apiID, siteIDInt)
 		}
 	}
 	return fmt.Errorf("Error finding site_id")
