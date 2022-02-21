@@ -1,6 +1,6 @@
 ## 3.3.4 (Not Released)
 
-* Fix Custom Certificate bug
+* Fix bug in Custom Certificate resource
 
 ## 3.3.3 (Released)
 
