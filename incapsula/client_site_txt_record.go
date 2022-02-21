@@ -189,9 +189,9 @@ func (c *Client) DeleteTXTRecord(siteID int, recordNumber string) error {
 }
 
 func (c *Client) DeleteTXTRecordAll(siteID int) error {
-	log.Printf("[INFO] Delete Incapsula All TXT records for siteID %s\n ", siteID)
+	log.Printf("[INFO] Delete Incapsula All TXT records for siteID %d\n ", siteID)
 	reqURL := fmt.Sprintf("%s/sites/%d/settings/general/additionalTxtRecords/delete-all", c.config.BaseURLRev2, siteID)
-	
+
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil)
 	if err != nil {
 		return fmt.Errorf("Error deleting TXT records for siteID %d: %v", siteID, err)

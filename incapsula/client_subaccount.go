@@ -13,6 +13,7 @@ import (
 const endpointSubAccountAdd = "subaccounts/add"
 const endpointSubAccountList = "accounts/listSubAccounts"
 const endpointSubAccountDelete = "subaccounts/delete"
+const PAGE_SIZE = 50
 
 type SubAccount struct {
 	SubAccountID int `json:"sub_account_id"`
@@ -37,7 +38,7 @@ type SubAccountPayload struct {
 	RefID          string `json:"ref_id,omitempty"`
 	LogLevel       string `json:"log_level,omitempty"`
 	ParentID       int    `json:"parent_id,omitempty"`
-	LogsAccountID  int    `json:"logs_account_id,omitempty"`
+	LogsAccountID  int    `json:"logs_account_id",omitempty"`
 }
 
 // AddSubAccount adds a SubAccount to be managed by Incapsula
@@ -101,22 +102,51 @@ func (c *Client) AddSubAccount(subAccountPayload *SubAccountPayload) (*SubAccoun
 	return &subAccountAddResponse, nil
 }
 
-// ListSubAccounts gets the Incapsula list of SubAccounts
-func (c *Client) ListSubAccounts(accountID int) (*SubAccountListResponse, error) {
+// GetSubAccount gets the Incapsula list of SubAccounts
+func (c *Client) GetSubAccount(parentAccountID int, subAccountID int) (*SubAccount, error) {
 
-	log.Printf("[INFO] Getting Incapsula subaccounts for: %d)\n", accountID)
+	log.Printf("[INFO] Reading Incapsula subaccounts for id: %d)", subAccountID)
 
+	var count = 0
+	var shouldFetch = true
+	// Pagination (default page size 50)
+	for shouldFetch {
+		log.Printf("[DEBUG] looking for subaccount %d, fetching for page: %d", subAccountID, count)
+		var subAccounts, error = c.sendListSubAccountsRequest(parentAccountID, count)
+		if error != nil {
+			return nil, error
+		}
+		for _, subAccount := range subAccounts {
+			if subAccount.SubAccountID == subAccountID {
+				log.Printf("[INFO] found subaccount : %v\n", subAccount)
+				return &subAccount, nil
+			}
+		}
+		shouldFetch = len(subAccounts) == PAGE_SIZE
+		count += 1
+	}
+	log.Printf("[DEBUG] didn't find subaccount %d returning nil", subAccountID)
+	return nil, nil
+}
+
+func (c *Client) sendListSubAccountsRequest(accountId int, pageNum int) ([]SubAccount, error) {
 	values := map[string][]string{}
 
-	if accountID != 0 {
+	if accountId != 0 {
 		values["account_id"] = make([]string, 1)
-		values["account_id"][0] = fmt.Sprint(accountID)
+		values["account_id"][0] = fmt.Sprint(accountId)
 	}
+	values["page_num"] = make([]string, 1)
+	values["page_num"][0] = fmt.Sprint(pageNum)
+	values["page_size"] = make([]string, 1)
+	values["page_size"][0] = fmt.Sprint(PAGE_SIZE)
+
+	log.Printf("[INFO] Pagination loop, page : %d)\n", pageNum)
 
 	// Post form to Incapsula
 	resp, err := c.PostFormWithHeaders(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountList), values)
 	if err != nil {
-		return nil, fmt.Errorf("Error getting subaccounts for account %d: %s", accountID, err)
+		return nil, fmt.Errorf("Error getting subaccounts for account %d: %s", accountId, err)
 	}
 
 	// Read the body
@@ -130,59 +160,10 @@ func (c *Client) ListSubAccounts(accountID int) (*SubAccountListResponse, error)
 	var subAccountListResponse SubAccountListResponse
 	err = json.Unmarshal([]byte(responseBody), &subAccountListResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing subaccounts list JSON response for accountid: %d %s\nresponse: %s", accountID, err, string(responseBody))
+		return nil, fmt.Errorf("Error parsing subaccounts list JSON response for accountid: %d %s\nresponse: %s", accountId, err, string(responseBody))
 	}
 
-	log.Printf("[INFO] Array before loop : %v)\n", subAccountListResponse.SubAccounts)
-
-	// Pagination (default page size 50)
-	tempSubAccountListResponse := subAccountListResponse
-	var count int = 1
-	for len(tempSubAccountListResponse.SubAccounts) == 50 {
-		log.Printf("[INFO] Pagination loop, page : %d)\n", count)
-		values["page_num"] = make([]string, count)
-		values["page_num"][0] = fmt.Sprint(count)
-		log.Printf("[INFO] values : %s)\n", values)
-
-		resp, err := c.PostFormWithHeaders(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountList), values)
-		if err != nil {
-			return nil, fmt.Errorf("Error getting subaccounts for account %d: %s, page num: %d", accountID, err, count)
-		}
-
-		// Read the body
-		defer resp.Body.Close()
-		responseBody, err := ioutil.ReadAll(resp.Body)
-
-		log.Printf("[DEBUG] Incapsula subaccounts JSON page %d response: %s\n", count, string(responseBody))
-
-		// Clean Var and parse json response
-		tempSubAccountListResponse = SubAccountListResponse{}
-		err = json.Unmarshal([]byte(responseBody), &tempSubAccountListResponse)
-		if err != nil {
-			return nil, fmt.Errorf("Error parsing subaccounts list JSON response for accountid: %d %s\nresponse: %s", accountID, err, string(responseBody))
-		}
-
-		// Look at the response status code from Incapsula
-		if tempSubAccountListResponse.Res != 0 {
-			return &tempSubAccountListResponse, fmt.Errorf("Error from Incapsula service when getting sub accounts list %d): %s", accountID, string(responseBody))
-		}
-
-		// add sub-accounts to reponse
-		for _, subAccount := range tempSubAccountListResponse.SubAccounts {
-			log.Printf("[INFO] Array to add : %v", subAccount)
-			subAccountListResponse.SubAccounts = append(subAccountListResponse.SubAccounts, subAccount)
-		}
-		log.Printf("[INFO] Length of SubAccounts Array : %d)\n", len(subAccountListResponse.SubAccounts))
-		log.Printf("[INFO] Array : %v", subAccountListResponse.SubAccounts)
-		count += 1
-	}
-
-	// Look at the response status code from Incapsula
-	if subAccountListResponse.Res != 0 {
-		return &subAccountListResponse, fmt.Errorf("Error from Incapsula service when getting sub accounts list %d): %s", accountID, string(responseBody))
-	}
-
-	return &subAccountListResponse, nil
+	return subAccountListResponse.SubAccounts, nil
 }
 
 // DeleteSubAccount deletes a SubAcccount currently managed by Incapsula

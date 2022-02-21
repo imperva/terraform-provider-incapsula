@@ -60,7 +60,7 @@ func resourceTXTRecordCreate(d *schema.ResourceData, m interface{}) error {
 	// Implement by create the TXT Records
 	client := m.(*Client)
 	siteID := d.Get("site_id").(int)
-	
+
 	TXTRecordOne := d.Get("txt_record_value_one").(string)
 	TXTRecordTwo := d.Get("txt_record_value_two").(string)
 	TXTRecordThree := d.Get("txt_record_value_three").(string)

@@ -2,6 +2,10 @@
 
 * Fix Custom Certificate bug
 
+## 3.3.3 (Released)
+
+* Fix pagination bug in sub-account resource
+
 ## 3.3.2 (Released)
 
 * Edit business logic, add acceptance test for incapsula_txt_record resource
