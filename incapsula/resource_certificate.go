@@ -113,7 +113,6 @@ func resourceCertificateUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	inputHash := createHash(d)
-	d.Set("input_hash", inputHash)
 
 	_, err := client.EditCertificate(
 		d.Get("site_id").(string),
