@@ -23,22 +23,33 @@ type CertificateAddResponse struct {
 // CertificateListResponse contains site object with details of custom certificate
 type CertificateListResponse struct {
 	Res int `json:"res"`
+	SSL SSL `json:"ssl"`
 }
 
 // CertificateEditResponse contains confirmation of successful upload of certificate
 type CertificateEditResponse struct {
 	Res        int    `json:"res"`
 	ResMessage string `json:"res_message"`
+	SSL        SSL    `json:"ssl"`
+}
+
+type SSL struct {
+	CustomCertificate CustomCertificate `json:"custom_certificate"`
+}
+
+type CustomCertificate struct {
+	InputHash string `json:"inputHash"`
 }
 
 // AddCertificate adds a custom SSL certificate to a site in Incapsula
-func (c *Client) AddCertificate(siteID, certificate, privateKey, passphrase string) (*CertificateAddResponse, error) {
+func (c *Client) AddCertificate(siteID, certificate, privateKey, passphrase, inputHash string) (*CertificateAddResponse, error) {
 
 	log.Printf("[INFO] Adding custom certificate for site_id: %s", siteID)
 
 	values := url.Values{
 		"site_id":     {siteID},
 		"certificate": {certificate},
+		"input_hash":  {inputHash},
 	}
 
 	if privateKey != "" {
@@ -112,13 +123,14 @@ func (c *Client) ListCertificates(siteID string) (*CertificateListResponse, erro
 }
 
 // EditCertificate updates the custom certifiacte on an Incapsula site
-func (c *Client) EditCertificate(siteID, certificate, privateKey, passphrase string) (*CertificateEditResponse, error) {
+func (c *Client) EditCertificate(siteID, certificate, privateKey, passphrase, inputHash string) (*CertificateEditResponse, error) {
 
 	log.Printf("[INFO] Editing custom certificate for Incapsula site_id: %s\n", siteID)
 
 	values := url.Values{
 		"site_id":     {siteID},
 		"certificate": {certificate},
+		"input_hash":  {inputHash},
 	}
 
 	if privateKey != "" {

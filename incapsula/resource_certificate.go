@@ -1,9 +1,10 @@
 package incapsula
 
 import (
-	"log"
-
+	"crypto/sha1"
+	"encoding/hex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
 )
 
 func resourceCertificate() *schema.Resource {
@@ -45,18 +46,31 @@ func resourceCertificate() *schema.Resource {
 				Optional:    true,
 				Sensitive:   true,
 			},
+			"input_hash": {
+				Description: "inputHash",
+				Type:        schema.TypeString,
+				Optional:    true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					newHash := createHash(d)
+					if newHash == old {
+						return true
+					}
+					return false
+				},
+			},
 		},
 	}
 }
 
 func resourceCertificateCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-
+	inputHash := createHash(d)
 	_, err := client.AddCertificate(
 		d.Get("site_id").(string),
 		d.Get("certificate").(string),
 		d.Get("private_key").(string),
 		d.Get("passphrase").(string),
+		inputHash,
 	)
 
 	if err != nil {
@@ -89,6 +103,7 @@ func resourceCertificateRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
+	d.Set("input_hash", listCertificatesResponse.SSL.CustomCertificate.InputHash)
 	d.SetId("12345")
 
 	return nil
@@ -97,11 +112,14 @@ func resourceCertificateRead(d *schema.ResourceData, m interface{}) error {
 func resourceCertificateUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
+	inputHash := createHash(d)
+
 	_, err := client.EditCertificate(
 		d.Get("site_id").(string),
 		d.Get("certificate").(string),
 		d.Get("private_key").(string),
 		d.Get("passphrase").(string),
+		inputHash,
 	)
 
 	if err != nil {
@@ -109,8 +127,7 @@ func resourceCertificateUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId("12345")
-
-	return nil
+	return resourceCertificateRead(d, m)
 }
 
 func resourceCertificateDelete(d *schema.ResourceData, m interface{}) error {
@@ -127,4 +144,17 @@ func resourceCertificateDelete(d *schema.ResourceData, m interface{}) error {
 	d.SetId("")
 
 	return nil
+}
+
+func createHash(d *schema.ResourceData) string {
+	h := sha1.New()
+
+	certificate := d.Get("certificate").(string)
+	passphrase := d.Get("passphrase").(string)
+	privateKey := d.Get("private_key").(string)
+	stringForHash := certificate + privateKey + passphrase
+	h.Write([]byte(stringForHash))
+	byteString := h.Sum(nil)
+	result := hex.EncodeToString(byteString)
+	return result
 }

@@ -1,3 +1,7 @@
+## 3.3.4 (Not Released)
+
+* Fix bug in Custom Certificate resource
+
 ## 3.3.3 (Released)
 
 * Fix pagination bug in sub-account resource
