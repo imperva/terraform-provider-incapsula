@@ -1,4 +1,4 @@
-## 3.3.4 (Released)
+## 3.3.4 (Released) 
 
 * Fix bug in Custom Certificate resource
 
