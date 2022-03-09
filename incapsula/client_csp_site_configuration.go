@@ -8,13 +8,13 @@ import (
 	"net/http"
 )
 
-// CspSiteConfig is the struct describing a csp site config response
-type CspSiteConfig struct {
+// CSPSiteConfig is the struct describing a csp site config response
+type CSPSiteConfig struct {
 	Name      string `json:"name"`
 	Mode      string `json:"mode"`
 	Discovery string `json:"discovery"`
 	Settings  struct {
-		Emails []CspSiteConfigEmail `json:"emails"`
+		Emails []CSPSiteConfigEmail `json:"emails"`
 	} `json:"settings"`
 	TrackingIDs []struct {
 		TrackingId   string `json:"trackingId"`
@@ -22,20 +22,20 @@ type CspSiteConfig struct {
 	} `json:"tracking-ids"`
 }
 
-type CspSiteConfigEmail struct {
+type CSPSiteConfigEmail struct {
 	Email string `json:"email"`
 }
 
 const (
-	CspSiteApiPath = "/csp-api/v1/sites"
+	CSPSiteApiPath = "/csp-api/v1/sites"
 )
 
-// GetCspSite gets the csp site config
-func (c *Client) GetCspSite(siteID int) (*CspSiteConfig, error) {
+// GetCSPSite gets the csp site config
+func (c *Client) GetCSPSite(siteID int) (*CSPSiteConfig, error) {
 	log.Printf("[INFO] Getting CSP site configuration for site ID: %d\n", siteID)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet,
-		fmt.Sprintf("%s%s/%d", c.config.BaseURLAPI, CspSiteApiPath, siteID),
+		fmt.Sprintf("%s%s/%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID),
 		nil)
 	if err != nil {
 		return nil, fmt.Errorf("Error from CSP API for when reading site ID %d: %s", siteID, err)
@@ -54,7 +54,7 @@ func (c *Client) GetCspSite(siteID int) (*CspSiteConfig, error) {
 	}
 
 	// Parse the JSON
-	var cspSiteConfig CspSiteConfig
+	var cspSiteConfig CSPSiteConfig
 	err = json.Unmarshal([]byte(responseBody), &cspSiteConfig)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing JSON response for site ID %d: %s\nresponse: %s", siteID, err, string(responseBody))
@@ -63,8 +63,8 @@ func (c *Client) GetCspSite(siteID int) (*CspSiteConfig, error) {
 	return &cspSiteConfig, nil
 }
 
-// UpdateCspSite gets the csp site config
-func (c *Client) UpdateCspSite(siteID int, config *CspSiteConfig) (*CspSiteConfig, error) {
+// UpdateCSPSite gets the csp site config
+func (c *Client) UpdateCSPSite(siteID int, config *CSPSiteConfig) (*CSPSiteConfig, error) {
 	log.Printf("[INFO] Updating CSP site configuration for site ID: %d\n%v", siteID, config)
 	configJSON, err := json.Marshal(config)
 
@@ -73,7 +73,7 @@ func (c *Client) UpdateCspSite(siteID int, config *CspSiteConfig) (*CspSiteConfi
 	}
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut,
-		fmt.Sprintf("%s/%s/%d", c.config.BaseURLAPI, CspSiteApiPath, siteID),
+		fmt.Sprintf("%s/%s/%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID),
 		configJSON)
 
 	if err != nil {
@@ -93,7 +93,7 @@ func (c *Client) UpdateCspSite(siteID int, config *CspSiteConfig) (*CspSiteConfi
 	}
 
 	// Parse the JSON
-	var cspSiteConfig CspSiteConfig
+	var cspSiteConfig CSPSiteConfig
 	err = json.Unmarshal([]byte(responseBody), &cspSiteConfig)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing JSON response for site ID %d: %s\nresponse: %s", siteID, err, string(responseBody))
