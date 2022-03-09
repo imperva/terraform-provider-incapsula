@@ -9,7 +9,9 @@ import (
 )
 
 type CspDomainNote struct {
-	Note string `json:"note"`
+	Text string `json:"text"`
+	Author string `json:"author"`
+	Date int64 `json:"date"`
 }
 
 type CspDomainInfo struct {

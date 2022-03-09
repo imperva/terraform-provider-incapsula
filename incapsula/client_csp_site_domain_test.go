@@ -185,7 +185,13 @@ func TestCspSiteDomainDataResponse(t *testing.T) {
 				"reviewed": true
 			},
 			"domainRisk": "Low",
-			"notes": [],
+			"notes": [
+				{
+					"text": "this is note",
+					"author": "abp-monsters",
+					"date": 1646804283517
+				}
+			],
 			"timeBucket": 1644624000001,
 			"significance": 0,
 			"resourceTypes": [
@@ -251,6 +257,9 @@ func TestCspSiteDomainDataResponse(t *testing.T) {
 	}
 	if domain.Domain != "google.com" || domain.Frequent != false || domain.PartOfProfile != true || len(domain.IPSamples) != 2 ||
 		domain.Status.Blocked != false || domain.Status.Reviewed != true || domain.DomainRisk != "Low" {
+		t.Errorf("Incorrect value inresponse from getCspDomainData")
+	}
+	if len(domain.Notes) != 1 || domain.Notes[0].Text != "this is note" || domain.Notes[0].Author != "abp-monsters" || domain.Notes[0].Date != 1646804283517 {
 		t.Errorf("Incorrect value inresponse from getCspDomainData")
 	}
 }
