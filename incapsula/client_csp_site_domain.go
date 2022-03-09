@@ -66,14 +66,13 @@ type CspPreApprovedDomain struct {
 	ReferenceID string `json:"referenceId"`
 }
 
-//type CspPreApprovedDomainsList []CspPreApprovedDomain
 type CspPreApprovedDomainsMap map[string]CspPreApprovedDomain
 
 func (c *Client) getCspDomainData(siteID int, domainRef string) (*CspDomainData, error) {
 	log.Printf("[INFO] Getting CSP domain data for domain %s from site ID: %d\n", domainRef, siteID)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet,
-		fmt.Sprintf("%s/%s/%d/domains/%s", c.config.BaseURLAPI, CspSiteApiPath, siteID, domainRef),
+		fmt.Sprintf("%s%s/%d/domains/%s", c.config.BaseURLAPI, CspSiteApiPath, siteID, domainRef),
 		nil)
 	if err != nil {
 		return nil, fmt.Errorf("Error from CSP API for when getting domain %s from site ID %d: %s\n", domainRef, siteID, err)

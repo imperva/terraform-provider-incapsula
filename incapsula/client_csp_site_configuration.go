@@ -73,7 +73,7 @@ func (c *Client) UpdateCSPSite(siteID int, config *CSPSiteConfig) (*CSPSiteConfi
 	}
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut,
-		fmt.Sprintf("%s/%s/%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID),
+		fmt.Sprintf("%s%s/%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID),
 		configJSON)
 
 	if err != nil {
