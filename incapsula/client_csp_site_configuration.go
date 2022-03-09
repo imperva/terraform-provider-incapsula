@@ -69,7 +69,7 @@ func (c *Client) UpdateCSPSite(siteID int, config *CSPSiteConfig) (*CSPSiteConfi
 	configJSON, err := json.Marshal(config)
 
 	if err != nil {
-		return nil, fmt.Errorf("Failed to JSON marshal csp api site config: %s", err)
+		return nil, fmt.Errorf("Failed to JSON marshal CSP api site config: %s", err)
 	}
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut,
