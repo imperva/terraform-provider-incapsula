@@ -15,12 +15,12 @@ const (
 	cspSiteModeOff     = "off"
 )
 
-func resourceCspSiteConfiguration() *schema.Resource {
+func resourceCSPSiteConfiguration() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceCspSiteConfigurationUpdate,
-		Read:   resourceCspSiteConfigurationRead,
-		Update: resourceCspSiteConfigurationUpdate,
-		Delete: resourceCspSiteConfigurationDelete,
+		Create: resourceCSPSiteConfigurationUpdate,
+		Read:   resourceCSPSiteConfigurationRead,
+		Update: resourceCSPSiteConfigurationUpdate,
+		Delete: resourceCSPSiteConfigurationDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				siteID, err := strconv.Atoi(d.Id())
@@ -29,7 +29,7 @@ func resourceCspSiteConfiguration() *schema.Resource {
 				}
 
 				d.Set("site_id", siteID)
-				log.Printf("[DEBUG] Import  Site Config JSON for Site ID %d", siteID)
+				log.Printf("[DEBUG] Import CSP Site Config JSON for Site ID %d", siteID)
 				return []*schema.ResourceData{d}, nil
 			},
 		},
@@ -47,8 +47,8 @@ func resourceCspSiteConfiguration() *schema.Resource {
 				Description:  "Website Protection Mode. When in \"enforce\" mode, blocked resources will not be available in the application and new resources will be automatically blocked. When in \"monitor\" mode, all resources are available in the application and the system keeps track of all new domains that are discovered.\nValues: monitor\\enforce\\off\n",
 				Type:         schema.TypeString,
 				Optional:     true,
-				Default:      "monitor",
-				ValidateFunc: validation.StringInSlice([]string{"monitor", "enforce", "off"}, true),
+				Default:      cspSiteModeMonitor,
+				ValidateFunc: validation.StringInSlice([]string{cspSiteModeMonitor, cspSiteModeEnforce, cspSiteModeOff}, true),
 			},
 			"email_addresses": {
 				Description: "Email address for the event notification recipient list of a specific website. Notifications are reasonably small and limited in frequency",
@@ -62,13 +62,13 @@ func resourceCspSiteConfiguration() *schema.Resource {
 	}
 }
 
-func resourceCspSiteConfigurationRead(d *schema.ResourceData, m interface{}) error {
+func resourceCSPSiteConfigurationRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteId := d.Get("site_id").(int)
 
 	log.Printf("[DEBUG] Reading CSP site configuration for site ID:  %d.", siteId)
 
-	cspSite, err := client.GetCspSite(siteId)
+	cspSite, err := client.GetCSPSite(siteId)
 	if err != nil {
 		log.Printf("[ERROR] Could not get CSP site config: %s - %s\n", d.Id(), err)
 		return err
@@ -84,9 +84,9 @@ func resourceCspSiteConfigurationRead(d *schema.ResourceData, m interface{}) err
 	switch {
 	case strings.Compare(cspSite.Discovery, "pause") == 0:
 		d.Set("mode", cspSiteModeOff) // Do I need to set ID to blank if off?
-	case strings.Compare(cspSite.Discovery, "start") == 0 && strings.Compare(cspSite.Mode, "monitor") == 0:
+	case strings.Compare(cspSite.Discovery, "start") == 0 && strings.Compare(cspSite.Mode, cspSiteModeMonitor) == 0:
 		d.Set("mode", cspSiteModeMonitor)
-	case strings.Compare(cspSite.Discovery, "start") == 0 && strings.Compare(cspSite.Mode, "enforce") == 0:
+	case strings.Compare(cspSite.Discovery, "start") == 0 && strings.Compare(cspSite.Mode, cspSiteModeEnforce) == 0:
 		d.Set("mode", cspSiteModeEnforce)
 	default:
 		d.Set("mode", cspSiteModeOff)
@@ -95,56 +95,52 @@ func resourceCspSiteConfigurationRead(d *schema.ResourceData, m interface{}) err
 	return nil
 }
 
-func resourceCspSiteConfigurationUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceCSPSiteConfigurationUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	emails := d.Get("email_addresses").([]interface{})
 	siteId := d.Get("site_id").(int)
 
-	cspSiteConfig := CspSiteConfig{
+	cspSiteConfig := CSPSiteConfig{
 		Name:      "",
 		Mode:      "",
 		Discovery: "",
 		Settings: struct {
-			Emails []CspSiteConfigEmail `json:"emails"`
+			Emails []CSPSiteConfigEmail `json:"emails"`
 		}{},
 		TrackingIDs: nil,
 	}
 
-	cspSiteConfig.Settings.Emails = []CspSiteConfigEmail{}
+	cspSiteConfig.Settings.Emails = []CSPSiteConfigEmail{}
 	for i := range emails {
-		a := emails[i]
-		switch a.(type) {
-		case string:
-			cspSiteConfig.Settings.Emails = append(cspSiteConfig.Settings.Emails, CspSiteConfigEmail{Email: a.(string)})
-		}
+		cspSiteConfig.Settings.Emails = append(cspSiteConfig.Settings.Emails, CSPSiteConfigEmail{Email: emails[i].(string)})
 	}
 
 	switch d.Get("mode").(string) {
 	case cspSiteModeOff:
 		cspSiteConfig.Discovery = "pause"
-		cspSiteConfig.Mode = "monitor"
+		cspSiteConfig.Mode = cspSiteModeMonitor
 	case cspSiteModeMonitor:
 		cspSiteConfig.Discovery = "start"
-		cspSiteConfig.Mode = "monitor"
+		cspSiteConfig.Mode = cspSiteModeMonitor
 	case cspSiteModeEnforce:
 		cspSiteConfig.Discovery = "start"
-		cspSiteConfig.Mode = "enforce"
+		cspSiteConfig.Mode = cspSiteModeEnforce
 	}
 
 	log.Printf("[DEBUG] Updating CSP site configuration for site ID: %d , values: %v.", siteId, cspSiteConfig)
-	updatedSite, err := client.UpdateCspSite(siteId, &cspSiteConfig)
+	updatedSite, err := client.UpdateCSPSite(siteId, &cspSiteConfig)
 	if err != nil {
 		log.Printf("[ERROR] Could not update CSP site config: %s - %s\n", d.Id(), err)
 		return err
 	}
 	log.Printf("[DEBUG] Updating CSP site configuration for site ID: %d , got response: %v.", siteId, updatedSite)
 
-	return nil
+	return resourceCSPSiteConfigurationRead(d, m)
 }
 
-func resourceCspSiteConfigurationDelete(d *schema.ResourceData, m interface{}) error {
+func resourceCSPSiteConfigurationDelete(d *schema.ResourceData, m interface{}) error {
 	// Deleting the CSP settings is just setting the site mode to off
 	d.Set("mode", cspSiteModeOff)
 	d.SetId("") // do I need to do this here?
-	return resourceCspSiteConfigurationUpdate(d, m)
+	return resourceCSPSiteConfigurationUpdate(d, m)
 }

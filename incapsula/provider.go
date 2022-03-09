@@ -103,7 +103,7 @@ func Provider() *schema.Provider {
 			"incapsula_api_security_site_config":     resourceApiSecuritySiteConfig(),
 			"incapsula_api_security_api_config":      resourceApiSecurityApiConfig(),
 			"incapsula_api_security_endpoint_config": resourceApiSecurityEndpointConfig(),
-			"incapsula_csp_site_configuration":       resourceCspSiteConfiguration(),
+			"incapsula_csp_site_configuration":       resourceCSPSiteConfiguration(),
 		},
 	}
 
