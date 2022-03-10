@@ -83,7 +83,7 @@ func resourceCSPSiteConfigurationRead(d *schema.ResourceData, m interface{}) err
 
 	switch {
 	case strings.Compare(cspSite.Discovery, "pause") == 0:
-		d.Set("mode", cspSiteModeOff) // Do I need to set ID to blank if off?
+		d.Set("mode", cspSiteModeOff)
 	case strings.Compare(cspSite.Discovery, "start") == 0 && strings.Compare(cspSite.Mode, cspSiteModeMonitor) == 0:
 		d.Set("mode", cspSiteModeMonitor)
 	case strings.Compare(cspSite.Discovery, "start") == 0 && strings.Compare(cspSite.Mode, cspSiteModeEnforce) == 0:
@@ -141,6 +141,6 @@ func resourceCSPSiteConfigurationUpdate(d *schema.ResourceData, m interface{}) e
 func resourceCSPSiteConfigurationDelete(d *schema.ResourceData, m interface{}) error {
 	// Deleting the CSP settings is just setting the site mode to off
 	d.Set("mode", cspSiteModeOff)
-	d.SetId("") // do I need to do this here?
+	d.SetId("")
 	return resourceCSPSiteConfigurationUpdate(d, m)
 }
