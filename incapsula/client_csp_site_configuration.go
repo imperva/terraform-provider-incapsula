@@ -89,7 +89,7 @@ func (c *Client) UpdateCSPSite(siteID int, config *CSPSiteConfig) (*CSPSiteConfi
 
 	// Check the response code
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Error status code %d from CSP API when reading site config for ID %d: %s", resp.StatusCode, siteID, string(responseBody))
+		return nil, fmt.Errorf("Error status code %d from CSP API when updating site config for ID %d: %s", resp.StatusCode, siteID, string(responseBody))
 	}
 
 	// Parse the JSON
