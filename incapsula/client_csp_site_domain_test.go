@@ -1,6 +1,7 @@
 package incapsula
 
 import (
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -75,7 +76,7 @@ func TestCspSiteDomainErrorResponse(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), "Error status code 500 from CSP API when getting domain data") {
+	if !strings.HasPrefix(err.Error(), "Error status code 500 from CSP API when getting domain") {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 	if domain != nil {
@@ -248,7 +249,7 @@ func TestCspSiteDomainDataResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	domain, err := client.getCspDomainData(siteID, "Z29vZ2xlLmNvbQ")
+	domain, err := client.getCspDomainData(siteID, "google.com")
 	if err != nil {
 		t.Errorf("Should have not received an error")
 	}
@@ -256,7 +257,7 @@ func TestCspSiteDomainDataResponse(t *testing.T) {
 		t.Errorf("Should have received a response")
 	}
 	if domain.Domain != "google.com" || domain.Frequent != false || domain.PartOfProfile != true || len(domain.IPSamples) != 2 ||
-		domain.Status.Blocked != false || domain.Status.Reviewed != true || domain.DomainRisk != "Low" {
+		*(domain.Status.Blocked) != false || *(domain.Status.Reviewed) != true || domain.DomainRisk != "Low" {
 		t.Errorf("Incorrect value inresponse from getCspDomainData")
 	}
 	if len(domain.Notes) != 1 || domain.Notes[0].Text != "this is note" || domain.Notes[0].Author != "abp-monsters" || domain.Notes[0].Date != 1646804283517 {
@@ -354,5 +355,112 @@ func TestCspSiteDomainPreApprovedUpdateResponse(t *testing.T) {
 	}
 	if domain.Subdomains != true {
 		t.Errorf("Incorrect value inresponse from updateCspPreApprovedDomain")
+	}
+}
+
+func TestCspSiteDomainNotesResponse(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := 42
+	domain := "google.com"
+	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
+	endpoint := fmt.Sprintf("%s/%d/domains/%s/notes", CspSiteApiPath, siteID, domainRef)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(200)
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		}
+		rw.Write([]byte(`[
+			{
+				"text": "its google",
+				"author": "Amiran Chachashvili (Amiran.Chachashvili@imperva.com)",
+				"date": 1646804283517
+			}
+		]`))
+	}))
+
+	defer server.Close()
+
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+
+	notes, err := client.getCspDomainNotes(siteID, domain)
+	if err != nil {
+		t.Errorf("Should have not received an error")
+	}
+	if notes == nil {
+		t.Errorf("Should have received a response")
+	}
+	if len(notes) != 1 {
+		t.Errorf("Incorrect value inresponse from getCspDomainNotes")
+	}
+	if notes[0].Text != "its google" {
+		t.Errorf("Incorrect value inresponse from getCspDomainNotes")
+	}
+}
+
+func TestCspSiteDomainStatusResponse(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := 42
+	domain := "google.com"
+	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
+	endpoint := fmt.Sprintf("%s/%d/domains/%s/status", CspSiteApiPath, siteID, domainRef)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(200)
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		}
+		rw.Write([]byte(`{
+			"blocked": false,
+			"reviewed": true,
+			"reviewedAt": 1646810654947
+		}`))
+	}))
+
+	defer server.Close()
+
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+	notes, err := client.getCspDomainStatus(siteID, domain)
+	if err != nil {
+		t.Errorf("Should have not received an error")
+	}
+	if notes == nil {
+		t.Errorf("Should have received a response")
+	}
+}
+
+func TestCspSiteDomainStatusEmptyResponse(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := 42
+	domain := "google.com"
+	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
+	endpoint := fmt.Sprintf("%s/%d/domains/%s/status", CspSiteApiPath, siteID, domainRef)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(200)
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		}
+		rw.Write([]byte(`{}`))
+	}))
+
+	defer server.Close()
+
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+	notes, err := client.getCspDomainStatus(siteID, domain)
+	if err != nil {
+		t.Errorf("Should have not received an error")
+	}
+	if notes == nil {
+		t.Errorf("Should have received a response")
 	}
 }
