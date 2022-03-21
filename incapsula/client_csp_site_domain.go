@@ -17,8 +17,8 @@ type CspDomainNote struct {
 }
 
 type CspDomainStatus struct {
-	Blocked    *bool  `json:"blocked"`
-	Reviewed   *bool  `json:"reviewed"`
+	Blocked  *bool `json:"blocked"`
+	Reviewed *bool `json:"reviewed"`
 }
 
 type CspDomainInfo struct {
@@ -46,9 +46,9 @@ type CspDomainReport struct {
 
 // CspDomainData is the struct describing a csp site config response
 type CspDomainData struct {
-	ID     string `json:"id"`
-	Domain string `json:"domain"`
-	Status CspDomainStatus `json:"status"`
+	ID            string            `json:"id"`
+	Domain        string            `json:"domain"`
+	Status        CspDomainStatus   `json:"status"`
 	DomainRisk    string            `json:"domainRisk"`
 	Notes         []CspDomainNote   `json:"notes"`
 	TimeBucket    int64             `json:"timeBucket"`
@@ -80,7 +80,7 @@ func (c *Client) getCspDomainAPI(siteID int, domain string, APIPath string, ret 
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet,
-		strings.Trim(fmt.Sprintf("%s%s/%d/domains/%s/%s", c.config.BaseURLAPI, CspSiteApiPath, siteID, domainRef, APIPath),
+		strings.Trim(fmt.Sprintf("%s%s/%d/domains/%s/%s", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef, APIPath),
 			"/"),
 		nil)
 	if err != nil {
@@ -137,7 +137,7 @@ func (c *Client) updateCspDomainStatus(siteID int, domain string, status *CspDom
 	}
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut,
-		fmt.Sprintf("%s%s/%d/domains/%s/status", c.config.BaseURLAPI, CspSiteApiPath, siteID, domainRef),
+		fmt.Sprintf("%s%s/%d/domains/%s/status", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef),
 		statusJSON)
 	if err != nil {
 		return nil, fmt.Errorf("Error from CSP API for when updating domain status for domain %s from site ID %d: %s\n", domain, siteID, err)
@@ -181,7 +181,7 @@ func (c *Client) addCspDomainNote(siteID int, domain string, note string) error 
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost,
-		fmt.Sprintf("%s%s/%d/domains/%s/notes", c.config.BaseURLAPI, CspSiteApiPath, siteID, domainRef),
+		fmt.Sprintf("%s%s/%d/domains/%s/notes", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef),
 		[]byte(note))
 	if err != nil {
 		return fmt.Errorf("Error from CSP API for when getting domain notes for domain %s from site ID %d: %s\n", domain, siteID, err)
@@ -217,7 +217,7 @@ func (c *Client) deleteCspDomainNotes(siteID int, domain string) error {
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete,
-		fmt.Sprintf("%s%s/%d/domains/%s/notes", c.config.BaseURLAPI, CspSiteApiPath, siteID, domainRef),
+		fmt.Sprintf("%s%s/%d/domains/%s/notes", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef),
 		nil)
 	if err != nil {
 		return fmt.Errorf("Error from CSP API for when deleting domain notes for domain %s from site ID %d: %s\n", domain, siteID, err)
@@ -256,7 +256,7 @@ func (c *Client) getCspPreApprovedDomains(siteID int) (CspPreApprovedDomainsMap,
 	log.Printf("[INFO] Getting CSP pre-approved domains for site ID: %d\n", siteID)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet,
-		fmt.Sprintf("%s%s/%d/preapprovedlist", c.config.BaseURLAPI, CspSiteApiPath, siteID),
+		fmt.Sprintf("%s%s/%d/preapprovedlist", c.config.BaseURLAPI, CSPSiteApiPath, siteID),
 		nil)
 	if err != nil {
 		return nil, fmt.Errorf("Error from CSP API for when getting pre-approved domains list for site ID %d: %s\n", siteID, err)
@@ -302,7 +302,7 @@ func (c *Client) updateCspPreApprovedDomain(siteID int, dom *CspPreApprovedDomai
 	}
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost,
-		fmt.Sprintf("%s%s/%d/preapprovedlist", c.config.BaseURLAPI, CspSiteApiPath, siteID),
+		fmt.Sprintf("%s%s/%d/preapprovedlist", c.config.BaseURLAPI, CSPSiteApiPath, siteID),
 		domJSON)
 
 	if err != nil {
@@ -337,7 +337,7 @@ func (c *Client) deleteCspPreApprovedDomains(siteID int, domainRef string) error
 	log.Printf("[INFO] Deleting CSP pre-approved domain %s for site ID: %d\n", domainRef, siteID)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete,
-		fmt.Sprintf("%s%s/%d/preapprovedlist/%s", c.config.BaseURLAPI, CspSiteApiPath, siteID, domainRef),
+		fmt.Sprintf("%s%s/%d/preapprovedlist/%s", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef),
 		nil)
 	if err != nil {
 		return fmt.Errorf("Error from CSP API for when deleting pre-approved domain %s from site ID %d: %s\n", domainRef, siteID, err)

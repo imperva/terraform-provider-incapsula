@@ -75,9 +75,9 @@ func resourceCSPSiteConfigurationRead(d *schema.ResourceData, m interface{}) err
 	}
 	log.Printf("[DEBUG] Reading CSP site configuration for site ID: %d , response: %v.", siteId, cspSite)
 
-	var emails []string
+	emails := make([]string, len(cspSite.Settings.Emails))
 	for i := range cspSite.Settings.Emails {
-		emails = append(emails, cspSite.Settings.Emails[i].Email)
+		emails[i] = cspSite.Settings.Emails[i].Email
 	}
 	d.Set("email_addresses", emails)
 
@@ -141,6 +141,9 @@ func resourceCSPSiteConfigurationUpdate(d *schema.ResourceData, m interface{}) e
 func resourceCSPSiteConfigurationDelete(d *schema.ResourceData, m interface{}) error {
 	// Deleting the CSP settings is just setting the site mode to off
 	d.Set("mode", cspSiteModeOff)
+	if err := resourceCSPSiteConfigurationUpdate(d, m); err != nil {
+		return err
+	}
 	d.SetId("")
-	return resourceCSPSiteConfigurationUpdate(d, m)
+	return nil
 }

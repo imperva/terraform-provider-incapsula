@@ -96,8 +96,10 @@ func resourceCspSiteDomainRead(d *schema.ResourceData, m interface{}) error {
 
 		notes := make([]string, len(cspNotes))
 		for i := range cspNotes {
-			notes = append(notes, cspNotes[i].Text)
+			notes[i] = cspNotes[i].Text
 		}
+		log.Printf("[DEBUG] Reading CSP domain notes for domain %s from site ID: %d , updating notes to: %v (%d).", domain, siteID, notes, len(notes))
+
 		d.Set("notes", notes)
 	}
 
@@ -145,7 +147,7 @@ func resourceCspSiteDomainCreate(d *schema.ResourceData, m interface{}) error {
 	domRef := base64.RawURLEncoding.EncodeToString([]byte(d.Get("domain").(string)))
 
 	newID := fmt.Sprintf("%d/%s", d.Get("site_id").(int), domRef)
-	log.Printf("[DEBUG] Create CSP Domain, changing key %s to: %s", d.Id(), newID)
+	log.Printf("[DEBUG] Create CSP Domain, setting key %s to: %s", d.Id(), newID)
 	d.SetId(newID)
 
 	return nil
