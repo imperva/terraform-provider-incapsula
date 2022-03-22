@@ -15,7 +15,7 @@ func TestCspSiteDomainBadConnection(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := 42
 
-	domain, err := client.getCspDomainData(siteID, "ref")
+	domain, err := client.getCSPDomainData(siteID, "ref")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -26,7 +26,7 @@ func TestCspSiteDomainBadConnection(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	preApproved, err := client.getCspPreApprovedDomains(siteID)
+	preApproved, err := client.getCSPPreApprovedDomains(siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -37,7 +37,7 @@ func TestCspSiteDomainBadConnection(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	updatedDom, err := client.updateCspPreApprovedDomain(siteID, &CspPreApprovedDomain{})
+	updatedDom, err := client.updateCSPPreApprovedDomain(siteID, &CSPPreApprovedDomain{})
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -48,7 +48,7 @@ func TestCspSiteDomainBadConnection(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	err = client.deleteCspPreApprovedDomains(siteID, "ref")
+	err = client.deleteCSPPreApprovedDomains(siteID, "ref")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -72,7 +72,7 @@ func TestCspSiteDomainErrorResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	domain, err := client.getCspDomainData(siteID, "ref")
+	domain, err := client.getCSPDomainData(siteID, "ref")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -83,7 +83,7 @@ func TestCspSiteDomainErrorResponse(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	preApproved, err := client.getCspPreApprovedDomains(siteID)
+	preApproved, err := client.getCSPPreApprovedDomains(siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -94,7 +94,7 @@ func TestCspSiteDomainErrorResponse(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	updatedDom, err := client.updateCspPreApprovedDomain(siteID, &CspPreApprovedDomain{})
+	updatedDom, err := client.updateCSPPreApprovedDomain(siteID, &CSPPreApprovedDomain{})
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -105,7 +105,7 @@ func TestCspSiteDomainErrorResponse(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	err = client.deleteCspPreApprovedDomains(siteID, "ref")
+	err = client.deleteCSPPreApprovedDomains(siteID, "ref")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -133,7 +133,7 @@ func TestCspSiteDomainInvalidResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	domain, err := client.getCspDomainData(siteID, "ref")
+	domain, err := client.getCSPDomainData(siteID, "ref")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -144,7 +144,7 @@ func TestCspSiteDomainInvalidResponse(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	preApproved, err := client.getCspPreApprovedDomains(siteID)
+	preApproved, err := client.getCSPPreApprovedDomains(siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -155,7 +155,7 @@ func TestCspSiteDomainInvalidResponse(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	updatedDom, err := client.updateCspPreApprovedDomain(siteID, &CspPreApprovedDomain{})
+	updatedDom, err := client.updateCSPPreApprovedDomain(siteID, &CSPPreApprovedDomain{})
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -249,7 +249,7 @@ func TestCspSiteDomainDataResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	domain, err := client.getCspDomainData(siteID, "google.com")
+	domain, err := client.getCSPDomainData(siteID, "google.com")
 	if err != nil {
 		t.Errorf("Should have not received an error")
 	}
@@ -258,10 +258,10 @@ func TestCspSiteDomainDataResponse(t *testing.T) {
 	}
 	if domain.Domain != "google.com" || domain.Frequent != false || domain.PartOfProfile != true || len(domain.IPSamples) != 2 ||
 		*(domain.Status.Blocked) != false || *(domain.Status.Reviewed) != true || domain.DomainRisk != "Low" {
-		t.Errorf("Incorrect value inresponse from getCspDomainData")
+		t.Errorf("Incorrect value inresponse from getCSPDomainData")
 	}
 	if len(domain.Notes) != 1 || domain.Notes[0].Text != "this is note" || domain.Notes[0].Author != "abp-monsters" || domain.Notes[0].Date != 1646804283517 {
-		t.Errorf("Incorrect value inresponse from getCspDomainData")
+		t.Errorf("Incorrect value inresponse from getCSPDomainData")
 	}
 }
 
@@ -295,7 +295,7 @@ func TestCspSiteDomainPreApprovedResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	domains, err := client.getCspPreApprovedDomains(siteID)
+	domains, err := client.getCSPPreApprovedDomains(siteID)
 	if err != nil {
 		t.Errorf("Should have not received an error")
 	}
@@ -303,20 +303,20 @@ func TestCspSiteDomainPreApprovedResponse(t *testing.T) {
 		t.Errorf("Should have received a response")
 	}
 	if len(domains) != 2 {
-		t.Errorf("Incorrect value inresponse from getCspPreApprovedDomains")
+		t.Errorf("Incorrect value inresponse from getCSPPreApprovedDomains")
 	}
 	if _, ok := domains["ZG9tYWluLmNvbQ"]; ok != true {
-		t.Errorf("Incorrect value inresponse from getCspPreApprovedDomains")
+		t.Errorf("Incorrect value inresponse from getCSPPreApprovedDomains")
 	}
 	if _, ok := domains["Z29vZ2xlLmNvbQ"]; ok != true {
-		t.Errorf("Incorrect value inresponse from getCspPreApprovedDomains")
+		t.Errorf("Incorrect value inresponse from getCSPPreApprovedDomains")
 	}
 	if domains["ZG9tYWluLmNvbQ"].Domain != "domain.com" || domains["ZG9tYWluLmNvbQ"].Subdomains != true {
-		t.Errorf("Incorrect value inresponse from getCspPreApprovedDomains")
+		t.Errorf("Incorrect value inresponse from getCSPPreApprovedDomains")
 	}
 
 	if domains["Z29vZ2xlLmNvbQ"].Domain != "google.com" || domains["Z29vZ2xlLmNvbQ"].Subdomains != false {
-		t.Errorf("Incorrect value inresponse from getCspPreApprovedDomains")
+		t.Errorf("Incorrect value inresponse from getCSPPreApprovedDomains")
 	}
 }
 
@@ -343,7 +343,7 @@ func TestCspSiteDomainPreApprovedUpdateResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	domain, err := client.updateCspPreApprovedDomain(siteID, &CspPreApprovedDomain{})
+	domain, err := client.updateCSPPreApprovedDomain(siteID, &CSPPreApprovedDomain{})
 	if err != nil {
 		t.Errorf("Should have not received an error")
 	}
@@ -351,10 +351,10 @@ func TestCspSiteDomainPreApprovedUpdateResponse(t *testing.T) {
 		t.Errorf("Should have received a response")
 	}
 	if domain.Domain != "domain.com" {
-		t.Errorf("Incorrect value inresponse from updateCspPreApprovedDomain")
+		t.Errorf("Incorrect value inresponse from updateCSPPreApprovedDomain")
 	}
 	if domain.Subdomains != true {
-		t.Errorf("Incorrect value inresponse from updateCspPreApprovedDomain")
+		t.Errorf("Incorrect value inresponse from updateCSPPreApprovedDomain")
 	}
 }
 
@@ -385,7 +385,7 @@ func TestCspSiteDomainNotesResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	notes, err := client.getCspDomainNotes(siteID, domain)
+	notes, err := client.getCSPDomainNotes(siteID, domain)
 	if err != nil {
 		t.Errorf("Should have not received an error")
 	}
@@ -393,10 +393,10 @@ func TestCspSiteDomainNotesResponse(t *testing.T) {
 		t.Errorf("Should have received a response")
 	}
 	if len(notes) != 1 {
-		t.Errorf("Incorrect value inresponse from getCspDomainNotes")
+		t.Errorf("Incorrect value inresponse from getCSPDomainNotes")
 	}
 	if notes[0].Text != "its google" {
-		t.Errorf("Incorrect value inresponse from getCspDomainNotes")
+		t.Errorf("Incorrect value inresponse from getCSPDomainNotes")
 	}
 }
 
@@ -425,7 +425,7 @@ func TestCspSiteDomainStatusResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	notes, err := client.getCspDomainStatus(siteID, domain)
+	notes, err := client.getCSPDomainStatus(siteID, domain)
 	if err != nil {
 		t.Errorf("Should have not received an error")
 	}
@@ -455,7 +455,7 @@ func TestCspSiteDomainStatusEmptyResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	notes, err := client.getCspDomainStatus(siteID, domain)
+	notes, err := client.getCSPDomainStatus(siteID, domain)
 	if err != nil {
 		t.Errorf("Should have not received an error")
 	}

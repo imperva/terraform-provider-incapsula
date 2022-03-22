@@ -14,12 +14,12 @@ const (
 	cspDomainStatusBlocked = "Blocked"
 )
 
-func resourceCspSiteDomain() *schema.Resource {
+func resourceCSPSiteDomain() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceCspSiteDomainCreate,
-		Read:   resourceCspSiteDomainRead,
-		Update: resourceCspSiteDomainUpdate,
-		Delete: resourceCspSiteDomainDelete,
+		Create: resourceCSPSiteDomainCreate,
+		Read:   resourceCSPSiteDomainRead,
+		Update: resourceCSPSiteDomainUpdate,
+		Delete: resourceCSPSiteDomainDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				keyParts := strings.Split(d.Id(), "/")
@@ -80,7 +80,7 @@ func resourceCspSiteDomain() *schema.Resource {
 	}
 }
 
-func resourceCspSiteDomainRead(d *schema.ResourceData, m interface{}) error {
+func resourceCSPSiteDomainRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteID := d.Get("site_id").(int)
 	domain := d.Get("domain").(string)
@@ -88,7 +88,7 @@ func resourceCspSiteDomainRead(d *schema.ResourceData, m interface{}) error {
 
 	log.Printf("[DEBUG] Reading CSP domain for site ID: %d , domain reference: %s , domain: %s", siteID, domainRef, domain)
 
-	cspNotes, err := client.getCspDomainNotes(siteID, domain)
+	cspNotes, err := client.getCSPDomainNotes(siteID, domain)
 	if err != nil {
 		log.Printf("[ERROR] Could not get CSP domain notes: %s - %s\n", d.Id(), err)
 	} else {
@@ -104,7 +104,7 @@ func resourceCspSiteDomainRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// First check if it's a pre-approved domain, and update resource according to that
-	preApprovedDomain, err := client.getCspPreApprovedDomain(siteID, domain)
+	preApprovedDomain, err := client.getCSPPreApprovedDomain(siteID, domain)
 	if err != nil {
 		log.Printf("[ERROR] Could not get CSP pre-approved domain : %s - %s\n", d.Id(), err)
 	} else {
@@ -117,7 +117,7 @@ func resourceCspSiteDomainRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// If domain wasn't found as pre-approved domain, check if status set directly and update accordingly
-	status, err := client.getCspDomainStatus(siteID, domain)
+	status, err := client.getCSPDomainStatus(siteID, domain)
 	if err != nil {
 		log.Printf("[ERROR] Could not get CSP domain status: %s - %s\n", d.Id(), err)
 	} else if status.Blocked != nil {
@@ -139,8 +139,8 @@ func resourceCspSiteDomainRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceCspSiteDomainCreate(d *schema.ResourceData, m interface{}) error {
-	err := resourceCspSiteDomainUpdate(d, m)
+func resourceCSPSiteDomainCreate(d *schema.ResourceData, m interface{}) error {
+	err := resourceCSPSiteDomainUpdate(d, m)
 	if err != nil {
 		return err
 	}
@@ -153,7 +153,7 @@ func resourceCspSiteDomainCreate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceCspSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceCSPSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteID := d.Get("site_id").(int)
 	domain := d.Get("domain").(string)
@@ -164,13 +164,13 @@ func resourceCspSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {
 
 	if strings.Compare(status, cspDomainStatusAllowed) == 0 {
 		// If the domain is allowed just put it in the pre-approved list
-		dom := CspPreApprovedDomain{
+		dom := CSPPreApprovedDomain{
 			Domain:      domain,
 			Subdomains:  d.Get("include_subdomains").(bool),
 			ReferenceID: base64.RawURLEncoding.EncodeToString([]byte(domain)),
 		}
 		log.Printf("[DEBUG] Updating CSP domain for site ID: %d , domain: %v\n", siteID, dom)
-		updatedDom, err := client.updateCspPreApprovedDomain(siteID, &dom)
+		updatedDom, err := client.updateCSPPreApprovedDomain(siteID, &dom)
 		if err != nil {
 			log.Printf("[ERROR] Could not update CSP pre-approved domain: %v - %s\n", dom, err)
 			return err
@@ -178,14 +178,14 @@ func resourceCspSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {
 		log.Printf("[DEBUG] Updating CSP domain %v for site ID: %d , got response: %v.", dom, siteID, updatedDom)
 	} else if strings.Compare(status, cspDomainStatusBlocked) == 0 {
 		// Otherwise update the status directly to blocked
-		st := CspDomainStatus{
+		st := CSPDomainStatus{
 			Blocked:  new(bool),
 			Reviewed: new(bool),
 		}
 		*(st.Blocked) = true
 		*(st.Reviewed) = true
 
-		domainStatus, err := client.updateCspDomainStatus(siteID, domain, &st)
+		domainStatus, err := client.updateCSPDomainStatus(siteID, domain, &st)
 		if err != nil || domainStatus.Blocked == nil || domainStatus.Reviewed == nil {
 			e := fmt.Errorf("[ERROR] Could not update CSP domain %s status: %v - %s\n", domain, status, err)
 			return e
@@ -193,21 +193,21 @@ func resourceCspSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// Remove all existing notes and add them freshly
-	client.deleteCspDomainNotes(siteID, domain)
+	client.deleteCSPDomainNotes(siteID, domain)
 	for i := range notes {
-		client.addCspDomainNote(siteID, domain, notes[i].(string))
+		client.addCSPDomainNote(siteID, domain, notes[i].(string))
 	}
 
-	return resourceCspSiteDomainRead(d, m)
+	return resourceCSPSiteDomainRead(d, m)
 }
 
-func resourceCspSiteDomainDelete(d *schema.ResourceData, m interface{}) error {
+func resourceCSPSiteDomainDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteID := d.Get("site_id").(int)
 	domain := d.Get("domain").(string)
 	log.Printf("[DEBUG] Deleting CSP domain %s from site ID %d\n", domain, siteID)
 
-	err := client.deleteCspPreApprovedDomains(siteID, base64.RawURLEncoding.EncodeToString([]byte(domain)))
+	err := client.deleteCSPPreApprovedDomains(siteID, base64.RawURLEncoding.EncodeToString([]byte(domain)))
 	if err != nil {
 		log.Printf("[ERROR] Could not delete CSP pre-approved domain %s for site ID %d: %s\n", domain, siteID, err)
 		return err

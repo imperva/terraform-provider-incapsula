@@ -10,18 +10,18 @@ import (
 	"strings"
 )
 
-type CspDomainNote struct {
+type CSPDomainNote struct {
 	Text   string `json:"text"`
 	Author string `json:"author"`
 	Date   int64  `json:"date"`
 }
 
-type CspDomainStatus struct {
+type CSPDomainStatus struct {
 	Blocked  *bool `json:"blocked"`
 	Reviewed *bool `json:"reviewed"`
 }
 
-type CspDomainInfo struct {
+type CSPDomainInfo struct {
 	BaseDomain            string             `json:"baseDomain"`
 	CompanyName           string             `json:"companyName"`
 	DomainCategory        string             `json:"domainCategory"`
@@ -36,7 +36,7 @@ type CspDomainInfo struct {
 	DomainCategorySemrush string             `json:"domainCategorySemrush"`
 }
 
-type CspDomainReport struct {
+type CSPDomainReport struct {
 	DocumentUri string `json:"documentUri"`
 	SourceFile  string `json:"sourceFile"`
 	BlockedUri  string `json:"blockedUri"`
@@ -44,13 +44,13 @@ type CspDomainReport struct {
 	SourceType  string `json:"sourceType"`
 }
 
-// CspDomainData is the struct describing a csp site config response
-type CspDomainData struct {
-	ID            string            `json:"id"`
-	Domain        string            `json:"domain"`
-	Status        CspDomainStatus   `json:"status"`
-	DomainRisk    string            `json:"domainRisk"`
-	Notes         []CspDomainNote   `json:"notes"`
+// CSPDomainData is the struct describing a csp site config response
+type CSPDomainData struct {
+	ID            string          `json:"id"`
+	Domain        string          `json:"domain"`
+	Status        CSPDomainStatus `json:"status"`
+	DomainRisk    string          `json:"domainRisk"`
+	Notes         []CSPDomainNote   `json:"notes"`
 	TimeBucket    int64             `json:"timeBucket"`
 	Significance  int               `json:"significance"`
 	ResourceTypes []string          `json:"resourceTypes"`
@@ -60,21 +60,21 @@ type CspDomainData struct {
 	Sources       int               `json:"sources"`
 	DiscoveredAt  int64             `json:"discoveredAt"`
 	LastSeenMs    int64             `json:"LastSeenMs"`
-	DomainInfo    CspDomainInfo     `json:"domainInfo"`
-	DomainReports []CspDomainReport `json:"domainReports"`
+	DomainInfo    CSPDomainInfo     `json:"domainInfo"`
+	DomainReports []CSPDomainReport `json:"domainReports"`
 	PartOfProfile bool              `json:"partOfProfile"`
 	Frequent      bool              `json:"frequent"`
 }
 
-type CspPreApprovedDomain struct {
+type CSPPreApprovedDomain struct {
 	Domain      string `json:"domain"`
 	Subdomains  bool   `json:"subdomains"`
 	ReferenceID string `json:"referenceId"`
 }
 
-type CspPreApprovedDomainsMap map[string]CspPreApprovedDomain
+type CSPPreApprovedDomainsMap map[string]CSPPreApprovedDomain
 
-func (c *Client) getCspDomainAPI(siteID int, domain string, APIPath string, ret interface{}) error {
+func (c *Client) getCSPDomainAPI(siteID int, domain string, APIPath string, ret interface{}) error {
 	log.Printf("[INFO] Getting CSP domain %s for domain %s from site ID: %d\n", APIPath, domain, siteID)
 
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
@@ -110,23 +110,23 @@ func (c *Client) getCspDomainAPI(siteID int, domain string, APIPath string, ret 
 	return nil
 }
 
-func (c *Client) getCspDomainData(siteID int, domain string) (*CspDomainData, error) {
-	ret := &CspDomainData{}
-	if err := c.getCspDomainAPI(siteID, domain, "", ret); err != nil {
+func (c *Client) getCSPDomainData(siteID int, domain string) (*CSPDomainData, error) {
+	ret := &CSPDomainData{}
+	if err := c.getCSPDomainAPI(siteID, domain, "", ret); err != nil {
 		return nil, err
 	}
 	return ret, nil
 }
 
-func (c *Client) getCspDomainStatus(siteID int, domain string) (*CspDomainStatus, error) {
-	ret := &CspDomainStatus{}
-	if err := c.getCspDomainAPI(siteID, domain, "status", ret); err != nil {
+func (c *Client) getCSPDomainStatus(siteID int, domain string) (*CSPDomainStatus, error) {
+	ret := &CSPDomainStatus{}
+	if err := c.getCSPDomainAPI(siteID, domain, "status", ret); err != nil {
 		return nil, err
 	}
 	return ret, nil
 }
 
-func (c *Client) updateCspDomainStatus(siteID int, domain string, status *CspDomainStatus) (*CspDomainStatus, error) {
+func (c *Client) updateCSPDomainStatus(siteID int, domain string, status *CSPDomainStatus) (*CSPDomainStatus, error) {
 	log.Printf("[INFO] Updating CSP domain status for domain %s from site ID: %d to: %v\n", domain, siteID, status)
 
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
@@ -157,7 +157,7 @@ func (c *Client) updateCspDomainStatus(siteID int, domain string, status *CspDom
 	}
 
 	// Parse the JSON
-	st := &CspDomainStatus{}
+	st := &CSPDomainStatus{}
 	err = json.Unmarshal([]byte(responseBody), st)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing JSON response for domain status for domain %s from site ID %d: %s\nresponse: %s\n",
@@ -167,15 +167,15 @@ func (c *Client) updateCspDomainStatus(siteID int, domain string, status *CspDom
 	return st, nil
 }
 
-func (c *Client) getCspDomainNotes(siteID int, domain string) ([]CspDomainNote, error) {
-	var ret []CspDomainNote
-	if err := c.getCspDomainAPI(siteID, domain, "notes", &ret); err != nil {
+func (c *Client) getCSPDomainNotes(siteID int, domain string) ([]CSPDomainNote, error) {
+	var ret []CSPDomainNote
+	if err := c.getCSPDomainAPI(siteID, domain, "notes", &ret); err != nil {
 		return nil, err
 	}
 	return ret, nil
 }
 
-func (c *Client) addCspDomainNote(siteID int, domain string, note string) error {
+func (c *Client) addCSPDomainNote(siteID int, domain string, note string) error {
 	log.Printf("[INFO] Getting CSP domain notes for domain %s from site ID: %d\n", domain, siteID)
 
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
@@ -201,7 +201,7 @@ func (c *Client) addCspDomainNote(siteID int, domain string, note string) error 
 	}
 
 	// Parse the JSON
-	var notes []CspDomainNote
+	var notes []CSPDomainNote
 	err = json.Unmarshal([]byte(responseBody), &notes)
 	if err != nil {
 		return fmt.Errorf("Error parsing JSON response for domain notes for domain %s from site ID %d: %s\nresponse: %s\n",
@@ -211,7 +211,7 @@ func (c *Client) addCspDomainNote(siteID int, domain string, note string) error 
 	return nil
 }
 
-func (c *Client) deleteCspDomainNotes(siteID int, domain string) error {
+func (c *Client) deleteCSPDomainNotes(siteID int, domain string) error {
 	log.Printf("[INFO] Deleting CSP domain notes for domain %s from site ID: %d\n", domain, siteID)
 
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
@@ -235,24 +235,42 @@ func (c *Client) deleteCspDomainNotes(siteID int, domain string) error {
 	return nil
 }
 
-func (c *Client) getCspPreApprovedDomain(siteID int, domain string) (*CspPreApprovedDomain, error) {
+func (c *Client) getCSPPreApprovedDomain(siteID int, domain string) (*CSPPreApprovedDomain, error) {
 	log.Printf("[INFO] Getting CSP pre-approved domain %s from site ID: %d\n", domain, siteID)
 
-	domMap, err := c.getCspPreApprovedDomains(siteID)
-	if err != nil {
-		return nil, err
-	}
-
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
-	dom, ok := domMap[domainRef]
-	if !ok {
-		return nil, fmt.Errorf("Error, couldn't find pre-approved domain %s from site ID %d\n", domain, siteID)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet,
+		fmt.Sprintf("%s%s/%d/preapprovedlist/%s", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef),
+		nil)
+	if err != nil {
+		return nil, fmt.Errorf("Error from CSP API for when getting pre-approved domains list for site ID %d: %s\n", siteID, err)
 	}
 
-	return &dom, nil
+	// Read the body
+	defer resp.Body.Close()
+	responseBody, err := ioutil.ReadAll(resp.Body)
+
+	// Dump JSON
+	log.Printf("[DEBUG] CSP API Get Pre-Approved Domain Data JSON response: %s\n", string(responseBody))
+
+	// Check the response code
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("Error status code %d from CSP API when getting pre-approved domain %s for site %d: %s\n",
+			resp.StatusCode, domain, siteID, string(responseBody))
+	}
+
+	// Parse the JSON
+	var preApprovedDomain CSPPreApprovedDomain
+	err = json.Unmarshal([]byte(responseBody), &preApprovedDomain)
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing JSON response for pre-approved domain %s for site ID %d: %s\nresponse: %s\n",
+			domain, siteID, err, string(responseBody))
+	}
+
+	return &preApprovedDomain, nil
 }
 
-func (c *Client) getCspPreApprovedDomains(siteID int) (CspPreApprovedDomainsMap, error) {
+func (c *Client) getCSPPreApprovedDomains(siteID int) (CSPPreApprovedDomainsMap, error) {
 	log.Printf("[INFO] Getting CSP pre-approved domains for site ID: %d\n", siteID)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet,
@@ -276,24 +294,23 @@ func (c *Client) getCspPreApprovedDomains(siteID int) (CspPreApprovedDomainsMap,
 	}
 
 	// Parse the JSON
-	var preApprovedList []CspPreApprovedDomain
+	var preApprovedList []CSPPreApprovedDomain
 	err = json.Unmarshal([]byte(responseBody), &preApprovedList)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing JSON response for pre-approved domains list for site ID %d: %s\nresponse: %s\n",
 			siteID, err, string(responseBody))
 	}
 
-	// var domMap = CspPreApprovedDomainsMap{}
-	domMap := make(CspPreApprovedDomainsMap, len(preApprovedList))
+	domainsMap := make(CSPPreApprovedDomainsMap, len(preApprovedList))
 	for i := range preApprovedList {
 		dom := preApprovedList[i]
-		domMap[dom.ReferenceID] = dom
+		domainsMap[dom.ReferenceID] = dom
 	}
 
-	return domMap, nil
+	return domainsMap, nil
 }
 
-func (c *Client) updateCspPreApprovedDomain(siteID int, dom *CspPreApprovedDomain) (*CspPreApprovedDomain, error) {
+func (c *Client) updateCSPPreApprovedDomain(siteID int, dom *CSPPreApprovedDomain) (*CSPPreApprovedDomain, error) {
 	log.Printf("[INFO] Updating CSP pre-approved domain for site ID: %d , domain: %v", siteID, dom)
 
 	domJSON, err := json.Marshal(dom)
@@ -323,7 +340,7 @@ func (c *Client) updateCspPreApprovedDomain(siteID int, dom *CspPreApprovedDomai
 	}
 
 	// Parse the JSON
-	var updatedDom CspPreApprovedDomain
+	var updatedDom CSPPreApprovedDomain
 	err = json.Unmarshal([]byte(responseBody), &updatedDom)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing JSON response for pre-approved domain %v for site ID %d: %s\nresponse: %s\n",
@@ -333,7 +350,7 @@ func (c *Client) updateCspPreApprovedDomain(siteID int, dom *CspPreApprovedDomai
 	return &updatedDom, nil
 }
 
-func (c *Client) deleteCspPreApprovedDomains(siteID int, domainRef string) error {
+func (c *Client) deleteCSPPreApprovedDomains(siteID int, domainRef string) error {
 	log.Printf("[INFO] Deleting CSP pre-approved domain %s for site ID: %d\n", domainRef, siteID)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete,
