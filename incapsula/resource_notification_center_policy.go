@@ -91,7 +91,7 @@ func resourceNotificationCenterPolicy() *schema.Resource {
 				Description: "If value is ‘TRUE’, all newly onboarded assets are automatically added to the notification policy's assets list.\nDefault value is no\n",
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "TRUE",
+				Default:     "FALSE",
 			},
 			"policy_type": {
 				Description: "If value is ‘ACCOUNT’, the policy will apply only to the current account. \nIf the value is 'SUB_ACCOUNT' the policy applies to the sub accounts only. \n The parent account will receive notifications for activity in the sub accounts that are specified in the subAccountList parameter.\nThis parameter is available only in accounts that can contain sub accounts.\n",
@@ -235,10 +235,10 @@ func getAssets(d *schema.ResourceData) []AssetDto {
 	var assetList []AssetDto
 	assets := d.Get("asset").(*schema.Set)
 	for _, asset := range assets.List() {
-		asset2 := asset.(map[string]interface{})
+		assetResource := asset.(map[string]interface{})
 		assetDto := AssetDto{
-			AssetType: asset2["asset_type"].(string),
-			AssetId:   asset2["id"].(int),
+			AssetType: assetResource["asset_type"].(string),
+			AssetId:   assetResource["asset_id"].(int),
 		}
 		assetList = append(assetList, assetDto)
 	}
