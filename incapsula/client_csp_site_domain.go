@@ -46,10 +46,10 @@ type CSPDomainReport struct {
 
 // CSPDomainData is the struct describing a csp site config response
 type CSPDomainData struct {
-	ID            string          `json:"id"`
-	Domain        string          `json:"domain"`
-	Status        CSPDomainStatus `json:"status"`
-	DomainRisk    string          `json:"domainRisk"`
+	ID            string            `json:"id"`
+	Domain        string            `json:"domain"`
+	Status        CSPDomainStatus   `json:"status"`
+	DomainRisk    string            `json:"domainRisk"`
 	Notes         []CSPDomainNote   `json:"notes"`
 	TimeBucket    int64             `json:"timeBucket"`
 	Significance  int               `json:"significance"`
