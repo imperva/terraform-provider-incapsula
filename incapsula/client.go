@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -93,6 +94,33 @@ func (c *Client) DoJsonRequestWithCustomHeaders(method string, url string, data 
 
 func (c *Client) DoJsonRequestWithHeaders(method string, url string, data []byte) (*http.Response, error) {
 	return c.DoJsonRequestWithCustomHeaders(method, url, data, nil)
+}
+
+func (c *Client) DoJsonAndQueryParamsRequestWithHeaders(method string, url string, data []byte, params map[string]string) (*http.Response, error) {
+	req, err := PrepareJsonRequest(method, url, data)
+	if err != nil {
+		return nil, fmt.Errorf("Error preparing request: %s", err)
+	}
+	q := req.URL.Query()
+	for name, value := range params {
+		q.Add(name, value)
+	}
+	req.URL.RawQuery = q.Encode()
+
+	SetHeaders(c, req, contentTypeApplicationJson, nil)
+
+	return c.httpClient.Do(req)
+}
+
+// GetRequestParamsWithCaid Use this function if you want to add caid to your request as a query param.
+// you need to send caid if you want to preform action on resources belong to child account (example: reseller -> account)
+func GetRequestParamsWithCaid(accountId int) map[string]string {
+	var params = map[string]string{}
+	if accountId != 0 {
+		params["caid"] = strconv.Itoa(accountId)
+	}
+
+	return params
 }
 
 func (c *Client) DoJsonRequestWithHeadersForm(method string, url string, data []byte, contentType string) (*http.Response, error) {
