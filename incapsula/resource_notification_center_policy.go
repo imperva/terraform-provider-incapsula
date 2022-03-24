@@ -6,6 +6,22 @@ import (
 	"strconv"
 )
 
+var assetResource = schema.Resource{
+	Schema: map[string]*schema.Schema{
+		"asset_type": {
+			Type:        schema.TypeString,
+			Description: "The asset type",
+			Required:    true,
+		},
+
+		"asset_id": {
+			Type:        schema.TypeInt,
+			Description: "The asset id",
+			Optional:    true,
+		},
+	},
+}
+
 func resourceNotificationCenterPolicy() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceNotificationCenterPolicyCreate,
@@ -70,21 +86,7 @@ func resourceNotificationCenterPolicy() *schema.Resource {
 				Description: "Assets to receive notifications (if assets are relevant to the sub category type). \nObject struct:\nassetType: the asset type. Example: websites, router connections, network prefixes, individual IPs, Flow exporters\nassetId: the asset id.\n",
 				Type:        schema.TypeSet,
 				Optional:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"asset_type": {
-							Type:        schema.TypeString,
-							Description: "The asset type",
-							Required:    true,
-						},
-
-						"asset_id": {
-							Type:        schema.TypeInt,
-							Description: "The asset id",
-							Optional:    true,
-						},
-					},
-				},
+				Elem:        &assetResource,
 			},
 
 			"apply_to_new_assets": {
@@ -112,7 +114,6 @@ func resourceNotificationCenterPolicy() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
 				},
-				//Computed: true,
 				Optional: true,
 			},
 		},
@@ -130,7 +131,7 @@ func resourceNotificationCenterPolicyUpdate(data *schema.ResourceData, i interfa
 		log.Printf("[ERROR] Could not update NotificationCenterPolicy id:%d with name: %s, %s\n", notificationCenterPolicyId, notificationCenterPolicyName, err)
 		return err
 	} else {
-		log.Printf("[DEBUG] NotificationCenter update policy with json: %s ", notificationCenterPolicyAddResponse)
+		log.Printf("[DEBUG] NotificationCenter update policy with json: %+v ", notificationCenterPolicyAddResponse)
 	}
 
 	return resourceNotificationCenterPolicyRead(data, client)
@@ -147,7 +148,7 @@ func resourceNotificationCenterPolicyCreate(data *schema.ResourceData, i interfa
 		log.Printf("[ERROR] Could not create NotificationCenterPolicy %s, %s\n", notificationCenterPolicyName, err)
 		return err
 	} else {
-		log.Printf("[DEBUG] NotificationCenter create policy with json: %s ", notificationCenterPolicyAddResponse)
+		log.Printf("[DEBUG] NotificationCenter create policy with json: %+v ", notificationCenterPolicyAddResponse)
 	}
 
 	policyID := strconv.Itoa(notificationCenterPolicyAddResponse.Data.PolicyId)
@@ -161,8 +162,8 @@ func resourceNotificationCenterPolicyCreate(data *schema.ResourceData, i interfa
 //so we can share it with create & update function
 func getNotificationCenterPolicyCommonProperties(data *schema.ResourceData) NotificationPolicyFullDto {
 	log.Printf("[INFO] policy_id: %data\n", data.Get("policy_id").(int))
-	log.Printf("[INFO] account_id: %s\n", data.Get("account_id").(int))
-	log.Printf("[INFO] policy_name: %data\n", data.Get("policy_name").(string))
+	log.Printf("[INFO] account_id: %d\n", data.Get("account_id").(int))
+	log.Printf("[INFO] policy_name: %sata\n", data.Get("policy_name").(string))
 	log.Printf("[INFO] status: %s\n", data.Get("status").(string))
 	log.Printf("[INFO] sub_category: %s\n", data.Get("sub_category").(string))
 	log.Printf("[INFO] emailchannel_user_recipient_list: %s\n", data.Get("emailchannel_user_recipient_list").(interface{}))
@@ -249,8 +250,7 @@ func resourceNotificationCenterPolicyRead(data *schema.ResourceData, i interface
 	client := i.(*Client)
 	policyID, _ := getPolicyId(data)
 	notificationCenterPolicy, err := client.GetNotificationCenterPolicy(policyID)
-	log.Printf("[INFO] Reading NotificationCenterPolicy with id  %d \nThe policy: %+v", policyID, notificationCenterPolicy)
-
+	log.Printf("[INFO] Reading NotificationCenterPolicy with id %d \nThe policy: %+v", policyID, notificationCenterPolicy)
 	if err != nil {
 		return err
 	}
@@ -265,37 +265,8 @@ func resourceNotificationCenterPolicyRead(data *schema.ResourceData, i interface
 	data.Set("policy_name", notificationCenterPolicy.Data.PolicyName)
 	data.Set("status", notificationCenterPolicy.Data.Status)
 	data.Set("sub_category", notificationCenterPolicy.Data.SubCategory)
-
-	var emailChannelUserRecipientsList []RecipientDto
-	var emailChannelExternalRecipientsList []RecipientDto
-	for _, channel := range notificationCenterPolicy.Data.NotificationChannelList {
-		if channel.ChannelType == "email" {
-			for _, recpient := range channel.RecipientToList {
-				switch recpient.RecipientType {
-				case "External":
-					emailChannelExternalRecipientsList = append(emailChannelExternalRecipientsList, RecipientDto{
-						RecipientType: recpient.RecipientType,
-						DisplayName:   recpient.DisplayName,
-					})
-				case "User":
-					emailChannelUserRecipientsList = append(emailChannelUserRecipientsList, RecipientDto{
-						RecipientType: recpient.RecipientType,
-						Id:            recpient.Id,
-					})
-				}
-			}
-			//emailChannelUserRecipientsList = append(emailChannelUserRecipientsList, channel.RecipientToList...)
-		}
-	}
-	data.Set("emailchannel_user_recipient_list", emailChannelUserRecipientsList)
-	data.Set("emailchannel_external_recipient_list", emailChannelExternalRecipientsList)
-
-	var assetList []int
-	for _, asset := range notificationCenterPolicy.Data.AssetList {
-		assetList = append(assetList, asset.AssetId)
-	}
-	data.Set("asset", assetList)
-
+	handleEmailChannelRead(data, notificationCenterPolicy)
+	handleAssetsRead(data, notificationCenterPolicy)
 	data.Set("apply_to_new_assets", notificationCenterPolicy.Data.ApplyToNewAssets)
 	data.Set("policy_type", notificationCenterPolicy.Data.PolicyType)
 	data.Set("apply_to_new_sub_accounts", notificationCenterPolicy.Data.SubAccountPolicyInfo.ApplyToNewSubAccounts)
@@ -313,6 +284,43 @@ func resourceNotificationCenterPolicyRead(data *schema.ResourceData, i interface
 	log.Printf("[INFO] Finished reading notificationCenterPolicy: %s\n", data.Id())
 
 	return nil
+}
+
+func handleAssetsRead(data *schema.ResourceData, notificationCenterPolicy *NotificationPolicy) {
+	var assets []interface{}
+	for _, assetFromServer := range notificationCenterPolicy.Data.AssetList {
+		asset := map[string]interface{}{}
+		asset["asset_type"] = assetFromServer.AssetType
+		asset["asset_id"] = assetFromServer.AssetId
+		log.Printf("[DEBUG] Adding asset to assets set: %+v", asset)
+		assets = append(assets, asset)
+	}
+	log.Printf("[DEBUG] Assets set to save: %+v", assets)
+	assetSet := schema.NewSet(schema.HashResource(&assetResource), assets)
+	data.Set("asset", assetSet)
+}
+
+func handleEmailChannelRead(data *schema.ResourceData, notificationCenterPolicy *NotificationPolicy) {
+	var emailChannelUserRecipientsList []int
+	var emailChannelExternalRecipientsList []string
+	for _, channel := range notificationCenterPolicy.Data.NotificationChannelList {
+		if channel.ChannelType == "email" {
+			for _, recpient := range channel.RecipientToList {
+				switch recpient.RecipientType {
+				case "External":
+					log.Printf("[DEBUG] Adding recipient to external recipients list: %+v", recpient)
+					emailChannelExternalRecipientsList = append(emailChannelExternalRecipientsList, recpient.DisplayName)
+				case "User":
+					log.Printf("[DEBUG] Adding recipient to user recipients list: %+v", recpient)
+					emailChannelUserRecipientsList = append(emailChannelUserRecipientsList, recpient.Id)
+				}
+			}
+		}
+	}
+	log.Printf("[DEBUG] External recipients list to save: %+v", emailChannelUserRecipientsList)
+	data.Set("emailchannel_user_recipient_list", emailChannelUserRecipientsList)
+	log.Printf("[DEBUG] User recipients list to save: %+v", emailChannelExternalRecipientsList)
+	data.Set("emailchannel_external_recipient_list", emailChannelExternalRecipientsList)
 }
 
 func getPolicyId(data *schema.ResourceData) (int, error) {
