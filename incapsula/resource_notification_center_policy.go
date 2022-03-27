@@ -1,9 +1,11 @@
 package incapsula
 
 import (
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
+	"strings"
 )
 
 var assetResource = schema.Resource{
@@ -29,7 +31,28 @@ func resourceNotificationCenterPolicy() *schema.Resource {
 		Update: resourceNotificationCenterPolicyUpdate,
 		Delete: resourceNotificationCenterPolicyDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				idSlice := strings.Split(d.Id(), "/")
+				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
+					return nil, fmt.Errorf("unexpected format of NotificationCenterPolicy import pair (%q), expected accountId/policyId", d.Id())
+				}
+
+				accountId, err := strconv.Atoi(idSlice[0])
+				if err != nil {
+					fmt.Errorf("NotificationCenterPolicy- failed to account Id from import command, actual value: %s, expected numeric id", idSlice[0])
+				}
+
+				policyId, err := strconv.Atoi(idSlice[1])
+				if err != nil {
+					fmt.Errorf("NotificationCenterPolicy- failed to convert policy Id from import command, actual value: %s, expected numeric id", idSlice[0])
+				}
+
+				d.Set("account_id", accountId)
+				d.SetId(idSlice[1])
+				log.Printf("[DEBUG] Import NotificationCenterPolicy JSON for account Id: %d, policy Id: %d", accountId, policyId)
+
+				return []*schema.ResourceData{d}, nil
+			},
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -57,10 +80,11 @@ func resourceNotificationCenterPolicy() *schema.Resource {
 				Default:     "ENABLE",
 			},
 			"sub_category": {
-				Description: "Subtype of notification policy. Example values include: ‘account_notifications’; ‘website_notifications’; ‘certificate_management_notifications’",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Description: "Subtype of notification policy. Example values include: ‘account_notifications’; " +
+					"‘website_notifications’; ‘certificate_management_notifications’",
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
 			},
 
 			"emailchannel_user_recipient_list": {
@@ -83,30 +107,37 @@ func resourceNotificationCenterPolicy() *schema.Resource {
 			},
 
 			"asset": {
-				Description: "Assets to receive notifications (if assets are relevant to the sub category type). \nObject struct:\nassetType: the asset type. Example: websites, router connections, network prefixes, individual IPs, Flow exporters\nassetId: the asset id.\n",
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Elem:        &assetResource,
+				Description: "Assets to receive notifications (if assets are relevant to the sub category type). " +
+					"\nObject struct:\nassetType: the asset type. Example: websites, router connections, network prefixes, " +
+					"individual IPs, Flow exporters\nassetId: the asset id.\n",
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &assetResource,
 			},
 
 			"apply_to_new_assets": {
-				Description: "If value is ‘TRUE’, all newly onboarded assets are automatically added to the notification policy's assets list.\nDefault value is no\n",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "FALSE",
+				Description: "If value is ‘TRUE’, all newly onboarded assets are automatically added to the " +
+					"notification policy's assets list.\nDefault value is no\n",
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "FALSE",
 			},
 			"policy_type": {
-				Description: "If value is ‘ACCOUNT’, the policy will apply only to the current account. \nIf the value is 'SUB_ACCOUNT' the policy applies to the sub accounts only. \n The parent account will receive notifications for activity in the sub accounts that are specified in the subAccountList parameter.\nThis parameter is available only in accounts that can contain sub accounts.\n",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     "ACCOUNT",
+				Description: "If value is ‘ACCOUNT’, the policy will apply only to the current account. \nIf the value" +
+					" is 'SUB_ACCOUNT' the policy applies to the sub accounts only. \n The parent account will receive " +
+					"notifications for activity in the sub accounts that are specified in the subAccountList parameter." +
+					"\nThis parameter is available only in accounts that can contain sub accounts.\n",
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+				Default:  "ACCOUNT",
 			},
 			"apply_to_new_sub_accounts": {
-				Description: "If value is ‘TRUE’, all newly onboarded sub accounts are automatically added to the notification policy's sub account list.\nDefault value is no\n",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "FALSE",
+				Description: "If value is ‘TRUE’, all newly onboarded sub accounts are automatically added to the " +
+					"notification policy's sub account list.\nDefault value is no\n",
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "FALSE",
 			},
 			"sub_account_list": {
 				Description: "The policy ID. During update must be equal to the updated policy ID.",
@@ -124,11 +155,14 @@ func resourceNotificationCenterPolicyUpdate(data *schema.ResourceData, i interfa
 	client := i.(*Client)
 	notificationCenterPolicyName := data.Get("policy_name").(string)
 	notificationCenterPolicyId := data.Get("policy_id").(int)
-	log.Printf("[INFO] Updateding NotificationCenterPolic with id:%d, and name: %s\n", notificationCenterPolicyId, notificationCenterPolicyName)
+	accountId := data.Get("account_id").(int)
+	log.Printf("[INFO] Updateding NotificationCenterPolicy with policyId:%d accountId:%d and name: %s\n",
+		notificationCenterPolicyId, accountId, notificationCenterPolicyName)
 	notificationPolicyFullDto := getNotificationCenterPolicyCommonProperties(data)
 	notificationCenterPolicyAddResponse, err := client.UpdateNotificationCenterPolicy(&notificationPolicyFullDto)
 	if err != nil {
-		log.Printf("[ERROR] Could not update NotificationCenterPolicy id:%d with name: %s, %s\n", notificationCenterPolicyId, notificationCenterPolicyName, err)
+		log.Printf("[ERROR] Could not update NotificationCenterPolicy id:%d with name: %s, %s\n",
+			notificationCenterPolicyId, notificationCenterPolicyName, err)
 		return err
 	} else {
 		log.Printf("[DEBUG] NotificationCenter update policy with json: %+v ", notificationCenterPolicyAddResponse)
@@ -249,7 +283,8 @@ func getAssets(d *schema.ResourceData) []AssetDto {
 func resourceNotificationCenterPolicyRead(data *schema.ResourceData, i interface{}) error {
 	client := i.(*Client)
 	policyID, _ := getPolicyId(data)
-	notificationCenterPolicy, err := client.GetNotificationCenterPolicy(policyID)
+	accountId := data.Get("account_id").(int)
+	notificationCenterPolicy, err := client.GetNotificationCenterPolicy(policyID, accountId)
 	log.Printf("[INFO] Reading NotificationCenterPolicy with id %d \nThe policy: %+v", policyID, notificationCenterPolicy)
 	if err != nil {
 		return err
@@ -335,8 +370,9 @@ func getPolicyId(data *schema.ResourceData) (int, error) {
 func resourceNotificationCenterPolicyDelete(data *schema.ResourceData, i interface{}) error {
 	client := i.(*Client)
 	policyID, _ := getPolicyId(data)
-	log.Printf("[INFO] Deleting NotificationCenterPolicy id: %d ", policyID)
-	err := client.DeleteNotificationCenterPolicy(policyID)
+	accountId := data.Get("account_id").(int)
+	log.Printf("[INFO] Deleting NotificationCenterPolicy policyId: %d and accountId: %d", policyID, accountId)
+	err := client.DeleteNotificationCenterPolicy(policyID, accountId)
 
 	if err != nil {
 		log.Printf("[ERROR] Could not delete NotificationCenterPolicy id: %d, %s", policyID, err)

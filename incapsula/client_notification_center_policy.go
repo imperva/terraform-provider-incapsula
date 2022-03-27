@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 const endPointNotificationCenterPolicy = "notification-settings/v3/policies/"
@@ -57,14 +58,15 @@ func (c *Client) AddNotificationCenterPolicy(notificationPolicyFullDto *Notifica
 		Data: *notificationPolicyFullDto,
 	}
 
+	params := getAccountIdRequestParams(notificationPolicyFullDto.AccountId)
 	reqURL := getRequestUrl(c)
 	policyJSON, err := json.Marshal(notificationPolicy)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to JSON marshal NotificationCenterPolicy: %s ", err)
 	}
 
-	log.Printf("[DEBUG] Add NotificationCenterPolicy JSON request: %s\n", string(policyJSON))
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, policyJSON)
+	log.Printf("[DEBUG] Add NotificationCenterPolicy with params %s and JSON request: %s\n", params, string(policyJSON))
+	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodPost, reqURL, policyJSON, params)
 	if err != nil {
 		return nil, fmt.Errorf("Error from NotificationCenter service when adding policy: %s ", err)
 	}
@@ -97,9 +99,10 @@ func (c *Client) UpdateNotificationCenterPolicy(notificationPolicyFullDto *Notif
 	if err != nil {
 		return nil, fmt.Errorf("Failed to JSON marshal NotificationCenterPolicy: %s ", err)
 	}
+	params := getAccountIdRequestParams(notificationPolicyFullDto.AccountId)
 
 	log.Printf("[DEBUG] Update NotificationCenterPolicy JSON request: %s\n", string(policyJSON))
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, policyJSON)
+	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodPut, reqURL, policyJSON, params)
 	if err != nil {
 		return nil, fmt.Errorf("Error from NotificationCenter service when updateing policy: %s ", err)
 	}
@@ -121,10 +124,11 @@ func (c *Client) UpdateNotificationCenterPolicy(notificationPolicyFullDto *Notif
 	return &policy, nil
 }
 
-func (c *Client) DeleteNotificationCenterPolicy(policyId int) error {
+func (c *Client) DeleteNotificationCenterPolicy(policyId int, accountId int) error {
 	log.Printf("[INFO] Deleting NotificationCenterPolicy with ID %d ", policyId)
 	requestUrl := getRequestUrlWithId(c, policyId)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, requestUrl, nil)
+	params := getAccountIdRequestParams(accountId)
+	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodDelete, requestUrl, nil, params)
 	if err != nil {
 		return fmt.Errorf("Error from NotificationCenterPolicy service when deleting Policy with Id %d: %s ", policyId, err)
 	}
@@ -151,11 +155,12 @@ func getRequestUrlWithId(c *Client, policyId int) string {
 	return requestUrl
 }
 
-func (c *Client) GetNotificationCenterPolicy(policyId int) (*NotificationPolicy, error) {
-	log.Printf("[INFO] Getting  NotificationCenterPolicy with Id: %d", policyId)
+func (c *Client) GetNotificationCenterPolicy(policyId int, accountId int) (*NotificationPolicy, error) {
+	log.Printf("[INFO] Getting  NotificationCenterPolicy with policyId: %d and accountId: %d", policyId, accountId)
 	requestUrl := getRequestUrlWithId(c, policyId)
 
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, requestUrl, nil)
+	params := getAccountIdRequestParams(accountId)
+	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, requestUrl, nil, params)
 	if err != nil {
 		return nil, fmt.Errorf("Error from NotificationCenter service when reading policy with Id %d: %s ", policyId, err)
 	}
@@ -174,4 +179,11 @@ func (c *Client) GetNotificationCenterPolicy(policyId int) (*NotificationPolicy,
 	}
 
 	return &notificationCenterPolicy, nil
+}
+
+func getAccountIdRequestParams(accountId int) map[string]string {
+	var params = map[string]string{}
+	params["caid"] = strconv.Itoa(accountId)
+
+	return params
 }

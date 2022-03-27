@@ -95,6 +95,22 @@ func (c *Client) DoJsonRequestWithHeaders(method string, url string, data []byte
 	return c.DoJsonRequestWithCustomHeaders(method, url, data, nil)
 }
 
+func (c *Client) DoJsonAndQueryParamsRequestWithHeaders(method string, url string, data []byte, params map[string]string) (*http.Response, error) {
+	req, err := PrepareJsonRequest(method, url, data)
+	if err != nil {
+		return nil, fmt.Errorf("Error preparing request: %s", err)
+	}
+	q := req.URL.Query()
+	for name, value := range params {
+		q.Add(name, value)
+	}
+	req.URL.RawQuery = q.Encode()
+
+	SetHeaders(c, req, contentTypeApplicationJson, nil)
+
+	return c.httpClient.Do(req)
+}
+
 func (c *Client) DoJsonRequestWithHeadersForm(method string, url string, data []byte, contentType string) (*http.Response, error) {
 	req, err := PrepareJsonRequest(method, url, data)
 	if err != nil {
