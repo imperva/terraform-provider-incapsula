@@ -62,7 +62,9 @@ func testAccNotificationCenterPolicyDestroy(state *terraform.State) error {
 
 		policyIdStr := res.Primary.ID
 		policyId, _ := strconv.Atoi(policyIdStr)
-		notificationCenterPolicy, err := client.GetNotificationCenterPolicy(policyId)
+		accountIdStr := res.Primary.Attributes["account_id"]
+		accountId, _ := strconv.Atoi(accountIdStr)
+		notificationCenterPolicy, err := client.GetNotificationCenterPolicy(policyId, accountId)
 		policyDeleted := notificationCenterPolicy == nil && err != nil && strings.Contains(err.Error(), "Policy not found")
 		if !policyDeleted {
 			log.Printf("[INFO] ****Test**** testAccNotificationCenterPolicyDestroy, policy: %+v error: %s \n", notificationCenterPolicy, err)
@@ -89,8 +91,10 @@ func testCheckNotificationCenterPolicyExists() resource.TestCheckFunc {
 		}
 
 		client := testAccProvider.Meta().(*Client)
-		log.Printf("[INFO] ****Test**** policyId: %d", policyId)
-		notificationCenterPolicy, err := client.GetNotificationCenterPolicy(policyId)
+		accountIdStr := res.Primary.Attributes["account_id"]
+		accountId, _ := strconv.Atoi(accountIdStr)
+		log.Printf("[INFO] ****Test**** policyId: %d accountId:%d", policyId, accountId)
+		notificationCenterPolicy, err := client.GetNotificationCenterPolicy(policyId, accountId)
 		if err != nil {
 			return err
 		}
@@ -135,10 +139,12 @@ func testACCStateNotificationCenterPolicyId(s *terraform.State) (string, error) 
 		}
 
 		policyId, err := strconv.Atoi(rs.Primary.ID)
+		accountIdStr := rs.Primary.Attributes["account_id"]
+		accountId, _ := strconv.Atoi(accountIdStr)
 		if err != nil {
 			return "", fmt.Errorf("Error parsing Id %s to int", rs.Primary.ID)
 		}
-		return fmt.Sprintf("%d", policyId), nil
+		return fmt.Sprintf("%d/%d", accountId, policyId), nil
 	}
 
 	return "", fmt.Errorf("Error finding policyId Id")
