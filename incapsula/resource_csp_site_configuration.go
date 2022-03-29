@@ -82,11 +82,11 @@ func resourceCSPSiteConfigurationRead(d *schema.ResourceData, m interface{}) err
 	d.Set("email_addresses", emails)
 
 	switch {
-	case strings.Compare(cspSite.Discovery, "pause") == 0:
+	case strings.Compare(cspSite.Discovery, CSPDiscoveryOff) == 0:
 		d.Set("mode", cspSiteModeOff)
-	case strings.Compare(cspSite.Discovery, "start") == 0 && strings.Compare(cspSite.Mode, cspSiteModeMonitor) == 0:
+	case strings.Compare(cspSite.Discovery, CSPDiscoveryOn) == 0 && strings.Compare(cspSite.Mode, cspSiteModeMonitor) == 0:
 		d.Set("mode", cspSiteModeMonitor)
-	case strings.Compare(cspSite.Discovery, "start") == 0 && strings.Compare(cspSite.Mode, cspSiteModeEnforce) == 0:
+	case strings.Compare(cspSite.Discovery, CSPDiscoveryOn) == 0 && strings.Compare(cspSite.Mode, cspSiteModeEnforce) == 0:
 		d.Set("mode", cspSiteModeEnforce)
 	default:
 		d.Set("mode", cspSiteModeOff)
@@ -117,13 +117,13 @@ func resourceCSPSiteConfigurationUpdate(d *schema.ResourceData, m interface{}) e
 
 	switch d.Get("mode").(string) {
 	case cspSiteModeOff:
-		cspSiteConfig.Discovery = "pause"
+		cspSiteConfig.Discovery = CSPDiscoveryOff
 		cspSiteConfig.Mode = cspSiteModeMonitor
 	case cspSiteModeMonitor:
-		cspSiteConfig.Discovery = "start"
+		cspSiteConfig.Discovery = CSPDiscoveryOn
 		cspSiteConfig.Mode = cspSiteModeMonitor
 	case cspSiteModeEnforce:
-		cspSiteConfig.Discovery = "start"
+		cspSiteConfig.Discovery = CSPDiscoveryOn
 		cspSiteConfig.Mode = cspSiteModeEnforce
 	}
 
@@ -134,6 +134,8 @@ func resourceCSPSiteConfigurationUpdate(d *schema.ResourceData, m interface{}) e
 		return err
 	}
 	log.Printf("[DEBUG] Updating CSP site configuration for site ID: %d , got response: %v.", siteId, updatedSite)
+	id := strconv.Itoa(siteId)
+	d.SetId(id)
 
 	return resourceCSPSiteConfigurationRead(d, m)
 }

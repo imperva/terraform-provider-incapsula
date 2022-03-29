@@ -171,7 +171,7 @@ func TestCspSiteDomainDataResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
-	endpoint := fmt.Sprintf("%s/%d/domains/%s", CspSiteApiPath, siteID, "Z29vZ2xlLmNvbQ")
+	endpoint := fmt.Sprintf("%s/%d/domains/%s", CSPSiteApiPath, siteID, "Z29vZ2xlLmNvbQ")
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -265,11 +265,11 @@ func TestCspSiteDomainDataResponse(t *testing.T) {
 	}
 }
 
-func TestCspSiteDomainPreApprovedResponse(t *testing.T) {
+func TestCSPSiteDomainPreApprovedResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
-	endpoint := fmt.Sprintf("%s/%d/preapprovedlist", CspSiteApiPath, siteID)
+	endpoint := fmt.Sprintf("%s/%d/preapprovedlist", CSPSiteApiPath, siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -320,11 +320,11 @@ func TestCspSiteDomainPreApprovedResponse(t *testing.T) {
 	}
 }
 
-func TestCspSiteDomainPreApprovedUpdateResponse(t *testing.T) {
+func TestCSPSiteDomainPreApprovedUpdateResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
-	endpoint := fmt.Sprintf("%s/%d/preapprovedlist", CspSiteApiPath, siteID)
+	endpoint := fmt.Sprintf("%s/%d/preapprovedlist", CSPSiteApiPath, siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(201)
@@ -358,13 +358,13 @@ func TestCspSiteDomainPreApprovedUpdateResponse(t *testing.T) {
 	}
 }
 
-func TestCspSiteDomainNotesResponse(t *testing.T) {
+func TestCSPSiteDomainNotesResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
 	domain := "google.com"
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
-	endpoint := fmt.Sprintf("%s/%d/domains/%s/notes", CspSiteApiPath, siteID, domainRef)
+	endpoint := fmt.Sprintf("%s/%d/domains/%s/notes", CSPSiteApiPath, siteID, domainRef)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -400,13 +400,13 @@ func TestCspSiteDomainNotesResponse(t *testing.T) {
 	}
 }
 
-func TestCspSiteDomainStatusResponse(t *testing.T) {
+func TestCSPSiteDomainStatusResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
 	domain := "google.com"
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
-	endpoint := fmt.Sprintf("%s/%d/domains/%s/status", CspSiteApiPath, siteID, domainRef)
+	endpoint := fmt.Sprintf("%s/%d/domains/%s/status", CSPSiteApiPath, siteID, domainRef)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -434,13 +434,13 @@ func TestCspSiteDomainStatusResponse(t *testing.T) {
 	}
 }
 
-func TestCspSiteDomainStatusEmptyResponse(t *testing.T) {
+func TestCSPSiteDomainStatusEmptyResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
 	domain := "google.com"
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
-	endpoint := fmt.Sprintf("%s/%d/domains/%s/status", CspSiteApiPath, siteID, domainRef)
+	endpoint := fmt.Sprintf("%s/%d/domains/%s/status", CSPSiteApiPath, siteID, domainRef)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)

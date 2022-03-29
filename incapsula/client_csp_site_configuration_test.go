@@ -14,7 +14,7 @@ func TestCspSiteConfigBadConnection(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := 42
 
-	ret, err := client.GetCspSite(siteID)
+	ret, err := client.GetCSPSite(siteID)
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -26,7 +26,7 @@ func TestCspSiteConfigBadConnection(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	ret, err = client.UpdateCspSite(siteID, &CspSiteConfig{})
+	ret, err = client.UpdateCSPSite(siteID, &CSPSiteConfig{})
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -39,11 +39,11 @@ func TestCspSiteConfigBadConnection(t *testing.T) {
 	}
 }
 
-func TestCspSiteConfigErrorResponse(t *testing.T) {
+func TestCSPSiteConfigErrorResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
-	endpoint := fmt.Sprintf("%s/%d", CspSiteApiPath, siteID)
+	endpoint := fmt.Sprintf("%s/%d", CSPSiteApiPath, siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(500)
@@ -58,7 +58,7 @@ func TestCspSiteConfigErrorResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	ret, err := client.GetCspSite(siteID)
+	ret, err := client.GetCSPSite(siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -69,7 +69,7 @@ func TestCspSiteConfigErrorResponse(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	ret, err = client.UpdateCspSite(siteID, &CspSiteConfig{})
+	ret, err = client.UpdateCSPSite(siteID, &CSPSiteConfig{})
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -81,11 +81,11 @@ func TestCspSiteConfigErrorResponse(t *testing.T) {
 	}
 }
 
-func TestCspSiteConfigInvalidResponse(t *testing.T) {
+func TestCSPSiteConfigInvalidResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
-	endpoint := fmt.Sprintf("%s/%d", CspSiteApiPath, siteID)
+	endpoint := fmt.Sprintf("%s/%d", CSPSiteApiPath, siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -100,7 +100,7 @@ func TestCspSiteConfigInvalidResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	ret, err := client.GetCspSite(siteID)
+	ret, err := client.GetCSPSite(siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -111,7 +111,7 @@ func TestCspSiteConfigInvalidResponse(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	ret, err = client.UpdateCspSite(siteID, &CspSiteConfig{})
+	ret, err = client.UpdateCSPSite(siteID, &CSPSiteConfig{})
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -123,11 +123,11 @@ func TestCspSiteConfigInvalidResponse(t *testing.T) {
 	}
 }
 
-func TestCspSiteConfigResponse(t *testing.T) {
+func TestCSPSiteConfigResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
-	endpoint := fmt.Sprintf("%s/%d", CspSiteApiPath, siteID)
+	endpoint := fmt.Sprintf("%s/%d", CSPSiteApiPath, siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -152,7 +152,7 @@ func TestCspSiteConfigResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	ret, err := client.GetCspSite(siteID)
+	ret, err := client.GetCSPSite(siteID)
 	if err != nil {
 		t.Errorf("Should have not received an error")
 	}
@@ -160,19 +160,19 @@ func TestCspSiteConfigResponse(t *testing.T) {
 		t.Errorf("Should have received a response")
 	}
 	if ret.Name != "mage-website.abp-monsters.com" {
-		t.Errorf("Incorrect value inresponse from GetCspSite")
+		t.Errorf("Incorrect value inresponse from GetCSPSite")
 	}
 	if ret.Mode != "monitor" {
-		t.Errorf("Incorrect value inresponse from GetCspSite")
+		t.Errorf("Incorrect value inresponse from GetCSPSite")
 	}
 	if len(ret.Settings.Emails) != 1 {
-		t.Errorf("Incorrect value inresponse from GetCspSite")
+		t.Errorf("Incorrect value inresponse from GetCSPSite")
 	}
 	if ret.Settings.Emails[0].Email != "email@imperva.com" {
-		t.Errorf("Incorrect value inresponse from GetCspSite")
+		t.Errorf("Incorrect value inresponse from GetCSPSite")
 	}
 
-	ret, err = client.UpdateCspSite(siteID, &CspSiteConfig{})
+	ret, err = client.UpdateCSPSite(siteID, &CSPSiteConfig{})
 	if err != nil {
 		t.Errorf("Should have not received an error")
 	}
@@ -180,15 +180,15 @@ func TestCspSiteConfigResponse(t *testing.T) {
 		t.Errorf("Should have received a response")
 	}
 	if ret.Name != "mage-website.abp-monsters.com" {
-		t.Errorf("Incorrect value inresponse from GetCspSite")
+		t.Errorf("Incorrect value inresponse from GetCSPSite")
 	}
 	if ret.Mode != "monitor" {
-		t.Errorf("Incorrect value inresponse from GetCspSite")
+		t.Errorf("Incorrect value inresponse from GetCSPSite")
 	}
 	if len(ret.Settings.Emails) != 1 {
-		t.Errorf("Incorrect value inresponse from GetCspSite")
+		t.Errorf("Incorrect value inresponse from GetCSPSite")
 	}
 	if ret.Settings.Emails[0].Email != "email@imperva.com" {
-		t.Errorf("Incorrect value inresponse from GetCspSite")
+		t.Errorf("Incorrect value inresponse from GetCSPSite")
 	}
 }

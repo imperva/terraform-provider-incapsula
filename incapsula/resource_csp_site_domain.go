@@ -24,11 +24,11 @@ func resourceCSPSiteDomain() *schema.Resource {
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				keyParts := strings.Split(d.Id(), "/")
 				if len(keyParts) != 2 {
-					return nil, fmt.Errorf("Error parsing ID, actual value: %s, expected numeric id and string seperated by '.'\n", d.Id())
+					return nil, fmt.Errorf("Error parsing ID, actual value: %s, expected numeric id and string seperated by '/'\n", d.Id())
 				}
 				siteID, err := strconv.Atoi(keyParts[0])
 				if err != nil {
-					return nil, fmt.Errorf("failed to convert Site Id from import command, actual value: %s, expected numeric id", keyParts[0])
+					return nil, fmt.Errorf("failed to convert site ID from import command, actual value: %s, expected numeric id", keyParts[0])
 				}
 				domain, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(keyParts[1])
 				if err != nil {
@@ -140,17 +140,12 @@ func resourceCSPSiteDomainRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceCSPSiteDomainCreate(d *schema.ResourceData, m interface{}) error {
-	err := resourceCSPSiteDomainUpdate(d, m)
-	if err != nil {
-		return err
-	}
 	domRef := base64.RawURLEncoding.EncodeToString([]byte(d.Get("domain").(string)))
-
 	newID := fmt.Sprintf("%d/%s", d.Get("site_id").(int), domRef)
 	log.Printf("[DEBUG] Create CSP Domain, setting key %s to: %s", d.Id(), newID)
 	d.SetId(newID)
 
-	return nil
+	return resourceCSPSiteDomainUpdate(d, m)
 }
 
 func resourceCSPSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {

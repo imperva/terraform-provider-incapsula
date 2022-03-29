@@ -8,6 +8,11 @@ import (
 	"net/http"
 )
 
+const (
+	CSPDiscoveryOn  = "start"
+	CSPDiscoveryOff = "pause"
+)
+
 // CSPSiteConfig is the struct describing a csp site config response
 type CSPSiteConfig struct {
 	Name      string `json:"name"`
