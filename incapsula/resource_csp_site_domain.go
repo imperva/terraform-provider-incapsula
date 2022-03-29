@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
 	"strings"
@@ -66,6 +67,7 @@ func resourceCSPSiteDomain() *schema.Resource {
 				Description: "Defines whether the domain should be Blocked or Allowed once the site's mode changes to the Enforcement. Values: Blocked, Allowed",
 				Type:        schema.TypeString,
 				Default:     cspDomainStatusAllowed,
+				ValidateFunc: validation.StringInSlice([]string{cspDomainStatusAllowed, cspDomainStatusBlocked}, true),
 				Optional:    true,
 			},
 			"notes": {
