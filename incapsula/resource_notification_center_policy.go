@@ -93,7 +93,6 @@ func resourceNotificationCenterPolicy() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
 				},
-				//Computed: true,
 				Optional: true,
 			},
 			"emailchannel_external_recipient_list": {
@@ -102,7 +101,6 @@ func resourceNotificationCenterPolicy() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				//Computed: true,
 				Optional: true,
 			},
 
@@ -158,14 +156,14 @@ func resourceNotificationCenterPolicyUpdate(data *schema.ResourceData, i interfa
 	accountId := data.Get("account_id").(int)
 	log.Printf("[INFO] Updateding NotificationCenterPolicy with policyId:%d accountId:%d and name: %s\n",
 		notificationCenterPolicyId, accountId, notificationCenterPolicyName)
-	notificationPolicyFullDto := getNotificationCenterPolicyCommonProperties(data)
-	notificationCenterPolicyAddResponse, err := client.UpdateNotificationCenterPolicy(&notificationPolicyFullDto)
+	notificationPolicyFullDto := getNotificationCenterPolicyFromResource(data)
+	notificationCenterPolicyUpdateResponse, err := client.UpdateNotificationCenterPolicy(&notificationPolicyFullDto)
 	if err != nil {
-		log.Printf("[ERROR] Could not update NotificationCenterPolicy id:%d with name: %s, %s\n",
-			notificationCenterPolicyId, notificationCenterPolicyName, err)
+		log.Printf("[ERROR] Could not update NotificationCenterPolicy id:%d. \nThe policy: %+v  \nThe response:%+v \nThe error: %s\n",
+			notificationCenterPolicyId, notificationPolicyFullDto, notificationCenterPolicyUpdateResponse, err)
 		return err
 	} else {
-		log.Printf("[DEBUG] NotificationCenter update policy with json: %+v ", notificationCenterPolicyAddResponse)
+		log.Printf("[DEBUG] NotificationCenter update policy with json reponse: %+v ", notificationCenterPolicyUpdateResponse)
 	}
 
 	return resourceNotificationCenterPolicyRead(data, client)
@@ -175,14 +173,15 @@ func resourceNotificationCenterPolicyCreate(data *schema.ResourceData, i interfa
 	client := i.(*Client)
 	notificationCenterPolicyName := data.Get("policy_name").(string)
 	log.Printf("[INFO] Creating NotificationCenterPolicy: %s\n", notificationCenterPolicyName)
-	notificationPolicyFullDto := getNotificationCenterPolicyCommonProperties(data)
+	notificationPolicyFullDto := getNotificationCenterPolicyFromResource(data)
 	notificationCenterPolicyAddResponse, err := client.AddNotificationCenterPolicy(&notificationPolicyFullDto)
 
 	if err != nil {
-		log.Printf("[ERROR] Could not create NotificationCenterPolicy %s, %s\n", notificationCenterPolicyName, err)
+		log.Printf("[ERROR] Could not create NotificationCenterPolicy. \nThe policy: %+v  \nThe response:%+v \nThe error: %s\n",
+			notificationPolicyFullDto, notificationCenterPolicyAddResponse, err)
 		return err
 	} else {
-		log.Printf("[DEBUG] NotificationCenter create policy with json: %+v ", notificationCenterPolicyAddResponse)
+		log.Printf("[DEBUG] NotificationCenter create policy with json response: %+v ", notificationCenterPolicyAddResponse)
 	}
 
 	policyID := strconv.Itoa(notificationCenterPolicyAddResponse.Data.PolicyId)
@@ -192,9 +191,9 @@ func resourceNotificationCenterPolicyCreate(data *schema.ResourceData, i interfa
 	return resourceNotificationCenterPolicyRead(data, client)
 }
 
-//This function get all the common properties of NotificationCenterPolicy,
+//This function get all the properties of NotificationCenterPolicy from the resource,
 //so we can share it with create & update function
-func getNotificationCenterPolicyCommonProperties(data *schema.ResourceData) NotificationPolicyFullDto {
+func getNotificationCenterPolicyFromResource(data *schema.ResourceData) NotificationPolicyFullDto {
 	log.Printf("[INFO] policy_id: %data\n", data.Get("policy_id").(int))
 	log.Printf("[INFO] account_id: %d\n", data.Get("account_id").(int))
 	log.Printf("[INFO] policy_name: %sata\n", data.Get("policy_name").(string))
@@ -208,9 +207,9 @@ func getNotificationCenterPolicyCommonProperties(data *schema.ResourceData) Noti
 	log.Printf("[INFO] apply_to_new_sub_accounts: %s\n", data.Get("apply_to_new_sub_accounts").(string))
 	log.Printf("[INFO] sub_account_list: %s\n", data.Get("sub_account_list").(interface{}))
 
-	assetList := getAssets(data)
-	subAccountsDtoList := getSubAccountsDtoList(data)
-	notificationChannelList := getEmailChannel(data)
+	assetList := getAssetsFromResource(data)
+	subAccountsDtoList := getSubAccountsDtoListFromResource(data)
+	notificationChannelList := getEmailChannelFromResource(data)
 	notificationPolicyFullDto := NotificationPolicyFullDto{
 		PolicyId:                data.Get("policy_id").(int),
 		AccountId:               data.Get("account_id").(int),
@@ -226,10 +225,12 @@ func getNotificationCenterPolicyCommonProperties(data *schema.ResourceData) Noti
 			SubAccountList:        subAccountsDtoList,
 		},
 	}
+	log.Printf("[DEBUG] getNotificationCenterPolicyFromResource build a NotificationPolicyFullDto from the resource file: %+v", notificationPolicyFullDto)
+
 	return notificationPolicyFullDto
 }
 
-func getEmailChannel(data *schema.ResourceData) NotificationChannelEmailDto {
+func getEmailChannelFromResource(data *schema.ResourceData) NotificationChannelEmailDto {
 	var userRecipientDto []RecipientDto
 	usersIds := data.Get("emailchannel_user_recipient_list").([]interface{})
 	for _, userId := range usersIds {
@@ -256,7 +257,7 @@ func getEmailChannel(data *schema.ResourceData) NotificationChannelEmailDto {
 	return notificationChannelList
 }
 
-func getSubAccountsDtoList(d *schema.ResourceData) []SubAccountDTO {
+func getSubAccountsDtoListFromResource(d *schema.ResourceData) []SubAccountDTO {
 	subAccountsIds := d.Get("sub_account_list").([]interface{})
 	var subAccountsDtoList []SubAccountDTO
 	for _, subAccountId := range subAccountsIds {
@@ -266,7 +267,7 @@ func getSubAccountsDtoList(d *schema.ResourceData) []SubAccountDTO {
 	return subAccountsDtoList
 }
 
-func getAssets(d *schema.ResourceData) []AssetDto {
+func getAssetsFromResource(d *schema.ResourceData) []AssetDto {
 	var assetList []AssetDto
 	assets := d.Get("asset").(*schema.Set)
 	for _, asset := range assets.List() {
@@ -311,11 +312,7 @@ func resourceNotificationCenterPolicyRead(data *schema.ResourceData, i interface
 		subAccountList = append(subAccountList, subAccount.SubAccountId)
 	}
 
-	//subAccountList = make([]int, 0)
-	log.Printf("[INFO] ******* issue ****** : %+v", subAccountList)
-	//data.Set("sub_account_list", []int{})
 	data.Set("sub_account_list", subAccountList)
-
 	log.Printf("[INFO] Finished reading notificationCenterPolicy: %s\n", data.Id())
 
 	return nil

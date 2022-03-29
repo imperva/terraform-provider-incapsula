@@ -67,6 +67,7 @@ func (c *Client) AddNotificationCenterPolicy(notificationPolicyFullDto *Notifica
 
 	log.Printf("[DEBUG] Add NotificationCenterPolicy with params %s and JSON request: %s\n", params, string(policyJSON))
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodPost, reqURL, policyJSON, params)
+	log.Printf("[DEBUG] client_notification_center_policy Post rest response:\n%+v", resp)
 	if err != nil {
 		return nil, fmt.Errorf("Error from NotificationCenter service when adding policy: %s ", err)
 	}
@@ -103,6 +104,7 @@ func (c *Client) UpdateNotificationCenterPolicy(notificationPolicyFullDto *Notif
 
 	log.Printf("[DEBUG] Update NotificationCenterPolicy JSON request: %s\n", string(policyJSON))
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodPut, reqURL, policyJSON, params)
+	log.Printf("[DEBUG] client_notification_center_policy Put rest response:\n%+v", resp)
 	if err != nil {
 		return nil, fmt.Errorf("Error from NotificationCenter service when updateing policy: %s ", err)
 	}
@@ -129,6 +131,7 @@ func (c *Client) DeleteNotificationCenterPolicy(policyId int, accountId int) err
 	requestUrl := getRequestUrlWithId(c, policyId)
 	params := getAccountIdRequestParams(accountId)
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodDelete, requestUrl, nil, params)
+	log.Printf("[DEBUG] client_notification_center_policy Delete rest response:\n%+v", resp)
 	if err != nil {
 		return fmt.Errorf("Error from NotificationCenterPolicy service when deleting Policy with Id %d: %s ", policyId, err)
 	}
@@ -161,6 +164,7 @@ func (c *Client) GetNotificationCenterPolicy(policyId int, accountId int) (*Noti
 
 	params := getAccountIdRequestParams(accountId)
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, requestUrl, nil, params)
+	log.Printf("[DEBUG] client_notification_center_policy Get rest response:\n%+v", resp)
 	if err != nil {
 		return nil, fmt.Errorf("Error from NotificationCenter service when reading policy with Id %d: %s ", policyId, err)
 	}
