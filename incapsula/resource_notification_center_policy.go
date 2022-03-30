@@ -3,6 +3,7 @@ package incapsula
 import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
 	"strings"
@@ -33,34 +34,41 @@ func resourceNotificationCenterPolicy() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				idSlice := strings.Split(d.Id(), "/")
-				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
-					return nil, fmt.Errorf("unexpected format of NotificationCenterPolicy import pair (%q), expected accountId/policyId", d.Id())
+				isOnlyPolicyIdFormat := len(idSlice) == 1
+				isAccountIdSlashPolicyIdFormat := !(len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "")
+
+				if !isOnlyPolicyIdFormat && !isAccountIdSlashPolicyIdFormat {
+					return nil, fmt.Errorf("unexpected format of NotificationCenterPolicy import input (%q), expected accountId/policyId or policyId only", d.Id())
 				}
 
-				accountId, err := strconv.Atoi(idSlice[0])
+				policyIdIndex := 0
+				if isAccountIdSlashPolicyIdFormat {
+					policyIdIndex = 1
+				}
+
+				policyIdString := idSlice[policyIdIndex]
+				policyId, err := strconv.Atoi(policyIdString)
 				if err != nil {
-					fmt.Errorf("NotificationCenterPolicy- failed to account Id from import command, actual value: %s, expected numeric id", idSlice[0])
+					fmt.Errorf("NotificationCenterPolicy- failed to convert policy Id from import command, actual value: %s, expected numeric id", policyIdString)
 				}
 
-				policyId, err := strconv.Atoi(idSlice[1])
-				if err != nil {
-					fmt.Errorf("NotificationCenterPolicy- failed to convert policy Id from import command, actual value: %s, expected numeric id", idSlice[0])
+				d.SetId(policyIdString)
+				if isAccountIdSlashPolicyIdFormat {
+					accountId, err := strconv.Atoi(idSlice[0])
+					if err != nil {
+						fmt.Errorf("NotificationCenterPolicy- failed to account Id from import command, actual value: %s, expected numeric id", idSlice[0])
+					}
+					d.Set("account_id", accountId)
+					log.Printf("[DEBUG] Import NotificationCenterPolicy JSON for account Id: %d, policy Id: %d", accountId, policyId)
+				} else {
+					log.Printf("[DEBUG] Import NotificationCenterPolicy JSON for policy Id: %d", policyId)
 				}
-
-				d.Set("account_id", accountId)
-				d.SetId(idSlice[1])
-				log.Printf("[DEBUG] Import NotificationCenterPolicy JSON for account Id: %d, policy Id: %d", accountId, policyId)
 
 				return []*schema.ResourceData{d}, nil
 			},
 		},
 
 		Schema: map[string]*schema.Schema{
-			"policy_id": {
-				Description: "The policy ID. During update must be equal to the updated policy ID.",
-				Type:        schema.TypeInt,
-				Computed:    true,
-			},
 			"account_id": {
 				Description: "Account ID",
 				Type:        schema.TypeInt,
@@ -71,13 +79,13 @@ func resourceNotificationCenterPolicy() *schema.Resource {
 				Description: "The name of the policy",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    false,
 			},
 			"status": {
-				Description: "Indicates whether policy is enabled or disabled. Default value is enable",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "ENABLE",
+				Description:  "Indicates whether policy is enabled or disabled. Default value is ENABLE",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "ENABLE",
+				ValidateFunc: validation.StringInSlice([]string{"ENABLE", "DISABLE"}, false),
 			},
 			"sub_category": {
 				Description: "Subtype of notification policy. Example values include: ‘account_notifications’; " +
@@ -111,14 +119,16 @@ func resourceNotificationCenterPolicy() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &assetResource,
+				Set:      schema.HashResource(&assetResource),
 			},
 
 			"apply_to_new_assets": {
 				Description: "If value is ‘TRUE’, all newly onboarded assets are automatically added to the " +
 					"notification policy's assets list.\nDefault value is no\n",
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "FALSE",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"TRUE", "FALSE"}, false),
+				Default:      "FALSE",
 			},
 			"policy_type": {
 				Description: "If value is ‘ACCOUNT’, the policy will apply only to the current account. \nIf the value" +
@@ -133,9 +143,10 @@ func resourceNotificationCenterPolicy() *schema.Resource {
 			"apply_to_new_sub_accounts": {
 				Description: "If value is ‘TRUE’, all newly onboarded sub accounts are automatically added to the " +
 					"notification policy's sub account list.\nDefault value is no\n",
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "FALSE",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"TRUE", "FALSE"}, false),
+				Default:      "FALSE",
 			},
 			"sub_account_list": {
 				Description: "The policy ID. During update must be equal to the updated policy ID.",
@@ -152,7 +163,7 @@ func resourceNotificationCenterPolicy() *schema.Resource {
 func resourceNotificationCenterPolicyUpdate(data *schema.ResourceData, i interface{}) error {
 	client := i.(*Client)
 	notificationCenterPolicyName := data.Get("policy_name").(string)
-	notificationCenterPolicyId := data.Get("policy_id").(int)
+	notificationCenterPolicyId, _ := getPolicyId(data)
 	accountId := data.Get("account_id").(int)
 	log.Printf("[INFO] Updateding NotificationCenterPolicy with policyId:%d accountId:%d and name: %s\n",
 		notificationCenterPolicyId, accountId, notificationCenterPolicyName)
@@ -194,24 +205,38 @@ func resourceNotificationCenterPolicyCreate(data *schema.ResourceData, i interfa
 //This function get all the properties of NotificationCenterPolicy from the resource,
 //so we can share it with create & update function
 func getNotificationCenterPolicyFromResource(data *schema.ResourceData) NotificationPolicyFullDto {
-	log.Printf("[INFO] policy_id: %data\n", data.Get("policy_id").(int))
-	log.Printf("[INFO] account_id: %d\n", data.Get("account_id").(int))
-	log.Printf("[INFO] policy_name: %sata\n", data.Get("policy_name").(string))
-	log.Printf("[INFO] status: %s\n", data.Get("status").(string))
-	log.Printf("[INFO] sub_category: %s\n", data.Get("sub_category").(string))
-	log.Printf("[INFO] emailchannel_user_recipient_list: %s\n", data.Get("emailchannel_user_recipient_list").(interface{}))
-	log.Printf("[INFO] emailchannel_external_recipient_list: %s\n", data.Get("emailchannel_external_recipient_list").(interface{}))
-	log.Printf("[INFO] asset: %s\n", data.Get("asset").(interface{}))
-	log.Printf("[INFO] apply_to_new_assets: %s\n", data.Get("apply_to_new_assets").(string))
-	log.Printf("[INFO] policy_type: %s\n", data.Get("policy_type").(string))
-	log.Printf("[INFO] apply_to_new_sub_accounts: %s\n", data.Get("apply_to_new_sub_accounts").(string))
-	log.Printf("[INFO] sub_account_list: %s\n", data.Get("sub_account_list").(interface{}))
+	policyId, _ := getPolicyId(data)
+	log.Printf(
+		"[INFO] policyId: %d\n"+
+			"[INFO] account_id: %d\n"+
+			"[INFO] policy_name: %s\n"+
+			"[INFO] status: %s\n"+
+			"[INFO] sub_category: %s\n"+
+			"[INFO] emailchannel_user_recipient_list: %s\n"+
+			"[INFO] emailchannel_external_recipient_list: %s\n"+
+			"[INFO] asset: %s\n"+
+			"[INFO] apply_to_new_assets: %s\n"+
+			"[INFO] policy_type: %s\n"+
+			"[INFO] apply_to_new_sub_accounts: %s\n"+
+			"[INFO] sub_account_list: %s\n",
+		policyId,
+		data.Get("account_id").(int),
+		data.Get("policy_name").(string),
+		data.Get("status").(string),
+		data.Get("sub_category").(string),
+		data.Get("emailchannel_user_recipient_list").(interface{}),
+		data.Get("emailchannel_external_recipient_list").(interface{}),
+		data.Get("asset").(interface{}),
+		data.Get("apply_to_new_assets").(string),
+		data.Get("policy_type").(string),
+		data.Get("apply_to_new_sub_accounts").(string),
+		data.Get("sub_account_list").(interface{}))
 
 	assetList := getAssetsFromResource(data)
 	subAccountsDtoList := getSubAccountsDtoListFromResource(data)
 	notificationChannelList := getEmailChannelFromResource(data)
 	notificationPolicyFullDto := NotificationPolicyFullDto{
-		PolicyId:                data.Get("policy_id").(int),
+		PolicyId:                policyId,
 		AccountId:               data.Get("account_id").(int),
 		PolicyName:              data.Get("policy_name").(string),
 		Status:                  data.Get("status").(string),
@@ -296,7 +321,6 @@ func resourceNotificationCenterPolicyRead(data *schema.ResourceData, i interface
 		return nil
 	}
 
-	data.Set("policy_id", notificationCenterPolicy.Data.PolicyId)
 	data.Set("account_id", notificationCenterPolicy.Data.AccountId)
 	data.Set("policy_name", notificationCenterPolicy.Data.PolicyName)
 	data.Set("status", notificationCenterPolicy.Data.Status)
@@ -337,14 +361,14 @@ func handleEmailChannelRead(data *schema.ResourceData, notificationCenterPolicy 
 	var emailChannelExternalRecipientsList []string
 	for _, channel := range notificationCenterPolicy.Data.NotificationChannelList {
 		if channel.ChannelType == "email" {
-			for _, recpient := range channel.RecipientToList {
-				switch recpient.RecipientType {
+			for _, recipient := range channel.RecipientToList {
+				switch recipient.RecipientType {
 				case "External":
-					log.Printf("[DEBUG] Adding recipient to external recipients list: %+v", recpient)
-					emailChannelExternalRecipientsList = append(emailChannelExternalRecipientsList, recpient.DisplayName)
+					log.Printf("[DEBUG] Adding recipient to external recipients list: %+v", recipient)
+					emailChannelExternalRecipientsList = append(emailChannelExternalRecipientsList, recipient.DisplayName)
 				case "User":
-					log.Printf("[DEBUG] Adding recipient to user recipients list: %+v", recpient)
-					emailChannelUserRecipientsList = append(emailChannelUserRecipientsList, recpient.Id)
+					log.Printf("[DEBUG] Adding recipient to user recipients list: %+v", recipient)
+					emailChannelUserRecipientsList = append(emailChannelUserRecipientsList, recipient.Id)
 				}
 			}
 		}

@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -109,6 +110,17 @@ func (c *Client) DoJsonAndQueryParamsRequestWithHeaders(method string, url strin
 	SetHeaders(c, req, contentTypeApplicationJson, nil)
 
 	return c.httpClient.Do(req)
+}
+
+// GetRequestParamsWithCaid Use this function if you want to add caid to your request as a query param.
+// you need to send caid if you want to preform action on resources belong to child account (example: reseller -> account)
+func GetRequestParamsWithCaid(accountId int) map[string]string {
+	var params = map[string]string{}
+	if accountId != 0 {
+		params["caid"] = strconv.Itoa(accountId)
+	}
+
+	return params
 }
 
 func (c *Client) DoJsonRequestWithHeadersForm(method string, url string, data []byte, contentType string) (*http.Response, error) {
