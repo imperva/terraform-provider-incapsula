@@ -36,6 +36,7 @@ The following arguments are supported:
 
 * `dc_id` - (Required) Numeric identifier of the data center.
 * `origin_pop` - (Required) The Origin POP code (must be lowercase), e.g: `iad`. Note, this field is create/update only. Reads are not supported as the API doesn't exist yet. Note that drift may happen.
+* `site_id` - (Required) Numeric identifier of the site to operate on.
 
 ## Attributes Reference
 
