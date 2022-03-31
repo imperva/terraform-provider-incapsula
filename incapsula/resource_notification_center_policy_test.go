@@ -12,9 +12,14 @@ import (
 
 const notificationCenterPolicyResourceType = "incapsula_notification_center_policy"
 const policy1AccountWithoutAssets = "notification-policy-account-without-assets"
-const fullResourceName = notificationCenterPolicyResourceType + "." + policy1AccountWithoutAssets
+const fullResourceNamePolicy1WithoutAsset = notificationCenterPolicyResourceType + "." + policy1AccountWithoutAssets
+const policy2AccountWithoutAssets = "notification-policy-account-without-assets"
+const fullResourcePolicy2NameWithAsset = notificationCenterPolicyResourceType + "." + policy2AccountWithoutAssets
 
-var accountId int
+//##############################
+var accountId = 52159558
+
+//##############################
 
 func TestAccNotificationCenterPolicy_Basic(t *testing.T) {
 	log.Printf("========================BEGIN TEST========================")
@@ -26,25 +31,54 @@ func TestAccNotificationCenterPolicy_Basic(t *testing.T) {
 		CheckDestroy: testAccNotificationCenterPolicyDestroy,
 		Steps: []resource.TestStep{
 			{
-				PreConfig: func() {
-					client := testAccProvider.Meta().(*Client)
-					bla, _ := client.Verify()
-					log.Printf("zzzzzz %d", bla.AccountID)
-				},
 				Config: getAccPolicyAccountWithoutAssets(),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckNotificationCenterPolicyExists(),
-					resource.TestCheckResourceAttr(fullResourceName, "policy_name", "Terraform acceptance test- policy account without assets"),
-					resource.TestCheckResourceAttr(fullResourceName, "account_id", strconv.Itoa(accountId)),
-					resource.TestCheckResourceAttr(fullResourceName, "status", "ENABLE"),
-					resource.TestCheckResourceAttr(fullResourceName, "sub_category", "ACCOUNT_NOTIFICATIONS"),
-					resource.TestCheckResourceAttr(fullResourceName, "emailchannel_external_recipient_list.0", "john.mcclane@externalemail.com"),
-					resource.TestCheckResourceAttr(fullResourceName, "emailchannel_external_recipient_list.1", "another.exernal.email@gmail.com"),
-					resource.TestCheckResourceAttr(fullResourceName, "policy_type", "ACCOUNT"),
+					testCheckNotificationCenterPolicyExists(fullResourceNamePolicy1WithoutAsset),
+					resource.TestCheckResourceAttr(fullResourceNamePolicy1WithoutAsset, "policy_name", "Terraform acceptance test- policy account without assets"),
+					resource.TestCheckResourceAttr(fullResourceNamePolicy1WithoutAsset, "account_id", strconv.Itoa(accountId)),
+					resource.TestCheckResourceAttr(fullResourceNamePolicy1WithoutAsset, "status", "ENABLE"),
+					resource.TestCheckResourceAttr(fullResourceNamePolicy1WithoutAsset, "sub_category", "ACCOUNT_NOTIFICATIONS"),
+					resource.TestCheckResourceAttr(fullResourceNamePolicy1WithoutAsset, "emailchannel_external_recipient_list.0", "john.mcclane@externalemail.com"),
+					resource.TestCheckResourceAttr(fullResourceNamePolicy1WithoutAsset, "emailchannel_external_recipient_list.1", "another.exernal.email@gmail.com"),
+					resource.TestCheckResourceAttr(fullResourceNamePolicy1WithoutAsset, "policy_type", "ACCOUNT"),
 				),
 			},
 			{
-				ResourceName:      fullResourceName,
+				ResourceName:      fullResourceNamePolicy1WithoutAsset,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testACCStateNotificationCenterPolicyId,
+			},
+		},
+	})
+}
+
+func TestAccNotificationCenterPolicy_WithAsst(t *testing.T) {
+	log.Printf("========================BEGIN TEST========================")
+	log.Printf("[DEBUG] Running test TestAccNotificationCenterPolicy_WithAsst")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccNotificationCenterPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: getAccPolicyAccountWithAssets(t),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckNotificationCenterPolicyExists(fullResourcePolicy2NameWithAsset),
+					resource.TestCheckResourceAttr(fullResourcePolicy2NameWithAsset, "policy_name", "Terraform policy account with assets"),
+					resource.TestCheckResourceAttr(fullResourcePolicy2NameWithAsset, "account_id", strconv.Itoa(accountId)),
+					resource.TestCheckResourceAttr(fullResourcePolicy2NameWithAsset, "status", "ENABLE"),
+					resource.TestCheckResourceAttr(fullResourcePolicy2NameWithAsset, "sub_category", "SITE_NOTIFICATIONS"),
+					resource.TestCheckResourceAttr(fullResourcePolicy2NameWithAsset, "emailchannel_external_recipient_list.0", "john.mcclane@externalemail.com"),
+					resource.TestCheckResourceAttr(fullResourcePolicy2NameWithAsset, "emailchannel_external_recipient_list.1", "another.exernal.email@gmail.com"),
+					resource.TestCheckResourceAttr(fullResourcePolicy2NameWithAsset, "asset.0.asset_type", "SITE"),
+					resource.TestCheckResourceAttrSet(fullResourcePolicy2NameWithAsset, "asset.0.asset_id"),
+					resource.TestCheckResourceAttr(fullResourcePolicy2NameWithAsset, "policy_type", "ACCOUNT"),
+				),
+			},
+			{
+				ResourceName:      fullResourcePolicy2NameWithAsset,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: testACCStateNotificationCenterPolicyId,
@@ -75,10 +109,9 @@ func testAccNotificationCenterPolicyDestroy(state *terraform.State) error {
 	return nil
 }
 
-func testCheckNotificationCenterPolicyExists() resource.TestCheckFunc {
+func testCheckNotificationCenterPolicyExists(fullResourceName string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		log.Printf("[DEBUG] ****Test**** starting testCheckNotificationCenterPolicyExists")
-		//resource := notificationCenterPolicyResourceType + "." + policy1AccountWithoutAssets
 		res, ok := state.RootModule().Resources[fullResourceName]
 		if !ok {
 			return fmt.Errorf("NotificationCenterPolicy resource not found : %s", fullResourceName)
@@ -114,10 +147,6 @@ func testCheckNotificationCenterPolicyExists() resource.TestCheckFunc {
 }
 
 func getAccPolicyAccountWithoutAssets() string {
-	//client := testAccProvider.Meta().(*Client)
-	//bla, _ := client.Verify()
-	//log.Printf("zzzzzz %d", bla.AccountID)
-	accountId = 52159558
 	return fmt.Sprintf(`
 resource "%s" "%s" { 
 	account_id = %d
@@ -150,19 +179,14 @@ func testACCStateNotificationCenterPolicyId(s *terraform.State) (string, error) 
 	return "", fmt.Errorf("Error finding policyId Id")
 }
 
-//TODO: for another test
-func getAccPolicyAccountWithAssets() string {
-	return fmt.Sprintf(`
+func getAccPolicyAccountWithAssets(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(` 
 resource "%s" "%s" { 
 	account_id = 52159558
 	policy_name = "Terraform policy account with assets"
 	asset {
 		asset_type = "SITE"
-		asset_id = incapsula_site.tmp-site.id
-	}
-	asset {
-		asset_type = "SITE"
-		asset_id = 7999203
+		asset_id = incapsula_site.testacc-terraform-site.id
 	}	
 	status = "ENABLE"
 	sub_category = "SITE_NOTIFICATIONS"
@@ -170,6 +194,6 @@ resource "%s" "%s" {
 	policy_type = "ACCOUNT"
 }
 `,
-		notificationCenterPolicyResourceType, subAccountResourceName,
+		notificationCenterPolicyResourceType, policy2AccountWithoutAssets,
 	)
 }

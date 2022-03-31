@@ -233,7 +233,7 @@ resource "incapsula_waf_security_rule" "example-waf-backdoor-rule" {
 }
 
 func testAccCheckWAFSecurityRuleGoodConfigDDoS(t *testing.T) string {
-	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf("%s%s%s", `
+	str := testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf("%s%s%s", `
 resource "incapsula_waf_security_rule" "example-waf-ddos-rule" {
   site_id = "${incapsula_site.example-site.id}"
   rule_id = "api.threats.ddos"
@@ -241,6 +241,8 @@ resource "incapsula_waf_security_rule" "example-waf-ddos-rule" {
   ddos_traffic_threshold = "5000"
 }`, certificateName, siteResourceName,
 	)
+
+	return str
 }
 
 func testAccCheckWAFSecurityRuleGoodConfigBots(t *testing.T) string {
