@@ -17,11 +17,12 @@ const policy2AccountWithoutAssets = "notification-policy-account-without-assets"
 const fullResourcePolicy2NameWithAsset = notificationCenterPolicyResourceType + "." + policy2AccountWithoutAssets
 
 //##############################
-var accountId = 52159558
+//TODO: Currently the test is disable
+var accountId = 1
 
 //##############################
 
-func TestAccNotificationCenterPolicy_Basic(t *testing.T) {
+func testAccNotificationCenterPolicy_Basic(t *testing.T) {
 	log.Printf("========================BEGIN TEST========================")
 	log.Printf("[DEBUG] Running test TestAccNotificationCenterPolicy_Basic")
 
@@ -53,7 +54,7 @@ func TestAccNotificationCenterPolicy_Basic(t *testing.T) {
 	})
 }
 
-func TestAccNotificationCenterPolicy_WithAsst(t *testing.T) {
+func testAccNotificationCenterPolicy_WithAsst(t *testing.T) {
 	log.Printf("========================BEGIN TEST========================")
 	log.Printf("[DEBUG] Running test TestAccNotificationCenterPolicy_WithAsst")
 
