@@ -11,13 +11,13 @@ import (
 )
 
 const (
-	cspDomainStatusAllowed = "Allowed"
-	cspDomainStatusBlocked = "Blocked"
+	cspDomainStatusAllowed = "allowed"
+	cspDomainStatusBlocked = "blocked"
 )
 
 func resourceCSPSiteDomain() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceCSPSiteDomainCreate,
+		Create: resourceCSPSiteDomainUpdate,
 		Read:   resourceCSPSiteDomainRead,
 		Update: resourceCSPSiteDomainUpdate,
 		Delete: resourceCSPSiteDomainDelete,
@@ -57,18 +57,19 @@ func resourceCSPSiteDomain() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			//Optional
 			"include_subdomains": {
 				Description: "Defines Whether or not subdomains will inherit the allowance of the parent domain. Values: true, false",
 				Type:        schema.TypeBool,
-				Required:    true,
-			},
-			//Optional
-			"status": {
-				Description: "Defines whether the domain should be Blocked or Allowed once the site's mode changes to the Enforcement. Values: Blocked, Allowed",
-				Type:        schema.TypeString,
-				Default:     cspDomainStatusAllowed,
-				ValidateFunc: validation.StringInSlice([]string{cspDomainStatusAllowed, cspDomainStatusBlocked}, true),
+				Default:     false,
 				Optional:    true,
+			},
+			"status": {
+				Description:  "Defines whether the domain should be Blocked or Allowed once the site's mode changes to the Enforcement. Values: Blocked, Allowed",
+				Type:         schema.TypeString,
+				Default:      cspDomainStatusAllowed,
+				ValidateFunc: validation.StringInSlice([]string{cspDomainStatusAllowed, cspDomainStatusBlocked}, false),
+				Optional:     true,
 			},
 			"notes": {
 				Description: "Add a quick note to a domain to help in future analysis and investigation. You can add as many notes as you like.",
@@ -141,19 +142,11 @@ func resourceCSPSiteDomainRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceCSPSiteDomainCreate(d *schema.ResourceData, m interface{}) error {
-	domRef := base64.RawURLEncoding.EncodeToString([]byte(d.Get("domain").(string)))
-	newID := fmt.Sprintf("%d/%s", d.Get("site_id").(int), domRef)
-	log.Printf("[DEBUG] Create CSP Domain, setting key %s to: %s", d.Id(), newID)
-	d.SetId(newID)
-
-	return resourceCSPSiteDomainUpdate(d, m)
-}
-
 func resourceCSPSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteID := d.Get("site_id").(int)
 	domain := d.Get("domain").(string)
+	domRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
 	status := d.Get("status").(string)
 	notes := d.Get("notes").([]interface{})
 
@@ -194,6 +187,10 @@ func resourceCSPSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {
 	for i := range notes {
 		client.addCSPDomainNote(siteID, domain, notes[i].(string))
 	}
+
+	newID := fmt.Sprintf("%d/%s", siteID, domRef)
+	log.Printf("[DEBUG] Update CSP Domain, setting key %s to: %s", d.Id(), newID)
+	d.SetId(newID)
 
 	return resourceCSPSiteDomainRead(d, m)
 }

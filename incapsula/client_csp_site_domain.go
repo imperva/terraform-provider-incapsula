@@ -21,58 +21,11 @@ type CSPDomainStatus struct {
 	Reviewed *bool `json:"reviewed"`
 }
 
-type CSPDomainInfo struct {
-	BaseDomain            string             `json:"baseDomain"`
-	CompanyName           string             `json:"companyName"`
-	DomainCategory        string             `json:"domainCategory"`
-	Countries             []string           `json:"countries"`
-	SSLCertificateInfo    string             `json:"sslCertificateInfo"`
-	RegistrationTime      string             `json:"registrationTime"`
-	Registrar             string             `json:"registrar"`
-	OrgOwner              string             `json:"orgOwner"`
-	DynamicDNSBased       bool               `json:"dynamicDnsBased"`
-	DomainQuality         map[string]float64 `json:"domainQuality"`
-	AdditionalInsights    []string           `json:"additionalInsights"`
-	DomainCategorySemrush string             `json:"domainCategorySemrush"`
-}
-
-type CSPDomainReport struct {
-	DocumentUri string `json:"documentUri"`
-	SourceFile  string `json:"sourceFile"`
-	BlockedUri  string `json:"blockedUri"`
-	LineNumber  int    `json:"lineNumber"`
-	SourceType  string `json:"sourceType"`
-}
-
-// CSPDomainData is the struct describing a csp site config response
-type CSPDomainData struct {
-	ID            string            `json:"id"`
-	Domain        string            `json:"domain"`
-	Status        CSPDomainStatus   `json:"status"`
-	DomainRisk    string            `json:"domainRisk"`
-	Notes         []CSPDomainNote   `json:"notes"`
-	TimeBucket    int64             `json:"timeBucket"`
-	Significance  int               `json:"significance"`
-	ResourceTypes []string          `json:"resourceTypes"`
-	BrowserStats  map[string]int    `json:"browserStats"`
-	CountryStats  map[string]int    `json:"countryStats"`
-	IPSamples     []string          `json:"ipsSample"`
-	Sources       int               `json:"sources"`
-	DiscoveredAt  int64             `json:"discoveredAt"`
-	LastSeenMs    int64             `json:"LastSeenMs"`
-	DomainInfo    CSPDomainInfo     `json:"domainInfo"`
-	DomainReports []CSPDomainReport `json:"domainReports"`
-	PartOfProfile bool              `json:"partOfProfile"`
-	Frequent      bool              `json:"frequent"`
-}
-
 type CSPPreApprovedDomain struct {
 	Domain      string `json:"domain"`
 	Subdomains  bool   `json:"subdomains"`
 	ReferenceID string `json:"referenceId"`
 }
-
-type CSPPreApprovedDomainsMap map[string]CSPPreApprovedDomain
 
 func (c *Client) getCSPDomainAPI(siteID int, domain string, APIPath string, ret interface{}) error {
 	log.Printf("[INFO] Getting CSP domain %s for domain %s from site ID: %d\n", APIPath, domain, siteID)
@@ -108,14 +61,6 @@ func (c *Client) getCSPDomainAPI(siteID int, domain string, APIPath string, ret 
 	}
 
 	return nil
-}
-
-func (c *Client) getCSPDomainData(siteID int, domain string) (*CSPDomainData, error) {
-	ret := &CSPDomainData{}
-	if err := c.getCSPDomainAPI(siteID, domain, "", ret); err != nil {
-		return nil, err
-	}
-	return ret, nil
 }
 
 func (c *Client) getCSPDomainStatus(siteID int, domain string) (*CSPDomainStatus, error) {
@@ -270,46 +215,6 @@ func (c *Client) getCSPPreApprovedDomain(siteID int, domain string) (*CSPPreAppr
 	return &preApprovedDomain, nil
 }
 
-func (c *Client) getCSPPreApprovedDomains(siteID int) (CSPPreApprovedDomainsMap, error) {
-	log.Printf("[INFO] Getting CSP pre-approved domains for site ID: %d\n", siteID)
-
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet,
-		fmt.Sprintf("%s%s/%d/preapprovedlist", c.config.BaseURLAPI, CSPSiteApiPath, siteID),
-		nil)
-	if err != nil {
-		return nil, fmt.Errorf("Error from CSP API for when getting pre-approved domains list for site ID %d: %s\n", siteID, err)
-	}
-
-	// Read the body
-	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
-
-	// Dump JSON
-	log.Printf("[DEBUG] CSP API Get Pre-Approved Domain Data JSON response: %s\n", string(responseBody))
-
-	// Check the response code
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Error status code %d from CSP API when getting pre-approved domains list for site %d: %s\n",
-			resp.StatusCode, siteID, string(responseBody))
-	}
-
-	// Parse the JSON
-	var preApprovedList []CSPPreApprovedDomain
-	err = json.Unmarshal([]byte(responseBody), &preApprovedList)
-	if err != nil {
-		return nil, fmt.Errorf("Error parsing JSON response for pre-approved domains list for site ID %d: %s\nresponse: %s\n",
-			siteID, err, string(responseBody))
-	}
-
-	domainsMap := make(CSPPreApprovedDomainsMap, len(preApprovedList))
-	for i := range preApprovedList {
-		dom := preApprovedList[i]
-		domainsMap[dom.ReferenceID] = dom
-	}
-
-	return domainsMap, nil
-}
-
 func (c *Client) updateCSPPreApprovedDomain(siteID int, dom *CSPPreApprovedDomain) (*CSPPreApprovedDomain, error) {
 	log.Printf("[INFO] Updating CSP pre-approved domain for site ID: %d , domain: %v", siteID, dom)
 
@@ -361,7 +266,7 @@ func (c *Client) deleteCSPPreApprovedDomains(siteID int, domainRef string) error
 	}
 
 	// Read the body
-	defer resp.Body.Close() // Do I still need to?
+	defer resp.Body.Close()
 
 	// Check the response code - no content for DELETE
 	if resp.StatusCode != 204 {

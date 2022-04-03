@@ -13,9 +13,9 @@ Provides an Incapsula CSP domain resource.
 
 ```hcl
 resource "incapsula_csp_site_domain" "demo-terraform-csp-site-domain" {
-  site_id         = incapsula_site.example-site.id
-  domain              = www.imperva.com
-  allowance           = Allowed
+  site_id             = incapsula_csp_site_configuration.example-site.id
+  domain              = "www.imperva.com"
+  status              = "allowed"
   include_subdomains  = false
   notes               = [“first note”, “second note”]
 }
@@ -30,7 +30,7 @@ The following arguments are supported:
 * `include_subdomains` - (Required) Defines Whether subdomains will inherit the allowance of the parent domain.
   Possible values: `true`, `false`
 * `status` - (Optional) Defines whether the domain should be allowed or blocked once the site's mode changes to the Enforcement.
-  Possible values: `Allowed` (default value), `Blocked`.
+  Possible values: `allowed` (default value), `blocked`.
 * `notes` -  (Optional) An array of notes for the domain, to help in future analysis and investigation. You can add as many notes as you like.
 
 ## Attributes Reference

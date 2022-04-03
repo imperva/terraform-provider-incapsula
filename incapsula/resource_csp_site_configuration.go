@@ -48,11 +48,11 @@ func resourceCSPSiteConfiguration() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      cspSiteModeMonitor,
-				ValidateFunc: validation.StringInSlice([]string{cspSiteModeMonitor, cspSiteModeEnforce, cspSiteModeOff}, true),
+				ValidateFunc: validation.StringInSlice([]string{cspSiteModeMonitor, cspSiteModeEnforce, cspSiteModeOff}, false),
 			},
 			"email_addresses": {
 				Description: "Email address for the event notification recipient list of a specific website. Notifications are reasonably small and limited in frequency",
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
