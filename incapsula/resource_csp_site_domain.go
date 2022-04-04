@@ -73,7 +73,7 @@ func resourceCSPSiteDomain() *schema.Resource {
 			},
 			"notes": {
 				Description: "Add a quick note to a domain to help in future analysis and investigation. You can add as many notes as you like.",
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -97,11 +97,11 @@ func resourceCSPSiteDomainRead(d *schema.ResourceData, m interface{}) error {
 	} else {
 		log.Printf("[DEBUG] Reading CSP domain notes for domain %s from site ID: %d , response: %v.", domain, siteID, cspNotes)
 
-		notes := make([]string, len(cspNotes))
+		notes := &schema.Set{F: schema.HashString}
 		for i := range cspNotes {
-			notes[i] = cspNotes[i].Text
+			notes.Add(cspNotes[i].Text)
 		}
-		log.Printf("[DEBUG] Reading CSP domain notes for domain %s from site ID: %d , updating notes to: %v (%d).", domain, siteID, notes, len(notes))
+		log.Printf("[DEBUG] Reading CSP domain notes for domain %s from site ID: %d , updating notes to: %v.", domain, siteID, notes)
 
 		d.Set("notes", notes)
 	}
@@ -148,7 +148,7 @@ func resourceCSPSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {
 	domain := d.Get("domain").(string)
 	domRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
 	status := d.Get("status").(string)
-	notes := d.Get("notes").([]interface{})
+	notes := d.Get("notes").(*schema.Set)
 
 	log.Printf("[DEBUG] Updating CSP domain %s site ID %d status=\"%s\"\n", domain, siteID, status)
 
@@ -184,8 +184,8 @@ func resourceCSPSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {
 
 	// Remove all existing notes and add them freshly
 	client.deleteCSPDomainNotes(siteID, domain)
-	for i := range notes {
-		client.addCSPDomainNote(siteID, domain, notes[i].(string))
+	for _, note := range notes.List() {
+		client.addCSPDomainNote(siteID, domain, note.(string))
 	}
 
 	newID := fmt.Sprintf("%d/%s", siteID, domRef)
@@ -199,12 +199,30 @@ func resourceCSPSiteDomainDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteID := d.Get("site_id").(int)
 	domain := d.Get("domain").(string)
+	status := d.Get("status").(string)
 	log.Printf("[DEBUG] Deleting CSP domain %s from site ID %d\n", domain, siteID)
 
-	err := client.deleteCSPPreApprovedDomains(siteID, base64.RawURLEncoding.EncodeToString([]byte(domain)))
-	if err != nil {
-		log.Printf("[ERROR] Could not delete CSP pre-approved domain %s for site ID %d: %s\n", domain, siteID, err)
-		return err
+	if strings.Compare(status, cspDomainStatusAllowed) == 0 {
+		err := client.deleteCSPPreApprovedDomains(siteID, base64.RawURLEncoding.EncodeToString([]byte(domain)))
+		if err != nil {
+			log.Printf("[ERROR] Could not delete CSP pre-approved domain %s for site ID %d: %s\n", domain, siteID, err)
+			return err
+		}
+	} else if strings.Compare(status, cspDomainStatusBlocked) == 0 {
+		newStatus := CSPDomainStatus{
+			Blocked:  new(bool),
+			Reviewed: new(bool),
+		}
+		*newStatus.Blocked = false
+		*newStatus.Reviewed = false
+		ret, err := client.updateCSPDomainStatus(siteID, domain, &newStatus)
+		if err != nil {
+			log.Printf("[ERROR] Could not delete CSP domain status %s for site ID %d: %s\n", domain, siteID, err)
+			return err
+		}
+		if ret.Blocked == nil || ret.Reviewed == nil {
+			return fmt.Errorf("[ERROR] Could not update CSP domain %s status to: %v got: %v\n", domain, newStatus, ret)
+		}
 	}
 	log.Printf("[DEBUG] Deleted CSP domain %s for site ID: %d successfully", domain, siteID)
 

@@ -31,7 +31,7 @@ func TestAccIncapsulaCSPDomain_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(cspDomainResource, "include_subdomains", "true"),
 					resource.TestCheckResourceAttr(cspDomainResource, "notes.#", "1"),
 					resource.TestCheckResourceAttr(cspDomainResource, "notes.0", "new note"),
-					resource.TestCheckResourceAttr(cspDomainResource, "status", "Allowed"),
+					resource.TestCheckResourceAttr(cspDomainResource, "status", "allowed"),
 				),
 			},
 			{
@@ -135,7 +135,7 @@ func testAccCheckCSPDomainBasic(t *testing.T) string {
 		domain				= "stam-domain.com"
 		include_subdomains	= true
 		notes				= ["new note"]
-		status				= "Allowed"
+		status				= "allowed"
 		depends_on			= ["%s"]
 	}`,
 		cspDomainResourceName, cspDomainName, cspSiteConfigResource, cspSiteConfigResource,

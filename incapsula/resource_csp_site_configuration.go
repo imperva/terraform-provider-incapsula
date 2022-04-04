@@ -75,9 +75,9 @@ func resourceCSPSiteConfigurationRead(d *schema.ResourceData, m interface{}) err
 	}
 	log.Printf("[DEBUG] Reading CSP site configuration for site ID: %d , response: %v.", siteId, cspSite)
 
-	emails := make([]string, len(cspSite.Settings.Emails))
+	emails := &schema.Set{F: schema.HashString}
 	for i := range cspSite.Settings.Emails {
-		emails[i] = cspSite.Settings.Emails[i].Email
+		emails.Add(cspSite.Settings.Emails[i].Email)
 	}
 	d.Set("email_addresses", emails)
 
@@ -97,7 +97,7 @@ func resourceCSPSiteConfigurationRead(d *schema.ResourceData, m interface{}) err
 
 func resourceCSPSiteConfigurationUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	emails := d.Get("email_addresses").([]interface{})
+	emails := d.Get("email_addresses").(*schema.Set)
 	siteId := d.Get("site_id").(int)
 
 	cspSiteConfig := CSPSiteConfig{
@@ -111,8 +111,8 @@ func resourceCSPSiteConfigurationUpdate(d *schema.ResourceData, m interface{}) e
 	}
 
 	cspSiteConfig.Settings.Emails = []CSPSiteConfigEmail{}
-	for i := range emails {
-		cspSiteConfig.Settings.Emails = append(cspSiteConfig.Settings.Emails, CSPSiteConfigEmail{Email: emails[i].(string)})
+	for _, email := range emails.List() {
+		cspSiteConfig.Settings.Emails = append(cspSiteConfig.Settings.Emails, CSPSiteConfigEmail{Email: email.(string)})
 	}
 
 	switch d.Get("mode").(string) {
