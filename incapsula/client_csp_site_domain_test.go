@@ -101,6 +101,44 @@ func TestCspSiteDomainInvalidResponse(t *testing.T) {
 	}
 }
 
+func TestCSPSiteDomainPreApprovedGetResponse(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := 42
+	endpoint := fmt.Sprintf("%s/%d/preapprovedlist/ZG9tYWluLmNvbQ", CSPSiteApiPath, siteID)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(200)
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		}
+		rw.Write([]byte(`{
+			"domain": "domain.com",
+			"subdomains": true,
+			"referenceId": "ZG9tYWluLmNvbQ"
+		}`))
+	}))
+
+	defer server.Close()
+
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+	domain, err := client.getCSPPreApprovedDomain(siteID, "domain.com")
+	if err != nil {
+		t.Errorf("Should have not received an error")
+	}
+	if domain == nil {
+		t.Errorf("Should have received a response")
+	}
+	if domain.Domain != "domain.com" {
+		t.Errorf("Incorrect value inresponse from getCSPPreApprovedDomain")
+	}
+	if domain.Subdomains != true {
+		t.Errorf("Incorrect value inresponse from getCSPPreApprovedDomain")
+	}
+}
+
 func TestCSPSiteDomainPreApprovedUpdateResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
