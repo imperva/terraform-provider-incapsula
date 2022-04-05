@@ -73,8 +73,8 @@ func TestCSPSiteConfigErrorResponse(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 500 from CSP API when reading site config for ID %d", siteID)) {
-		t.Errorf("Should have received a JSON parse error, got: %s", err)
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 500")) {
+		t.Errorf("Should have received a error of status code 500, got: %s", err)
 	}
 	if ret != nil {
 		t.Errorf("Should have received a nil response")
