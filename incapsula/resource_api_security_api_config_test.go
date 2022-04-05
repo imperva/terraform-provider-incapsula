@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"log"
 	"strconv"
-	//	"strings"
+
 	"testing"
 )
 
