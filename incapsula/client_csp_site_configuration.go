@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 )
 
 const (
@@ -66,6 +67,25 @@ func (c *Client) GetCSPSite(siteID int) (*CSPSiteConfig, error) {
 	}
 
 	return &cspSiteConfig, nil
+}
+
+func (c *Client) UpdateCSPSiteWithRetries(siteID int, config *CSPSiteConfig) (*CSPSiteConfig, error) {
+	var backoffSchedule = []time.Duration{
+		5 * time.Second,
+		15 * time.Second,
+		30 * time.Second,
+	}
+	var lastError error
+
+	for _, backoff := range backoffSchedule {
+		ret, err := c.UpdateCSPSite(siteID, config)
+		if err == nil && ret != nil {
+			return ret, nil
+		}
+		lastError = err
+		time.Sleep(backoff)
+	}
+	return nil, lastError
 }
 
 // UpdateCSPSite gets the csp site config

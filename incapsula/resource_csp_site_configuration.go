@@ -128,7 +128,7 @@ func resourceCSPSiteConfigurationUpdate(d *schema.ResourceData, m interface{}) e
 	}
 
 	log.Printf("[DEBUG] Updating CSP site configuration for site ID: %d , values: %v.", siteId, cspSiteConfig)
-	updatedSite, err := client.UpdateCSPSite(siteId, &cspSiteConfig)
+	updatedSite, err := client.UpdateCSPSiteWithRetries(siteId, &cspSiteConfig)
 	if err != nil {
 		log.Printf("[ERROR] Could not update CSP site config: %s - %s\n", d.Id(), err)
 		return err

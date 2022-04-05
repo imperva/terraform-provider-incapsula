@@ -9,8 +9,8 @@ import (
 	"testing"
 )
 
-const cspSiteConfigResourceName = "incapsula_csp_site_configuration"
-const cspSiteConfigResource = cspSiteConfigResourceName + "." + cspSiteConfigName
+const cspSiteConfigResourceType = "incapsula_csp_site_configuration"
+const cspSiteConfigResource = cspSiteConfigResourceType + "." + cspSiteConfigName
 const cspSiteConfigName = "testacc-terraform-csp-site-config"
 
 func TestAccIncapsulaCSPSiteConfig_basic(t *testing.T) {
@@ -67,7 +67,7 @@ func testCheckCSPSiteConfigExists(name string) resource.TestCheckFunc {
 func testACCStateCSPSiteConfigID(s *terraform.State) (string, error) {
 	for _, rs := range s.RootModule().Resources {
 		fmt.Errorf("Resource: %v", rs)
-		if rs.Type != cspSiteConfigResourceName {
+		if rs.Type != cspSiteConfigResourceType {
 			continue
 		}
 
@@ -83,20 +83,20 @@ func testACCStateCSPSiteConfigID(s *terraform.State) (string, error) {
 		}
 		return fmt.Sprintf("%d", resourceID), nil
 	}
-	return "", fmt.Errorf("Error finding correct resource %s", cspSiteConfigResourceName)
+	return "", fmt.Errorf("Error finding correct resource %s", cspSiteConfigResourceType)
 }
 
 func testACCStateCSPSiteConfigDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != cspSiteConfigResourceName {
+		if rs.Type != cspSiteConfigResourceType {
 			continue
 		}
 
 		siteID := rs.Primary.Attributes["site_id"]
 		if siteID == "" {
-			return fmt.Errorf("Parameter site_id was not found in resource %s", cspSiteConfigResourceName)
+			return fmt.Errorf("Parameter site_id was not found in resource %s", cspSiteConfigResourceType)
 		}
 		siteIDInt, err := strconv.Atoi(siteID)
 		if err != nil {
@@ -109,17 +109,17 @@ func testACCStateCSPSiteConfigDestroy(s *terraform.State) error {
 		}
 
 		if apiID != siteIDInt {
-			return fmt.Errorf("Resource %s for CSP site configuration has mismatch with IDs: Api Id %d, site ID %d", cspSiteConfigResourceName, apiID, siteIDInt)
+			return fmt.Errorf("Resource %s for CSP site configuration has mismatch with IDs: Api Id %d, site ID %d", cspSiteConfigResourceType, apiID, siteIDInt)
 		}
 
 		cspSite, err := client.GetCSPSite(siteIDInt)
 		fmt.Sprintf("Got CSP site config for site ID %d: %v", siteIDInt, cspSite)
 		if err != nil && cspSite != nil && cspSite.Discovery != CSPDiscoveryOff {
-			return fmt.Errorf("Resource %s for CSP site configuration: Api Id %d, site ID %d still exists", cspSiteConfigResourceName, apiID, siteIDInt)
+			return fmt.Errorf("Resource %s for CSP site configuration: Api Id %d, site ID %d still exists", cspSiteConfigResourceType, apiID, siteIDInt)
 		}
 		return nil
 	}
-	return fmt.Errorf("Error finding the correct resource: %s", cspSiteConfigResourceName)
+	return fmt.Errorf("Error finding the correct resource: %s", cspSiteConfigResourceType)
 }
 
 func testAccCheckCSPSiteConfigBasic(t *testing.T) string {
@@ -130,6 +130,6 @@ func testAccCheckCSPSiteConfigBasic(t *testing.T) string {
 		email_addresses     = ["amiranc@imperva.com"]
 		depends_on = ["%s"]
 	}`,
-		cspSiteConfigResourceName, cspSiteConfigName, siteResourceName, siteResourceName,
+		cspSiteConfigResourceType, cspSiteConfigName, siteResourceName, siteResourceName,
 	)
 }
