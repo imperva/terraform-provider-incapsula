@@ -147,11 +147,15 @@ func resourceCertificateDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func createHash(d *schema.ResourceData) string {
-	h := sha1.New()
-
 	certificate := d.Get("certificate").(string)
 	passphrase := d.Get("passphrase").(string)
 	privateKey := d.Get("private_key").(string)
+	result := calculateHash(certificate, passphrase, privateKey)
+	return result
+}
+
+func calculateHash(certificate, passphrase, privateKey string) string {
+	h := sha1.New()
 	stringForHash := certificate + privateKey + passphrase
 	h.Write([]byte(stringForHash))
 	byteString := h.Sum(nil)
