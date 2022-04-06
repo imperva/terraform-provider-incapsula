@@ -1,3 +1,7 @@
+## 3.4.0 (Released) 
+
+* Add support for notification center
+
 ## 3.3.4 (Released) 
 
 * Fix bug in Custom Certificate resource

@@ -20,7 +20,7 @@ func TestClientAddCertificateBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "1234"
-	addCertificateResponse, err := client.AddCertificate(siteID, "abc", "def", "efg")
+	addCertificateResponse, err := client.AddCertificate(siteID, "abc", "def", "efg", "hij")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -46,7 +46,7 @@ func TestClientAddCertificateBadJSON(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := "1234"
-	addCertificateResponse, err := client.AddCertificate(siteID, "", "", "")
+	addCertificateResponse, err := client.AddCertificate(siteID, "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -72,7 +72,7 @@ func TestClientAddCertificateInvalidRule(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := "1234"
-	addCertificateResponse, err := client.AddCertificate(siteID, "", "", "")
+	addCertificateResponse, err := client.AddCertificate(siteID, "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -98,7 +98,7 @@ func TestClientAddCertificateValidRule(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := "1234"
-	addCertificateResponse, err := client.AddCertificate(siteID, "", "", "")
+	addCertificateResponse, err := client.AddCertificate(siteID, "", "", "", "")
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
@@ -197,7 +197,7 @@ func TestClientEditCertificateBadConnection(t *testing.T) {
 	certificate := "foo"
 	privateKey := "bar"
 	passphrase := "loremipsum"
-	editCertificateResponse, err := client.EditCertificate(siteID, certificate, privateKey, passphrase)
+	editCertificateResponse, err := client.EditCertificate(siteID, certificate, privateKey, passphrase, "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -226,7 +226,7 @@ func TestClientEditCertificateBadJSON(t *testing.T) {
 	certificate := "foo"
 	privateKey := "bar"
 	passphrase := "loremipsum"
-	editCertificateResponse, err := client.EditCertificate(siteID, certificate, privateKey, passphrase)
+	editCertificateResponse, err := client.EditCertificate(siteID, certificate, privateKey, passphrase, "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -255,7 +255,7 @@ func TestClientEditCertificateValidRule(t *testing.T) {
 	certificate := "foo"
 	privateKey := "bar"
 	passphrase := "loremipsum"
-	editCertificateResponse, err := client.EditCertificate(siteID, certificate, privateKey, passphrase)
+	editCertificateResponse, err := client.EditCertificate(siteID, certificate, privateKey, passphrase, "")
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
