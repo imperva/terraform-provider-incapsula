@@ -38,12 +38,6 @@ func TestAccIncapsulaCustomCertificate_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(certificateResource, "input_hash", calculatedHash),
 				),
 			},
-			{
-				ResourceName:      certificateResourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateIdFunc: testAccStateCertificateID,
-			},
 		},
 	})
 }
@@ -52,7 +46,7 @@ func testCheckIncapsulaCertificateExists(name string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		res, ok := state.RootModule().Resources[certificateResource]
 		if !ok {
-			return fmt.Errorf("Incapsula Api Securiy Config resource not found : %s", apiSecApiConfigResource)
+			return fmt.Errorf("Incapsula Custom Certificate resource not found : %s", certificateResource)
 		}
 
 		siteID, ok := res.Primary.Attributes["site_id"]
@@ -82,7 +76,7 @@ func testAccCheckIncapsulaCertificateDestroy(state *terraform.State) error {
 		}
 
 		// List certificates response object may indicate that the certificate has been deleted (9413)
-		listCertificatesResponse, _ := client.ListCertific(siteID)
+		listCertificatesResponse, _ := client.ListCertificates(siteID)
 		if listCertificatesResponse != nil && listCertificatesResponse.Res != 9413 {
 			return fmt.Errorf("Resource %s for Incapsula Custom Certificate: site ID %s still exists", certificateResourceName, siteID)
 		}
