@@ -1,3 +1,7 @@
+## 3.4.0 (Not Released)
+
+* Edit acceptance test for Custom Certificate resource
+
 ## 3.4.0 (Released) 
 
 * Add support for notification center
