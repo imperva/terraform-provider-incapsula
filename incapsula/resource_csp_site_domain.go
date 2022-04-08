@@ -24,18 +24,23 @@ func resourceCSPSiteDomain() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				keyParts := strings.Split(d.Id(), "/")
-				if len(keyParts) != 2 {
-					return nil, fmt.Errorf("Error parsing ID, actual value: %s, expected numeric id and string seperated by '/'\n", d.Id())
+				if len(keyParts) != 3 {
+					return nil, fmt.Errorf("Error parsing ID, actual value: %s, expected two numeric IDs and string seperated by '/'\n", d.Id())
 				}
-				siteID, err := strconv.Atoi(keyParts[0])
+				accountID, err := strconv.Atoi(keyParts[0])
 				if err != nil {
-					return nil, fmt.Errorf("failed to convert site ID from import command, actual value: %s, expected numeric id", keyParts[0])
+					return nil, fmt.Errorf("failed to convert account ID from import command, actual value: %s, expected numeric id", keyParts[0])
 				}
-				domain, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(keyParts[1])
+				siteID, err := strconv.Atoi(keyParts[1])
 				if err != nil {
-					return nil, fmt.Errorf("failed to convert domain reference ID from import command, actual value: %s, expected Base64 id", keyParts[1])
+					return nil, fmt.Errorf("failed to convert site ID from import command, actual value: %s, expected numeric id", keyParts[1])
+				}
+				domain, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(keyParts[2])
+				if err != nil {
+					return nil, fmt.Errorf("failed to convert domain reference ID from import command, actual value: %s, expected Base64 id", keyParts[2])
 				}
 
+				d.Set("account_id", accountID)
 				d.Set("site_id", siteID)
 				d.Set("domain", string(domain))
 				log.Printf("[DEBUG] Import CSP Domain %s for site ID %d", domain, siteID)
@@ -45,6 +50,12 @@ func resourceCSPSiteDomain() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
+			"account_id": {
+				Description: "Numeric identifier of the account to operate on.",
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+			},
 			"site_id": {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeInt,
@@ -85,13 +96,14 @@ func resourceCSPSiteDomain() *schema.Resource {
 
 func resourceCSPSiteDomainRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
+	accountID := d.Get("account_id").(int)
 	siteID := d.Get("site_id").(int)
 	domain := d.Get("domain").(string)
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
 
 	log.Printf("[DEBUG] Reading CSP domain for site ID: %d , domain reference: %s , domain: %s", siteID, domainRef, domain)
 
-	cspNotes, err := client.getCSPDomainNotes(siteID, domain)
+	cspNotes, err := client.getCSPDomainNotes(accountID, siteID, domain)
 	if err != nil {
 		log.Printf("[ERROR] Could not get CSP domain notes: %s - %s\n", d.Id(), err)
 	} else {
@@ -107,7 +119,7 @@ func resourceCSPSiteDomainRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// First check if it's a pre-approved domain, and update resource according to that
-	preApprovedDomain, err := client.getCSPPreApprovedDomain(siteID, domain)
+	preApprovedDomain, err := client.getCSPPreApprovedDomain(accountID, siteID, domain)
 	if err != nil {
 		log.Printf("[ERROR] Could not get CSP pre-approved domain : %s - %s\n", d.Id(), err)
 	} else {
@@ -120,7 +132,7 @@ func resourceCSPSiteDomainRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// If domain wasn't found as pre-approved domain, check if status set directly and update accordingly
-	status, err := client.getCSPDomainStatus(siteID, domain)
+	status, err := client.getCSPDomainStatus(accountID, siteID, domain)
 	if err != nil {
 		log.Printf("[ERROR] Could not get CSP domain status: %s - %s\n", d.Id(), err)
 	} else if status.Blocked != nil {
@@ -144,6 +156,7 @@ func resourceCSPSiteDomainRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceCSPSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
+	accountID := d.Get("account_id").(int)
 	siteID := d.Get("site_id").(int)
 	domain := d.Get("domain").(string)
 	domRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
@@ -160,7 +173,7 @@ func resourceCSPSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {
 			ReferenceID: base64.RawURLEncoding.EncodeToString([]byte(domain)),
 		}
 		log.Printf("[DEBUG] Updating CSP domain for site ID: %d , domain: %v\n", siteID, dom)
-		updatedDom, err := client.updateCSPPreApprovedDomain(siteID, &dom)
+		updatedDom, err := client.updateCSPPreApprovedDomain(accountID, siteID, &dom)
 		if err != nil {
 			log.Printf("[ERROR] Could not update CSP pre-approved domain: %v - %s\n", dom, err)
 			return err
@@ -175,7 +188,7 @@ func resourceCSPSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {
 		*(st.Blocked) = true
 		*(st.Reviewed) = true
 
-		domainStatus, err := client.updateCSPDomainStatus(siteID, domain, &st)
+		domainStatus, err := client.updateCSPDomainStatus(accountID, siteID, domain, &st)
 		if err != nil || domainStatus.Blocked == nil || domainStatus.Reviewed == nil {
 			e := fmt.Errorf("[ERROR] Could not update CSP domain %s status: %v - %s\n", domain, status, err)
 			return e
@@ -183,9 +196,9 @@ func resourceCSPSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// Remove all existing notes and add them freshly
-	client.deleteCSPDomainNotes(siteID, domain)
+	client.deleteCSPDomainNotes(accountID, siteID, domain)
 	for _, note := range notes.List() {
-		client.addCSPDomainNote(siteID, domain, note.(string))
+		client.addCSPDomainNote(accountID, siteID, domain, note.(string))
 	}
 
 	newID := fmt.Sprintf("%d/%s", siteID, domRef)
@@ -197,13 +210,14 @@ func resourceCSPSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {
 
 func resourceCSPSiteDomainDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
+	accountID := d.Get("account_id").(int)
 	siteID := d.Get("site_id").(int)
 	domain := d.Get("domain").(string)
 	status := d.Get("status").(string)
 	log.Printf("[DEBUG] Deleting CSP domain %s from site ID %d\n", domain, siteID)
 
 	if strings.Compare(status, cspDomainStatusAllowed) == 0 {
-		err := client.deleteCSPPreApprovedDomains(siteID, base64.RawURLEncoding.EncodeToString([]byte(domain)))
+		err := client.deleteCSPPreApprovedDomains(accountID, siteID, base64.RawURLEncoding.EncodeToString([]byte(domain)))
 		if err != nil {
 			log.Printf("[ERROR] Could not delete CSP pre-approved domain %s for site ID %d: %s\n", domain, siteID, err)
 			return err
@@ -215,7 +229,7 @@ func resourceCSPSiteDomainDelete(d *schema.ResourceData, m interface{}) error {
 		}
 		*newStatus.Blocked = false
 		*newStatus.Reviewed = false
-		ret, err := client.updateCSPDomainStatus(siteID, domain, &newStatus)
+		ret, err := client.updateCSPDomainStatus(accountID, siteID, domain, &newStatus)
 		if err != nil {
 			log.Printf("[ERROR] Could not delete CSP domain status %s for site ID %d: %s\n", domain, siteID, err)
 			return err

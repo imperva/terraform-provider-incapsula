@@ -37,11 +37,11 @@ const (
 )
 
 // GetCSPSite gets the csp site config
-func (c *Client) GetCSPSite(siteID int) (*CSPSiteConfig, error) {
-	log.Printf("[INFO] Getting CSP site configuration for site ID: %d\n", siteID)
+func (c *Client) GetCSPSite(accountID, siteID int) (*CSPSiteConfig, error) {
+	log.Printf("[INFO] Getting CSP site configuration for site ID: %d of account %d\n", siteID, accountID)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet,
-		fmt.Sprintf("%s%s/%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID),
+		fmt.Sprintf("%s%s/%d?caid=%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID, accountID),
 		nil)
 	if err != nil {
 		return nil, fmt.Errorf("Error from CSP API for when reading site ID %d: %s", siteID, err)
@@ -69,7 +69,7 @@ func (c *Client) GetCSPSite(siteID int) (*CSPSiteConfig, error) {
 	return &cspSiteConfig, nil
 }
 
-func (c *Client) UpdateCSPSiteWithRetries(siteID int, config *CSPSiteConfig) (*CSPSiteConfig, error) {
+func (c *Client) UpdateCSPSiteWithRetries(accountID, siteID int, config *CSPSiteConfig) (*CSPSiteConfig, error) {
 	var backoffSchedule = []time.Duration{
 		5 * time.Second,
 		15 * time.Second,
@@ -78,7 +78,7 @@ func (c *Client) UpdateCSPSiteWithRetries(siteID int, config *CSPSiteConfig) (*C
 	var lastError error
 
 	for _, backoff := range backoffSchedule {
-		ret, err := c.UpdateCSPSite(siteID, config)
+		ret, err := c.UpdateCSPSite(accountID, siteID, config)
 		if err == nil && ret != nil {
 			return ret, nil
 		}
@@ -89,8 +89,8 @@ func (c *Client) UpdateCSPSiteWithRetries(siteID int, config *CSPSiteConfig) (*C
 }
 
 // UpdateCSPSite gets the csp site config
-func (c *Client) UpdateCSPSite(siteID int, config *CSPSiteConfig) (*CSPSiteConfig, error) {
-	log.Printf("[INFO] Updating CSP site configuration for site ID: %d\n%v", siteID, config)
+func (c *Client) UpdateCSPSite(accountID, siteID int, config *CSPSiteConfig) (*CSPSiteConfig, error) {
+	log.Printf("[INFO] Updating CSP site configuration for site ID: %d of account %d\n%v", siteID, accountID, config)
 	configJSON, err := json.Marshal(config)
 
 	if err != nil {
@@ -98,7 +98,7 @@ func (c *Client) UpdateCSPSite(siteID int, config *CSPSiteConfig) (*CSPSiteConfi
 	}
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut,
-		fmt.Sprintf("%s%s/%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID),
+		fmt.Sprintf("%s%s/%d?caid=%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID, accountID),
 		configJSON)
 
 	if err != nil {

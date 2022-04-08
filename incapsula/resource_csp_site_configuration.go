@@ -23,19 +23,35 @@ func resourceCSPSiteConfiguration() *schema.Resource {
 		Delete: resourceCSPSiteConfigurationDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				siteID, err := strconv.Atoi(d.Id())
+				keyParts := strings.Split(d.Id(), "/")
+				if len(keyParts) != 2 {
+					return nil, fmt.Errorf("Error parsing ID, actual value: %s, expected numeric id and string seperated by '/'\n", d.Id())
+				}
+				accountID, err := strconv.Atoi(keyParts[0])
 				if err != nil {
-					fmt.Errorf("failed to convert Site Id from import command, actual value: %s, expected numeric id", d.Id())
+					fmt.Errorf("failed to convert site ID from import command, actual value: %s, expected numeric ID", d.Id())
 				}
 
+				siteID, err := strconv.Atoi(keyParts[1])
+				if err != nil {
+					fmt.Errorf("failed to convert account ID from import command, actual value: %s, expected numeric ID", d.Id())
+				}
+
+				d.Set("account_id", accountID)
 				d.Set("site_id", siteID)
-				log.Printf("[DEBUG] Import CSP Site Config JSON for Site ID %d", siteID)
+				log.Printf("[DEBUG] Import CSP Site Config JSON for Site ID %d of account %d", siteID, accountID)
 				return []*schema.ResourceData{d}, nil
 			},
 		},
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
+			"account_id": {
+				Description: "Numeric identifier of the account to operate on.",
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+			},
 			"site_id": {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeInt,
@@ -64,16 +80,17 @@ func resourceCSPSiteConfiguration() *schema.Resource {
 
 func resourceCSPSiteConfigurationRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siteId := d.Get("site_id").(int)
+	siteID := d.Get("site_id").(int)
+	accountID := d.Get("account_id").(int)
 
-	log.Printf("[DEBUG] Reading CSP site configuration for site ID:  %d.", siteId)
+	log.Printf("[DEBUG] Reading CSP site configuration for site ID:  %d of account %d.", siteID, accountID)
 
-	cspSite, err := client.GetCSPSite(siteId)
+	cspSite, err := client.GetCSPSite(accountID, siteID)
 	if err != nil {
 		log.Printf("[ERROR] Could not get CSP site config: %s - %s\n", d.Id(), err)
 		return err
 	}
-	log.Printf("[DEBUG] Reading CSP site configuration for site ID: %d , response: %v.", siteId, cspSite)
+	log.Printf("[DEBUG] Reading CSP site configuration for site ID: %d , response: %v.", siteID, cspSite)
 
 	emails := &schema.Set{F: schema.HashString}
 	for i := range cspSite.Settings.Emails {
@@ -98,7 +115,8 @@ func resourceCSPSiteConfigurationRead(d *schema.ResourceData, m interface{}) err
 func resourceCSPSiteConfigurationUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	emails := d.Get("email_addresses").(*schema.Set)
-	siteId := d.Get("site_id").(int)
+	siteID := d.Get("site_id").(int)
+	accountID := d.Get("account_id").(int)
 
 	cspSiteConfig := CSPSiteConfig{
 		Name:      "",
@@ -127,14 +145,14 @@ func resourceCSPSiteConfigurationUpdate(d *schema.ResourceData, m interface{}) e
 		cspSiteConfig.Mode = cspSiteModeEnforce
 	}
 
-	log.Printf("[DEBUG] Updating CSP site configuration for site ID: %d , values: %v.", siteId, cspSiteConfig)
-	updatedSite, err := client.UpdateCSPSiteWithRetries(siteId, &cspSiteConfig)
+	log.Printf("[DEBUG] Updating CSP site configuration for site ID: %d , values: %v.", siteID, cspSiteConfig)
+	updatedSite, err := client.UpdateCSPSiteWithRetries(accountID, siteID, &cspSiteConfig)
 	if err != nil {
 		log.Printf("[ERROR] Could not update CSP site config: %s - %s\n", d.Id(), err)
 		return err
 	}
-	log.Printf("[DEBUG] Updating CSP site configuration for site ID: %d , got response: %v.", siteId, updatedSite)
-	id := strconv.Itoa(siteId)
+	log.Printf("[DEBUG] Updating CSP site configuration for site ID: %d , got response: %v.", siteID, updatedSite)
+	id := strconv.Itoa(siteID)
 	d.SetId(id)
 
 	return resourceCSPSiteConfigurationRead(d, m)
