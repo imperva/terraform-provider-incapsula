@@ -40,9 +40,17 @@ const (
 func (c *Client) GetCSPSite(accountID, siteID int) (*CSPSiteConfig, error) {
 	log.Printf("[INFO] Getting CSP site configuration for site ID: %d of account %d\n", siteID, accountID)
 
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet,
-		fmt.Sprintf("%s%s/%d?caid=%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID, accountID),
-		nil)
+	var resp *http.Response
+	var err error
+	if accountID != 0 {
+		resp, err = c.DoJsonRequestWithHeaders(http.MethodGet,
+			fmt.Sprintf("%s%s/%d?caid=%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID, accountID),
+			nil)
+	} else {
+		resp, err = c.DoJsonRequestWithHeaders(http.MethodGet,
+			fmt.Sprintf("%s%s/%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID),
+			nil)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("Error from CSP API for when reading site ID %d: %s", siteID, err)
 	}
@@ -97,9 +105,16 @@ func (c *Client) UpdateCSPSite(accountID, siteID int, config *CSPSiteConfig) (*C
 		return nil, fmt.Errorf("Failed to JSON marshal CSP api site config: %s", err)
 	}
 
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut,
-		fmt.Sprintf("%s%s/%d?caid=%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID, accountID),
-		configJSON)
+	var resp *http.Response
+	if accountID != 0 {
+		resp, err = c.DoJsonRequestWithHeaders(http.MethodPut,
+			fmt.Sprintf("%s%s/%d?caid=%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID, accountID),
+			configJSON)
+	} else {
+		resp, err = c.DoJsonRequestWithHeaders(http.MethodPut,
+			fmt.Sprintf("%s%s/%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID),
+			configJSON)
+	}
 
 	if err != nil {
 		return nil, fmt.Errorf("Error from CSP API while updating site configuration for site ID %d: %s", siteID, err)

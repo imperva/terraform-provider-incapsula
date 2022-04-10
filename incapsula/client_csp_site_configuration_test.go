@@ -13,8 +13,9 @@ func TestCspSiteConfigBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := 42
+	accountID := 55
 
-	ret, err := client.GetCSPSite(siteID)
+	ret, err := client.GetCSPSite(accountID, siteID)
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -26,7 +27,7 @@ func TestCspSiteConfigBadConnection(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	ret, err = client.UpdateCSPSite(siteID, &CSPSiteConfig{})
+	ret, err = client.UpdateCSPSite(accountID, siteID, &CSPSiteConfig{})
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -42,6 +43,7 @@ func TestCspSiteConfigBadConnection(t *testing.T) {
 func TestCSPSiteConfigErrorResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
+	accountID := 55
 	siteID := 42
 	endpoint := fmt.Sprintf("%s/%d", CSPSiteApiPath, siteID)
 
@@ -58,7 +60,7 @@ func TestCSPSiteConfigErrorResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	ret, err := client.GetCSPSite(siteID)
+	ret, err := client.GetCSPSite(accountID, siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -69,7 +71,7 @@ func TestCSPSiteConfigErrorResponse(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	ret, err = client.UpdateCSPSite(siteID, &CSPSiteConfig{})
+	ret, err = client.UpdateCSPSite(accountID, siteID, &CSPSiteConfig{})
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -85,6 +87,7 @@ func TestCSPSiteConfigInvalidResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
+	accountID := 55
 	endpoint := fmt.Sprintf("%s/%d", CSPSiteApiPath, siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -100,7 +103,7 @@ func TestCSPSiteConfigInvalidResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	ret, err := client.GetCSPSite(siteID)
+	ret, err := client.GetCSPSite(accountID, siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -111,7 +114,7 @@ func TestCSPSiteConfigInvalidResponse(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	ret, err = client.UpdateCSPSite(siteID, &CSPSiteConfig{})
+	ret, err = client.UpdateCSPSite(accountID, siteID, &CSPSiteConfig{})
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -126,6 +129,7 @@ func TestCSPSiteConfigInvalidResponse(t *testing.T) {
 func TestCSPSiteConfigResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
+	accountID := 55
 	siteID := 42
 	endpoint := fmt.Sprintf("%s/%d", CSPSiteApiPath, siteID)
 
@@ -152,7 +156,7 @@ func TestCSPSiteConfigResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	ret, err := client.GetCSPSite(siteID)
+	ret, err := client.GetCSPSite(accountID, siteID)
 	if err != nil {
 		t.Errorf("Should have not received an error")
 	}
@@ -172,7 +176,7 @@ func TestCSPSiteConfigResponse(t *testing.T) {
 		t.Errorf("Incorrect value inresponse from GetCSPSite")
 	}
 
-	ret, err = client.UpdateCSPSite(siteID, &CSPSiteConfig{})
+	ret, err = client.UpdateCSPSite(accountID, siteID, &CSPSiteConfig{})
 	if err != nil {
 		t.Errorf("Should have not received an error")
 	}

@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"log"
 	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -46,18 +47,27 @@ func testCheckCSPSiteConfigExists(name string) resource.TestCheckFunc {
 		if !ok {
 			return fmt.Errorf("Incapsula CSP Site Config resource not found: %s", name)
 		}
-		siteId, err := strconv.Atoi(res.Primary.ID)
+
+		keyParts := strings.Split(res.Primary.ID, "/")
+		if len(keyParts) != 2 {
+			return fmt.Errorf("Error parsing ID, actual value: %s, expected numeric id and string seperated by '/'\n", res.Primary.ID)
+		}
+		accountID, err := strconv.Atoi(keyParts[0])
 		if err != nil {
-			return fmt.Errorf("Error parsing ID %v to int", res.Primary.ID)
+			fmt.Errorf("failed to convert site ID from import command, actual value: %s, expected numeric ID", res.Primary.ID)
+		}
+		siteID, err := strconv.Atoi(keyParts[1])
+		if err != nil {
+			fmt.Errorf("failed to convert account ID from import command, actual value: %s, expected numeric ID", res.Primary.ID)
 		}
 
 		client := testAccProvider.Meta().(*Client)
-		cspSite, err := client.GetCSPSite(siteId)
+		cspSite, err := client.GetCSPSite(accountID, siteID)
 		if err != nil {
-			return fmt.Errorf("Incapsula CSP Site Config doesn't exist for site ID %d", siteId)
+			return fmt.Errorf("Incapsula CSP Site Config doesn't exist for site ID %d", siteID)
 		}
 		if cspSite == nil || cspSite.Discovery != CSPDiscoveryOn {
-			return fmt.Errorf("Incapsula CSP Site Config isn't on for site ID %d", siteId)
+			return fmt.Errorf("Incapsula CSP Site Config isn't on for site ID %d", siteID)
 		}
 
 		return nil
@@ -71,17 +81,30 @@ func testACCStateCSPSiteConfigID(s *terraform.State) (string, error) {
 			continue
 		}
 
-		resourceID, err := strconv.Atoi(rs.Primary.ID)
+		keyParts := strings.Split(rs.Primary.ID, "/")
+		if len(keyParts) != 2 {
+			return "", fmt.Errorf("Error parsing ID, actual value: %s, expected numeric id and string seperated by '/'\n", rs.Primary.ID)
+		}
+		accountID, err := strconv.Atoi(keyParts[0])
 		if err != nil {
-			return "", fmt.Errorf("Error parsing CSP site config ID %v to int", rs.Primary.ID)
+			return "", fmt.Errorf("failed to convert site ID from import command, actual value: %s, expected numeric ID", rs.Primary.ID)
 		}
 
-		siteID, err := strconv.Atoi(rs.Primary.Attributes["site_id"])
+		siteID, err := strconv.Atoi(keyParts[1])
+		if err != nil {
+			return "", fmt.Errorf("failed to convert account ID from import command, actual value: %s, expected numeric ID", rs.Primary.ID)
+		}
+		resourceID := fmt.Sprintf("%d/%d", accountID, siteID)
 
-		if siteID != resourceID {
+		schemaSiteID, err := strconv.Atoi(rs.Primary.Attributes["site_id"])
+		schemaAccountID, err := strconv.Atoi(rs.Primary.Attributes["account_id"])
+		newID := fmt.Sprintf("%d/%d", schemaAccountID, schemaSiteID)
+
+		if strings.Compare(newID, resourceID) != 0 {
+			// if newID != resourceID {
 			return "", fmt.Errorf("Incapsula CSP Site Config does not exist")
 		}
-		return fmt.Sprintf("%d", resourceID), nil
+		return resourceID, nil
 	}
 	return "", fmt.Errorf("Error finding correct resource %s", cspSiteConfigResourceType)
 }
@@ -102,20 +125,16 @@ func testACCStateCSPSiteConfigDestroy(s *terraform.State) error {
 		if err != nil {
 			return fmt.Errorf("failed to convert site ID from import command, actual value : %s, expected numeric id", siteID)
 		}
-
-		apiID, err := strconv.Atoi(rs.Primary.ID)
+		accountID := rs.Primary.Attributes["account_id"]
+		accountIDInt, err := strconv.Atoi(accountID)
 		if err != nil {
-			return fmt.Errorf("failed to convert API ID from import command, actual value : %s, expected numeric id", rs.Primary.ID)
+			return fmt.Errorf("failed to convert site ID from import command, actual value : %s, expected numeric id", siteID)
 		}
 
-		if apiID != siteIDInt {
-			return fmt.Errorf("Resource %s for CSP site configuration has mismatch with IDs: Api Id %d, site ID %d", cspSiteConfigResourceType, apiID, siteIDInt)
-		}
-
-		cspSite, err := client.GetCSPSite(siteIDInt)
+		cspSite, err := client.GetCSPSite(accountIDInt, siteIDInt)
 		fmt.Sprintf("Got CSP site config for site ID %d: %v", siteIDInt, cspSite)
 		if err != nil && cspSite != nil && cspSite.Discovery != CSPDiscoveryOff {
-			return fmt.Errorf("Resource %s for CSP site configuration: Api Id %d, site ID %d still exists", cspSiteConfigResourceType, apiID, siteIDInt)
+			return fmt.Errorf("Resource %s for CSP site configuration: Api Id %s, site ID %d still exists", cspSiteConfigResourceType, rs.Primary.ID, siteIDInt)
 		}
 		return nil
 	}

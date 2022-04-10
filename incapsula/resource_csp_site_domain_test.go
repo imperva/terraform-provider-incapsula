@@ -50,15 +50,19 @@ func testCheckCSPDomainExists(name string) resource.TestCheckFunc {
 		if !ok {
 			return fmt.Errorf("Incapsula CSP domain resource not found: %s", name)
 		}
-		siteId, err := strconv.Atoi(res.Primary.Attributes["site_id"])
+		siteID, err := strconv.Atoi(res.Primary.Attributes["site_id"])
 		if err != nil {
 			return fmt.Errorf("Error parsing ID %v to int", res.Primary.Attributes["site_id"])
 		}
+		accountID, err := strconv.Atoi(res.Primary.Attributes["account_id"])
+		if err != nil {
+			return fmt.Errorf("Error parsing ID %v to int", res.Primary.Attributes["account_id"])
+		}
 
 		client := testAccProvider.Meta().(*Client)
-		cspDomain, err := client.getCSPPreApprovedDomain(siteId, res.Primary.Attributes["domain"])
+		cspDomain, err := client.getCSPPreApprovedDomain(accountID, siteID, res.Primary.Attributes["domain"])
 		if err != nil || cspDomain == nil {
-			return fmt.Errorf("Incapsula CSP domain %s doesn't exist for site ID %d", res.Primary.Attributes["domain"], siteId)
+			return fmt.Errorf("Incapsula CSP domain %s doesn't exist for site ID %d", res.Primary.Attributes["domain"], siteID)
 		}
 
 		return nil
@@ -73,25 +77,30 @@ func testACCStateCSPDomainID(s *terraform.State) (string, error) {
 		}
 
 		keyParts := strings.Split(rs.Primary.ID, "/")
-		if len(keyParts) != 2 {
+		if len(keyParts) != 3 {
 			return "", fmt.Errorf("Error parsing ID, actual value: %s, expected numeric id and string seperated by '/'\n", rs.Primary.ID)
 		}
-		keySiteID, err := strconv.Atoi(keyParts[0])
+		keyAccountID, err := strconv.Atoi(keyParts[0])
 		if err != nil {
 			return "", fmt.Errorf("failed to convert site ID from import command, actual value: %s, expected numeric id", keyParts[0])
 		}
-		keyDomain, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(keyParts[1])
+		keySiteID, err := strconv.Atoi(keyParts[1])
 		if err != nil {
-			return "", fmt.Errorf("failed to convert domain reference ID from import command, actual value: %s, expected Base64 id", keyParts[1])
+			return "", fmt.Errorf("failed to convert site ID from import command, actual value: %s, expected numeric id", keyParts[1])
+		}
+		keyDomain, err := base64.URLEncoding.WithPadding(base64.NoPadding).DecodeString(keyParts[2])
+		if err != nil {
+			return "", fmt.Errorf("failed to convert domain reference ID from import command, actual value: %s, expected Base64 id", keyParts[2])
 		}
 
 		siteID, err := strconv.Atoi(rs.Primary.Attributes["site_id"])
+		accountID, err := strconv.Atoi(rs.Primary.Attributes["account_id"])
 		domain := rs.Primary.Attributes["domain"]
 
-		if siteID != keySiteID || strings.Compare(domain, string(keyDomain)) != 0 {
+		if siteID != keySiteID || accountID != keyAccountID || strings.Compare(domain, string(keyDomain)) != 0 {
 			return "", fmt.Errorf("Incapsula CSP domain does not exist")
 		}
-		return fmt.Sprintf("%d/%s", siteID, keyParts[1]), nil
+		return fmt.Sprintf("%d/%d/%s", accountID, siteID, keyParts[2]), nil
 	}
 	return "", fmt.Errorf("Error finding correct resource %s", cspDomainResourceName)
 }
@@ -104,10 +113,16 @@ func testACCStateCSPDomainDestroy(s *terraform.State) error {
 			continue
 		}
 
+		accountID := rs.Primary.Attributes["account_id"]
+		accountIDInt, err := strconv.Atoi(accountID)
+		if err != nil {
+			return fmt.Errorf("failed to convert site ID from import command, actual value : %s, expected numeric id", accountID)
+		}
 		siteID := rs.Primary.Attributes["site_id"]
 		if siteID == "" {
 			return fmt.Errorf("Parameter site_id was not found in resource %s", cspDomainResourceName)
 		}
+
 		siteIDInt, err := strconv.Atoi(siteID)
 		if err != nil {
 			return fmt.Errorf("failed to convert site ID from import command, actual value : %s, expected numeric id", siteID)
@@ -117,7 +132,7 @@ func testACCStateCSPDomainDestroy(s *terraform.State) error {
 			return fmt.Errorf("Parameter domain was not found in resource %s", cspDomainResourceName)
 		}
 
-		cspDomain, err := client.getCSPPreApprovedDomain(siteIDInt, domain)
+		cspDomain, err := client.getCSPPreApprovedDomain(accountIDInt, siteIDInt, domain)
 
 		fmt.Sprintf("Got CSP domain for site ID %d: %v", siteIDInt, cspDomain)
 		if err != nil && cspDomain != nil {
@@ -131,7 +146,7 @@ func testACCStateCSPDomainDestroy(s *terraform.State) error {
 func testAccCheckCSPDomainBasic(t *testing.T) string {
 	return testAccCheckCSPSiteConfigBasic(t) + fmt.Sprintf(`
 	resource "%s" "%s" {
-		site_id				= %s.id
+		site_id				= %s.site_id
 		domain				= "stam-domain.com"
 		include_subdomains	= true
 		notes				= ["new note"]

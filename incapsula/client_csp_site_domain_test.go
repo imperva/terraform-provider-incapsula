@@ -14,8 +14,9 @@ func TestCspSiteDomainBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := 42
+	accountID := 55
 
-	updatedDom, err := client.updateCSPPreApprovedDomain(siteID, &CSPPreApprovedDomain{})
+	updatedDom, err := client.updateCSPPreApprovedDomain(accountID, siteID, &CSPPreApprovedDomain{})
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -26,7 +27,7 @@ func TestCspSiteDomainBadConnection(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	err = client.deleteCSPPreApprovedDomains(siteID, "ref")
+	err = client.deleteCSPPreApprovedDomains(accountID, siteID, "ref")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -39,6 +40,7 @@ func TestCspSiteDomainErrorResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
+	accountID := 55
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(500)
@@ -50,7 +52,7 @@ func TestCspSiteDomainErrorResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	updatedDom, err := client.updateCSPPreApprovedDomain(siteID, &CSPPreApprovedDomain{})
+	updatedDom, err := client.updateCSPPreApprovedDomain(accountID, siteID, &CSPPreApprovedDomain{})
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -61,7 +63,7 @@ func TestCspSiteDomainErrorResponse(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	err = client.deleteCSPPreApprovedDomains(siteID, "ref")
+	err = client.deleteCSPPreApprovedDomains(accountID, siteID, "ref")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -74,6 +76,7 @@ func TestCspSiteDomainInvalidResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
+	accountID := 55
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method == http.MethodGet {
@@ -89,7 +92,7 @@ func TestCspSiteDomainInvalidResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	updatedDom, err := client.updateCSPPreApprovedDomain(siteID, &CSPPreApprovedDomain{})
+	updatedDom, err := client.updateCSPPreApprovedDomain(accountID, siteID, &CSPPreApprovedDomain{})
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -105,6 +108,7 @@ func TestCSPSiteDomainPreApprovedGetResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
+	accountID := 55
 	endpoint := fmt.Sprintf("%s/%d/preapprovedlist/ZG9tYWluLmNvbQ", CSPSiteApiPath, siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -124,7 +128,7 @@ func TestCSPSiteDomainPreApprovedGetResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	domain, err := client.getCSPPreApprovedDomain(siteID, "domain.com")
+	domain, err := client.getCSPPreApprovedDomain(accountID, siteID, "domain.com")
 	if err != nil {
 		t.Errorf("Should have not received an error")
 	}
@@ -143,6 +147,7 @@ func TestCSPSiteDomainPreApprovedUpdateResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
+	accountID := 55
 	endpoint := fmt.Sprintf("%s/%d/preapprovedlist", CSPSiteApiPath, siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -162,7 +167,7 @@ func TestCSPSiteDomainPreApprovedUpdateResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	domain, err := client.updateCSPPreApprovedDomain(siteID, &CSPPreApprovedDomain{})
+	domain, err := client.updateCSPPreApprovedDomain(accountID, siteID, &CSPPreApprovedDomain{})
 	if err != nil {
 		t.Errorf("Should have not received an error")
 	}
@@ -181,6 +186,7 @@ func TestCSPSiteDomainNotesResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
+	accountID := 55
 	domain := "google.com"
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
 	endpoint := fmt.Sprintf("%s/%d/domains/%s/notes", CSPSiteApiPath, siteID, domainRef)
@@ -204,7 +210,7 @@ func TestCSPSiteDomainNotesResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	notes, err := client.getCSPDomainNotes(siteID, domain)
+	notes, err := client.getCSPDomainNotes(accountID, siteID, domain)
 	if err != nil {
 		t.Errorf("Should have not received an error")
 	}
@@ -223,6 +229,7 @@ func TestCSPSiteDomainStatusResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
+	accountID := 55
 	domain := "google.com"
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
 	endpoint := fmt.Sprintf("%s/%d/domains/%s/status", CSPSiteApiPath, siteID, domainRef)
@@ -244,7 +251,7 @@ func TestCSPSiteDomainStatusResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	notes, err := client.getCSPDomainStatus(siteID, domain)
+	notes, err := client.getCSPDomainStatus(accountID, siteID, domain)
 	if err != nil {
 		t.Errorf("Should have not received an error")
 	}
@@ -257,6 +264,7 @@ func TestCSPSiteDomainStatusEmptyResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
+	accountID := 55
 	domain := "google.com"
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
 	endpoint := fmt.Sprintf("%s/%d/domains/%s/status", CSPSiteApiPath, siteID, domainRef)
@@ -274,7 +282,7 @@ func TestCSPSiteDomainStatusEmptyResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	notes, err := client.getCSPDomainStatus(siteID, domain)
+	notes, err := client.getCSPDomainStatus(accountID, siteID, domain)
 	if err != nil {
 		t.Errorf("Should have not received an error")
 	}
