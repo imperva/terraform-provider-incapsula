@@ -86,18 +86,18 @@ func testAccCheckIncapsulaCertificateDestroy(state *terraform.State) error {
 }
 
 func testAccCheckIncapsulaCustomCertificateGoodConfigNoPrivateKey(t *testing.T) string {
-	cert, pkey := genCertAndKey()
+	cert, privateKey := generateKeyPair()
 	result := testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "%s" "%s" {
   site_id = incapsula_site.testacc-terraform-site.id
   certificate = %s
   private_key = %s
 depends_on = ["%s"]
-}`, certificateResourceName, certificateName, cert, pkey, siteResourceName)
+}`, certificateResourceName, certificateName, cert, privateKey, siteResourceName)
 	return result
 }
 
-func genCertAndKey() (string, string) {
+func generateKeyPair() (string, string) {
 	template := getCertificateTemplate()
 
 	// generate private key
@@ -154,7 +154,7 @@ func getCertificateTemplate() *x509.Certificate {
 			Organization: []string{"MyCompany1"},
 		},
 		NotBefore:   time.Now(),
-		NotAfter:    time.Now().AddDate(5, 5, 5),
+		NotAfter:    time.Now().AddDate(0, 0, 1),
 		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 		KeyUsage:    x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 	}

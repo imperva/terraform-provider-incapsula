@@ -1,4 +1,4 @@
-## 3.4.1 (Not Released)
+## 3.5.0 (Not Released)
 
 * Edit acceptance test for Custom Certificate resource
 
