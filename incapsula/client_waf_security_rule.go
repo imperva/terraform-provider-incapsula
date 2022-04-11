@@ -48,7 +48,7 @@ func (c *Client) ConfigureWAFSecurityRule(siteID int, ruleID, securityRuleAction
 
 	// Post form to Incapsula
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointWAFRuleConfigure)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, UpdateSecurityRule)
 	if err != nil {
 		return nil, fmt.Errorf("Error configuring WAF security rule rule_id (%s) for site_id (%d)", ruleID, siteID)
 	}

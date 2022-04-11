@@ -19,7 +19,7 @@ func (c *Client) AddPolicyAssetAssociation(policyID, assetID, assetType string) 
 
 	// Post form to Incapsula
 	reqURL := fmt.Sprintf("%s/policies/v2/assets/%s/%s/policies/%s", c.config.BaseURLAPI, assetType, assetID, policyID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, nil, CreatePolicyAssetAssociation)
 	if err != nil {
 		return fmt.Errorf("Error from Incapsula service when adding Policy Asset Association: %s", err)
 	}
@@ -45,7 +45,7 @@ func (c *Client) DeletePolicyAssetAssociation(policyID, assetID, assetType strin
 
 	// Delete request to Incapsula
 	reqURL := fmt.Sprintf("%s/policies/v2/assets/%s/%s/policies/%s", c.config.BaseURLAPI, assetType, assetID, policyID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeletePolicyAssetAssociation)
 	if err != nil {
 		return fmt.Errorf("Error from Incapsula service when deleting Policy Asset Association (%s): %s", policyID, err)
 	}
@@ -70,7 +70,7 @@ func (c *Client) isPolicyAssetAssociated(policyID, assetID, assetType string) (b
 
 	// Check with Policies if the association exist
 	reqURL := fmt.Sprintf("%s/policies/v2/policies/%s/assets/%s/%s", c.config.BaseURLAPI, policyID, assetType, assetID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadPolicyAssetAssociation)
 	if err != nil {
 		return false, fmt.Errorf("error from Incapsula service when checking if Policy Asset Association exist: %s/%s/%s, err: %s", policyID, assetID, assetType, err)
 	}

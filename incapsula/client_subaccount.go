@@ -75,7 +75,7 @@ func (c *Client) AddSubAccount(subAccountPayload *SubAccountPayload) (*SubAccoun
 	log.Printf("[DEBUG] refID %s\n", subAccountPayload.RefID)
 	log.Printf("[DEBUG] values %s\n", values)
 
-	resp, err := c.PostFormWithHeaders(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountAdd), values)
+	resp, err := c.PostFormWithHeaders(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountAdd), values, CreateSubAccount)
 	if err != nil {
 		return nil, fmt.Errorf("Error adding subaccount %s: %s", subAccountPayload.SubAccountName, err)
 	}
@@ -144,7 +144,7 @@ func (c *Client) sendListSubAccountsRequest(accountId int, pageNum int) ([]SubAc
 	log.Printf("[INFO] Pagination loop, page : %d)\n", pageNum)
 
 	// Post form to Incapsula
-	resp, err := c.PostFormWithHeaders(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountList), values)
+	resp, err := c.PostFormWithHeaders(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountList), values, ReadSubAccount)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting subaccounts for account %d: %s", accountId, err)
 	}
@@ -180,7 +180,7 @@ func (c *Client) DeleteSubAccount(subAccountID int) error {
 	// Post form to Incapsula
 	resp, err := c.PostFormWithHeaders(fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSubAccountDelete), url.Values{
 		"sub_account_id": {strconv.Itoa(subAccountID)},
-	})
+	}, DeleteSubAccount)
 	if err != nil {
 		return fmt.Errorf("Error deleting subaccount id: %d: %s", subAccountID, err)
 	}

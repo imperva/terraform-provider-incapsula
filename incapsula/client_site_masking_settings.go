@@ -20,7 +20,7 @@ func (c *Client) GetMaskingSettings(siteID string) (*MaskingSettings, error) {
 
 	// Post form to Incapsula
 	reqURL := fmt.Sprintf("%s/sites/%s/settings/masking", c.config.BaseURLRev2, siteID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadSiteMasking)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when reading masking settings for Site ID %s: %s", siteID, err)
 	}
@@ -58,7 +58,7 @@ func (c *Client) UpdateMaskingSettings(siteID string, maskingSettings *MaskingSe
 
 	// Put request to Incapsula
 	reqURL := fmt.Sprintf("%s/sites/%s/settings/masking", c.config.BaseURLRev2, siteID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, maskingSettingsJSON)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, maskingSettingsJSON, UpdateSiteMasking)
 	if err != nil {
 		return fmt.Errorf("Error from Incapsula service when updating masking settings for Site ID %s: %s", siteID, err)
 	}

@@ -1,6 +1,8 @@
 ## 3.5.0 (Not Released)
 
 * Edit acceptance test for Custom Certificate resource
+* Add support for CSP
+* Add operation type to HTTP client calls
 
 ## 3.4.0 (Released) 
 

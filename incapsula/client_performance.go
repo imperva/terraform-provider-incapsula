@@ -58,7 +58,7 @@ func (c *Client) GetPerformanceSettings(siteID string) (*PerformanceSettings, in
 
 	// Post form to Incapsula
 	reqURL := fmt.Sprintf("%s/sites/%s/settings/cache", c.config.BaseURLRev2, siteID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadSitePerformance)
 	if err != nil {
 		return nil, 0, fmt.Errorf("Error from Incapsula service when reading Incap Performance Settings for Site ID %s: %s", siteID, err)
 	}
@@ -104,7 +104,7 @@ func (c *Client) UpdatePerformanceSettings(siteID string, performanceSettings *P
 	}
 
 	reqURL := fmt.Sprintf("%s/sites/%s/settings/cache", c.config.BaseURLRev2, siteID)
-	resp, err := c.DoJsonRequestWithCustomHeaders(http.MethodPut, reqURL, performanceSettingsJSON, headers)
+	resp, err := c.DoJsonRequestWithCustomHeaders(http.MethodPut, reqURL, performanceSettingsJSON, headers, UpdateSitePerformance)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when updating Incap Performance Settings for Site ID %s: %s", siteID, err)
 	}

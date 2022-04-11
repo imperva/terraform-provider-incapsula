@@ -43,7 +43,7 @@ func (c *Client) AddDataCenterServer(dcID, serverAddress, isStandby string, isEn
 		"is_disabled":    {strconv.FormatBool(!bIsEnabled)},
 	}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServerAdd)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, CreateDataCenterServer)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when adding data center server for dcID %s: %s", dcID, err)
 	}
@@ -92,7 +92,7 @@ func (c *Client) EditDataCenterServer(serverID, serverAddress, isStandby, isEnab
 		"is_enabled":     {isEnabled},
 	}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServerEdit)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, UpdateDataCenterServer)
 	if err != nil {
 		return nil, fmt.Errorf("Error editing data center server for serverID: %s: %s", serverID, err)
 	}
@@ -143,7 +143,7 @@ func (c *Client) DeleteDataCenterServer(serverID string) error {
 	// Post form to Incapsula
 	values := url.Values{"server_id": {serverID}}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterServerDelete)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, DeleteDataCenterServer)
 	if err != nil {
 		return fmt.Errorf("Error deleting data center server (server_id: %s): %s", serverID, err)
 	}

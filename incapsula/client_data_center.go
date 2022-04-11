@@ -58,7 +58,7 @@ func (c *Client) AddDataCenter(siteID, name, serverAddress, isContent, isEnabled
 		"is_enabled":     {isEnabled},
 	}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterAdd)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, CreateDataCenter)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when adding data center for siteID %s: %s", siteID, err)
 	}
@@ -102,7 +102,7 @@ func (c *Client) ListDataCenters(siteID string) (*DataCenterListResponse, error)
 	// Post form to Incapsula
 	values := url.Values{"site_id": {siteID}}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterList)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, ReadDataCenter)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting data centers for siteID %s: %s", siteID, err)
 	}
@@ -161,7 +161,7 @@ func (c *Client) EditDataCenter(dcID, name, isContent, isEnabled string) (*DataC
 
 	// Post form to Incapsula
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterEdit)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, UpdateDataCenter)
 	if err != nil {
 		return nil, fmt.Errorf("Error editing data center (%s): %s", dcID, err)
 	}
@@ -216,7 +216,7 @@ func (c *Client) DeleteDataCenter(dcID string) error {
 	// Post form to Incapsula
 	values := url.Values{"dc_id": {dcID}}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataCenterDelete)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, DeleteDataCenter)
 	if err != nil {
 		return fmt.Errorf("Error deleting data center (%s): %s", dcID, err)
 	}

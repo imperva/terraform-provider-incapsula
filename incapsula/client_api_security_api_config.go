@@ -136,7 +136,7 @@ func (c *Client) CreateApiSecurityApiConfig(siteId int, apiConfigPayload *ApiSec
 
 	reqURL := fmt.Sprintf("%s%s%d", c.config.BaseURLAPI, apiConfigUrl, siteId)
 	contentType := writer.FormDataContentType()
-	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, reqURL, body.Bytes(), contentType)
+	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, reqURL, body.Bytes(), contentType, CreateApiSecApiConfig)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error adding API Security API Config for site %d: %s", siteId, err)
 	}
@@ -221,7 +221,7 @@ func (c *Client) UpdateApiSecurityApiConfig(siteId int, apiId string, apiConfigP
 
 	reqURL := fmt.Sprintf("%s%s%d/%s", c.config.BaseURLAPI, apiConfigUrl, siteId, apiId)
 	contentType := writer.FormDataContentType()
-	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, reqURL, body.Bytes(), contentType)
+	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, reqURL, body.Bytes(), contentType, UpdateApiSecApiConfig)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error updating API Security API Config for site id %d, API id %s :%s", siteId, apiId, err)
 	}
@@ -254,7 +254,7 @@ func (c *Client) GetApiSecurityApiConfig(siteId int, apiId int) (*ApiSecurityApi
 	log.Printf("[INFO] Getting Incapsula Api-Security API Config for Site ID %d, API Config ID %d\n", siteId, apiId)
 
 	url := fmt.Sprintf("%s%s%d/%d", c.config.BaseURLAPI, apiConfigUrl, siteId, apiId)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, url, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, url, nil, ReadApiSecApiConfig)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when reading Api-Security Api Config for Api ID %d: %s", apiId, err)
 	}
@@ -283,7 +283,7 @@ func (c *Client) GetApiSecurityApiSwaggerConfig(siteId int, apiId int) (*ApiSecu
 	log.Printf("[INFO] Getting Incapsula Api-Security API Swagger Config for Site ID %d, API Config ID %d\n", siteId, apiId)
 
 	url := fmt.Sprintf("%s%sfile/%d/%d", c.config.BaseURLAPI, apiConfigUrl, siteId, apiId)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, url, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, url, nil, "")
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when reading Api-Security Api Config for Api ID %d: %s", apiId, err)
 	}
@@ -313,7 +313,7 @@ func (c *Client) DeleteApiSecurityApiConfig(siteID int, apiID string) error {
 
 	// Delete request to Incapsula
 	reqURL := fmt.Sprintf("%s%s%d/%s", c.config.BaseURLAPI, apiConfigUrl, siteID, apiID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteApiSecApiConfig)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error from Incapsula service when deleting API Secirity API Config with Site ID %d, API ID %s, : %s", siteID, apiID, err)
 	}

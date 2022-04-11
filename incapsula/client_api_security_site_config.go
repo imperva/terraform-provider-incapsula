@@ -43,7 +43,8 @@ func (c *Client) ReadApiSecuritySiteConfig(siteId int) (*ApiSecuritySiteConfigGe
 	// Post form to Incapsula
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet,
 		fmt.Sprintf("%s%s%d", c.config.BaseURLAPI, siteConfigUrl, siteId),
-		nil)
+		nil,
+		ReadApiSecSiteConfig)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR]Error from Incapsula service while reading Api-Security Site Config for site ID %d: %s", siteId, err)
 	}
@@ -79,7 +80,8 @@ func (c *Client) UpdateApiSecuritySiteConfig(siteId int, siteConfigPayload *ApiS
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost,
 		fmt.Sprintf("%s"+siteConfigUrl+"%d", c.config.BaseURLAPI, siteId),
-		siteConfigJSON)
+		siteConfigJSON,
+		UpdateApiSecSiteConfig)
 
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service while updating API security site configuration for site ID %d: %s", siteId, err)

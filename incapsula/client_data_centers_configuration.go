@@ -69,7 +69,7 @@ func (c *Client) PutDataCentersConfiguration(siteID string, requestDTO DataCente
 	baseURLv3 := c.config.BaseURL[:len(c.config.BaseURL)-3] + "/v3"
 	dcsJSON, err := json.Marshal(requestDTO)
 	reqURL := fmt.Sprintf("%s/sites/%s/data-centers-configuration", baseURLv3, siteID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, dcsJSON)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, dcsJSON, CreateDataCenterConfiguration)
 	if err != nil {
 		return nil, fmt.Errorf("Error executing update Data Centers configuration request for siteID %s: %s", siteID, err)
 	}
@@ -98,7 +98,7 @@ func (c *Client) GetDataCentersConfiguration(siteID string) (*DataCentersConfigu
 	// Get request to Incapsula
 	baseURLv3 := c.config.BaseURL[:len(c.config.BaseURL)-3] + "/v3"
 	reqURL := fmt.Sprintf("%s/sites/%s/data-centers-configuration", baseURLv3, siteID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadDataCenterConfiguration)
 	if err != nil {
 		return nil, fmt.Errorf("Error executing get Data Centers configuration request for siteID %s: %s", siteID, err)
 	}

@@ -79,7 +79,7 @@ func (c *Client) AddSecurityRuleException(siteID int, ruleID, clientAppTypes, cl
 
 	// Post form to Incapsula
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointExceptionConfigure)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, CreateSecurityRuleException)
 	if err != nil {
 		return nil, fmt.Errorf("Error configuring security rule exception rule_id (%s) for site_id (%d)", ruleID, siteID)
 	}
@@ -148,7 +148,7 @@ func (c *Client) EditSecurityRuleException(siteID int, ruleID, clientAppTypes, c
 
 	// Post form to Incapsula
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointExceptionConfigure)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, UpdateSecurityRuleException)
 	if err != nil {
 		return nil, fmt.Errorf("Error configuring security rule exception rule_id (%s) for site_id (%d)", ruleID, siteID)
 	}
@@ -182,7 +182,7 @@ func (c *Client) ListSecurityRuleExceptions(siteID, ruleID string) (*SiteStatusR
 	// Post form to Incapsula
 	values := url.Values{"site_id": {siteID}}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointExceptionList)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, ReadSecurityRuleException)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting security rule exceptions for rule_id (%s) on siteID (%s): %s", ruleID, siteID, err)
 	}
@@ -237,7 +237,7 @@ func (c *Client) DeleteSecurityRuleException(siteID int, ruleID, whitelistID str
 
 	// Post form to Incapsula
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointExceptionConfigure)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, DeleteSecurityRuleException)
 	if err != nil {
 		return fmt.Errorf("Error deleting security rule exception whitelist_id (%s) for rule_id (%s) for site_id (%d)", whitelistID, ruleID, siteID)
 	}

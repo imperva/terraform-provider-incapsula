@@ -48,7 +48,7 @@ func (c *Client) AddIncapRule(siteID string, rule *IncapRule) (*IncapRuleWithID,
 
 	// Post form to Incapsula
 	reqURL := fmt.Sprintf("%s/sites/%s/rules", c.config.BaseURLRev2, siteID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, ruleJSON)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, ruleJSON, CreateIncapRule)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when adding Incap Rule for Site ID %s: %s", siteID, err)
 	}
@@ -81,7 +81,7 @@ func (c *Client) ReadIncapRule(siteID string, ruleID int) (*IncapRuleWithID, int
 
 	// Post form to Incapsula
 	reqURL := fmt.Sprintf("%s/sites/%s/rules/%d", c.config.BaseURLRev2, siteID, ruleID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadIncapRule)
 	if err != nil {
 		return nil, 0, fmt.Errorf("Error from Incapsula service when reading Incap Rule %d for Site ID %s: %s", ruleID, siteID, err)
 	}
@@ -119,7 +119,7 @@ func (c *Client) UpdateIncapRule(siteID string, ruleID int, rule *IncapRule) (*I
 
 	// Put request to Incapsula
 	reqURL := fmt.Sprintf("%s/sites/%s/rules/%d", c.config.BaseURLRev2, siteID, ruleID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, ruleJSON)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, ruleJSON, UpdateIncapRule)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when updating Incap Rule %d for Site ID %s: %s", ruleID, siteID, err)
 	}
@@ -152,7 +152,7 @@ func (c *Client) DeleteIncapRule(siteID string, ruleID int) error {
 
 	// Delete request to Incapsula
 	reqURL := fmt.Sprintf("%s/sites/%s/rules/%d", c.config.BaseURLRev2, siteID, ruleID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteIncapRule)
 	if err != nil {
 		return fmt.Errorf("Error from Incapsula service when deleting Incap Rule %d for Site ID %s: %s", ruleID, siteID, err)
 	}

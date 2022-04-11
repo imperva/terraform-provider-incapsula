@@ -80,7 +80,7 @@ func (c *Client) AddPolicy(policySubmitted *PolicySubmitted) (*PolicyExtended, e
 	// Post form to Incapsula
 	log.Printf("[DEBUG] Incapsula Add Incap Policy JSON request: %s\n", string(policyJSON))
 	reqURL := fmt.Sprintf("%s/policies/v2/policies", c.config.BaseURLAPI)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, policyJSON)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, policyJSON, CreatePolicy)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when adding Policy: %s", err)
 	}
@@ -113,7 +113,7 @@ func (c *Client) GetPolicy(policyID string) (*PolicyExtended, error) {
 
 	// Post form to Incapsula
 	reqURL := fmt.Sprintf("%s/policies/v2/policies/%s?extended=true", c.config.BaseURLAPI, policyID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadPolicy)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when reading Policy for ID %s: %s", policyID, err)
 	}
@@ -152,7 +152,7 @@ func (c *Client) UpdatePolicy(policyID int, policySubmitted *PolicySubmitted) (*
 	// Post form to Incapsula
 	log.Printf("[DEBUG] Incapsula Update Incap Policy JSON request: %s\n", string(policyJSON))
 	reqURL := fmt.Sprintf("%s/policies/v2/policies/%d", c.config.BaseURLAPI, policyID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, policyJSON)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, policyJSON, UpdatePolicy)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when updating Policy: %s", err)
 	}
@@ -185,7 +185,7 @@ func (c *Client) DeletePolicy(policyID string) error {
 
 	// Delete request to Incapsula
 	reqURL := fmt.Sprintf("%s/policies/v2/policies/%s", c.config.BaseURLAPI, policyID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeletePolicy)
 	if err != nil {
 		return fmt.Errorf("Error from Incapsula service when deleting Policy with ID %s: %s", policyID, err)
 	}

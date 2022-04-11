@@ -40,7 +40,7 @@ func (c *Client) ReadTXTRecords(siteID int) (*TXTRecordResponse, error) {
 
 	// GET records from Incapsula
 	reqURL := fmt.Sprintf("%s/sites/%d/settings/general/additionalTxtRecords", c.config.BaseURLRev2, siteID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadTxtRecord)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when reading TXT record(s) for siteID: %d\n %s", siteID, err)
 	}
@@ -88,7 +88,7 @@ func (c *Client) CreateTXTRecord(siteID int, txtRecordValueOne string, txtRecord
 
 	// Post request to Incapsula
 	reqURL := fmt.Sprintf("%s/sites/%d/settings/general/additionalTxtRecords", c.config.BaseURLRev2, siteID)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, CreateTxtRecord)
 	if err != nil {
 		return nil, fmt.Errorf("Error creating TXT record(s) for siteID %d: %s", siteID, err)
 	}
@@ -132,7 +132,7 @@ func (c *Client) UpdateTXTRecord(siteID int, txtRecordValueOne string, txtRecord
 
 	// Post request to Incapsula
 	reqURL := fmt.Sprintf("%s/sites/%d/settings/general/additionalTxtRecords", c.config.BaseURLRev2, siteID)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, UpdateTxtRecord)
 	if err != nil {
 		return nil, fmt.Errorf("Error updating TXT record(s) for siteID: %d\n%s", siteID, err)
 	}
@@ -165,7 +165,7 @@ func (c *Client) DeleteTXTRecord(siteID int, recordNumber string) error {
 	log.Printf("[INFO] Delete Incapsula TXT record number %s for siteID %d\n ", recordNumber, siteID)
 
 	reqURL := fmt.Sprintf("%s/sites/%d/settings/general/additionalTxtRecords?record_number=%s", c.config.BaseURLRev2, siteID, recordNumber)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteTxtRecord)
 	if err != nil {
 		log.Printf("[DEBUG] Error deleting TXT record for siteID %d: %s", siteID, err)
 		return fmt.Errorf("Error deleting TXT record for siteID %d", siteID)
@@ -192,7 +192,7 @@ func (c *Client) DeleteTXTRecordAll(siteID int) error {
 	log.Printf("[INFO] Delete Incapsula All TXT records for siteID %d\n ", siteID)
 	reqURL := fmt.Sprintf("%s/sites/%d/settings/general/additionalTxtRecords/delete-all", c.config.BaseURLRev2, siteID)
 
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteTxtRecord)
 	if err != nil {
 		return fmt.Errorf("Error deleting TXT records for siteID %d: %v", siteID, err)
 	}
