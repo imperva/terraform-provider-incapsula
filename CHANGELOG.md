@@ -1,8 +1,14 @@
 ## 3.5.0 (Not Released)
 
-* Edit acceptance test for Custom Certificate resource
-* Add support for CSP
+FEATURES:
+
+* **New Resource:** `CSP_Site_configuration`, `CSP_Site_domain`
+
+IMPROVEMENTS:
+
 * Add operation type to HTTP client calls
+* Fix acceptance test for Custom Certificate resource
+
 
 ## 3.4.0 (Released) 
 
