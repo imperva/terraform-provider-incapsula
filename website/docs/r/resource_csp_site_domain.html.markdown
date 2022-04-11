@@ -13,7 +13,8 @@ Provides an Incapsula CSP domain resource.
 
 ```hcl
 resource "incapsula_csp_site_domain" "demo-terraform-csp-site-domain" {
-  site_id             = incapsula_csp_site_configuration.example-site.id
+  account_id          = incapsula_csp_site_configuration.example-site.account_id
+  site_id             = incapsula_csp_site_configuration.example-site.site_id
   domain              = "www.imperva.com"
   status              = "allowed"
   include_subdomains  = false
@@ -25,6 +26,7 @@ resource "incapsula_csp_site_domain" "demo-terraform-csp-site-domain" {
 
 The following arguments are supported:
 
+* `account_id` - (Required) Numeric identifier of the account to operate on.
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `domain` - (Required) The fully qualified domain name of the site. For example: `www.imperva.com`.
 * `include_subdomains` - (Required) Defines Whether subdomains will inherit the allowance of the parent domain.
@@ -41,8 +43,8 @@ The following attributes are exported:
 
 ## Import
 
-CSP Site Configuration can be imported using the site_id and base4 encoded string of the domain separated by /, e.g.
+CSP Site Configuration can be imported using the account_id, site_id and base4 encoded string of the domain separated by /, e.g.
 
 ```
-$ terraform import incapsula_csp_site_domain.demo-terraform-csp-site-domain 1234/d3d3LmltcGVydmEuY29t
+$ terraform import incapsula_csp_site_domain.demo-terraform-csp-site-domain 555/1234/d3d3LmltcGVydmEuY29t
 ```
