@@ -228,7 +228,7 @@ func (c *Client) AddSite(domain, refID, sendSiteSetupEmails, siteIP, forceSSL st
 	}
 
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteAdd)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, CreateSite)
 	if err != nil {
 		return nil, fmt.Errorf("Error adding site for domain %s: %s", domain, err)
 	}
@@ -262,7 +262,7 @@ func (c *Client) SiteStatus(domain string, siteID int) (*SiteStatusResponse, err
 	// Post form to Incapsula
 	values := url.Values{"site_id": {strconv.Itoa(siteID)}}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteStatus)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, ReadSite)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting site status for domain %s (site id: %d): %s", domain, siteID, err)
 	}
@@ -308,7 +308,7 @@ func (c *Client) UpdateSite(siteID, param, value string) (*SiteUpdateResponse, e
 		"value":   {value},
 	}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteUpdate)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, UpdateSite)
 	if err != nil {
 		return nil, fmt.Errorf("Error updating param (%s) with value (%s) on site_id: %s: %s", param, value, siteID, err)
 	}
@@ -349,7 +349,7 @@ func (c *Client) DeleteSite(domain string, siteID int) error {
 	// Post form to Incapsula
 	values := url.Values{"site_id": {strconv.Itoa(siteID)}}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteDelete)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, DeleteSite)
 	if err != nil {
 		return fmt.Errorf("Error deleting site for domain %s (site id: %d): %s", domain, siteID, err)
 	}

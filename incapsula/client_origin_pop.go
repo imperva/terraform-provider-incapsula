@@ -24,7 +24,7 @@ func (c *Client) SetOriginPOP(dcID int, originPOP string) error {
 		reqURL = fmt.Sprintf("%s&origin_pop=%s", reqURL, originPOP)
 	}
 	// Post request to Incapsula
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, nil, UpdateOriginPop)
 	if err != nil {
 		return fmt.Errorf("Error from Incapsula service when setting origin POP: %s for data center: %d: %s", originPOP, dcID, err)
 	}

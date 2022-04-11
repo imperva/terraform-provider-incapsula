@@ -108,7 +108,7 @@ func (c *Client) AddAccount(email, refID, userName, planID, accountName, logLeve
 	}
 
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountAdd)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, CreateAccount)
 	if err != nil {
 		return nil, fmt.Errorf("Error adding account for email %s: %s", email, err)
 	}
@@ -142,7 +142,7 @@ func (c *Client) AccountStatus(accountID int) (*AccountStatusResponse, error) {
 	// Post form to Incapsula
 	values := url.Values{"account_id": {strconv.Itoa(accountID)}}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountStatus)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, ReadAccount)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting account status for account id %d: %s", accountID, err)
 	}
@@ -187,7 +187,7 @@ func (c *Client) UpdateAccount(accountID, param, value string) (*AccountUpdateRe
 		"value":      {value},
 	}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountUpdate)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, UpdateAccount)
 	if err != nil {
 		return nil, fmt.Errorf("Error updating param (%s) with value (%s) on account_id: %s: %s", param, value, accountID, err)
 	}
@@ -228,7 +228,7 @@ func (c *Client) DeleteAccount(accountID int) error {
 	// Post form to Incapsula
 	values := url.Values{"account_id": {strconv.Itoa(accountID)}}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountDelete)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, DeleteAccount)
 	if err != nil {
 		return fmt.Errorf("Error deleting account id: %d: %s", accountID, err)
 	}

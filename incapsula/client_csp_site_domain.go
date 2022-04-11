@@ -38,12 +38,14 @@ func (c *Client) getCSPDomainAPI(accountID, siteID int, domain string, APIPath s
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodGet,
 			strings.Trim(fmt.Sprintf("%s%s/%d/domains/%s/%s?caid=%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef, APIPath, accountID),
 				"/"),
-			nil)
+			nil,
+			ReadCspSiteDomain)
 	} else {
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodGet,
 			strings.Trim(fmt.Sprintf("%s%s/%d/domains/%s/%s", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef, APIPath),
 				"/"),
-			nil)
+			nil,
+			ReadCspSiteDomain)
 	}
 	if err != nil {
 		return fmt.Errorf("Error from CSP API for when getting domain %s for domain %s from site ID %d: %s\n", APIPath, domain, siteID, err)
@@ -94,11 +96,13 @@ func (c *Client) updateCSPDomainStatus(accountID, siteID int, domain string, sta
 	if accountID != 0 {
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodPut,
 			fmt.Sprintf("%s%s/%d/domains/%s/status?caid=%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef, accountID),
-			statusJSON)
+			statusJSON,
+			UpdateCspSiteDomain)
 	} else {
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodPut,
 			fmt.Sprintf("%s%s/%d/domains/%s/status", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef),
-			statusJSON)
+			statusJSON,
+			UpdateCspSiteDomain)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("Error from CSP API for when updating domain status for domain %s from site ID %d: %s\n", domain, siteID, err)
@@ -146,11 +150,13 @@ func (c *Client) addCSPDomainNote(accountID, siteID int, domain string, note str
 	if accountID != 0 {
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodPost,
 			fmt.Sprintf("%s%s/%d/domains/%s/notes?caid=%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef, accountID),
-			[]byte(note))
+			[]byte(note),
+			CreateCspSiteDomain)
 	} else {
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodPost,
 			fmt.Sprintf("%s%s/%d/domains/%s/notes", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef),
-			[]byte(note))
+			[]byte(note),
+			CreateCspSiteDomain)
 	}
 	if err != nil {
 		return fmt.Errorf("Error from CSP API for when getting domain notes for domain %s from site ID %d: %s\n", domain, siteID, err)
@@ -190,11 +196,11 @@ func (c *Client) deleteCSPDomainNotes(accountID, siteID int, domain string) erro
 	if accountID != 0 {
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodDelete,
 			fmt.Sprintf("%s%s/%d/domains/%s/notes?caid=%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef, accountID),
-			nil)
+			nil, "")
 	} else {
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodDelete,
 			fmt.Sprintf("%s%s/%d/domains/%s/notes", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef),
-			nil)
+			nil, "")
 	}
 	if err != nil {
 		return fmt.Errorf("Error from CSP API for when deleting domain notes for domain %s from site ID %d: %s\n", domain, siteID, err)
@@ -221,11 +227,13 @@ func (c *Client) getCSPPreApprovedDomain(accountID, siteID int, domain string) (
 	if accountID != 0 {
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodGet,
 			fmt.Sprintf("%s%s/%d/preapprovedlist/%s?caid=%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef, accountID),
-			nil)
+			nil,
+			ReadCspSiteDomain)
 	} else {
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodGet,
 			fmt.Sprintf("%s%s/%d/preapprovedlist/%s", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef),
-			nil)
+			nil,
+			ReadCspSiteDomain)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("Error from CSP API for when getting pre-approved domains list for site ID %d: %s\n", siteID, err)
@@ -267,11 +275,11 @@ func (c *Client) updateCSPPreApprovedDomain(accountID, siteID int, dom *CSPPreAp
 	if accountID != 0 {
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodPost,
 			fmt.Sprintf("%s%s/%d/preapprovedlist?caid=%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID, accountID),
-			domJSON)
+			domJSON, UpdateCspSiteDomain)
 	} else {
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodPost,
 			fmt.Sprintf("%s%s/%d/preapprovedlist", c.config.BaseURLAPI, CSPSiteApiPath, siteID),
-			domJSON)
+			domJSON, UpdateCspSiteDomain)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("Error from CSP API while updating pre-approved domain %v for site ID %d: %s\n", dom, siteID, err)
@@ -309,11 +317,13 @@ func (c *Client) deleteCSPPreApprovedDomains(accountID, siteID int, domainRef st
 	if accountID != 0 {
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodDelete,
 			fmt.Sprintf("%s%s/%d/preapprovedlist/%s?caid=%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef, accountID),
-			nil)
+			nil,
+			DeleteCspSiteDomain)
 	} else {
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodDelete,
 			fmt.Sprintf("%s%s/%d/preapprovedlist/%s", c.config.BaseURLAPI, CSPSiteApiPath, siteID, domainRef),
-			nil)
+			nil,
+			DeleteCspSiteDomain)
 	}
 	if err != nil {
 		return fmt.Errorf("Error from CSP API for when deleting pre-approved domain %s from site ID %d: %s\n", domainRef, siteID, err)

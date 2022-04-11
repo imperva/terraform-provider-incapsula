@@ -30,7 +30,7 @@ func (c *Client) UpdateLogLevel(siteID, logLevel, logsAccountId string) error {
 		"logs_account_id": {logsAccountId},
 	}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteLogLevel)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, UpdateLogLevel)
 	if err != nil {
 		return fmt.Errorf("Error updating log level (%s) on site_id: %s: %s", logLevel, siteID, err)
 	}

@@ -28,7 +28,7 @@ func (c *Client) GetDataStorageRegion(siteID string) (*DataStorageRegionResponse
 	// Post form to Incapsula
 	values := url.Values{"site_id": {siteID}}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataStorageRegionGet)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, ReadDataStorageRegion)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting data storage region for site id: %s: %s", siteID, err)
 	}
@@ -65,7 +65,7 @@ func (c *Client) UpdateDataStorageRegion(siteID, region string) (*DataStorageReg
 		"data_storage_region": {region},
 	}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointDataStorageRegionUpdate)
-	resp, err := c.PostFormWithHeaders(reqURL, values)
+	resp, err := c.PostFormWithHeaders(reqURL, values, UpdateDataStorageRegion)
 	if err != nil {
 		return nil, fmt.Errorf("Error updating data storage region with value (%s) on site_id: %s: %s", region, siteID, err)
 	}

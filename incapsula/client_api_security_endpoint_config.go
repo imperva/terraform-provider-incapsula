@@ -69,7 +69,7 @@ func (c *Client) PostApiSecurityEndpointConfig(apiId, endpointId int, endpointCo
 	writer.Close()
 	url := fmt.Sprintf("%s%s%d"+"/"+"%d", c.config.BaseURLAPI, endpointConfigUrl, apiId, endpointId)
 	contentType := writer.FormDataContentType()
-	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, url, body.Bytes(), contentType)
+	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, url, body.Bytes(), contentType, UpdateApiSecEndpointConfig)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula service while updating Api Security Endpoint Configuration for API Config Id %d, API Config Id %d : %s", apiId, endpointId, err)
 	}
@@ -98,7 +98,7 @@ func (c *Client) PostApiSecurityEndpointConfig(apiId, endpointId int, endpointCo
 func (c *Client) GetApiSecurityEndpointConfig(apiId int, endpointId string) (*ApiSecurityEndpointConfigGetResponse, error) {
 	log.Printf("[INFO] Getting Incapsula Api-Security Endpoint Config on API: %d and Endpoint: %s\n", apiId, endpointId)
 
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, fmt.Sprintf("%s%s%d/%s", c.config.BaseURLAPI, endpointConfigUrl, apiId, endpointId), nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, fmt.Sprintf("%s%s%d/%s", c.config.BaseURLAPI, endpointConfigUrl, apiId, endpointId), nil, ReadApiSecEndpointConfig)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula service while reading Api-Security Endpoint Config for API ID %d and Endpoint ID %s: %s", apiId, endpointId, err)
 	}
@@ -127,7 +127,7 @@ func (c *Client) GetApiSecurityEndpointConfig(apiId int, endpointId string) (*Ap
 func (c *Client) GetApiSecurityAllEndpointsConfig(apiId int) (*ApiSecurityEndpointConfigGetAllResponse, error) {
 	log.Printf("[INFO] Getting Incapsula Api-Security all Endpoints Config on API: %d\n", apiId)
 
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, fmt.Sprintf("%s%s%d", c.config.BaseURLAPI, endpointConfigUrl, apiId), nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, fmt.Sprintf("%s%s%d", c.config.BaseURLAPI, endpointConfigUrl, apiId), nil, ReadApiSecEndpointConfig)
 	if err != nil {
 		return nil, fmt.Errorf("error from Incapsula service when reading Api-Security all Endpoints Config for API ID %d: %s", apiId, err)
 	}

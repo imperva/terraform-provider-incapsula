@@ -45,11 +45,13 @@ func (c *Client) GetCSPSite(accountID, siteID int) (*CSPSiteConfig, error) {
 	if accountID != 0 {
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodGet,
 			fmt.Sprintf("%s%s/%d?caid=%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID, accountID),
-			nil)
+			nil,
+			ReadCspSiteConfiguration)
 	} else {
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodGet,
 			fmt.Sprintf("%s%s/%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID),
-			nil)
+			nil,
+			ReadCspSiteConfiguration)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("Error from CSP API for when reading site ID %d: %s", siteID, err)
@@ -109,11 +111,13 @@ func (c *Client) UpdateCSPSite(accountID, siteID int, config *CSPSiteConfig) (*C
 	if accountID != 0 {
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodPut,
 			fmt.Sprintf("%s%s/%d?caid=%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID, accountID),
-			configJSON)
+			configJSON,
+			UpdateCspSiteConfiguration)
 	} else {
 		resp, err = c.DoJsonRequestWithHeaders(http.MethodPut,
 			fmt.Sprintf("%s%s/%d", c.config.BaseURLAPI, CSPSiteApiPath, siteID),
-			configJSON)
+			configJSON,
+			UpdateCspSiteConfiguration)
 	}
 
 	if err != nil {

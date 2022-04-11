@@ -41,7 +41,7 @@ func (c *Client) AddCacheRule(siteID string, rule *CacheRule) (*CacheRuleWithID,
 
 	// Post form to Incapsula
 	reqURL := fmt.Sprintf("%s/sites/%s/settings/cache/rules", c.config.BaseURLRev2, siteID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, ruleJSON)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, ruleJSON, CreateCacheRule)
 	if err != nil {
 		return nil, fmt.Errorf("Error from Incapsula service when adding Cache Rule for Site ID %s: %s", siteID, err)
 	}
@@ -74,7 +74,7 @@ func (c *Client) ReadCacheRule(siteID string, ruleID int) (*CacheRuleWithID, int
 
 	// Post form to Incapsula
 	reqURL := fmt.Sprintf("%s/sites/%s/settings/cache/rules/%d", c.config.BaseURLRev2, siteID, ruleID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadCacheRule)
 	if err != nil {
 		return nil, 0, fmt.Errorf("Error from Incapsula service when reading Cache Rule %d for Site ID %s: %s", ruleID, siteID, err)
 	}
@@ -112,7 +112,7 @@ func (c *Client) UpdateCacheRule(siteID string, ruleID int, rule *CacheRule) err
 
 	// Put request to Incapsula
 	reqURL := fmt.Sprintf("%s/sites/%s/settings/cache/rules/%d", c.config.BaseURLRev2, siteID, ruleID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, ruleJSON)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, ruleJSON, UpdateCacheRule)
 	if err != nil {
 		return fmt.Errorf("Error from Incapsula service when updating Cache Rule %d for Site ID %s: %s", ruleID, siteID, err)
 	}
@@ -154,7 +154,7 @@ func (c *Client) DeleteCacheRule(siteID string, ruleID int) error {
 
 	// Delete request to Incapsula
 	reqURL := fmt.Sprintf("%s/sites/%s/settings/cache/rules/%d", c.config.BaseURLRev2, siteID, ruleID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteCacheRule)
 	if err != nil {
 		return fmt.Errorf("Error from Incapsula service when deleting Cache Rule %d for Site ID %s: %s", ruleID, siteID, err)
 	}
