@@ -45,7 +45,7 @@ func TestCSPSiteConfigErrorResponse(t *testing.T) {
 	apiKey := "bar"
 	accountID := 55
 	siteID := 42
-	endpoint := fmt.Sprintf("%s/%d", CSPSiteApiPath, siteID)
+	endpoint := fmt.Sprintf("%s/%d?caid=%d", CSPSiteApiPath, siteID, accountID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(500)
@@ -88,7 +88,7 @@ func TestCSPSiteConfigInvalidResponse(t *testing.T) {
 	apiKey := "bar"
 	siteID := 42
 	accountID := 55
-	endpoint := fmt.Sprintf("%s/%d", CSPSiteApiPath, siteID)
+	endpoint := fmt.Sprintf("%s/%d?caid=%d", CSPSiteApiPath, siteID, accountID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -131,7 +131,7 @@ func TestCSPSiteConfigResponse(t *testing.T) {
 	apiKey := "bar"
 	accountID := 55
 	siteID := 42
-	endpoint := fmt.Sprintf("%s/%d", CSPSiteApiPath, siteID)
+	endpoint := fmt.Sprintf("%s/%d?caid=%d", CSPSiteApiPath, siteID, accountID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)

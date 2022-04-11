@@ -109,7 +109,7 @@ func TestCSPSiteDomainPreApprovedGetResponse(t *testing.T) {
 	apiKey := "bar"
 	siteID := 42
 	accountID := 55
-	endpoint := fmt.Sprintf("%s/%d/preapprovedlist/ZG9tYWluLmNvbQ", CSPSiteApiPath, siteID)
+	endpoint := fmt.Sprintf("%s/%d/preapprovedlist/ZG9tYWluLmNvbQ?caid=%d", CSPSiteApiPath, siteID, accountID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -148,7 +148,7 @@ func TestCSPSiteDomainPreApprovedUpdateResponse(t *testing.T) {
 	apiKey := "bar"
 	siteID := 42
 	accountID := 55
-	endpoint := fmt.Sprintf("%s/%d/preapprovedlist", CSPSiteApiPath, siteID)
+	endpoint := fmt.Sprintf("%s/%d/preapprovedlist?caid=%d", CSPSiteApiPath, siteID, accountID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(201)
@@ -189,7 +189,7 @@ func TestCSPSiteDomainNotesResponse(t *testing.T) {
 	accountID := 55
 	domain := "google.com"
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
-	endpoint := fmt.Sprintf("%s/%d/domains/%s/notes", CSPSiteApiPath, siteID, domainRef)
+	endpoint := fmt.Sprintf("%s/%d/domains/%s/notes?caid=%d", CSPSiteApiPath, siteID, domainRef, accountID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -232,7 +232,7 @@ func TestCSPSiteDomainStatusResponse(t *testing.T) {
 	accountID := 55
 	domain := "google.com"
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
-	endpoint := fmt.Sprintf("%s/%d/domains/%s/status", CSPSiteApiPath, siteID, domainRef)
+	endpoint := fmt.Sprintf("%s/%d/domains/%s/status?caid=%d", CSPSiteApiPath, siteID, domainRef, accountID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -267,7 +267,7 @@ func TestCSPSiteDomainStatusEmptyResponse(t *testing.T) {
 	accountID := 55
 	domain := "google.com"
 	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
-	endpoint := fmt.Sprintf("%s/%d/domains/%s/status", CSPSiteApiPath, siteID, domainRef)
+	endpoint := fmt.Sprintf("%s/%d/domains/%s/status?caid=%d", CSPSiteApiPath, siteID, domainRef, accountID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)

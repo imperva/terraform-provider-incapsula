@@ -144,11 +144,12 @@ func testACCStateCSPSiteConfigDestroy(s *terraform.State) error {
 func testAccCheckCSPSiteConfigBasic(t *testing.T) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 	resource "%s" "%s" {
+		account_id          = %s.account_id
 		site_id             = %s.id
 		mode                = "monitor"
 		email_addresses     = ["amiranc@imperva.com"]
 		depends_on = ["%s"]
 	}`,
-		cspSiteConfigResourceType, cspSiteConfigName, siteResourceName, siteResourceName,
+		cspSiteConfigResourceType, cspSiteConfigName, siteResourceName, siteResourceName, siteResourceName,
 	)
 }

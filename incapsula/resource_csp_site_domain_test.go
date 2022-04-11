@@ -146,6 +146,7 @@ func testACCStateCSPDomainDestroy(s *terraform.State) error {
 func testAccCheckCSPDomainBasic(t *testing.T) string {
 	return testAccCheckCSPSiteConfigBasic(t) + fmt.Sprintf(`
 	resource "%s" "%s" {
+		account_id			= %s.account_id
 		site_id				= %s.site_id
 		domain				= "stam-domain.com"
 		include_subdomains	= true
@@ -153,6 +154,6 @@ func testAccCheckCSPDomainBasic(t *testing.T) string {
 		status				= "allowed"
 		depends_on			= ["%s"]
 	}`,
-		cspDomainResourceName, cspDomainName, cspSiteConfigResource, cspSiteConfigResource,
+		cspDomainResourceName, cspDomainName, cspSiteConfigResource, cspSiteConfigResource, cspSiteConfigResource,
 	)
 }
