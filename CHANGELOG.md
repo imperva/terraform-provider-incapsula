@@ -1,4 +1,4 @@
-## 3.5.0 (Not Released)
+## 3.5.0 (Released)
 
 FEATURES:
 
