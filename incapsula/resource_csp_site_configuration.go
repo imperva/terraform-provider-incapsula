@@ -46,6 +46,12 @@ func resourceCSPSiteConfiguration() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
+			"account_id": {
+				Description: "Numeric identifier of the account to operate on.",
+				Type:        schema.TypeInt,
+				Required:    true,
+				ForceNew:    true,
+			},
 			"site_id": {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeInt,
@@ -53,13 +59,6 @@ func resourceCSPSiteConfiguration() *schema.Resource {
 				ForceNew:    true,
 			},
 			//Optional
-			"account_id": {
-				Description: "Numeric identifier of the account to operate on.",
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     0,
-				ForceNew:    true,
-			},
 			"mode": {
 				Description:  "Website Protection Mode. When in \"enforce\" mode, blocked resources will not be available in the application and new resources will be automatically blocked. When in \"monitor\" mode, all resources are available in the application and the system keeps track of all new domains that are discovered.\nValues: monitor\\enforce\\off\n",
 				Type:         schema.TypeString,

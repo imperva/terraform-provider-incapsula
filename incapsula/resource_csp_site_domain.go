@@ -50,6 +50,13 @@ func resourceCSPSiteDomain() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
+			"account_id": {
+				Description: "Numeric identifier of the account to operate on.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     0,
+				ForceNew:    true,
+			},
 			"site_id": {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeInt,
@@ -63,13 +70,6 @@ func resourceCSPSiteDomain() *schema.Resource {
 				ForceNew:    true,
 			},
 			//Optional
-			"account_id": {
-				Description: "Numeric identifier of the account to operate on.",
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     0,
-				ForceNew:    true,
-			},
 			"include_subdomains": {
 				Description: "Defines Whether or not subdomains will inherit the allowance of the parent domain. Values: true, false",
 				Type:        schema.TypeBool,
