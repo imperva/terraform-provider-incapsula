@@ -621,14 +621,15 @@ func resourceSiteDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func updateAdditionalSiteProperties(client *Client, d *schema.ResourceData) error {
-	updateParams := [10]string{"acceleration_level", "active", "approver", "domain_redirect_to_full", "domain_validation", "ignore_ssl", "remove_ssl", "ref_id", "seal_location", "restricted_cname_reuse"}
+	updateParams := [12]string{"acceleration_level", "active", "approver", "domain_redirect_to_full", "domain_validation", "ignore_ssl", "remove_ssl", "ref_id", "seal_location", "restricted_cname_reuse", "naked_domain_san", "wildcard_san"}
 	for i := 0; i < len(updateParams); i++ {
 		param := updateParams[i]
+
 		if d.HasChange(param) && d.Get(param) != "" {
-			log.Printf("[INFO] Updating Incapsula site param (%s) with value (%s) for site_id: %s\n", param, d.Get(param).(string), d.Id())
-			_, err := client.UpdateSite(d.Id(), param, d.Get(param).(string))
+			log.Printf("[INFO] Updating Incapsula site param (%s) with value (%s) for site_id: %s\n", param, fmt.Sprintf("%t", d.Get(param)), d.Id())
+			_, err := client.UpdateSite(d.Id(), param, fmt.Sprintf("%t", d.Get(param)))
 			if err != nil {
-				log.Printf("[ERROR] Could not update Incapsula site param (%s) with value (%s) for site_id: %s %s\n", param, d.Get(param).(string), d.Id(), err)
+				log.Printf("[ERROR] Could not update Incapsula site param (%s) with value (%s) for site_id: %s %s\n", param, fmt.Sprintf("%t", d.Get(param)), d.Id(), err)
 				return err
 			}
 		}

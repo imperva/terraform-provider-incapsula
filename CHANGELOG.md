@@ -1,3 +1,9 @@
+## 3.5.1 (Unreleased)
+
+BUG FIXES:
+
+* Fix a bug where naked_domain_san and wildcard_san attributes on site resource weren't handled by 'modify' method
+
 ## 3.5.0 (Released)
 
 FEATURES:
