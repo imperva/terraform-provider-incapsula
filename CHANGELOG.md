@@ -1,4 +1,4 @@
-## 3.5.1 (Unreleased)
+## 3.5.1 (Released)
 
 BUG FIXES:
 
