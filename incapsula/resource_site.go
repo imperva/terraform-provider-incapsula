@@ -626,10 +626,11 @@ func updateAdditionalSiteProperties(client *Client, d *schema.ResourceData) erro
 		param := updateParams[i]
 
 		if d.HasChange(param) && d.Get(param) != "" {
-			log.Printf("[INFO] Updating Incapsula site param (%s) with value (%s) for site_id: %s\n", param, fmt.Sprintf("%t", d.Get(param)), d.Id())
-			_, err := client.UpdateSite(d.Id(), param, fmt.Sprintf("%t", d.Get(param)))
+			value := fmt.Sprintf("%v", d.Get(param))
+			log.Printf("[INFO] Updating Incapsula site param (%s) with value (%s) for site_id: %s\n", param, value, d.Id())
+			_, err := client.UpdateSite(d.Id(), param, value)
 			if err != nil {
-				log.Printf("[ERROR] Could not update Incapsula site param (%s) with value (%s) for site_id: %s %s\n", param, fmt.Sprintf("%t", d.Get(param)), d.Id(), err)
+				log.Printf("[ERROR] Could not update Incapsula site param (%s) with value (%s) for site_id: %s %s\n", param, value, d.Id(), err)
 				return err
 			}
 		}
