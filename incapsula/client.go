@@ -106,6 +106,7 @@ func (c *Client) DoJsonAndQueryParamsRequestWithHeaders(method string, url strin
 		q.Add(name, value)
 	}
 	req.URL.RawQuery = q.Encode()
+	log.Printf("[DEBUG] The request: %+v", req)
 
 	SetHeaders(c, req, contentTypeApplicationJson, nil)
 
