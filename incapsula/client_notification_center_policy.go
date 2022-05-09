@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-const endPointNotificationCenterPolicy = "notification-settings/v3/policies/"
+const endPointNotificationCenterPolicy = "notification-settings/v3/policies"
 
 type AssetDto struct {
 	AssetType string `json:"assetType"`
@@ -160,6 +160,7 @@ func getRequestUrlWithId(c *Client, policyId int) string {
 func (c *Client) GetNotificationCenterPolicy(policyId int, accountId int) (*NotificationPolicy, error) {
 	log.Printf("[INFO] Getting  NotificationCenterPolicy with policyId: %d and accountId: %d", policyId, accountId)
 	requestUrl := getRequestUrlWithId(c, policyId)
+	log.Printf("[INFO]  requestUrl:%s", requestUrl)
 
 	params := GetRequestParamsWithCaid(accountId)
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, requestUrl, nil, params, ReadNotificationCenterPolicy)
