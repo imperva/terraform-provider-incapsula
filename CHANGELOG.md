@@ -1,3 +1,10 @@
+## 3.5.2 (Unreleased)
+
+BUG FIXES:
+
+* iincapsula_site: formatting parameters with %t fails if the values are strings, not bool ([#158](https://github.com/imperva/terraform-provider-incapsula/issues/158))
+* incapsula_notification_center_policy: Fix redundant slash in path issue ([#162](https://github.com/imperva/terraform-provider-incapsula/issues/162))
+
 ## 3.5.1 (Released)
 
 BUG FIXES:
