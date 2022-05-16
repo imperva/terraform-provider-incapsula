@@ -1,4 +1,4 @@
-name: "\U0001F41B Bug report"
+name: "\U0001F41B Bug Report"
 description: "When something isn't working as expected or documented"
 body:
   - type: markdown

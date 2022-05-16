@@ -3,6 +3,9 @@ contact_links:
   - name: Imperva Support
     url: https://support.imperva.com
     about: Get in contact with Support regarding account or zone issues not related to Terraform
+  - name: Feature Request
+    url: https://imperva.uservoice.com/forums/924106-application-security
+    about: Suggest a new feature or other enhancement
   - name: Imperva Community
     url: https://community.imperva.com/
     about: Start a new discussion with the community for guidance or assistance with an issue
