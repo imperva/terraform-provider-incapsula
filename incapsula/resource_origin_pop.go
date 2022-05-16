@@ -10,10 +10,11 @@ import (
 
 func resourceOriginPOP() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceOriginPOPUpdate,
-		Read:   resourceOriginPOPRead,
-		Update: resourceOriginPOPUpdate,
-		Delete: resourceOriginPOPDelete,
+		DeprecationMessage: "This resource is deprecated. It will be removed in a future version. Please use resource incapsula_data_centers_configuration instead.",
+		Create:             resourceOriginPOPUpdate,
+		Read:               resourceOriginPOPRead,
+		Update:             resourceOriginPOPUpdate,
+		Delete:             resourceOriginPOPDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -74,6 +75,14 @@ func resourceOriginPOPUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceOriginPOPRead(d *schema.ResourceData, m interface{}) error {
 	// Implement by reading the ListDataCentersResponse for the data centers
 	client := m.(*Client)
+	if !strings.Contains(d.Id(), "/") {
+		log.Printf("[ERROR] The origin_pop resource in your state file is in the old, unsupported format. /n" +
+			"We recommend to use the new resource of data_center_configuration which replaced this resource./n" +
+			"If you choose to continue using this resource, you must update the resource in your configuration files according to the new format. /n " +
+			"The old resource will now be removed from state file, and will be updated back on the next terraform plan.")
+		d.SetId("")
+		return nil
+	}
 	siteID := strings.Split(d.Id(), "/")[0]
 	dcID := strings.Split(d.Id(), "/")[1]
 

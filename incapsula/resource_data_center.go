@@ -12,10 +12,11 @@ import (
 
 func resourceDataCenter() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceDataCenterCreate,
-		Read:   resourceDataCenterRead,
-		Update: resourceDataCenterUpdate,
-		Delete: resourceDataCenterDelete,
+		DeprecationMessage: "This resource is deprecated. It will be removed in a future version. Please use resource incapsula_data_centers_configuration instead.",
+		Create:             resourceDataCenterCreate,
+		Read:               resourceDataCenterRead,
+		Update:             resourceDataCenterUpdate,
+		Delete:             resourceDataCenterDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				idSlice := strings.Split(d.Id(), "/")
