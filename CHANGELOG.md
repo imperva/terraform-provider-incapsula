@@ -10,10 +10,6 @@ IMPROVEMENTS:
 
 * Add deprecation message to already deprecated resources (old data_center resources)
 
-IMPROVEMENTS:
-
-* Add deprecation message to already deprecated resources (old data_center resources)
-
 BUG FIXES:
 
 * incapsula_site: formatting parameters with %t fails if the values are strings, not bool ([#158](https://github.com/imperva/terraform-provider-incapsula/issues/158))
