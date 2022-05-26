@@ -87,6 +87,7 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"incapsula_cache_rule":                   resourceCacheRule(),
 			"incapsula_custom_certificate":           resourceCertificate(),
+			"incapsula_custom_hsm_certificate":       resourceCustomCertificateHsm(),
 			"incapsula_data_center":                  resourceDataCenter(),
 			"incapsula_data_center_server":           resourceDataCenterServer(),
 			"incapsula_incap_rule":                   resourceIncapRule(),
