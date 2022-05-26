@@ -87,6 +87,53 @@ func TestUpdateSiteMonitoringInvalidConfig(t *testing.T) {
 	endpoint := fmt.Sprintf("/appdlv-site-settings/v2/site/%d/monitoring", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(500)
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		}
+		rw.Write([]byte(`{
+  "errors": [
+    {
+      "id": null,
+      "status": 500,
+      "source": {
+        "pointer": "/appdlv-site-settings/v2/site/42/monitoring"
+      },
+      "title": "Not Found"
+    }
+  ]
+}`))
+	}))
+	defer server.Close()
+
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+	//invalid payload
+	payload := SiteMonitoring{}
+
+	siteMonitoringResponse, err := client.UpdateSiteMonitoring(
+		siteID,
+		&payload)
+
+	if err == nil {
+		t.Errorf("Should have received an error")
+	}
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 500 from Incapsula service when Updating Site Monitoring for Site ID")) {
+		t.Errorf("Should have received a bad Site Monitoring error, got: %s", err)
+	}
+	if siteMonitoringResponse != nil {
+		t.Errorf("Should have received a nil siteMonitoringResponse instance")
+	}
+}
+
+func TestUpdateSiteMonitoringNoSubscription(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := 42
+
+	endpoint := fmt.Sprintf("/appdlv-site-settings/v2/site/%d/monitoring", siteID)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
 		if req.URL.String() != endpoint {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
@@ -108,13 +155,8 @@ func TestUpdateSiteMonitoringInvalidConfig(t *testing.T) {
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	//invalid payload
-	payload := SiteMonitoring{
-		//MonitoringParameters: MonitoringParameters{},
-		//FailedRequestCriteria: FailedRequestCriteria{},
-		//UpDownVerification: UpDownVerification{},
-		//Notifications: Notifications{},
-	}
+
+	payload := SiteMonitoring{}
 
 	siteMonitoringResponse, err := client.UpdateSiteMonitoring(
 		siteID,
@@ -123,8 +165,8 @@ func TestUpdateSiteMonitoringInvalidConfig(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 404 from Incapsula service when updateing Site Monitoring for Site ID")) {
-		t.Errorf("Should have received a bad Site Monitoring error, got: %s", err)
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Missing Load Balancing subscription for Site ID")) {
+		t.Errorf("Should have received a no Site Monitoring subscription error, got: %s", err)
 	}
 	if siteMonitoringResponse != nil {
 		t.Errorf("Should have received a nil siteMonitoringResponse instance")
@@ -262,6 +304,50 @@ func TestReadSiteMonitoringInvalidConfig(t *testing.T) {
 	endpoint := fmt.Sprintf("/appdlv-site-settings/v2/site/%d/monitoring", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(500)
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		}
+		rw.Write([]byte(`{
+  "errors": [
+    {
+      "id": null,
+      "status": 500,
+      "source": {
+        "pointer": "/appdlv-site-settings/v2/site/42/monitoring"
+      },
+      "title": "Not Found"
+    }
+  ]
+}`))
+	}))
+	defer server.Close()
+
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+	siteMonitoringResponse, err := client.GetSiteMonitoring(siteID)
+
+	if err == nil {
+		t.Errorf("Should have received an error")
+	}
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 500 from Incapsula service when Reading Site Monitoring for Site ID")) {
+		t.Errorf("Should have received an internal server error for Site Monitoring, got: %s", err)
+	}
+
+	if siteMonitoringResponse != nil {
+		t.Errorf("Should have received a nil siteMonitoringResponse instance")
+	}
+}
+
+func TestReadSiteMonitoringNoSubscription(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := 42
+
+	endpoint := fmt.Sprintf("/appdlv-site-settings/v2/site/%d/monitoring", siteID)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
 		if req.URL.String() != endpoint {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
@@ -289,8 +375,8 @@ func TestReadSiteMonitoringInvalidConfig(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error status code 404 from Incapsula service when reading Site Monitoring for Site ID")) {
-		t.Errorf("Should have received a bad Site Monitoring error, got: %s", err)
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Missing Load Balancing subscription for Site ID")) {
+		t.Errorf("Should have received a no Site Monitoring subscription error, got: %s", err)
 	}
 	if siteMonitoringResponse != nil {
 		t.Errorf("Should have received a nil siteMonitoringResponse instance")

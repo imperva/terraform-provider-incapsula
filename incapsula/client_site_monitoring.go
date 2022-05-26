@@ -51,7 +51,7 @@ type SiteMonitoringResponse struct {
 
 func (c *Client) GetSiteMonitoring(siteID int) (*SiteMonitoringResponse, error) {
 	log.Printf("[INFO] Getting Incapsula Site Monitoring for Site ID %d", siteID)
-	return Crud("Read", siteID, http.MethodGet, nil, c)
+	return CrudSiteMonitoring("Read", siteID, http.MethodGet, nil, c)
 }
 
 func (c *Client) UpdateSiteMonitoring(siteID int, siteMonitoring *SiteMonitoring) (*SiteMonitoringResponse, error) {
@@ -60,13 +60,14 @@ func (c *Client) UpdateSiteMonitoring(siteID int, siteMonitoring *SiteMonitoring
 	if err != nil {
 		return nil, fmt.Errorf("Failed to JSON marshal Site Monitoring for SiteID: %s", err)
 	}
-	return Crud("Update", siteID, http.MethodPost, siteMopnitoringJSON, c)
+	return CrudSiteMonitoring("Update", siteID, http.MethodPost, siteMopnitoringJSON, c)
 }
 
-func Crud(action string, siteID int, hhtpMethod string, data []byte, c *Client) (*SiteMonitoringResponse, error) {
+func CrudSiteMonitoring(action string, siteID int, hhtpMethod string, data []byte, c *Client) (*SiteMonitoringResponse, error) {
 	url := fmt.Sprintf("%s/appdlv-site-settings/v2/site/%d/monitoring", c.config.BaseURLAPI, siteID)
-
-	resp, err := c.DoJsonRequestWithHeaders(hhtpMethod, url, data, "")
+	//todo tolowerCase for operation name
+	resp, err := c.DoJsonRequestWithHeaders(hhtpMethod, url, data, action+"_site_monitoring")
+	//remove e in the end of action
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when %s Site Monitoring for Site ID %d: %s", strings.ToLower(action)+"ing", siteID, err)
 	}
@@ -76,9 +77,13 @@ func Crud(action string, siteID int, hhtpMethod string, data []byte, c *Client) 
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	log.Printf("[DEBUG] Incapsula %s Site Monitoring JSON response: %s\n", action, string(responseBody))
 
+	if resp.StatusCode == 404 {
+		return nil, fmt.Errorf("Missing Load Balancing subscription for Site ID %d: %s", siteID, string(responseBody))
+	}
+
 	// Check the response code
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Error status code %d from Incapsula service when %s Site Monitoring for Site ID %d: %s", resp.StatusCode, strings.ToLower(action)+"ing", siteID, string(responseBody))
+		return nil, fmt.Errorf("Error status code %d from Incapsula service when %s Site Monitoring for Site ID %d: %s", resp.StatusCode, strings.TrimSuffix(action, "e")+"ing", siteID, string(responseBody))
 	}
 
 	// Dump JSON
@@ -87,5 +92,6 @@ func Crud(action string, siteID int, hhtpMethod string, data []byte, c *Client) 
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error parsing Site Monitoring Response JSON response for Site ID %d: %s\nresponse: %s", siteID, err, string(responseBody))
 	}
+	//todo check if data.length is >0
 	return &siteMonitoringResponse, nil
 }

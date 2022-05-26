@@ -17,8 +17,9 @@ func TestAccIncapsulaSiteMonitoring_basic(t *testing.T) {
 	log.Printf("======================== BEGIN TEST ========================")
 	log.Printf("[DEBUG] Running test resource_site_monitoring_test.TestAccIncapsulaSiteMonitoring_basic")
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testACCStateSiteMonitoringDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckSiteMonitoringBasic(t),
@@ -35,10 +36,10 @@ func TestAccIncapsulaSiteMonitoring_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(siteMonitoringResource, "failed_request_criteria.0.http_request_timeout_units", "MINUTES"),
 					resource.TestCheckResourceAttr(siteMonitoringResource, "failed_request_criteria.0.http_response_error", "501,503"),
 
-					resource.TestCheckResourceAttr(siteMonitoringResource, "monitoring_parameters.0.failed_requests_duration", "2"),
-					resource.TestCheckResourceAttr(siteMonitoringResource, "monitoring_parameters.0.failed_requests_duration_units", "MINUTES"),
-					resource.TestCheckResourceAttr(siteMonitoringResource, "monitoring_parameters.0.failed_requests_min_number", "10"),
-					resource.TestCheckResourceAttr(siteMonitoringResource, "monitoring_parameters.0.failed_requests_percentage", "10"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "monitoring.0.failed_requests_duration", "2"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "monitoring.0.failed_requests_duration_units", "MINUTES"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "monitoring.0.failed_requests_min_number", "10"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "monitoring.0.failed_requests_percentage", "10"),
 
 					resource.TestCheckResourceAttr(siteMonitoringResource, "notifications.0.alarm_on_dc_failover", "false"),
 					resource.TestCheckResourceAttr(siteMonitoringResource, "notifications.0.alarm_on_server_failover", "true"),
@@ -54,6 +55,34 @@ func TestAccIncapsulaSiteMonitoring_basic(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testACCStateSiteMonitoringDestroy(s *terraform.State) error {
+	//client := testAccProvider.Meta().(*Client)
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != siteMonitoringResourceName {
+			continue
+		} else {
+			return fmt.Errorf("Resource %s for Incapsula Site Monitoring: resourcestill exists", siteMonitoringResourceName)
+		}
+		return nil
+
+		//siteID := rs.Primary.Attributes["site_id"]
+		//if siteID == "" {
+		//	fmt.Errorf("Parameter site_id was not found in resource %s", siteMonitoringResourceName)
+		//}
+		//siteIDInt, err := strconv.Atoi(siteID)
+		//if err != nil {
+		//	fmt.Errorf("failed to convert Site Id from import command, actual value : %s, expected numeric id", siteID)
+		//}
+		//
+		//_, err = client.GetSiteMonitoring(siteIDInt)
+		//if err == nil {
+		//	return fmt.Errorf("Resource %s for Incapsula Api Security Api: site ID %d still exists", siteMonitoringResourceName, siteIDInt)
+		//}
+	}
+	return fmt.Errorf("Error finding site_id")
 }
 
 func testCheckSiteMonitoringExists(name string) resource.TestCheckFunc {
@@ -103,7 +132,7 @@ func testAccCheckSiteMonitoringBasic(t *testing.T) string {
 			http_request_timeout_units = "MINUTES"
 			http_response_error        = "501,503"
     	}
-		monitoring_parameters {
+		monitoring {
 			failed_requests_duration       = 2
 			failed_requests_duration_units = "MINUTES"
 			failed_requests_min_number     = 10

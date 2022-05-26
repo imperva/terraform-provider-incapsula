@@ -7,14 +7,35 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
+	"strings"
 )
+
+const defaultFailedRequestsMinNumber = 3
+const defaultFailedRequestsPercentage = 40
+const defaultfailedRequestDuration = 40
+const defaultFailedRequestsDurationUnits = "SECONDS"
+
+const defaultHttpRequestTimeout = 35
+const defaultHttpRequestTimeoutUnits = "SECONDS"
+const defaultHttpResponseError = "501-599"
+
+const defaultUseVerificationForDown = true
+const defaultMonitoringUrl = "/"
+const defaultUpChecksInterval = 20
+const defaultUpChecksIntervalUnits = "SECONDS"
+const defaultUpCheckRetries = 3
+
+const defaultAlarmOnStandsByFailover = true
+const defaultAlarmOnDcFailover = true
+const defaultAlarmOnServerFailover = false
+const defaultRequiredMonitors = "MOST"
 
 func resourceSiteMonitoring() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceSiteMonitoringUpdate,
 		Read:   resourceSiteMonitoringRead,
 		Update: resourceSiteMonitoringUpdate,
-		Delete: resourceSiteMonitoringDelete,
+		Delete: resourceSiteMonitoringDelete, //todo - add comment that delete doesn't do any change on backend.
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				siteID, err := strconv.Atoi(d.Id())
@@ -35,7 +56,7 @@ func resourceSiteMonitoring() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"monitoring_parameters": {
+			"monitoring": {
 				Description: "Monitoring Parameters",
 				Optional:    true,
 				Type:        schema.TypeSet,
@@ -49,28 +70,28 @@ func resourceSiteMonitoring() *schema.Resource {
 							Description:  "The percentage of failed requests to the origin server",
 							Optional:     true,
 							ValidateFunc: validation.IntBetween(0, 100),
-							Default:      40,
+							Default:      defaultFailedRequestsPercentage,
 						},
 						"failed_requests_min_number": {
 							Type:         schema.TypeInt,
 							Description:  "The minimum number of of failed requests to be considered as failure",
 							Optional:     true,
 							ValidateFunc: validation.IntBetween(1, 500),
-							Default:      3,
+							Default:      defaultFailedRequestsMinNumber,
 						},
 						"failed_requests_duration": {
 							Type:         schema.TypeInt,
 							Description:  "The minimum duration of failures above the threshold to consider server as down. 20-180 SECONDS or 1-2 MINUTES. Default: 40",
 							Optional:     true,
 							ValidateFunc: validation.IntAtLeast(0),
-							Default:      40,
+							Default:      defaultfailedRequestDuration,
 						},
 						"failed_requests_duration_units": {
 							Type:         schema.TypeString,
 							Description:  "Time unit. Possible values: SECONDS, MINUTES. Default: SECONDS",
 							Optional:     true,
 							ValidateFunc: validation.StringInSlice([]string{"SECONDS", "MINUTES"}, false),
-							Default:      "SECONDS",
+							Default:      defaultFailedRequestsDurationUnits,
 						},
 					},
 				},
@@ -89,20 +110,20 @@ func resourceSiteMonitoring() *schema.Resource {
 							Description:  "The maximum time to wait for an HTTP response. 1-200 SECONDS or 1-2 MINUTES",
 							Optional:     true,
 							ValidateFunc: validation.IntBetween(1, 200),
-							Default:      35,
+							Default:      defaultHttpRequestTimeout,
 						},
 						"http_request_timeout_units": {
 							Type:         schema.TypeString,
 							Description:  "Time unit",
 							Optional:     true,
 							ValidateFunc: validation.StringInSlice([]string{"SECONDS", "MINUTES"}, false),
-							Default:      "SECONDS",
+							Default:      defaultHttpRequestTimeoutUnits,
 						},
 						"http_response_error": {
 							Type:        schema.TypeString,
 							Description: "The HTTP response error codes or patterns that will be counted as request failures",
-							Optional:    true, //todo ??????
-							Default:     "501-599",
+							Optional:    true,
+							Default:     defaultHttpResponseError,
 						},
 					},
 				},
@@ -113,45 +134,46 @@ func resourceSiteMonitoring() *schema.Resource {
 				Type:        schema.TypeSet,
 				MinItems:    0,
 				MaxItems:    1,
+				Set:         resourceSiteMonitoringUpDownVerificationHash,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"use_verification_for_down": {
 							Type:        schema.TypeBool,
 							Description: "If Imperva determines that an origin server is down according to failed request criteria, it will initiate another request to verify that the origin server is down", //todo ??????
 							Optional:    true,
-							Default:     true,
+							Default:     defaultUseVerificationForDown,
 						},
 						"monitoring_url": {
 							Type:        schema.TypeString,
 							Description: "The URL to use for monitoring your website.",
 							Optional:    true,
-							Default:     "/",
+							Default:     defaultMonitoringUrl,
 						},
 						"expected_received_string": {
 							Type:        schema.TypeString,
 							Description: "The expected string. If left empty, any response, except for the codes defined in the HTTP response error codes to be treated as Down parameter, will be considered successful. If the value is non-empty, then the defined value must appear within the response string for the response to be considered successful.",
 							Optional:    true,
 						},
-						"up_checks_interval": { //??????
+						"up_checks_interval": {
 							Type:         schema.TypeInt,
 							Description:  "After an origin server was identified as down, Imperva will periodically test it to see whether it has recovered, according to the frequency defined in this parameter. 10-120 SECONDS or 1-2 MINUTES",
 							Optional:     true,
 							ValidateFunc: validation.IntBetween(1, 200),
-							Default:      20,
+							Default:      defaultUpChecksInterval,
 						},
 						"up_checks_interval_units": {
 							Type:         schema.TypeString,
-							Description:  "Time unit. Default: SECONDS", //todo ??????
+							Description:  "Time unit. Default: SECONDS",
 							Optional:     true,
 							ValidateFunc: validation.StringInSlice([]string{"SECONDS", "MINUTES"}, false),
-							Default:      "SECONDS",
+							Default:      defaultUpChecksIntervalUnits,
 						},
-						"up_check_retries": { //??????
+						"up_check_retries": {
 							Type:         schema.TypeInt,
 							Description:  "Every time an origin server is tested to see whether it’s back up, the test will be retried this number of times.",
 							Optional:     true,
 							ValidateFunc: validation.IntBetween(1, 50),
-							Default:      3,
+							Default:      defaultUpCheckRetries,
 						},
 					},
 				},
@@ -169,25 +191,26 @@ func resourceSiteMonitoring() *schema.Resource {
 							Type:        schema.TypeBool,
 							Description: "Indicates whether or not an email will be sent upon failover to a standby data center",
 							Optional:    true,
-							Default:     true,
+							Default:     defaultAlarmOnStandsByFailover,
 						},
 						"alarm_on_server_failover": {
 							Type:        schema.TypeBool,
 							Description: "Indicates whether or not an email will be sent upon data center failover",
 							Optional:    true,
-							Default:     false,
+							Default:     defaultAlarmOnServerFailover,
 						},
 						"alarm_on_dc_failover": {
 							Type:        schema.TypeBool,
 							Description: "Indicates whether or not an email will be sent upon server failover",
 							Optional:    true,
-							Default:     true,
+							Default:     defaultAlarmOnDcFailover,
 						},
+						//todo add description  MOST - More than 50%, ask vbackend for descr
 						"required_monitors": {
 							Type:         schema.TypeString,
 							Description:  "Monitors required to report server / data center as down",
 							Optional:     true,
-							Default:      "MOST",
+							Default:      defaultRequiredMonitors,
 							ValidateFunc: validation.StringInSlice([]string{"ONE", "MANY", "MOST", "ALL"}, false),
 						},
 					},
@@ -214,6 +237,12 @@ func resourceSiteMonitoringUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	siteMonitoringResponse, err := client.UpdateSiteMonitoring(siteID, &siteMonitoring)
+	if strings.Contains(fmt.Sprint(err), "Missing Load Balancing subscription for Site ID") {
+		log.Printf("[ERROR] Could not get Incapsula Site Monitoring for Site Id: %d - %s\n. Missing Load Balancing subscription for Site ID. The resource will be removed.", siteID, err)
+		d.SetId("")
+		return err
+	}
+
 	if err != nil {
 		log.Printf("[ERROR] Could not get Incapsula Site Monitoring for Site Id: %d - %s\n", siteID, err)
 		return err
@@ -225,11 +254,12 @@ func resourceSiteMonitoringUpdate(d *schema.ResourceData, m interface{}) error {
 	upDownVerificationSchema := getUpDownVerificationSchema(siteMonitoringResp)
 	notificationsSchema := getNotificationsSchema(siteMonitoringResp)
 
-	d.Set("monitoring_parameters", monitoringParametersSchema)
+	d.Set("monitoring", monitoringParametersSchema)
 	d.Set("failed_request_criteria", failedRequestCriteriaSchemaSchema)
 	d.Set("up_down_verification", upDownVerificationSchema)
 	d.Set("notifications", notificationsSchema)
 	d.SetId(siteIDStr)
+
 	return nil
 }
 
@@ -237,13 +267,20 @@ func resourceSiteMonitoringRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteID := d.Get("site_id").(int)
 	siteIdStr := strconv.Itoa(siteID)
-	d.SetId(siteIdStr)
 
 	siteMonitoringResponse, err := client.GetSiteMonitoring(siteID)
+	if strings.Contains(fmt.Sprint(err), "Missing Load Balancing subscription for Site ID") {
+		log.Printf("[ERROR] Could not get Incapsula Site Monitoring for Site Id: %d - %s\n. Missing Load Balancing subscription for Site ID. The resource will be removed.", siteID, err)
+		d.SetId("")
+		return err
+	}
 	if err != nil {
 		log.Printf("[ERROR] Could not get Incapsula Site Monitoring for Site Id: %d - %s\n", siteID, err)
 		return err
 	}
+
+	d.SetId(siteIdStr)
+
 	siteMonitoring := siteMonitoringResponse.Data[0]
 
 	monitoringParametersSchema := getMonitoringParametersSchema(siteMonitoring)
@@ -251,7 +288,7 @@ func resourceSiteMonitoringRead(d *schema.ResourceData, m interface{}) error {
 	upDownVerificationSchema := getUpDownVerificationSchema(siteMonitoring)
 	notificationsSchema := getNotificationsSchema(siteMonitoring)
 
-	d.Set("monitoring_parameters", monitoringParametersSchema)
+	d.Set("monitoring", monitoringParametersSchema)
 	d.Set("failed_request_criteria", failedRequestCriteriaSchemaSchema)
 	d.Set("up_down_verification", upDownVerificationSchema)
 	d.Set("notifications", notificationsSchema)
@@ -260,7 +297,7 @@ func resourceSiteMonitoringRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceSiteMonitoringDelete(d *schema.ResourceData, m interface{}) error {
-
+	d.SetId("")
 	return nil
 }
 
@@ -405,13 +442,14 @@ func resourceSiteMonitoringUpDownVerificationHash(v interface{}) int {
 
 //================populate object from resource methods======================
 func populateFromMonitoringParameters(d *schema.ResourceData) MonitoringParameters {
-	monitoringParametersList := d.Get("monitoring_parameters").(*schema.Set).List()
+	monitoringParametersList := d.Get("monitoring").(*schema.Set).List()
 	//init object with default values
+	//todo move to static conf and use values in schema
 	monitoringParametersObj := MonitoringParameters{
-		FailedRequestsMinNumber:     3,
-		FailedRequestsPercentage:    40,
-		FailedRequestsDuration:      40,
-		FailedRequestsDurationUnits: "SECONDS",
+		FailedRequestsMinNumber:     defaultFailedRequestsMinNumber,
+		FailedRequestsPercentage:    defaultFailedRequestsPercentage,
+		FailedRequestsDuration:      defaultfailedRequestDuration,
+		FailedRequestsDurationUnits: defaultFailedRequestsDurationUnits,
 	}
 
 	if len(monitoringParametersList) > 0 {
@@ -437,9 +475,9 @@ func populateFromFailedRequestCriteria(d *schema.ResourceData) FailedRequestCrit
 	failedRequestCriteriaList := d.Get("failed_request_criteria").(*schema.Set).List()
 	//init object with default values
 	failedRequestCriteriaObj := FailedRequestCriteria{
-		HttpRequestTimeout:      35,
-		HttpRequestTimeoutUnits: "SECONDS",
-		HttpResponseError:       "501-599",
+		HttpRequestTimeout:      defaultHttpRequestTimeout,
+		HttpRequestTimeoutUnits: defaultHttpRequestTimeoutUnits,
+		HttpResponseError:       defaultHttpResponseError,
 	}
 
 	if len(failedRequestCriteriaList) > 0 {
@@ -462,12 +500,12 @@ func populateFromUpDownVerification(d *schema.ResourceData) UpDownVerification {
 	upDownVerificationList := d.Get("up_down_verification").(*schema.Set).List()
 	//init object with default values
 	upDownVerificationObj := UpDownVerification{
-		UseVerificationForDown: true,
-		MonitoringUrl:          "/",
+		UseVerificationForDown: defaultUseVerificationForDown,
+		MonitoringUrl:          defaultMonitoringUrl,
 		ExpectedReceivedString: "",
-		UpChecksInterval:       20,
-		UpChecksIntervalUnits:  "SECONDS",
-		UpCheckRetries:         3,
+		UpChecksInterval:       defaultUpChecksInterval,
+		UpChecksIntervalUnits:  defaultUpChecksIntervalUnits,
+		UpCheckRetries:         defaultUpCheckRetries,
 	}
 
 	if len(upDownVerificationList) > 0 {
@@ -498,10 +536,10 @@ func populateFromNotifications(d *schema.ResourceData) Notifications {
 	notificationsList := d.Get("notifications").(*schema.Set).List()
 	//init object with default values
 	notificationsObj := Notifications{
-		AlarmOnStandsByFailover: true,
-		AlarmOnDcFailover:       true,
-		AlarmOnServerFailover:   false,
-		RequiredMonitors:        "MOST",
+		AlarmOnStandsByFailover: defaultAlarmOnStandsByFailover,
+		AlarmOnDcFailover:       defaultAlarmOnDcFailover,
+		AlarmOnServerFailover:   defaultAlarmOnServerFailover,
+		RequiredMonitors:        defaultRequiredMonitors,
 	}
 
 	if len(notificationsList) > 0 {
