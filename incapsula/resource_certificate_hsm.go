@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
-	"strconv"
 )
 
 var apiDetailsResource = schema.Resource{
@@ -49,7 +48,7 @@ func resourceCustomCertificateHsm() *schema.Resource {
 			// Required Arguments
 			"site_id": {
 				Description: "Numeric identifier of the site to operate on.",
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 			},
@@ -73,7 +72,12 @@ func resourceCustomCertificateHsm() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					newHash := createHash(d)
+					hSMDataDTO := HSMDataDTO{
+						Certificate:    d.Get("certificate").(string),
+						HsmDetailsList: getHsmDetailsFromResource(d),
+					}
+					siteId := d.Get("site_id").(string)
+					newHash := createHashFromHSMDataDTO(&hSMDataDTO, siteId)
 					if newHash == old {
 						return true
 					}
@@ -92,8 +96,8 @@ func resourceCertificateHsmCreate(d *schema.ResourceData, m interface{}) error {
 		HsmDetailsList: getHsmDetailsFromResource(d),
 	}
 
-	siteId := d.Get("site_id").(int)
-	inputHash := createHashFromHSMDataDTO(&hSMDataDTO, strconv.Itoa(siteId))
+	siteId := d.Get("site_id").(string)
+	inputHash := createHashFromHSMDataDTO(&hSMDataDTO, siteId)
 	_, err := client.AddHsmCertificate(
 		siteId,
 		inputHash,
@@ -172,7 +176,7 @@ func resourceCertificateHsmUpdate(d *schema.ResourceData, m interface{}) error {
 
 func resourceCertificateHsmDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siteId := d.Get("site_id").(int)
+	siteId := d.Get("site_id").(string)
 	log.Printf("[DEBUG] Strt removing HSM certificate for site id: %d with resourceCertificateHsmDelete", siteId)
 	err := client.DeleteHsmCertificate(siteId)
 

@@ -32,8 +32,8 @@ type HsmCertificatePutResponse struct {
 	ResMessage string `json:"res_message"`
 }
 
-func (c *Client) AddHsmCertificate(siteId int, inputHash string, hSMDataDTO *HSMDataDTO) (*HsmCertificatePutResponse, error) {
-	log.Printf("[INFO] Adding HSM certificate for site_id: %d with inputHash: %s ", siteId, inputHash)
+func (c *Client) AddHsmCertificate(siteId, inputHash string, hSMDataDTO *HSMDataDTO) (*HsmCertificatePutResponse, error) {
+	log.Printf("[INFO] Adding HSM certificate for site_id: %s with inputHash: %s ", siteId, inputHash)
 
 	// Put to MY (This API using put, not post)
 	reqURL := getHsmUrl(siteId, c)
@@ -65,20 +65,20 @@ func (c *Client) AddHsmCertificate(siteId int, inputHash string, hSMDataDTO *HSM
 	var hsmCertificateAddResponse HsmCertificatePutResponse
 	err = json.Unmarshal(responseBody, &hsmCertificateAddResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing add HSM certificate JSON response for siteId %d: %s\nresponse: %s", siteId, err, string(responseBody))
+		return nil, fmt.Errorf("Error parsing add HSM certificate JSON response for siteId %s: %s\nresponse: %s", siteId, err, string(responseBody))
 	}
 
 	if hsmCertificateAddResponse.Res != 0 {
-		return nil, fmt.Errorf("error adding HSM certificate- res not 0. siteId: %d resposne:%s", siteId, string(responseBody))
+		return nil, fmt.Errorf("error adding HSM certificate- res not 0. siteId: %s resposne:%s", siteId, string(responseBody))
 	}
 
-	log.Printf("[DEBUG] Imperva add HSM certificate clent pat ended successfully for site id: %d", siteId)
+	log.Printf("[DEBUG] Imperva add HSM certificate clent pat ended successfully for site id: %s", siteId)
 
 	return &hsmCertificateAddResponse, nil
 }
 
-func getHsmUrl(siteId int, c *Client) string {
-	return fmt.Sprintf("%s/sites/%d/%s", c.config.BaseURLRev2, siteId, endpointHsmCertificateAdd)
+func getHsmUrl(siteId string, c *Client) string {
+	return fmt.Sprintf("%s/sites/%s/%s", c.config.BaseURLRev2, siteId, endpointHsmCertificateAdd)
 }
 
 //TODO: complete
@@ -131,45 +131,46 @@ func getHsmUrl(siteId int, c *Client) string {
 //}
 
 // DeleteHsmCustomCertificate deletes a hsm certificate for a specific site in Imperva
-func (c *Client) DeleteHsmCertificate(siteId int) error {
+func (c *Client) DeleteHsmCertificate(siteId string) error {
 	// Specifically shaded this struct, no need to share across funcs or export
 	// We only care about the response code and possibly the message
 	type CertificateDeleteResponse struct {
-		Res        interface{} `json:"res"`
-		ResMessage string      `json:"res_message"`
+		Res        int    `json:"res"`
+		ResMessage string `json:"res_message"`
 	}
 
-	log.Printf("[INFO] Deleting Imperva HSM certificate for siteId: %d\n", siteId)
+	log.Printf("[INFO] Deleting Imperva HSM certificate for siteId: %s\n", siteId)
 
 	// Post form to Incapsula
 	reqURL := getHsmUrl(siteId, c)
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodDelete, reqURL, nil, nil, DeleteHsmCustomCertificate)
 	if err != nil {
-		return fmt.Errorf("error deleting HSM certificate while sending request. siteId: %d %s", siteId, err)
+		return fmt.Errorf("error deleting HSM certificate while sending request. siteId: %s %s", siteId, err)
 	}
 
 	// Read the body
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("Error status code %d from Imperva service when deleting hsm certificate for site id %d: %s ", resp.StatusCode, siteId, string(responseBody))
+		return fmt.Errorf("Error status code %d from Imperva service when deleting hsm certificate for site id %s: %s ", resp.StatusCode, siteId, string(responseBody))
 	}
 
 	if err != nil {
-		return fmt.Errorf("Error reading response when deleting hsm certificate for site id %d: %s ", siteId, err)
+		return fmt.Errorf("Error reading response when deleting hsm certificate for site id %s: %s ", siteId, err)
 	}
 
-	log.Printf("[DEBUG] Imperva delete HSM certificate JSON response for siteId %d: %s\n", siteId, string(responseBody))
+	log.Printf("[DEBUG] Imperva delete HSM certificate JSON response for siteId %s: %s\n", siteId, string(responseBody))
 
 	// Parse the JSON
 	var hsmCertificateDeleteResponse CertificateDeleteResponse
 	err = json.Unmarshal(responseBody, &hsmCertificateDeleteResponse)
 	if err != nil {
-		return fmt.Errorf("error deleting HSM certificate, json parse error. siteId: %d %s", siteId, err)
+		return fmt.Errorf("error deleting HSM certificate, json parse error. siteId: %s %s", siteId, err)
 	}
 
 	if hsmCertificateDeleteResponse.Res != 0 {
-		return fmt.Errorf("error deleting HSM certificate- res not 0. siteId: %d resposne:%s", siteId, string(responseBody))
+		log.Printf("[DEBUG] response: %+v", hsmCertificateDeleteResponse)
+		return fmt.Errorf("error deleting HSM certificate- res not 0. siteId: %s resposne:%s", siteId, string(responseBody))
 	}
 
 	return nil
