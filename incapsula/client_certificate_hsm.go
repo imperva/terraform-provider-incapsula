@@ -41,7 +41,7 @@ func (c *Client) AddHsmCertificate(siteId, inputHash string, hSMDataDTO *HSMData
 		Data: *hSMDataDTO,
 	}
 
-	log.Printf("[INFO] Adding HSM certificate for site_id: %d with inputHash: %s with json: +%v", siteId, inputHash, hSMDataDTO)
+	log.Printf("[INFO] Adding HSM certificate for site_id: %s with inputHash: %s with json: +%v", siteId, inputHash, hSMDataDTO)
 	hSMDataDTOJSON, err := json.Marshal(hsmCustomCertificate)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to JSON marshal HSMDataDTO: %s ", err)
@@ -52,7 +52,7 @@ func (c *Client) AddHsmCertificate(siteId, inputHash string, hSMDataDTO *HSMData
 	log.Printf("[DEBUG] Add HSM certificate with params %s and JSON request: %s\n", params, string(hSMDataDTOJSON))
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodPut, reqURL, hSMDataDTOJSON, params, CreateHSMCustomCertificate)
 	if err != nil {
-		return nil, fmt.Errorf("error from Imperva service when adding HSM certificate for site_id %d: %s", siteId, err)
+		return nil, fmt.Errorf("error from Imperva service when adding HSM certificate for site_id %s: %s", siteId, err)
 	}
 
 	// Read the body

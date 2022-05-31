@@ -177,11 +177,11 @@ func resourceCertificateHsmUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceCertificateHsmDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteId := d.Get("site_id").(string)
-	log.Printf("[DEBUG] Strt removing HSM certificate for site id: %d with resourceCertificateHsmDelete", siteId)
+	log.Printf("[DEBUG] Strt removing HSM certificate for site id: %s with resourceCertificateHsmDelete", siteId)
 	err := client.DeleteHsmCertificate(siteId)
 
 	if err != nil {
-		log.Printf("[ERROR] Removing HSM certificate for site id: %d faild with error: %s", siteId, err)
+		log.Printf("[ERROR] Removing HSM certificate for site id: %s faild with error: %s", siteId, err)
 		return err
 	}
 
