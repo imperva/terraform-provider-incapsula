@@ -71,7 +71,6 @@ const DeleteCustomCertificate = "delete_custom_certificate"
 
 const CreateHSMCustomCertificate = "create_hsm_custom_certificate"
 const ReadHSMCustomCertificate = "read_hsm_custom_certificate"
-const UpdateHSMCustomCertificate = "update_hsm_custom_certificate"
 const DeleteHsmCustomCertificate = "delete_hsm_custom_certificate"
 
 const CreateDataCenter = "create_data_center"

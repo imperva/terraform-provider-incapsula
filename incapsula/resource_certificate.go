@@ -88,8 +88,8 @@ func resourceCertificateRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	siteID := d.Get("site_id").(string)
-
-	listCertificatesResponse, err := client.ListCertificates(siteID)
+	operation := getOperation(d)
+	listCertificatesResponse, err := client.ListCertificates(siteID, operation)
 
 	// List data centers response object may indicate that the Site ID has been deleted (9413)
 	if listCertificatesResponse != nil && listCertificatesResponse.Res == 9413 {
@@ -107,6 +107,17 @@ func resourceCertificateRead(d *schema.ResourceData, m interface{}) error {
 	d.SetId("12345")
 
 	return nil
+}
+
+func getOperation(d *schema.ResourceData) string {
+	isCustomCertificate := d.Get("private_key") != nil
+	operation := ReadHSMCustomCertificate
+	if isCustomCertificate {
+		operation = ReadCustomCertificate
+	}
+	log.Printf("[DEBUG] Selected oprtaion type for rest request is: %s", operation)
+
+	return operation
 }
 
 func resourceCertificateUpdate(d *schema.ResourceData, m interface{}) error {

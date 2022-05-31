@@ -32,10 +32,11 @@ var apiDetailsResource = schema.Resource{
 
 func resourceCustomCertificateHsm() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceCertificateHsmCreate,
-		Read:   resourceCertificateRead, //using same read from resource_certificate.go
-		//Update: resourceCertificateHsmUpdate,
-		Update: resourceCertificateHsmCreate,
+		Create: resourceCertificateHsmCreateAndUpdate,
+		//HSM & custom certificate using same read from resource_certificate.go
+		//but with different operation header in the rest request
+		Read:   resourceCertificateRead,
+		Update: resourceCertificateHsmCreateAndUpdate,
 		Delete: resourceCertificateHsmDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
@@ -66,7 +67,9 @@ func resourceCustomCertificateHsm() *schema.Resource {
 				Set:         schema.HashResource(&apiDetailsResource),
 			},
 
-			//-----------
+			//input hash will be created by terraform and saved on server, so we can identify any change in
+			//the certificate without getting it.
+			//we can't get the certificate since its sensitive data- we can only run over the current certificate.
 			"input_hash": {
 				Description: "inputHash",
 				Type:        schema.TypeString,
@@ -88,15 +91,17 @@ func resourceCustomCertificateHsm() *schema.Resource {
 	}
 }
 
-func resourceCertificateHsmCreate(d *schema.ResourceData, m interface{}) error {
-	log.Printf("[DEBUG] Start createing HSM custome certificate")
+// resourceCertificateHsmCreateAndUpdate Create and update are the same rest end point & logic, so we don't need
+// additional function. This is the api behaviour, we can't just update part of the certificate
+func resourceCertificateHsmCreateAndUpdate(d *schema.ResourceData, m interface{}) error {
+	siteId := d.Get("site_id").(string)
+	log.Printf("[DEBUG] Start createing HSM custome certificate for site id %s", siteId)
 	client := m.(*Client)
 	hSMDataDTO := HSMDataDTO{
 		Certificate:    d.Get("certificate").(string),
 		HsmDetailsList: getHsmDetailsFromResource(d),
 	}
 
-	siteId := d.Get("site_id").(string)
 	inputHash := createHashFromHSMDataDTO(&hSMDataDTO, siteId)
 	_, err := client.AddHsmCertificate(
 		siteId,
@@ -110,11 +115,14 @@ func resourceCertificateHsmCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId("12345")
+	log.Printf("[DEBUG] Done createing HSM custome certificate for site id %s, now reding the data", siteId)
 
 	return resourceCertificateRead(d, m)
 }
 
 func getHsmDetailsFromResource(d *schema.ResourceData) []HSMDetailsDTO {
+	siteId := d.Get("site_id").(string)
+	log.Printf("[DEBUG] starting getHsmDetailsFromResource for site id  %s", siteId)
 	var hsmDetailList []HSMDetailsDTO
 	hsmDetails := d.Get("api_detail").(*schema.Set)
 	for _, hsmDetail := range hsmDetails.List() {
@@ -124,54 +132,14 @@ func getHsmDetailsFromResource(d *schema.ResourceData) []HSMDetailsDTO {
 			ApiKey:   hsmDetailResource["api_key"].(string),
 			HostName: hsmDetailResource["hostname"].(string),
 		}
+
+		log.Printf("[DEBUG] getHsmDetailsFromResource hostname %s add for site id  %s", assetDto.HostName, siteId)
 		hsmDetailList = append(hsmDetailList, assetDto)
 	}
+
+	log.Printf("[DEBUG] Done with getHsmDetailsFromResource for site id  %s", siteId)
+
 	return hsmDetailList
-}
-
-//func resourceCertificateHsmRead(d *schema.ResourceData, m interface{}) error {
-//	client := m.(*Client)
-//	siteID := d.Get("site_id").(string)
-//	listCertificatesResponse, err := client.ListCertificates(siteID)
-//	log.Printf("[INFO] Reading HSM custome certificate for site id %s ", siteID)
-//
-//	// List data centers response object may indicate that the Site ID has been deleted (9413)
-//	if listCertificatesResponse != nil && listCertificatesResponse.Res == 9413 {
-//		log.Printf("[INFO] Incapsula Site ID %s has already been deleted: %s\n", d.Get("site_id"), err)
-//		d.SetId("")
-//		return nil
-//	}
-//
-//	if err != nil {
-//		log.Printf("[ERROR] Could not read custom certificate from Incapsula site for site_id: %s, %s\n", siteID, err)
-//		return err
-//	}
-//
-//	d.Set("input_hash", listCertificatesResponse.SSL.CustomCertificate.InputHash)
-//	d.SetId("12345")
-//
-//	return nil
-//}
-
-func resourceCertificateHsmUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*Client)
-
-	inputHash := createHash(d)
-
-	_, err := client.EditCertificate(
-		d.Get("site_id").(string),
-		d.Get("certificate").(string),
-		d.Get("private_key").(string),
-		d.Get("passphrase").(string),
-		inputHash,
-	)
-
-	if err != nil {
-		return err
-	}
-
-	d.SetId("12345")
-	return resourceCertificateRead(d, m)
 }
 
 func resourceCertificateHsmDelete(d *schema.ResourceData, m interface{}) error {
@@ -200,9 +168,10 @@ func createHashFromHSMDataDTO(hSMDataDTO *HSMDataDTO, siteId string) string {
 	}
 
 	stringHash := siteId + hSMDataDTO.Certificate + hsmString
-	result := calculateHashFromString(stringHash)
+	hashFromString := calculateHashFromString(stringHash)
+	log.Printf("[DEBUG] Hash for hsm custom certificate created: %s", hashFromString)
 
-	return result
+	return hashFromString
 }
 
 func calculateHashFromString(stringForHash string) string {

@@ -25,8 +25,6 @@ type HsmCustomCertificate struct {
 	Data HSMDataDTO `json:"data"`
 }
 
-//-----
-
 type HsmCertificatePutResponse struct {
 	Res        int    `json:"res"`
 	ResMessage string `json:"res_message"`
@@ -80,55 +78,6 @@ func (c *Client) AddHsmCertificate(siteId, inputHash string, hSMDataDTO *HSMData
 func getHsmUrl(siteId string, c *Client) string {
 	return fmt.Sprintf("%s/sites/%s/%s", c.config.BaseURLRev2, siteId, endpointHsmCertificateAdd)
 }
-
-//TODO: complete
-// EditCertificate updates the custom certifiacte on an Incapsula site
-//func (c *Client) EditCertificate(siteID, certificate, privateKey, passphrase, inputHash string) (*CertificateEditResponse, error) {
-//
-//	log.Printf("[INFO] Editing custom certificate for Incapsula site_id: %s\n", siteID)
-//
-//	values := url.Values{
-//		"site_id":     {siteID},
-//		"certificate": {certificate},
-//		"input_hash":  {inputHash},
-//	}
-//
-//	if privateKey != "" {
-//		values.Set("private_key", privateKey)
-//
-//	}
-//	if passphrase != "" {
-//		values.Set("passphrase", passphrase)
-//	}
-//
-//	// Post to Incapsula
-//	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointCertificateEdit)
-//	resp, err := c.PostFormWithHeaders(reqURL, values, UpdateCustomCertificate)
-//	if err != nil {
-//		return nil, fmt.Errorf("Error editing custom certificate for site_id: %s: %s", siteID, err)
-//	}
-//
-//	// Read the body
-//	defer resp.Body.Close()
-//	responseBody, err := ioutil.ReadAll(resp.Body)
-//
-//	// Dump JSON
-//	log.Printf("[DEBUG] Incapsula edit custom certificate JSON response: %s\n", string(responseBody))
-//
-//	// Parse the JSON
-//	var certificateEditResponse CertificateEditResponse
-//	err = json.Unmarshal([]byte(responseBody), &certificateEditResponse)
-//	if err != nil {
-//		return nil, fmt.Errorf("Error parsing edit custom certificarte JSON response for site_id: %s: %s)", siteID, err)
-//	}
-//
-//	// Look at the response status code from Incapsula
-//	if certificateEditResponse.Res != 0 {
-//		return nil, fmt.Errorf("Error from Incapsula service when editing custom certificarte for site_id %s: %s", siteID, string(responseBody))
-//	}
-//
-//	return &certificateEditResponse, nil
-//}
 
 // DeleteHsmCustomCertificate deletes a hsm certificate for a specific site in Imperva
 func (c *Client) DeleteHsmCertificate(siteId string) error {
