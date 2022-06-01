@@ -52,7 +52,7 @@ func TestClientAddCertificateHsmBadJSON(t *testing.T) {
 	log.Printf("======================== BEGIN TEST ========================")
 	log.Printf("[DEBUG] Running test Running test client_certificate_hsm_test.TestClientAddCertificateHsmBadJSON")
 	siteID := "1234"
-	url := getHsmUrlForServerMock(siteID)
+	url := getHsmUrlForServerMock(siteID, true)
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != url {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", url, req.URL.String())
@@ -76,9 +76,12 @@ func TestClientAddCertificateHsmBadJSON(t *testing.T) {
 	}
 }
 
-func getHsmUrlForServerMock(siteID string) string {
-	//url := fmt.Sprintf("/sites/%s/%s?input_hash=bla", siteID, endpointHsmCertificateAdd)
+func getHsmUrlForServerMock(siteID string, addInputHash bool) string {
 	url := fmt.Sprintf("/sites/%s/%s", siteID, endpointHsmCertificateAdd)
+	if addInputHash {
+		url = fmt.Sprintf("/sites/%s/%s?input_hash=bla", siteID, endpointHsmCertificateAdd)
+	}
+
 	return url
 }
 
@@ -87,8 +90,9 @@ func TestClientAddCertificateHsmInvalidRule(t *testing.T) {
 	log.Printf("[DEBUG] Running test client_certificate_hsm_test.TestClientAddCertificateHsmInvalidRule")
 	siteID := "1234"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != getHsmUrlForServerMock(siteID) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", getHsmUrlForServerMock(siteID), req.URL.String())
+		url := getHsmUrlForServerMock(siteID, true)
+		if req.URL.String() != url {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", url, req.URL.String())
 		}
 		rw.Write([]byte(`{"res":3015,"res_message":"Internal error","debug_info":{"id-info":"13008","Error":"Unexpected error occurred"}}`))
 	}))
@@ -114,8 +118,9 @@ func TestClientAddCertificateHsmValidRule(t *testing.T) {
 	log.Printf("[DEBUG] Running test client_certificate_hsm_test.TestClientAddCertificateHsmValidRule")
 	siteID := "1234"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != getHsmUrlForServerMock(siteID) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", getHsmUrlForServerMock(siteID), req.URL.String())
+		url := getHsmUrlForServerMock(siteID, true)
+		if req.URL.String() != url {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", url, req.URL.String())
 		}
 		rw.Write([]byte(`{"res":0,"res_message":"OK","debug_info":{"id-info":"13008"}}`))
 	}))
@@ -160,8 +165,9 @@ func TestClientDeleteCertificateHsmBadJSON(t *testing.T) {
 	log.Printf("[DEBUG] Running test client_certificate_hsm_test.TestClientDeleteCertificateHsmBadJSON")
 	siteID := "1234"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != getHsmUrlForServerMock(siteID) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", getHsmUrlForServerMock(siteID), req.URL.String())
+		url := getHsmUrlForServerMock(siteID, false)
+		if req.URL.String() != url {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", url, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
@@ -183,8 +189,9 @@ func TestClientDeleteCertificateHsmInvalidSiteID(t *testing.T) {
 	log.Printf("[DEBUG] Running test client_certificate_test.TestClientDeleteCertificateInvalidSiteID")
 	siteID := "1234"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != getHsmUrlForServerMock(siteID) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", getHsmUrlForServerMock(siteID), req.URL.String())
+		url := getHsmUrlForServerMock(siteID, false)
+		if req.URL.String() != url {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", url, req.URL.String())
 		}
 		rw.Write([]byte(`{"res":9413,"res_message":"Unknown/unauthorized site_id","debug_info":{"id-info":"13008","site_id":"1234"}}`))
 	}))
@@ -206,10 +213,11 @@ func TestClientDeleteCertificateHsmValidSite(t *testing.T) {
 	log.Printf("[DEBUG]Running test client_certificate_hsm_test.TestClientDeleteCertificateHsmValidSite")
 	siteID := "1234"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != getHsmUrlForServerMock(siteID) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", getHsmUrlForServerMock(siteID), req.URL.String())
+		url := getHsmUrlForServerMock(siteID, false)
+		if req.URL.String() != url {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", url, req.URL.String())
 		}
-		rw.Write([]byte(`{"res":"0","res_message":"OK"}`))
+		rw.Write([]byte(`{"res":0,"res_message":"OK"}`))
 	}))
 	defer server.Close()
 
