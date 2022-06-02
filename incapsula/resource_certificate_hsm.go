@@ -10,20 +10,20 @@ import (
 var apiDetailsResource = schema.Resource{
 	Schema: map[string]*schema.Schema{
 		"api_id": {
-			Description: "The api id in Fortanix",
+			Description: "The api id of the hsm server",
 			Type:        schema.TypeString,
 			Required:    true,
 			Sensitive:   true,
 		},
 		"api_key": {
-			Description: "the api key in Fortanix",
+			Description: "the api key in of the hsm server",
 			Type:        schema.TypeString,
 			Required:    true,
 			Sensitive:   true,
 		},
 
 		"hostname": {
-			Description: "The Fortanix hostname ",
+			Description: "The hostname of the hsm server",
 			Type:        schema.TypeString,
 			Required:    true,
 		},

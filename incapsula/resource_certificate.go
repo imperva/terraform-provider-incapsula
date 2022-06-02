@@ -110,10 +110,10 @@ func resourceCertificateRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func getOperation(d *schema.ResourceData) string {
-	isCustomCertificate := d.Get("private_key") != nil
-	operation := ReadHSMCustomCertificate
+	isCustomCertificate := d.Get("api_detail") != nil
+	operation := ReadCustomCertificate
 	if isCustomCertificate {
-		operation = ReadCustomCertificate
+		operation = ReadHSMCustomCertificate
 	}
 	log.Printf("[DEBUG] Selected oprtaion type for rest request is: %s", operation)
 
