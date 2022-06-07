@@ -16,7 +16,7 @@ The certificate content must be in base64 format.
 ```hcl
 resource "incapsula_custom_certificate" "custom-certificate" {
     site_id = incapsula_site.example-site.id
-    certificate = filebase64("${"path/to/your/cert.crt"}")
+    certificate = filebase64("${"path/to/your/cert.pem"}")
     api_detail {
       api_id = "345345-dfg44534-d34534tdfg-dsf4435rg" 
       api_key = "Mdrghg56G5dfHER445hjy5Ghhfg5rth5435hkj3hgd8r7ty948rjslkfhiu4how3hrioeuhtiuer"
