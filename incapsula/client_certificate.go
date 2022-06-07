@@ -89,13 +89,13 @@ func (c *Client) AddCertificate(siteID, certificate, privateKey, passphrase, inp
 }
 
 // ListCertificates gets the list of custom certificates for a site
-func (c *Client) ListCertificates(siteID string) (*CertificateListResponse, error) {
+func (c *Client) ListCertificates(siteID, operation string) (*CertificateListResponse, error) {
 	log.Printf("[INFO] Getting Incapsula site custom certificates (site_id: %s)\n", siteID)
 
 	// Post form to Incapsula
 	values := url.Values{"site_id": {siteID}}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointCertificateList)
-	resp, err := c.PostFormWithHeaders(reqURL, values, ReadCustomCertificate)
+	resp, err := c.PostFormWithHeaders(reqURL, values, operation)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting custom certificates for site_id %s: %s", siteID, err)
 	}
