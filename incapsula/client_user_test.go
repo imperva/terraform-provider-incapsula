@@ -17,7 +17,7 @@ func TestClientAddUserBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	email := "example@example.com"
-	interface_var := make([]interface{},1)
+	interface_var := make([]interface{}, 1)
 	interface_var[0] = 0
 	UserAddResponse, err := client.AddUser(0, email, interface_var, "", "")
 	if err == nil {
@@ -32,8 +32,8 @@ func TestClientAddUserBadConnection(t *testing.T) {
 }
 
 func TestClientAddUserBadJSON(t *testing.T) {
-server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s?api_id=%s&api_key=%s", endpointUserAdd, "foo" ,"bar" ) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != fmt.Sprintf("/%s?api_id=%s&api_key=%s", endpointUserAdd, "foo", "bar") {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointUserAdd, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
@@ -44,7 +44,7 @@ server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *
 	client := &Client{config: config, httpClient: &http.Client{}}
 	accountID := 123
 	email := "example@example.com"
-	interface_var := make([]interface{},1)
+	interface_var := make([]interface{}, 1)
 	interface_var[0] = 10
 	UserAddResponse, err := client.AddUser(accountID, email, interface_var, "f", "l")
 	if err == nil {
@@ -83,7 +83,7 @@ func TestClientUserStatusBadJSON(t *testing.T) {
 	accountID := 123
 	email := "example@example.com"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s?api_id=%s&api_key=%s&accountId=%d&userEmail=%s", endpointUserStatus, "foo" ,"bar",accountID, email) {
+		if req.URL.String() != fmt.Sprintf("/%s?api_id=%s&api_key=%s&accountId=%d&userEmail=%s", endpointUserStatus, "foo", "bar", accountID, email) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointUserStatus, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
@@ -126,7 +126,7 @@ func TestClientDeleteUserBadJSON(t *testing.T) {
 	accountID := 123
 	email := "example@example.com"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s?api_id=%s&api_key=%s&accountId=%d&userEmail=%s", endpointUserDelete, "foo" ,"bar",accountID, email) {
+		if req.URL.String() != fmt.Sprintf("/%s?api_id=%s&api_key=%s&accountId=%d&userEmail=%s", endpointUserDelete, "foo", "bar", accountID, email) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointUserDelete, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
@@ -135,7 +135,7 @@ func TestClientDeleteUserBadJSON(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	err := client.DeleteUser(accountID,email)
+	err := client.DeleteUser(accountID, email)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}

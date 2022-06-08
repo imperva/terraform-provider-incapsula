@@ -1,7 +1,6 @@
 package incapsula
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -89,10 +88,9 @@ func (c *Client) AddUser(accountID int, email string, roleIds []interface{}, fir
 	log.Printf("[INFO] Req: %s\n", fmt.Sprintf("%s/%s", c.config.BaseURLAPI, endpointUserAdd))
 	log.Printf("[INFO] json: %s\n", userJSON)
 
-	resp, err := c.httpClient.Post(
-		fmt.Sprintf("%s/%s?api_id=%s&api_key=%s", c.config.BaseURLAPI, endpointUserAdd, c.config.APIID, c.config.APIKey),
-		"application/json",
-		bytes.NewReader(userJSON))
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURLAPI, endpointUserAdd)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, userJSON, CreateIncapUser)
+
 	if err != nil {
 		return nil, fmt.Errorf("Error adding user email %s: %s", email, err)
 	}
@@ -125,7 +123,9 @@ func (c *Client) UserStatus(accountID int, email string) (*UserStatusResponse, e
 	log.Printf("[INFO] Getting Incapsula user status for email id: %s\n", email)
 
 	// Get to Incapsula
-	resp, err := c.httpClient.Get(fmt.Sprintf("%s/%s?api_id=%s&api_key=%s&accountId=%d&userEmail=%s", c.config.BaseURLAPI, endpointUserStatus, c.config.APIID, c.config.APIKey, accountID, email))
+	reqURL := fmt.Sprintf("%s/%s?accountId=%d&userEmail=%s", c.config.BaseURLAPI, endpointUserStatus, accountID, email)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadIncapUser)
+
 	if err != nil {
 		return nil, fmt.Errorf("Error getting user %s: %s", email, err)
 	}
@@ -172,10 +172,9 @@ func (c *Client) UpdateUser(accountID int, email string, roleIds []interface{}) 
 	log.Printf("[INFO] Req: %s\n", fmt.Sprintf("%s/%s", c.config.BaseURLAPI, endpointUserUpdate))
 	log.Printf("[INFO] json: %s\n", userJSON)
 
-	resp, err := c.httpClient.Post(
-		fmt.Sprintf("%s/%s?api_id=%s&api_key=%s", c.config.BaseURLAPI, endpointUserUpdate, c.config.APIID, c.config.APIKey),
-		"application/json",
-		bytes.NewReader(userJSON))
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURLAPI, endpointUserUpdate)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, userJSON, UpdateIncapUser)
+
 	if err != nil {
 		return nil, fmt.Errorf("Error updating user email %s: %s", email, err)
 	}
@@ -216,16 +215,9 @@ func (c *Client) DeleteUser(accountID int, email string) error {
 
 	// Delete form to Incapsula
 
-	req, err := http.NewRequest(
-		http.MethodDelete,
-		fmt.Sprintf("%s/%s?api_id=%s&api_key=%s&accountId=%d&userEmail=%s", c.config.BaseURLAPI, endpointUserDelete, c.config.APIID, c.config.APIKey, accountID, email),
-		nil)
+	reqURL := fmt.Sprintf("%s/%s?accountId=%d&userEmail=%s", c.config.BaseURLAPI, endpointUserDelete, accountID, email)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteIncapUser)
 
-	if err != nil {
-		return fmt.Errorf("Error deleting user: %s: %s", email, err)
-	}
-
-	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("Error from Incapsula service when deleting USER: %s %s", email, err)
 	}

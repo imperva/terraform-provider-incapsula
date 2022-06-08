@@ -107,3 +107,8 @@ const CreateNotificationCenterPolicy = "create_notification_center_policy"
 const ReadNotificationCenterPolicy = "read_notification_center_policy"
 const UpdateNotificationCenterPolicy = "update_notification_center_policy"
 const DeleteNotificationCenterPolicy = "delete_notification_center_policy"
+
+const CreateIncapUser = "create_incap_user"
+const ReadIncapUser = "read_incap_user"
+const UpdateIncapUser = "update_incap_user"
+const DeleteIncapUser = "delete_incap_user"
