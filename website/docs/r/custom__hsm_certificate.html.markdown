@@ -14,7 +14,7 @@ The certificate content must be in base64 format.
 ## Example Usage
 
 ```hcl
-resource "incapsula_custom_certificate" "hsm-custom-certificate" {
+resource "incapsula_custom_hsm_certificate" "hsm-custom-certificate-example" {
     site_id = incapsula_site.example-site.id
     certificate = filebase64("${"path/to/your/cert.pem"}")
     api_detail {
