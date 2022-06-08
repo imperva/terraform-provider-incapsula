@@ -1,8 +1,8 @@
-## 3.6.0 (Unreleased)
+## 3.6.0 (June 8, 2022)
 
 FEATURES:
 
-* **New Resource:** `site_monitoring`
+* **New Resource:** `incapsula_custom_hsm_certificate`
 
 ## 3.5.2 (May 16, 2022)
 
