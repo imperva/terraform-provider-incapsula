@@ -55,7 +55,7 @@ func testCheckIncapsulaCertificateExists(name string) resource.TestCheckFunc {
 		}
 
 		client := testAccProvider.Meta().(*Client)
-		listCertificatesResponse, _ := client.ListCertificates(siteID)
+		listCertificatesResponse, _ := client.ListCertificates(siteID, ReadHSMCustomCertificate)
 		if listCertificatesResponse == nil && listCertificatesResponse.Res == 9413 {
 			return fmt.Errorf("Incapsula Custom Certificate : %s (SiteId : %s) does not exist", certificateResource, siteID)
 		}
@@ -76,7 +76,7 @@ func testAccCheckIncapsulaCertificateDestroy(state *terraform.State) error {
 		}
 
 		// List certificates response object may indicate that the certificate has been deleted (9413)
-		listCertificatesResponse, _ := client.ListCertificates(siteID)
+		listCertificatesResponse, _ := client.ListCertificates(siteID, ReadHSMCustomCertificate)
 		if listCertificatesResponse != nil && listCertificatesResponse.Res != 9413 {
 			return fmt.Errorf("Resource %s for Incapsula Custom Certificate: site ID %s still exists", certificateResourceName, siteID)
 		}

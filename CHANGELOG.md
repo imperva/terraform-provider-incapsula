@@ -2,6 +2,25 @@
 
 * Add support for Site Monitoring
 
+## 3.6.0 (June 8, 2022)
+
+FEATURES:
+
+* **New Resource:** `incapsula_custom_hsm_certificate`
+
+## 3.5.2 (May 16, 2022)
+
+IMPROVEMENTS:
+
+* Add deprecation message to already deprecated resources (old data_center resources)
+
+BUG FIXES:
+
+* incapsula_site: formatting parameters with %t fails if the values are strings, not bool ([#158](https://github.com/imperva/terraform-provider-incapsula/issues/158))
+* incapsula_site: add retries when configuring site after creating it - to allow the site creation to fully finish ([#165](https://github.com/imperva/terraform-provider-incapsula/issues/165))
+* incapsula_notification_center_policy: Fix redundant slash in path issue ([#162](https://github.com/imperva/terraform-provider-incapsula/issues/162))
+* incapsula_origin_pop: avoid crashing when upgrading from version 2* to 3* without changing the resource format in the state file([#167](https://github.com/imperva/terraform-provider-incapsula/issues/167))
+
 ## 3.5.1 (Released)
 
 BUG FIXES:

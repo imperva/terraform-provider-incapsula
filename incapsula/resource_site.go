@@ -11,6 +11,11 @@ import (
 	"time"
 )
 
+const create_retries = 3
+const update_retries = 0
+const sleep_before_update_seconds = 5
+const sleep_before_retry_seconds = 3
+
 func resourceSite() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceSiteCreate,
@@ -385,9 +390,9 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 
 	// There may be a timing/race condition here
 	// Set an arbitrary period to sleep
-	time.Sleep(3 * time.Second)
+	time.Sleep(sleep_before_update_seconds * time.Second)
 
-	err = updateAdditionalSiteProperties(client, d)
+	err = updateAdditionalSiteProperties(create_retries, client, d)
 	if err != nil {
 		return err
 	}
@@ -567,7 +572,7 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 func resourceSiteUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	err := updateAdditionalSiteProperties(client, d)
+	err := updateAdditionalSiteProperties(update_retries, client, d)
 	if err != nil {
 		return err
 	}
@@ -620,21 +625,31 @@ func resourceSiteDelete(d *schema.ResourceData, m interface{}) error {
 	})
 }
 
-func updateAdditionalSiteProperties(client *Client, d *schema.ResourceData) error {
+func updateAdditionalSiteProperties(retries int, client *Client, d *schema.ResourceData) error {
 	updateParams := [12]string{"acceleration_level", "active", "approver", "domain_redirect_to_full", "domain_validation", "ignore_ssl", "remove_ssl", "ref_id", "seal_location", "restricted_cname_reuse", "naked_domain_san", "wildcard_san"}
-	for i := 0; i < len(updateParams); i++ {
-		param := updateParams[i]
+	retryCounter := 1
+	return resource.Retry(d.Timeout(schema.TimeoutUpdate), func() *resource.RetryError {
+		for i := 0; i < len(updateParams); i++ {
+			param := updateParams[i]
 
-		if d.HasChange(param) && d.Get(param) != "" {
-			log.Printf("[INFO] Updating Incapsula site param (%s) with value (%s) for site_id: %s\n", param, fmt.Sprintf("%t", d.Get(param)), d.Id())
-			_, err := client.UpdateSite(d.Id(), param, fmt.Sprintf("%t", d.Get(param)))
-			if err != nil {
-				log.Printf("[ERROR] Could not update Incapsula site param (%s) with value (%s) for site_id: %s %s\n", param, fmt.Sprintf("%t", d.Get(param)), d.Id(), err)
-				return err
+			if d.HasChange(param) && d.Get(param) != "" {
+				value := fmt.Sprintf("%v", d.Get(param))
+				log.Printf("[INFO] Updating Incapsula site param (%s) with value (%s) for site_id: %s\n", param, value, d.Id())
+				_, err := client.UpdateSite(d.Id(), param, value)
+				if err != nil {
+					if retryCounter <= retries && strings.Contains(err.Error(), "Add site operation") {
+						log.Printf("[INFO] retry number %d/%d to update Incapsula site param (%s) for site_id: %s\n", retryCounter, retries, param, d.Id())
+						time.Sleep(sleep_before_retry_seconds * time.Second)
+						retryCounter++
+						return resource.RetryableError(err)
+					}
+					log.Printf("[ERROR] Could not update Incapsula site param (%s) with value (%s) for site_id: %s %s\n", param, value, d.Id(), err)
+					return resource.NonRetryableError(err)
+				}
 			}
 		}
-	}
-	return nil
+		return nil
+	})
 }
 
 func updateDataStorageRegion(client *Client, d *schema.ResourceData) error {
