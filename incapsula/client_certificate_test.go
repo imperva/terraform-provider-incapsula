@@ -120,7 +120,7 @@ func TestClientListCertificatesBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "1234"
-	listCertificatesResponse, err := client.ListCertificates(siteID)
+	listCertificatesResponse, err := client.ListCertificates(siteID, ReadHSMCustomCertificate)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -146,7 +146,7 @@ func TestClientListCertificatesBadJSON(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := "1234"
-	listCertificatesResponse, err := client.ListCertificates(siteID)
+	listCertificatesResponse, err := client.ListCertificates(siteID, ReadHSMCustomCertificate)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -172,7 +172,7 @@ func TestClientListCertificatesInvalidRequest(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := "1234"
-	listCertificatesResponse, err := client.ListCertificates(siteID)
+	listCertificatesResponse, err := client.ListCertificates(siteID, ReadHSMCustomCertificate)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
