@@ -119,7 +119,6 @@ func (c *Client) DeleteApplicationDelivery(siteID int) (*ApplicationDelivery, er
 
 func CrudApplicationDelivery(action string, siteID int, hhtpMethod string, data []byte, c *Client) (*ApplicationDelivery, error) {
 	url := fmt.Sprintf("%s/sites/%d/settings/delivery", c.config.BaseURLRev2, siteID)
-	//todo tolowerCase for operation name
 	resp, err := c.DoJsonRequestWithHeaders(hhtpMethod, url, data, strings.ToLower(action)+"_application_delivery")
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when %s Application Delivery for Site ID %d: %s", strings.ToLower(action)+"ing", siteID, err)
@@ -129,11 +128,6 @@ func CrudApplicationDelivery(action string, siteID int, hhtpMethod string, data 
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	log.Printf("[DEBUG] Incapsula %s Application Delivery JSON response: %s\n", action, string(responseBody))
-
-	////todo ????????? leave it? what subscription do we need?
-	//if resp.StatusCode == 404 {
-	//	return nil, fmt.Errorf("Missing Load Balancing subscription for Site ID %d: %s", siteID, string(responseBody))
-	//}
 
 	// Check the response code
 	if resp.StatusCode != 200 {

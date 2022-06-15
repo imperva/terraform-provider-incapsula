@@ -67,6 +67,8 @@ func (c *Client) Verify() (*AccountStatusResponse, error) {
 	if resString != "0" {
 		return &accountStatusResponse, fmt.Errorf("Error from Incapsula service when checking account: %s", string(responseBody))
 	}
+
+	//todo fetch subscriptions - save to global variable
 	return &accountStatusResponse, nil
 }
 
