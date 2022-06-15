@@ -13,7 +13,10 @@ const applicationDeliveryResourceName = "incapsula_application_delivery"
 const applicationDeliveryResource = applicationDeliveryResourceName + "." + applicationDeliveryName
 const applicationDeliveryName = "testacc-terraform-application_delivery"
 
-func TestAccIncapsulaApplicationDeliveryFlat_basic(t *testing.T) {
+const customErrorPage = "<<-EOT\n<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\">\n    <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap\" rel=\"stylesheet\">\n    <title>[Error Title]</title>\n      </head>\n  <body>\n    <div class=\"container\">\n      <div class=\"container-inner\">\n        <div class=\"header\">\n          <div class=\"error-description\">\n            $TITLE$\n          </div>\n        </div>\n        <div class=\"main\">\n          <div class=\"troubleshooting\">\n            <div class=\"content\">\n              $BODY$\n            </div>\n\t    <h1>custom edited error</h1>\n          </div>\n        </div>\n      </div>\n    </div>\n  </body>\n</html>\nEOT"
+const customErrorPageRes = "<!DOCTYPE html>\\n<html lang=\\\"en\\\">\\n  <head>\\n    <meta charset=\\\"UTF-8\\\">\\n    <meta name=\\\"viewport\\\" content=\\\"width=device-width, initial-scale=1.0\\\">\\n    <meta http-equiv=\\\"X-UA-Compatible\\\" content=\\\"ie=edge\\\">\\n    <link href=\\\"https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap\\\" rel=\\\"stylesheet\\\">\\n    <title>[Error Title]</title>\\n      </head>\\n  <body>\\n    <div class=\\\"container\\\">\\n      <div class=\\\"container-inner\\\">\\n        <div class=\\\"header\\\">\\n          <div class=\\\"error-description\\\">\\n            $TITLE$\\n          </div>\\n        </div>\\n        <div class=\\\"main\\\">\\n          <div class=\\\"troubleshooting\\\">\\n            <div class=\\\"content\\\">\\n              $BODY$\\n            </div>\\n\\t    <h1>custom edited error</h1>\\n          </div>\\n        </div>\\n      </div>\\n    </div>\\n  </body>\\n</html>"
+
+func TestAccIncapsulaApplicationDelivery_basic(t *testing.T) {
 	log.Printf("======================== BEGIN TEST ========================")
 	log.Printf("[DEBUG] Running test resource_application_delivery_test.TestAccIncapsulaApplicationDelivery_basic")
 	resource.Test(t, resource.TestCase{
@@ -30,19 +33,9 @@ func TestAccIncapsulaApplicationDeliveryFlat_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "minify_js", "true"),
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "minify_static_html", "false"),
 
-					//resource.TestCheckResourceAttr(applicationDeliveryResource, "error_page_templates.0.default_error_page_template", "<html><body><h1>default_error_page_template</h1><div>1</div></body></html>"),
-					//resource.TestCheckResourceAttr(applicationDeliveryResource, "error_page_templates.0.error_access_denied", "<html><body><h1>error_access_denied</h1><div>/div></body></html>"),
-					//resource.TestCheckResourceAttr(applicationDeliveryResource, "error_page_templates.0.error_connection_failed", "<html><body><h1>$TITLE$</h1><div>error_connection_failed</div></body></html>"),
-					//resource.TestCheckResourceAttr(applicationDeliveryResource, "error_page_templates.0.error_connection_timeout", "<html><body><h1>error_connection_timeout</h1><div>2</div></body></html>"),
-					//resource.TestCheckResourceAttr(applicationDeliveryResource, "error_page_templates.0.error_deny_and_captcha", "<html><body><h1>$TITLE$</h1><div>7</div></body></html>"),
-					//resource.TestCheckResourceAttr(applicationDeliveryResource, "error_page_templates.0.error_no_ssl_config", "<html><body><h1>$TITLE$</h1><div>error_deny_and_captcha</div></body></html>"),
-					//resource.TestCheckResourceAttr(applicationDeliveryResource, "error_page_templates.0.error_parse_req_error", "<html><body><h1>$TITLE$</h1><div>error_parse_req_error</div></body></html>"),
-					//resource.TestCheckResourceAttr(applicationDeliveryResource, "error_page_templates.0.error_parse_resp_error", "<html><body><h1></h1><div>error_parse_resp_error</div></body></html>"),
-					//resource.TestCheckResourceAttr(applicationDeliveryResource, "error_page_templates.0.error_ssl_failed", "<html><body><h1>error_ssl_failed</h1><div></div></body></html>"),
-
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "aggressive_compression", "true"),
-					//todo - check!! fck
-					//resource.TestCheckResourceAttr(applicationDeliveryResource, "compress_jpeg", "false"),
+
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "compress_jpeg", "true"),
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "compress_png", "true"),
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "aggressive_compression", "true"),
 
@@ -56,11 +49,16 @@ func TestAccIncapsulaApplicationDeliveryFlat_basic(t *testing.T) {
 
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "redirect_http_to_https", "false"),
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "redirect_naked_to_full", "false"),
-					
-					resource.TestCheckResourceAttr(applicationDeliveryResource, "default_error_page_template", "<html><body><h1>default_error_page_template</h1><div>1</div></body></html>"),
-					resource.TestCheckResourceAttr(applicationDeliveryResource, "error_access_denied", "<html><body><h1>error_access_denied</h1><div>/div></body></html>"),
-					resource.TestCheckResourceAttr(applicationDeliveryResource, "error_connection_failed", "<html><body><h1>$TITLE$</h1><div>error_connection_failed</div></body></html>"),
-					
+
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "default_error_page_template", customErrorPageRes),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "error_access_denied", customErrorPageRes),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "error_connection_failed", customErrorPageRes),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "error_connection_timeout", customErrorPageRes),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "error_parse_req_error", customErrorPageRes),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "error_parse_resp_error", customErrorPageRes),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "error_ssl_failed", customErrorPageRes),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "error_deny_and_captcha", customErrorPageRes),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "error_no_ssl_config", customErrorPageRes),
 				),
 			},
 			{
@@ -147,12 +145,17 @@ resource "%s" "%s" {
   ssl_port_to = 555
   redirect_naked_to_full = false
   redirect_http_to_https = false
-  default_error_page_template = "<html><body><h1>default_error_page_template</h1><div>1</div></body></html>"
-  error_access_denied         = "<html><body><h1>error_access_denied</h1><div>/div></body></html>"
-  error_connection_failed     = "<html><body><h1>$TITLE$</h1><div>error_connection_failed</div></body></html>"
+  default_error_page_template = %s
+  error_access_denied         = %s
+  error_connection_failed     = %s
+  error_connection_timeout     = %s
+  error_parse_req_error     = %s
+  error_parse_resp_error     = %s
+  error_ssl_failed     = %s
+  error_deny_and_captcha     = %s
+  error_no_ssl_config     = %s
 }`,
-		applicationDeliveryResourceName, applicationDeliveryName,
-		//applicationDeliveryResourceName, applicationDeliveryName, siteResourceName,
+		applicationDeliveryResourceName, applicationDeliveryName, customErrorPage, customErrorPage, customErrorPage,
+		customErrorPage, customErrorPage, customErrorPage, customErrorPage, customErrorPage, customErrorPage,
 	)
-	//#ssl_port_to             = 555
 }
