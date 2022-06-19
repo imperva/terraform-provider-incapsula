@@ -66,7 +66,6 @@ func testCheckApiSecuritySiteConfigExists(name string) resource.TestCheckFunc {
 
 func testACCStateApiSiteConfigID(s *terraform.State) (string, error) {
 	for _, rs := range s.RootModule().Resources {
-		fmt.Errorf("Resource: %v", rs)
 		if rs.Type != apiSiteConfigResourceName {
 			continue
 		}
@@ -74,7 +73,7 @@ func testACCStateApiSiteConfigID(s *terraform.State) (string, error) {
 		//we don't need thi block because site_config doesn't have an ID
 		ruleID, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
-			return "", fmt.Errorf("Error parsing Cache Rule ID %v to int", rs.Primary.ID)
+			return "", fmt.Errorf("Error parsing Api Security Site Config ID %v to int", rs.Primary.ID)
 		}
 
 		siteID, err := strconv.Atoi(rs.Primary.Attributes["site_id"])
@@ -88,7 +87,7 @@ func testACCStateApiSiteConfigID(s *terraform.State) (string, error) {
 		}
 		return fmt.Sprintf("%d", ruleID), nil
 	}
-	return "", fmt.Errorf("Error finding site_id")
+	return "", fmt.Errorf("Error finding site_id in Api Security Site Config resource")
 }
 
 func testAccCheckApiSiteConfigBasic(t *testing.T) string {
