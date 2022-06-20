@@ -42,7 +42,7 @@ func TestUpdateApiSecuritySiteConfigBadConnection(t *testing.T) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 	if apiSecuritySiteConfigPostResponse != nil {
-		t.Errorf("Should have received a nil addIncapRuleResponse instance")
+		t.Errorf("Should have received a nil apiSecurityApiConfig instance")
 	}
 }
 
