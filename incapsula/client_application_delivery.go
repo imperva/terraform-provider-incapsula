@@ -140,6 +140,6 @@ func CrudApplicationDelivery(action string, siteID int, hhtpMethod string, data 
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error parsing Application Delivery Response JSON response for Site ID %d: %s\nresponse: %s", siteID, err, string(responseBody))
 	}
-	//todo check if data.length is >0
+
 	return &applicationDelivery, nil
 }
