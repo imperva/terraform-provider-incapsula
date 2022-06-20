@@ -86,7 +86,7 @@ type CustomErrorPageTemplates struct {
 }
 
 type CustomErrorPage struct {
-	DefaultErrorPage        string                   `json:"error_page_template"`
+	DefaultErrorPage         string                   `json:"error_page_template"`
 	CustomErrorPageTemplates CustomErrorPageTemplates `json:"custom_error_page_templates"`
 }
 
