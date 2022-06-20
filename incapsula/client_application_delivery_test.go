@@ -128,59 +128,6 @@ func TestUpdateApplicationDeliveryInvalidConfig(t *testing.T) {
 	}
 }
 
-//func TestUpdateApplicationDeliveryNoSubscription(t *testing.T) {
-//	apiID := "foo"
-//	apiKey := "bar"
-//	siteID := 42
-//
-//	endpoint := fmt.Sprintf("/sites/%d/settings/delivery", siteID)
-//
-//	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-//		rw.WriteHeader(404)
-//		if req.URL.String() != endpoint {
-//			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
-//		}
-//		rw.Write([]byte(`{
-//  "errors": [
-//    {
-//      "id": null,
-//      "status": 404,
-//      "source": {
-//        "pointer": "/appdlv-site-settings/v2/site/42/monitoring"
-//      },
-//      "title": "Not Found"
-//    }
-//  ]
-//}`))
-//	}))
-//	defer server.Close()
-//
-//	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
-//	client := &Client{config: config, httpClient: &http.Client{}}
-//
-//	payload := ApplicationDelivery{
-//		Compression:      Compression{},
-//		ImageCompression: ImageCompression{},
-//		Network:          Network{},
-//		Redirection:      Redirection{},
-//		CustomErrorPage:  CustomErrorPage{},
-//	}
-//
-//	siteMonitoringResponse, err := client.UpdateApplicationDelivery(
-//		siteID,
-//		&payload)
-//
-//	if err == nil {
-//		t.Errorf("Should have received an error")
-//	}
-//	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Missing Load Balancing subscription for Site ID")) {
-//		t.Errorf("Should have received a no Site Monitoring subscription error, got: %s", err)
-//	}
-//	if siteMonitoringResponse != nil {
-//		t.Errorf("Should have received a nil siteMonitoringResponse instance")
-//	}
-//}
-
 func TestUpdateApplicationDeliveryConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
@@ -353,49 +300,6 @@ func TestReadApplicationDeliveryInvalidConfig(t *testing.T) {
 	}
 }
 
-//func TestReadApplicationDeliveryNoSubscription(t *testing.T) {
-//	apiID := "foo"
-//	apiKey := "bar"
-//	siteID := 42
-//
-//	endpoint := fmt.Sprintf("/appdlv-site-settings/v2/site/%d/monitoring", siteID)
-//
-//	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-//		rw.WriteHeader(404)
-//		if req.URL.String() != endpoint {
-//			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
-//		}
-//		rw.Write([]byte(`{
-//  "errors": [
-//    {
-//      "id": null,
-//      "status": 404,
-//      "source": {
-//        "pointer": "/appdlv-site-settings/v2/site/42/monitoring"
-//      },
-//      "title": "Not Found"
-//    }
-//  ]
-//}`))
-//	}))
-//	defer server.Close()
-//
-//	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
-//	client := &Client{config: config, httpClient: &http.Client{}}
-//
-//	siteMonitoringResponse, err := client.GetSiteMonitoring(siteID)
-//
-//	if err == nil {
-//		t.Errorf("Should have received an error")
-//	}
-//	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Missing Load Balancing subscription for Site ID")) {
-//		t.Errorf("Should have received a no Site Monitoring subscription error, got: %s", err)
-//	}
-//	if siteMonitoringResponse != nil {
-//		t.Errorf("Should have received a nil siteMonitoringResponse instance")
-//	}
-//}
-
 func TestReadApplicationDeliveryConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
@@ -517,19 +421,6 @@ func TestDeleteApplicationDeliveryBadJSON(t *testing.T) {
 
 }
 
-//{"res":2,"res_message":"Invalid input","debug_info":{"ssl_port":["ssl is not supported for your site"],"id-info":"999999"}}
-//rw.Write([]byte(`{
-//  "errors": [
-//    {
-//      "id": null,
-//      "status": 500,
-//      "source": {
-//        "pointer": "/sites/%d/settings/delivery"
-//      },
-//      "title": "Not Found"
-//    }
-//  ]
-//}`))
 func TestDeleteApplicationDeliveryInvalidConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
