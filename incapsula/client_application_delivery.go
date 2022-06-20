@@ -121,7 +121,7 @@ func CrudApplicationDelivery(action string, siteID int, hhtpMethod string, data 
 	url := fmt.Sprintf("%s/sites/%d/settings/delivery", c.config.BaseURLRev2, siteID)
 	resp, err := c.DoJsonRequestWithHeaders(hhtpMethod, url, data, strings.ToLower(action)+"_application_delivery")
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when %s Application Delivery for Site ID %d: %s", strings.ToLower(action)+"ing", siteID, err)
+		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when trying to %s Application Delivery for Site ID %d: %s", strings.ToLower(action), siteID, err)
 	}
 
 	// Read the body

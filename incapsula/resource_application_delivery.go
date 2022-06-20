@@ -13,10 +13,10 @@ const defaultSslPortTo = 443
 
 func resourceApplicationDelivery() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceApplicationDeliveryFlatUpdate,
-		Read:   resourceApplicationDeliveryFlatRead,
-		Update: resourceApplicationDeliveryFlatUpdate,
-		Delete: resourceApplicationDeliveryFlatDelete,
+		Create: resourceApplicationDeliveryUpdate,
+		Read:   resourceApplicationDeliveryRead,
+		Update: resourceApplicationDeliveryUpdate,
+		Delete: resourceApplicationDeliveryDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				siteID, err := strconv.Atoi(d.Id())
@@ -39,6 +39,7 @@ func resourceApplicationDelivery() *schema.Resource {
 				ForceNew:    true,
 			},
 
+			// Optional Arguments
 			"file_compression": {
 				Type:        schema.TypeBool,
 				Description: "When this option is enabled, any textual resource, such as Javascript, CSS and HTML, is compressed using Gzip as it is being transferred, and then unzipped within the browser. All modern browsers support this feature.",
@@ -127,24 +128,12 @@ func resourceApplicationDelivery() *schema.Resource {
 				Description: "The port number. If field is set to 80 (the default value), rewrite port will be removed.",
 				Optional:    true,
 				Default:     defaultPortTo,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if new == "" && old == strconv.Itoa(defaultPortTo) {
-						return true
-					}
-					return false
-				},
 			},
 			"ssl_port_to": {
 				Type:        schema.TypeInt,
 				Description: "The port number to rewrite default SSL port to. if field is set to 443 (the default value), rewrite SSL port will be removed.",
 				Optional:    true,
 				Default:     defaultSslPortTo,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if new == "" && old == strconv.Itoa(defaultSslPortTo) {
-						return true
-					}
-					return false
-				},
 			},
 			"redirect_naked_to_full": {
 				Type:        schema.TypeBool,
@@ -164,7 +153,9 @@ func resourceApplicationDelivery() *schema.Resource {
 				Description: "The default error page HTML template. $TITLE$ and $BODY$ placeholders are required.",
 				Optional:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if strings.TrimSpace(old) == strings.TrimSpace(new) {
+					oldT := strings.ReplaceAll(strings.TrimSpace(old), "'", "\"")
+					newT := strings.ReplaceAll(strings.TrimSpace(new), "'", "\"")
+					if strings.TrimSpace(oldT) == strings.TrimSpace(newT) {
 						log.Printf("will supress error_ssl_failed¬")
 						return true
 					}
@@ -176,7 +167,9 @@ func resourceApplicationDelivery() *schema.Resource {
 				Description: "The HTML template for 'Connection Timeout' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.",
 				Optional:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if strings.TrimSpace(old) == strings.TrimSpace(new) {
+					oldT := strings.ReplaceAll(strings.TrimSpace(old), "'", "\"")
+					newT := strings.ReplaceAll(strings.TrimSpace(new), "'", "\"")
+					if strings.TrimSpace(oldT) == strings.TrimSpace(newT) {
 						log.Printf("will supress error_ssl_failed¬")
 						return true
 					}
@@ -188,7 +181,9 @@ func resourceApplicationDelivery() *schema.Resource {
 				Description: "The HTML template for 'Access Denied' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.",
 				Optional:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if strings.TrimSpace(old) == strings.TrimSpace(new) {
+					oldT := strings.ReplaceAll(strings.TrimSpace(old), "'", "\"")
+					newT := strings.ReplaceAll(strings.TrimSpace(new), "'", "\"")
+					if strings.TrimSpace(oldT) == strings.TrimSpace(newT) {
 						log.Printf("will supress error_ssl_failed¬")
 						return true
 					}
@@ -200,7 +195,9 @@ func resourceApplicationDelivery() *schema.Resource {
 				Description: "The HTML template for 'Unable to parse request' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.",
 				Optional:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if strings.TrimSpace(old) == strings.TrimSpace(new) {
+					oldT := strings.ReplaceAll(strings.TrimSpace(old), "'", "\"")
+					newT := strings.ReplaceAll(strings.TrimSpace(new), "'", "\"")
+					if strings.TrimSpace(oldT) == strings.TrimSpace(newT) {
 						log.Printf("will supress error_ssl_failed¬")
 						return true
 					}
@@ -212,7 +209,9 @@ func resourceApplicationDelivery() *schema.Resource {
 				Description: "The HTML template for 'Unable to parse response' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.",
 				Optional:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if strings.TrimSpace(old) == strings.TrimSpace(new) {
+					oldT := strings.ReplaceAll(strings.TrimSpace(old), "'", "\"")
+					newT := strings.ReplaceAll(strings.TrimSpace(new), "'", "\"")
+					if strings.TrimSpace(oldT) == strings.TrimSpace(newT) {
 						log.Printf("will supress error_ssl_failed¬")
 						return true
 					}
@@ -224,7 +223,9 @@ func resourceApplicationDelivery() *schema.Resource {
 				Description: "The HTML template for 'Unable to connect to origin server' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.",
 				Optional:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if strings.TrimSpace(old) == strings.TrimSpace(new) {
+					oldT := strings.ReplaceAll(strings.TrimSpace(old), "'", "\"")
+					newT := strings.ReplaceAll(strings.TrimSpace(new), "'", "\"")
+					if strings.TrimSpace(oldT) == strings.TrimSpace(newT) {
 						log.Printf("will supress error_ssl_failed¬")
 						return true
 					}
@@ -236,7 +237,9 @@ func resourceApplicationDelivery() *schema.Resource {
 				Description: "The HTML template for 'Unable to establish SSL connection' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.",
 				Optional:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if strings.TrimSpace(old) == strings.TrimSpace(new) {
+					oldT := strings.ReplaceAll(strings.TrimSpace(old), "'", "\"")
+					newT := strings.ReplaceAll(strings.TrimSpace(new), "'", "\"")
+					if strings.TrimSpace(oldT) == strings.TrimSpace(newT) {
 						log.Printf("will supress error_ssl_failed¬")
 						return true
 					}
@@ -248,7 +251,9 @@ func resourceApplicationDelivery() *schema.Resource {
 				Description: "The HTML template for 'Initial connection denied - CAPTCHA required' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.",
 				Optional:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if strings.TrimSpace(old) == strings.TrimSpace(new) {
+					oldT := strings.ReplaceAll(strings.TrimSpace(old), "'", "\"")
+					newT := strings.ReplaceAll(strings.TrimSpace(new), "'", "\"")
+					if strings.TrimSpace(oldT) == strings.TrimSpace(newT) {
 						log.Printf("will supress error_ssl_failed¬")
 						return true
 					}
@@ -260,7 +265,9 @@ func resourceApplicationDelivery() *schema.Resource {
 				Description: "The HTML template for 'Site not configured for SSL' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.",
 				Optional:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if strings.TrimSpace(old) == strings.TrimSpace(new) {
+					oldT := strings.ReplaceAll(strings.TrimSpace(old), "'", "\"")
+					newT := strings.ReplaceAll(strings.TrimSpace(new), "'", "\"")
+					if strings.TrimSpace(oldT) == strings.TrimSpace(newT) {
 						log.Printf("will supress error_ssl_failed¬")
 						return true
 					}
@@ -271,7 +278,7 @@ func resourceApplicationDelivery() *schema.Resource {
 	}
 }
 
-func resourceApplicationDeliveryFlatRead(d *schema.ResourceData, m interface{}) error {
+func resourceApplicationDeliveryRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteID := d.Get("site_id").(int)
 	siteIdStr := strconv.Itoa(siteID)
@@ -318,7 +325,7 @@ func resourceApplicationDeliveryFlatRead(d *schema.ResourceData, m interface{}) 
 	return nil
 }
 
-func resourceApplicationDeliveryFlatUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceApplicationDeliveryUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteID := d.Get("site_id").(int)
 
@@ -336,7 +343,7 @@ func resourceApplicationDeliveryFlatUpdate(d *schema.ResourceData, m interface{}
 		CompressPng:               d.Get("compress_png").(bool),
 	}
 
-	networkd := Network{
+	network := Network{
 		TcpPrePooling:         d.Get("tcp_pre_pooling").(bool),
 		OriginConnectionReuse: d.Get("origin_connection_reuse").(bool),
 		SupportNonSniClients:  d.Get("support_non_sni_clients").(bool),
@@ -367,7 +374,7 @@ func resourceApplicationDeliveryFlatUpdate(d *schema.ResourceData, m interface{}
 	payload := ApplicationDelivery{
 		Compression:      compression,
 		ImageCompression: imageCompression,
-		Network:          networkd,
+		Network:          network,
 		Redirection:      redirection,
 		CustomErrorPage:  customErrorPage,
 	}
@@ -378,10 +385,10 @@ func resourceApplicationDeliveryFlatUpdate(d *schema.ResourceData, m interface{}
 		log.Printf("[ERROR] Could not get Incapsula Application Delivery for Site Id: %d - %s\n", siteID, err)
 		return err
 	}
-	return resourceApplicationDeliveryFlatRead(d, m)
+	return resourceApplicationDeliveryRead(d, m)
 }
 
-func resourceApplicationDeliveryFlatDelete(d *schema.ResourceData, m interface{}) error {
+func resourceApplicationDeliveryDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteID := d.Get("site_id").(int)
 

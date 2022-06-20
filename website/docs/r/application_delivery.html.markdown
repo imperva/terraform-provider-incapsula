@@ -5,38 +5,38 @@ sidebar_current: "docs-incapsula-resource-application_delivery"
 description: |- Provides a Incapsula Application Delivery resource.
 ---
 
-# incapsula_site_monitoring
+# incapsula_application_delivery
 
 Configure delivery options to help you optimize your content delivery and improve performance by providing faster loading of your web pages.
 Note that destroy action will return the configuration to the default values.
 
 ## Example Usage
 
-### Basic Usage - Single Site Monitoring
+### Basic Usage - Application Delivery
 
 ```hcl
 resource "resource_application_delivery" "example_application_delivery" {
 	site_id = incapsula_site.testacc-terraform-site.id
-    file_compression   = true
-	minify_css         = true
-	minify_js          = true
-	minify_static_html = false
+	file_compression            = true
+	minify_css                  = true
+	minify_js                   = true
+	minify_static_html          = false
 	default_error_page_template = "<html><body><h1>default_error_page_template</h1><div>1</div></body></html>"
 	error_access_denied         = "<html><body><h1>error_access_denied</h1><div>/div></body></html>"
-	error_connection_failed     = "<html><body><h1>$TITLE$</h1><div>error_connection_failed</div></body></html>"
+	error_connection_failed     = "${file("error_page_example.txt")}"
 	aggressive_compression      = true
 	compress_jpeg               = false
 	compress_png                = true
 	progressive_image_rendering = true
-	enable_http2            = false
-	http2_to_origin         = false
-	origin_connection_reuse = false
-	port_to                 = 225
-	ssl_port_to             = 555
-	support_non_sni_clients = false
-	tcp_pre_pooling         = false
-	redirect_http_to_https = false
-	redirect_naked_to_full = false			
+	enable_http2                = false
+	http2_to_origin             = false
+	origin_connection_reuse     = false
+	port_to                     = 225
+	ssl_port_to                 = 555
+	support_non_sni_clients     = false
+	tcp_pre_pooling             = false
+	redirect_http_to_https      = false
+	redirect_naked_to_full      = false			
 }
 ```
 
@@ -45,11 +45,6 @@ resource "resource_application_delivery" "example_application_delivery" {
 The following arguments are supported:
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
-* `compression` - (Optional) Compress files to shrink file size and reduce load time.
-* `image_compression` - (Optional) Image compression can be applied only to cached JPEG and PNG images. As such, this option is disabled when caching is disabled.
-* `network` - (Optional) Use verification checks to mark server as "Down"
-* `redirection` - (Optional) Set up email alerts for different scenarious
-* `error_page_templates` - (Optional) Set up email alerts for different scenarious
 * `file_compression` - (Optional) Compress JPEG images. Compression reduces download time by reducing the file size. Default: true
 * `minify_js` - (Optional) Minify JavaScript. Minification removes characters that are not necessary for rendering the page, such as whitespace and comments. This makes the files smaller and therefore reduces their access time. Minification has no impact on the functionality of the Javascript, CSS, and HTML files. Default: true
 * `minify_css` - (Optional) Content minification can applied only to cached Javascript, CSS and HTML content. Default: true.
