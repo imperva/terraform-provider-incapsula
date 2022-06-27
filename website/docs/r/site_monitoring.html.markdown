@@ -14,7 +14,7 @@ Note that destroy action doesn't do any change in Imperva system.
 
 ## Example Usage
 
-### Basic Usage - Single Site Monitoring
+### Basic Usage - Site Monitoring
 
 ```hcl
 resource "incapsula_site_monitoring" "example_site_monitoring" {
