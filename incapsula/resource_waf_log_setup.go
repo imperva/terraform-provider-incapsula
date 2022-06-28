@@ -1,7 +1,6 @@
 package incapsula
 
 import (
-	"errors"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
@@ -121,7 +120,7 @@ func resourceWAFLogSetupCreate(d *schema.ResourceData, m interface{}) error {
 	} else if d.Get("sftp_destination_folder") != "" {
 		wafLogSetupResponse, err = client.AddWAFLogSetupSFTP(&wafLogSetupPayload)
 	} else {
-		return errors.New("[ERROR]  Either sftp_* or s3_* arguments are required group")
+		wafLogSetupResponse, err = client.AddWAFLogSetupDefault(&wafLogSetupPayload)
 	}
 
 	if err != nil {
@@ -141,7 +140,7 @@ func resourceWAFLogSetupDelete(d *schema.ResourceData, m interface{}) error {
 	accountID := d.Get("account_id").(int)
 
 	log.Printf("[INFO] Restoring Incapsula WAF Log Setup to default for account: %d\n", accountID)
-	wafLogSetupResponse, err := client.DeleteWAFLogSetup(accountID)
+	wafLogSetupResponse, err := client.RestoreWAFLogSetupDefault(accountID)
 
 	if err != nil {
 		log.Printf("[ERROR] Could not restore Incapsula WAF Log Setup to default for account %d, %s\n", accountID, err)

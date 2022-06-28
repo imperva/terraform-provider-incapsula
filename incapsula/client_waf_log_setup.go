@@ -239,8 +239,26 @@ func (c *Client) AddWAFLogSetupSFTP(wafLogSetupPayload *WAFLogSetupPayload) (*WA
 	return &wafLogSetupResponse, nil
 }
 
-// DeleteWAFLogSetup restores WAF Log Setup to Default for a given account ID
-func (c *Client) DeleteWAFLogSetup(accountID int) (*WAFLogSetupResponse, error) {
+// AddWAFLogSetupDefault turns WAF Log Setup to Default with enablement option ACTIVE/SUSPENDED
+func (c *Client) AddWAFLogSetupDefault(wafLogSetupPayload *WAFLogSetupPayload) (*WAFLogSetupResponse, error) {
+	log.Printf("[INFO] Adding Incapsula WAF Default Log Setup for account: %d\n", wafLogSetupPayload.AccountID)
+	log.Printf("[DEBUG] accountId %d\n", wafLogSetupPayload.AccountID)
+	log.Printf("[DEBUG] enabled %s\n", strconv.FormatBool(wafLogSetupPayload.Enabled))
+
+	err := c.activateAndUpdateStatus(wafLogSetupPayload)
+	if err != nil {
+		return nil, err
+	}
+
+	//******************************************
+	//Setup Connection WAF Logs
+	//************************************
+
+	return c.RestoreWAFLogSetupDefault(wafLogSetupPayload.AccountID)
+}
+
+// RestoreWAFLogSetupDefault restores WAF Log Setup to Default for a given account ID
+func (c *Client) RestoreWAFLogSetupDefault(accountID int) (*WAFLogSetupResponse, error) {
 	log.Printf("[INFO] Restoring Incapsula WAF Log Setup to default for account: %d\n", accountID)
 
 	values := url.Values{

@@ -284,7 +284,7 @@ func TestClientDeleteWAFLogSetupBadConnection(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	accountID := 123
 
-	wafLogSetupResponse, err := client.DeleteWAFLogSetup(accountID)
+	wafLogSetupResponse, err := client.RestoreWAFLogSetupDefault(accountID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -311,7 +311,7 @@ func TestClientDeleteWAFLogSetupBadJSON(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	accountID := 123
-	wafLogSetupResponse, err := client.DeleteWAFLogSetup(accountID)
+	wafLogSetupResponse, err := client.RestoreWAFLogSetupDefault(accountID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -338,7 +338,7 @@ func TestClientDeleteWAFLogSetupInvalid(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	accountID := 123
-	wafLogSetupResponse, err := client.DeleteWAFLogSetup(accountID)
+	wafLogSetupResponse, err := client.RestoreWAFLogSetupDefault(accountID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -362,7 +362,7 @@ func TestClientDeleteWAFLogSetupValid(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	accountID := 123
-	wafLogSetupResponse, err := client.DeleteWAFLogSetup(accountID)
+	wafLogSetupResponse, err := client.RestoreWAFLogSetupDefault(accountID)
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}

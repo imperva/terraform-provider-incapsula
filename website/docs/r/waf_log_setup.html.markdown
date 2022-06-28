@@ -13,6 +13,7 @@ Please note any change on this resource will force create a new WAF Log Setup in
 
 ## Example Usage
 
+Example #1: Setup Activated SFTP Connection
 ```hcl
 resource "incapsula_waf_log_setup" "ex-sftp-waf_log_setup" {
     account_id = 102030
@@ -23,6 +24,7 @@ resource "incapsula_waf_log_setup" "ex-sftp-waf_log_setup" {
 }
 ```
 
+Example #2: Setup Activated S3 Connection
 ```hcl
 resource "incapsula_waf_log_setup" "ex-s3-waf_log_setup1" {
     account_id = 102030
@@ -32,6 +34,7 @@ resource "incapsula_waf_log_setup" "ex-s3-waf_log_setup1" {
 }
 ```
 
+Example #3: Setup Suspended S3 Connection
 ```hcl
 resource "incapsula_waf_log_setup" "ex-s3-waf_log_setup2" {
     account_id = 102040
@@ -42,6 +45,13 @@ resource "incapsula_waf_log_setup" "ex-s3-waf_log_setup2" {
 }
 ```
 
+Example #4: Setup Suspended Default (API) Connection
+```hcl
+resource "incapsula_waf_log_setup" "ex-s3-waf_log_setup3" {
+    account_id = 102050
+    enabled = false
+}
+```
 
 ## Argument Reference
 
@@ -57,4 +67,4 @@ The following arguments are supported:
 * `s3_access_key` - (Optional) S3 access key.
 * `s3_secret_key` - (Optional, Sensitive) S3 secret key.
 
-Please note, either sftp_* or s3_* arguments are required group
+Please note, either sftp_* or s3_* arguments are required group. If neither groups specified default (API) will be set up
