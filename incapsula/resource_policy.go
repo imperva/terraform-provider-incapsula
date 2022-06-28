@@ -209,7 +209,7 @@ func resourcePolicyUpdate(d *schema.ResourceData, m interface{}) error {
 		log.Printf("[ERROR] Could not update Incapsula policy: %s - %s\n", policySubmitted.Name, err)
 		return err
 	}
-	
+
 	policyAccountAssociation, err := client.UpdatePolicyAccountAssociation(d.Id(), associatedAccountsList)
 	if err != nil {
 		log.Printf("[ERROR] Could not update Incapsula policy: %s - %s\n", policySubmitted.Name, err)
