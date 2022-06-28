@@ -21,6 +21,9 @@ Provides a Incapsula Policy resource.
 # policySettings.data.url.pattern: CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS, NOT_PREFIX, NOT_SUFFIX, PREFIX, SUFFIX
 # exceptionType: GEO, IP, URL, CLIENT_ID, SITE_ID
 
+data "incapsula_account_data" "account_data" {
+}
+
 resource "incapsula_subaccount" "subaccount-1" {
 	sub_account_name = "subaccount 1"
 }

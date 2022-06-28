@@ -200,10 +200,16 @@ func resourcePolicyUpdate(d *schema.ResourceData, m interface{}) error {
 	_, err = client.UpdatePolicy(id, &policySubmitted)
 
 	if err != nil {
+		log.Printf("[ERROR] Could not update Incapsula policy: %s - %s\n", policySubmitted.Name, err)
 		return err
 	}
 
 	associatedAccountsList, err := getAccountAssociationListForRequest(d.Get("available_for_accounts").(*schema.Set).List())
+	if err != nil {
+		log.Printf("[ERROR] Could not update Incapsula policy: %s - %s\n", policySubmitted.Name, err)
+		return err
+	}
+	
 	policyAccountAssociation, err := client.UpdatePolicyAccountAssociation(d.Id(), associatedAccountsList)
 	if err != nil {
 		log.Printf("[ERROR] Could not update Incapsula policy: %s - %s\n", policySubmitted.Name, err)
