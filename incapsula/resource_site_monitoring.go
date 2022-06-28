@@ -237,7 +237,6 @@ func resourceSiteMonitoringUpdate(d *schema.ResourceData, m interface{}) error {
 	d.Set("up_checks_interval", siteMonitoringResult.UpDownVerification.UpChecksInterval)
 	d.Set("up_checks_interval_units", siteMonitoringResult.UpDownVerification.UpChecksIntervalUnits)
 	d.Set("up_check_retries", siteMonitoringResult.UpDownVerification.UpCheckRetries)
-	d.Set("required_monitors", siteMonitoringResult.UpDownVerification.UpCheckRetries)
 
 	d.Set("alarm_on_stands_by_failover", siteMonitoringResult.Notifications.AlarmOnStandsByFailover)
 	d.Set("alarm_on_server_failover", siteMonitoringResult.Notifications.AlarmOnServerFailover)
@@ -282,7 +281,6 @@ func resourceSiteMonitoringRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("up_checks_interval", siteMonitoring.UpDownVerification.UpChecksInterval)
 	d.Set("up_checks_interval_units", siteMonitoring.UpDownVerification.UpChecksIntervalUnits)
 	d.Set("up_check_retries", siteMonitoring.UpDownVerification.UpCheckRetries)
-	d.Set("required_monitors", siteMonitoring.UpDownVerification.UpCheckRetries)
 
 	d.Set("alarm_on_stands_by_failover", siteMonitoring.Notifications.AlarmOnStandsByFailover)
 	d.Set("alarm_on_server_failover", siteMonitoring.Notifications.AlarmOnServerFailover)
