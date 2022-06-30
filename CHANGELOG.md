@@ -1,8 +1,5 @@
-## (Not Released)
 
-* Add support for Site Monitoring
-
-## (Not Released)
+## 3.7.0 (June 30, 2022)
 
 FEATURES:
 
