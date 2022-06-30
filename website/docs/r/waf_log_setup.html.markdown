@@ -8,7 +8,7 @@ Provides an Incapsula WAF Log Setup resource.
 
 # incapsula_waf_log_setup
 
-Provides a Incapsula WAF Log Setup resource.
+Provides an Incapsula WAF Log Setup resource.
 
 ## Example Usage
 
