@@ -3,7 +3,7 @@ layout: "incapsula"
 page_title: "Incapsula: waf_log_setup"
 sidebar_current: "docs-incapsula-resource-waf_log_setup"
 description: |-
-Provides a Incapsula WAF Log Setup resource.
+Provides an Incapsula WAF Log Setup resource.
 ---
 
 # incapsula_waf_log_setup
@@ -67,3 +67,5 @@ The following arguments are supported:
 * `s3_secret_key` - (Optional, Sensitive) S3 secret key.
 
 Please note, either sftp_* or s3_* arguments are required group. If neither groups specified default (API) will be set up
+
+Import is not supported yet
