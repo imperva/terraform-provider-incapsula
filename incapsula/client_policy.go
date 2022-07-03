@@ -28,17 +28,24 @@ type PolicySubmitted struct {
 
 // PolicyExtended is a struct that encompasses all the properties of an extended policy setting
 type PolicyExtended struct {
-	Value struct {
-		ID                  int                   `json:"id"`
-		Name                string                `json:"name"`
-		Description         string                `json:"description"`
-		Enabled             bool                  `json:"enabled"`
-		AccountID           int                   `json:"accountId,omitempty"`
-		PolicyType          string                `json:"policyType"`
-		PolicySettings      []PolicySetting       `json:"policySettings"`
-		DefaultPolicyConfig []DefaultPolicyConfig `json:"defaultPolicyConfig"`
-	} `json:"value"`
-	IsError bool `json:"isError"`
+	Value   Policy `json:"value"`
+	IsError bool   `json:"isError"`
+}
+
+type Policy struct {
+	ID                  int                   `json:"id"`
+	Name                string                `json:"name"`
+	Description         string                `json:"description"`
+	Enabled             bool                  `json:"enabled"`
+	AccountID           int                   `json:"accountId,omitempty"`
+	PolicyType          string                `json:"policyType"`
+	PolicySettings      []PolicySetting       `json:"policySettings"`
+	DefaultPolicyConfig []DefaultPolicyConfig `json:"defaultPolicyConfig"`
+	IsMarkedAsDefault   bool                  `json:"isMarkedAsDefault"`
+}
+type PolicyExtendedAll struct {
+	Value   []Policy `json:"value"`
+	IsError bool     `json:"isError"`
 }
 
 type DefaultPolicyConfig struct {
@@ -287,4 +294,37 @@ func (c *Client) UpdatePolicyAccountAssociation(policyID string, accountList []i
 	}
 
 	return &policyAccountAssociation, nil
+}
+
+// GetAllPoliciesForAccount gets all policies for specific account
+func (c *Client) GetAllPoliciesForAccount(accountId string) (*[]Policy, error) {
+	log.Printf("[INFO] Getting All Incapsula Policies for account: %s\n", accountId)
+	//
+	// Post form to Incapsula
+	reqURL := fmt.Sprintf("%s/policies/v2/policies?extended=true", c.config.BaseURLAPI)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadPoliciesAll)
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when reading All Policies for Account ID %s: %s", accountId, err)
+	}
+
+	// Read the body
+	defer resp.Body.Close()
+	responseBody, err := ioutil.ReadAll(resp.Body)
+
+	// Dump JSON
+	log.Printf("[DEBUG] Incapsula Read All Policies JSON response: %s\n", string(responseBody))
+
+	// Check the response code
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("[ERROR] Error status code %d from Incapsula service when reading All Policies for Account ID %s: %s", resp.StatusCode, accountId, string(responseBody))
+	}
+
+	// Parse the JSON
+	var policyExtendedAll PolicyExtendedAll
+	err = json.Unmarshal([]byte(responseBody), &policyExtendedAll)
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error parsing All Policies JSON response for Account ID %s: %s\nresponse: %s", accountId, err, string(responseBody))
+	}
+
+	return &policyExtendedAll.Value, nil
 }

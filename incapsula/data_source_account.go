@@ -33,7 +33,7 @@ func dataSourceAccountRead(ctx context.Context, d *schema.ResourceData, m interf
 
 	accountStatusResponse, err := client.Verify()
 	if err != nil {
-		return diag.Errorf("Error checking account details", err)
+		return diag.Errorf("Error checking account details: %v", err)
 	}
 	d.SetId(strconv.Itoa(accountStatusResponse.AccountID))
 	d.Set("current_account", strconv.Itoa(accountStatusResponse.AccountID))

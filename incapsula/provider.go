@@ -94,6 +94,7 @@ func Provider() *schema.Provider {
 			"incapsula_incap_rule":                   resourceIncapRule(),
 			"incapsula_origin_pop":                   resourceOriginPOP(),
 			"incapsula_policy":                       resourcePolicy(),
+			"incapsula_account_policy_association":   resourceAccountPolicyAssociation(),
 			"incapsula_policy_asset_association":     resourcePolicyAssetAssociation(),
 			"incapsula_security_rule_exception":      resourceSecurityRuleException(),
 			"incapsula_site":                         resourceSite(),
