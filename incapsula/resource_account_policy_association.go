@@ -130,7 +130,6 @@ func resourceAccountPolicyAssociationRead(d *schema.ResourceData, m interface{})
 	return nil
 }
 
-//always returns nil error
 func filterPoliciesByTypeForAccount(accountId string, getAllPoliciesResponse *[]Policy) (string, *schema.Set) {
 	var wafPolicy Policy
 	nonMandatoryPoliciesSet := &schema.Set{F: schema.HashString}

@@ -17,35 +17,12 @@ There are no filters needed for this data source
 data "incapsula_account_data" "account_data" {
 }
 
-# Policy: Use reference to current_account field of incapsula_account_data data source in "default_website_accounts"
-and "available_for_accounts"
-resource "incapsula_policy" "example-whitelist-ip-policy" {
-    name        = "Example WHITELIST IP Policy"
-    enabled     = true 
-    policy_type = "WHITELIST"
-    description = "Example WHITELIST IP Policy description"
-    default_website_accounts = [
-        data.incapsula_account_data.account_data.current_account,
-        "1234"
+resource "incapsula_account_policy_association" "example-account-policy-association-parent" {
+    account_id                       = data.incapsula_account_data.account_data.current_account
+    default_non_mandatory_policy_ids = [
+        "123456"
     ]
-    available_for_accounts = [
-        data.incapsula_account_data.account_data.current_account,
-        "1234",
-        "5678"
-    ]
-    policy_settings = <<POLICY
-    [
-      {
-        "settingsAction": "ALLOW",
-        "policySettingType": "IP",
-        "data": {
-          "ips": [
-            "1.2.3.4"
-          ]
-        }
-      }
-    ]
-    POLICY
+    default_waf_policy_id            = "789012"
 }
 ```
 
