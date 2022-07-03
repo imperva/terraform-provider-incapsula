@@ -93,8 +93,6 @@ func resourcePolicyCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	policyID := strconv.Itoa(policyAddResponse.Value.ID)
-	// Set the policyID
-	// We set ID here since if policy was created then we will start managing the resource in TF, even if Update Policy Account Assoociation action will fail.
 
 	d.SetId(policyID)
 	log.Printf("[INFO] Created Incapsula policy with ID: %s\n", policyID)
