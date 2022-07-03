@@ -75,14 +75,14 @@ func resourcePolicyCreate(d *schema.ResourceData, m interface{}) error {
 	policySettingsString := d.Get("policy_settings").(string)
 	var policySettings []PolicySetting
 	err := json.Unmarshal([]byte(policySettingsString), &policySettings)
-	
+
 	policySubmitted := PolicySubmitted{
-		Name:                d.Get("name").(string),
-		Enabled:             d.Get("enabled").(bool),
-		PolicyType:          d.Get("policy_type").(string),
-		Description:         d.Get("description").(string),
-		AccountID:           d.Get("account_id").(int),
-		PolicySettings:      policySettings,
+		Name:           d.Get("name").(string),
+		Enabled:        d.Get("enabled").(bool),
+		PolicyType:     d.Get("policy_type").(string),
+		Description:    d.Get("description").(string),
+		AccountID:      d.Get("account_id").(int),
+		PolicySettings: policySettings,
 	}
 
 	policyAddResponse, err := client.AddPolicy(&policySubmitted)
@@ -139,14 +139,14 @@ func resourcePolicyUpdate(d *schema.ResourceData, m interface{}) error {
 	policySettingsString := d.Get("policy_settings").(string)
 	var policySettings []PolicySetting
 	err = json.Unmarshal([]byte(policySettingsString), &policySettings)
-	
+
 	policySubmitted := PolicySubmitted{
-		Name:                d.Get("name").(string),
-		Enabled:             d.Get("enabled").(bool),
-		PolicyType:          d.Get("policy_type").(string),
-		AccountID:           d.Get("account_id").(int),
-		Description:         d.Get("description").(string),
-		PolicySettings:      policySettings,
+		Name:           d.Get("name").(string),
+		Enabled:        d.Get("enabled").(bool),
+		PolicyType:     d.Get("policy_type").(string),
+		AccountID:      d.Get("account_id").(int),
+		Description:    d.Get("description").(string),
+		PolicySettings: policySettings,
 	}
 
 	_, err = client.UpdatePolicy(id, &policySubmitted)
@@ -155,7 +155,7 @@ func resourcePolicyUpdate(d *schema.ResourceData, m interface{}) error {
 		log.Printf("[ERROR] Could not update Incapsula policy: %s - %s\n", policySubmitted.Name, err)
 		return err
 	}
-	
+
 	return nil
 }
 
