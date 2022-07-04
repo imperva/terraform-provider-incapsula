@@ -26,7 +26,7 @@ type Client struct {
 func NewClient(config *Config) *Client {
 	client := &http.Client{}
 
-	return &Client{config: config, httpClient: client, providerVersion: "3.6.0"}
+	return &Client{config: config, httpClient: client, providerVersion: "3.7.0"}
 }
 
 // Verify checks the API credentials
@@ -67,6 +67,7 @@ func (c *Client) Verify() (*AccountStatusResponse, error) {
 	if resString != "0" {
 		return &accountStatusResponse, fmt.Errorf("Error from Incapsula service when checking account: %s", string(responseBody))
 	}
+
 	return &accountStatusResponse, nil
 }
 

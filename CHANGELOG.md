@@ -1,6 +1,9 @@
-## (Not Released)
 
-* Add support for Site Monitoring
+## 3.7.0 (June 30, 2022)
+
+FEATURES:
+
+* **New Resource:** `incapsula_waf_log_setup`
 
 ## 3.6.0 (June 8, 2022)
 

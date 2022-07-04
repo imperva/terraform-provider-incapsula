@@ -185,7 +185,7 @@ func updateNonMandatoryPolicies(policyIds []interface{}, accountID int, client C
 			}
 		} else {
 
-			if contains(policyIds, strconv.Itoa(policyFromResponse.ID)){
+			if contains(policyIds, strconv.Itoa(policyFromResponse.ID)) {
 				if policyFromResponse.PolicyType == WAF_RULES {
 					log.Printf("[ERROR] Cannot set a policy of type %s as a default non mandatory Policy. Policy ID: %d", policyFromResponse.PolicyType, policyFromResponse.ID)
 					return fmt.Errorf("Cannot set a policy of type %s as a default non mandatory Policy. Policy ID: %d", policyFromResponse.PolicyType, policyFromResponse.ID)

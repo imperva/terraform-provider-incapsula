@@ -17,34 +17,33 @@ func TestAccIncapsulaSiteMonitoring_basic(t *testing.T) {
 	log.Printf("======================== BEGIN TEST ========================")
 	log.Printf("[DEBUG] Running test resource_site_monitoring_test.TestAccIncapsulaSiteMonitoring_basic")
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testACCStateSiteMonitoringDestroy,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckSiteMonitoringBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSiteMonitoringExists(siteMonitoringResource),
-					resource.TestCheckResourceAttr(siteMonitoringResource, "up_down_verification.0.monitoring_url", "/users"),
-					resource.TestCheckResourceAttr(siteMonitoringResource, "up_down_verification.0.expected_received_string", ""),
-					resource.TestCheckResourceAttr(siteMonitoringResource, "up_down_verification.0.up_check_retries", "5"),
-					resource.TestCheckResourceAttr(siteMonitoringResource, "up_down_verification.0.up_checks_interval", "1"),
-					resource.TestCheckResourceAttr(siteMonitoringResource, "up_down_verification.0.up_checks_interval_units", "MINUTES"),
-					resource.TestCheckResourceAttr(siteMonitoringResource, "up_down_verification.0.use_verification_for_down", "false"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "monitoring_url", "/users"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "expected_received_string", ""),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "up_check_retries", "5"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "up_checks_interval", "1"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "up_checks_interval_units", "MINUTES"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "use_verification_for_down", "false"),
 
-					resource.TestCheckResourceAttr(siteMonitoringResource, "failed_request_criteria.0.http_request_timeout", "1"),
-					resource.TestCheckResourceAttr(siteMonitoringResource, "failed_request_criteria.0.http_request_timeout_units", "MINUTES"),
-					resource.TestCheckResourceAttr(siteMonitoringResource, "failed_request_criteria.0.http_response_error", "501,503"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "http_request_timeout", "1"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "http_request_timeout_units", "MINUTES"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "http_response_error", "501,503"),
 
-					resource.TestCheckResourceAttr(siteMonitoringResource, "monitoring.0.failed_requests_duration", "2"),
-					resource.TestCheckResourceAttr(siteMonitoringResource, "monitoring.0.failed_requests_duration_units", "MINUTES"),
-					resource.TestCheckResourceAttr(siteMonitoringResource, "monitoring.0.failed_requests_min_number", "10"),
-					resource.TestCheckResourceAttr(siteMonitoringResource, "monitoring.0.failed_requests_percentage", "10"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "failed_requests_duration", "2"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "failed_requests_duration_units", "MINUTES"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "failed_requests_min_number", "10"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "failed_requests_percentage", "10"),
 
-					resource.TestCheckResourceAttr(siteMonitoringResource, "notifications.0.alarm_on_dc_failover", "false"),
-					resource.TestCheckResourceAttr(siteMonitoringResource, "notifications.0.alarm_on_server_failover", "true"),
-					resource.TestCheckResourceAttr(siteMonitoringResource, "notifications.0.alarm_on_stands_by_failover", "true"),
-					resource.TestCheckResourceAttr(siteMonitoringResource, "notifications.0.required_monitors", "MANY"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "alarm_on_dc_failover", "false"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "alarm_on_server_failover", "true"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "alarm_on_stands_by_failover", "true"),
+					resource.TestCheckResourceAttr(siteMonitoringResource, "required_monitors", "MANY"),
 				),
 			},
 			{
@@ -55,34 +54,6 @@ func TestAccIncapsulaSiteMonitoring_basic(t *testing.T) {
 			},
 		},
 	})
-}
-
-func testACCStateSiteMonitoringDestroy(s *terraform.State) error {
-	//client := testAccProvider.Meta().(*Client)
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != siteMonitoringResourceName {
-			continue
-		} else {
-			return fmt.Errorf("Resource %s for Incapsula Site Monitoring: resourcestill exists", siteMonitoringResourceName)
-		}
-		return nil
-
-		//siteID := rs.Primary.Attributes["site_id"]
-		//if siteID == "" {
-		//	fmt.Errorf("Parameter site_id was not found in resource %s", siteMonitoringResourceName)
-		//}
-		//siteIDInt, err := strconv.Atoi(siteID)
-		//if err != nil {
-		//	fmt.Errorf("failed to convert Site Id from import command, actual value : %s, expected numeric id", siteID)
-		//}
-		//
-		//_, err = client.GetSiteMonitoring(siteIDInt)
-		//if err == nil {
-		//	return fmt.Errorf("Resource %s for Incapsula Api Security Api: site ID %d still exists", siteMonitoringResourceName, siteIDInt)
-		//}
-	}
-	return fmt.Errorf("Error finding site_id")
 }
 
 func testCheckSiteMonitoringExists(name string) resource.TestCheckFunc {
@@ -127,30 +98,26 @@ func testAccCheckSiteMonitoringBasic(t *testing.T) string {
 	resource "%s" "%s" {
 		site_id = incapsula_site.testacc-terraform-site.id
   		depends_on = ["%s"]
-		failed_request_criteria {
-			http_request_timeout       = 1
-			http_request_timeout_units = "MINUTES"
-			http_response_error        = "501,503"
-    	}
-		monitoring {
-			failed_requests_duration       = 2
-			failed_requests_duration_units = "MINUTES"
-			failed_requests_min_number     = 10
-			failed_requests_percentage     = 10
-		}
-		notifications {
-			alarm_on_dc_failover        = false
-			alarm_on_server_failover    = true
-			alarm_on_stands_by_failover = true
-			required_monitors           = "MANY"
-		}
-		up_down_verification {
-			monitoring_url            = "/users"
-			up_check_retries          = 5
-			up_checks_interval        = 1
-			up_checks_interval_units  = "MINUTES"
-			use_verification_for_down = false
-		}
+	
+		http_request_timeout       = 1
+		http_request_timeout_units = "MINUTES"
+		http_response_error        = "501,503"
+   
+		failed_requests_duration       = 2
+		failed_requests_duration_units = "MINUTES"
+		failed_requests_min_number     = 10
+		failed_requests_percentage     = 10
+
+		alarm_on_dc_failover        = false
+		alarm_on_server_failover    = true
+		alarm_on_stands_by_failover = true
+		required_monitors           = "MANY"
+
+		monitoring_url            = "/users"
+		up_check_retries          = 5
+		up_checks_interval        = 1
+		up_checks_interval_units  = "MINUTES"
+		use_verification_for_down = false
 	}`,
 		siteMonitoringResourceName, siteMonitoringName, siteResourceName,
 	)
