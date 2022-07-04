@@ -82,6 +82,7 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"incapsula_role_abilities": dataSourceRoleAbilities(),
 			"incapsula_data_center":    dataSourceDataCenter(),
+			"incapsula_account_data":   dataSourceAccount(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -93,6 +94,7 @@ func Provider() *schema.Provider {
 			"incapsula_incap_rule":                   resourceIncapRule(),
 			"incapsula_origin_pop":                   resourceOriginPOP(),
 			"incapsula_policy":                       resourcePolicy(),
+			"incapsula_account_policy_association":   resourceAccountPolicyAssociation(),
 			"incapsula_policy_asset_association":     resourcePolicyAssetAssociation(),
 			"incapsula_security_rule_exception":      resourceSecurityRuleException(),
 			"incapsula_site":                         resourceSite(),

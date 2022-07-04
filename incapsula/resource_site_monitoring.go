@@ -34,7 +34,7 @@ func resourceSiteMonitoring() *schema.Resource {
 		Create: resourceSiteMonitoringUpdate,
 		Read:   resourceSiteMonitoringRead,
 		Update: resourceSiteMonitoringUpdate,
-		Delete: resourceSiteMonitoringDelete, //todo - add comment that delete doesn't do any change on backend.
+		Delete: resourceSiteMonitoringDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				siteID, err := strconv.Atoi(d.Id())
@@ -292,4 +292,3 @@ func resourceSiteMonitoringDelete(d *schema.ResourceData, m interface{}) error {
 	d.SetId("")
 	return nil
 }
-

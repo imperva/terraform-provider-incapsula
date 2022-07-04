@@ -15,7 +15,7 @@ delete all resource fields but `site_id` and execute `terraform apply`
 
 ## Example Usage
 
-### Basic Usage - Single Site Monitoring
+### Basic Usage - Site Monitoring
 
 ```hcl
 resource "incapsula_site_monitoring" "example_site_monitoring" {

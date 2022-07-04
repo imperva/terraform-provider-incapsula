@@ -5,11 +5,11 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"math/rand"
-	"time"
 )
 
 const siteResourceName = "incapsula_site.testacc-terraform-site"
