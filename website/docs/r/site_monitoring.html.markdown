@@ -10,7 +10,8 @@ description: |- Provides a Incapsula Site Monitoring resource.
 Configure settings to determine when origin servers should be considered “up” or “down” (active or inactive) by the Imperva Load Balancer. 
 Select which failure scenarios you want to produce alarm messages, and how to send them.
 
-Note that destroy action doesn't do any change in Imperva system.
+Note that destroy action doesn't do any change in Imperva system. To return to default values,
+delete all resource fields but `site_id` and execute `terraform apply`
 
 ## Example Usage
 
@@ -20,13 +21,13 @@ Note that destroy action doesn't do any change in Imperva system.
 resource "incapsula_site_monitoring" "example_site_monitoring" {
     site_id                        = 1234
     failed_requests_percentage     = 30
-	failed_requests_min_number     = 2
-	failed_requests_duration       = 1
-	failed_requests_duration_units = "MINUTES"
+    failed_requests_min_number     = 2
+    failed_requests_duration       = 1
+    failed_requests_duration_units = "MINUTES"
 	
-	http_request_timeout           = 50
-	http_request_timeout_units     = "SECONDS"
-	http_response_error            = "501-599"
+    http_request_timeout           = 50
+    http_request_timeout_units     = "SECONDS"
+    http_response_error            = "501-599"
 	
 	use_verification_for_down      = false
 	monitoring_url                 = "/users"
