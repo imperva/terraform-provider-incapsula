@@ -3,6 +3,7 @@ package incapsula
 import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
 )
@@ -24,8 +25,9 @@ func resourceAccountPolicyAssociation() *schema.Resource {
 			"default_waf_policy_id": {
 				Description: "The WAF policy which is set as default to the account. The account can only have 1 such id." +
 					"\n The Default policy will be applied automatically to sites that were create after setting it to default.",
-				Type:     schema.TypeString,
-				Required: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"default_non_mandatory_policy_ids": {
 				Description: "This list is currently relevant to whitelist and acl policies. More than one policy can be set as default.",
@@ -68,6 +70,11 @@ func resourceAccountPolicyAssociationUpdate(d *schema.ResourceData, m interface{
 	if err != nil {
 		log.Printf("[ERROR] Could not get Incapsula policy: %s - %s\n", wafPolicyIDStr, err)
 		return err
+	}
+
+	if policyGetResponse.Value.PolicyType != WAF_RULES {
+		log.Printf("[ERROR] Cannot set a policy of type %s as a default WAF Policy. Policy ID: %d", policyGetResponse.Value.PolicyType, policyGetResponse.Value.ID)
+		return fmt.Errorf("Cannot set a policy of type %s as a default WAF Policy. Policy ID: %d", policyGetResponse.Value.PolicyType, policyGetResponse.Value.ID)
 	}
 
 	err = updatePolicy(policyGetResponse.Value, accountID, *client)
@@ -124,9 +131,13 @@ func resourceAccountPolicyAssociationRead(d *schema.ResourceData, m interface{})
 	}
 
 	defaultWafPolicyId, nonMandatoryPolicies := filterPoliciesByTypeForAccount(accountID, getAllPoliciesResponse)
+	log.Printf("about to set defaultWafPolicyId %s\nnonMandatoryPolicies:\n%v", defaultWafPolicyId, nonMandatoryPolicies)
 
 	d.Set("default_non_mandatory_policy_ids", nonMandatoryPolicies)
 	d.Set("default_waf_policy_id", defaultWafPolicyId)
+	log.Printf("Read done: default_waf_policy_id is %s\n\ndefault_non_mandatory_policy_ids:\n%v",
+		d.Get("default_waf_policy_id").(string),
+		d.Get("default_non_mandatory_policy_ids").(*schema.Set))
 	return nil
 }
 
@@ -142,13 +153,14 @@ func filterPoliciesByTypeForAccount(accountId string, getAllPoliciesResponse *[]
 			}
 		}
 	}
-	log.Printf("Will return waf:%v", strconv.Itoa(wafPolicy.ID))
-	log.Printf("Will return non mandatory:%v", nonMandatoryPoliciesSet)
-
 	return strconv.Itoa(wafPolicy.ID), nonMandatoryPoliciesSet
 }
 
 func updateNonMandatoryPolicies(policyIds []interface{}, accountID int, client Client) error {
+	var policyIdsCopy = make([]interface{}, len(policyIds))
+	copy(policyIdsCopy, policyIds)
+	log.Printf("%v", policyIdsCopy)
+
 	getAllPoliciesResponse, err := client.GetAllPoliciesForAccount(strconv.Itoa(accountID))
 	if err != nil {
 		log.Printf("[ERROR] Could not get All Incapsula Policies for Account ID: %d - %s\n", accountID, err)
@@ -158,8 +170,12 @@ func updateNonMandatoryPolicies(policyIds []interface{}, accountID int, client C
 	// remove  default policies the are not present in default resource, but present in DB.
 	// It means that user wants to remove default status from Policy
 	for _, policyFromResponse := range *getAllPoliciesResponse {
-		if containsAccountIdInDefaultPolicyConfig(policyFromResponse.DefaultPolicyConfig, strconv.Itoa(accountID)) {
-			if !contains(policyIds, strconv.Itoa(policyFromResponse.ID)) && policyFromResponse.PolicyType != WAF_RULES {
+		if contains(policyIds, strconv.Itoa(policyFromResponse.ID)) {
+			policyIdsCopy = removeElement(policyIdsCopy, strconv.Itoa(policyFromResponse.ID))
+		}
+
+		if containsAccountIdInDefaultPolicyConfig(policyFromResponse.DefaultPolicyConfig, strconv.Itoa(accountID)) && policyFromResponse.PolicyType != WAF_RULES {
+			if !contains(policyIds, strconv.Itoa(policyFromResponse.ID)) {
 				//update policy
 				//then policy was ommitted and we need to update policy default list
 				//and remove this policy from list of defaults
@@ -170,7 +186,13 @@ func updateNonMandatoryPolicies(policyIds []interface{}, accountID int, client C
 				}
 			}
 		} else {
+
 			if contains(policyIds, strconv.Itoa(policyFromResponse.ID)) {
+				if policyFromResponse.PolicyType == WAF_RULES {
+					log.Printf("[ERROR] Cannot set a policy of type %s as a default non mandatory Policy. Policy ID: %d", policyFromResponse.PolicyType, policyFromResponse.ID)
+					return fmt.Errorf("Cannot set a policy of type %s as a default non mandatory Policy. Policy ID: %d", policyFromResponse.PolicyType, policyFromResponse.ID)
+				}
+
 				//update policy, add status default, since for now in DB it is not default
 				//added associationns
 				policyIdStr := strconv.Itoa(policyFromResponse.ID)
@@ -185,6 +207,11 @@ func updateNonMandatoryPolicies(policyIds []interface{}, accountID int, client C
 				}
 			}
 		}
+	}
+	log.Printf("%v", policyIdsCopy)
+	if len(policyIdsCopy) > 0 {
+		log.Printf("[ERROR] Non mandatory default policies list contains policies that are not available for this account: %v", policyIdsCopy)
+		return fmt.Errorf("[ERROR] Non mandatory default policies list contains policies that are not available for this account: %v", policyIdsCopy)
 	}
 	return nil
 }
@@ -213,7 +240,6 @@ func updatePolicy(policy Policy, accountId int, client Client) error {
 
 	newDefaultConfig := DefaultPolicyConfig{AccountID: accountId, AssetType: WEBSITE}
 	updatedDefaultPolicyConfigList := append(policy.DefaultPolicyConfig, newDefaultConfig)
-
 	return upsertPolicy(policy, updatedDefaultPolicyConfigList, client)
 }
 
@@ -245,6 +271,21 @@ func contains(s []interface{}, str string) bool {
 	}
 
 	return false
+}
+
+func findIndex(slice []interface{}, elementToRemove string) int {
+	for index, element := range slice {
+		elementString := fmt.Sprint(element)
+		if elementString == elementToRemove {
+			return index
+		}
+	}
+	return -1 // not found
+}
+
+func removeElement(slice []interface{}, elementStr string) []interface{} {
+	index := findIndex(slice, elementStr)
+	return append(slice[:index], slice[index+1:]...)
 }
 
 func containsAccountIdInDefaultPolicyConfig(defaultPolicyConfigs []DefaultPolicyConfig, accountID string) bool {

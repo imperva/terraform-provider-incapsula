@@ -21,31 +21,11 @@ Provides a Incapsula Policy resource.
 # policySettings.data.url.pattern: CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS, NOT_PREFIX, NOT_SUFFIX, PREFIX, SUFFIX
 # exceptionType: GEO, IP, URL, CLIENT_ID, SITE_ID
 
-data "incapsula_account_data" "account_data" {
-}
-
-resource "incapsula_subaccount" "subaccount-1" {
-	sub_account_name = "subaccount 1"
-}
-
-resource "incapsula_subaccount" "subaccount-2" {
-	sub_account_name = "subaccount 2"
-}
-
 resource "incapsula_policy" "example-whitelist-ip-policy" {
     name        = "Example WHITELIST IP Policy"
     enabled     = true 
     policy_type = "WHITELIST"
     description = "Example WHITELIST IP Policy description"
-    default_website_accounts = [
-        data.incapsula_account_data.account_data.current_account,
-        incapsula_subaccount.subaccount-1.id
-    ]
-    available_for_accounts = [
-        data.incapsula_account_data.account_data.current_account,
-        incapsula_subaccount.subaccount-1.id,
-        incapsula_subaccount.subaccount-2.id
-    ]
     policy_settings = <<POLICY
     [
       {
@@ -66,12 +46,6 @@ resource "incapsula_policy" "example-waf-rule-illegal-resource-access-policy" {
     name        = "Example WAF-RULE ILLEGAL RESOURCE ACCESS Policy"
     enabled     = true 
     policy_type = "WAF_RULES"
-    default_website_accounts = [] 
-    available_for_accounts = [
-        data.incapsula_account_data.account_data.current_account,
-        incapsula_subaccount.subaccount-1.id,
-        incapsula_subaccount.subaccount-2.id
-    ]
     policy_settings = <<POLICY
     [
     {
@@ -120,10 +94,7 @@ The following arguments are supported:
 * `policy_settings` - (Required) The policy settings as JSON string. See Imperva documentation for help with constructing a correct value.
 * `account_id` - (Optional) Account ID of the policy.
 * `description` - (Optional) The policy description.
-* `default_website_accounts` - (Optional) The list of account IDs that current policy is default for. I.e. the policy will be applied for all future added assets in these accounts.
-* `available_for_accounts` - (Optional) The list of account IDs that current policy is available for. 
-If parameter equals empty list ("[]") then current policy is available for all subaccounts.
-
+* 
 ## Attributes Reference
 
 The following attributes are exported:
