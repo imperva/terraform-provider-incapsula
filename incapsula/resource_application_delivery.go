@@ -392,7 +392,37 @@ func resourceApplicationDeliveryDelete(d *schema.ResourceData, m interface{}) er
 	client := m.(*Client)
 	siteID := d.Get("site_id").(int)
 
-	_, err := client.DeleteApplicationDelivery(siteID)
+	network := Network{
+		Port:    Port{To: strconv.Itoa(d.Get("port_to").(int))},
+		SslPort: SslPort{To: strconv.Itoa(d.Get("ssl_port_to").(int))},
+	}
+
+	customErrorPage := CustomErrorPage{
+		DefaultErrorPage: "",
+		CustomErrorPageTemplates: CustomErrorPageTemplates{
+			ErrorConnectionTimeout: "",
+			ErrorAccessDenied:      "",
+			ErrorParseReqError:     "",
+			ErrorParseRespError:    "",
+			ErrorConnectionFailed:  "",
+			ErrorSslFailed:         "",
+			ErrorDenyAndCaptcha:    "",
+			ErrorTypeNoSslConfig:   "",
+		},
+	}
+
+	payload := ApplicationDelivery{
+		Network:         network,
+		CustomErrorPage: customErrorPage,
+	}
+
+	_, err := client.UpdateApplicationDelivery(siteID, &payload)
+	if err != nil {
+		log.Printf("[ERROR] Error in Application Delivery resource for Site ID %d. Could not return values of custom error pages to defaults. Error:  %s", siteID, err)
+		return fmt.Errorf("Error in Application Delivery resource for Site ID %d. Could not return values of custom error pages to defaults. Error:  %s", siteID, err)
+	}
+
+	_, err = client.DeleteApplicationDelivery(siteID)
 
 	if err != nil {
 		log.Printf("[ERROR] Could delete Incapsula Application Delivery for Site Id: %d - %s\n", siteID, err)
