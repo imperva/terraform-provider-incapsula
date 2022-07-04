@@ -8,6 +8,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"math/rand"
+	"time"
 )
 
 const siteResourceName = "incapsula_site.testacc-terraform-site"
@@ -16,7 +18,9 @@ func GenerateTestDomain(t *testing.T) string {
 	if v := os.Getenv("INCAPSULA_API_ID"); v == "" && t != nil {
 		t.Fatal("INCAPSULA_API_ID must be set for acceptance tests")
 	}
-	return "id" + os.Getenv("INCAPSULA_API_ID") + ".examplesite.com"
+	s3 := rand.NewSource(time.Now().UnixNano())
+	r3 := rand.New(s3)
+	return "id" + os.Getenv("INCAPSULA_API_ID") + strconv.Itoa(r3.Intn(1000)) + ".examplesite.com"
 }
 
 func TestAccIncapsulaSite_Basic(t *testing.T) {
