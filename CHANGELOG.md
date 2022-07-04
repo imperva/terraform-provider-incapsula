@@ -1,4 +1,15 @@
 
+## 3.8.0 (Jul 5, 2022)
+
+FEATURES:
+
+* **New Resource:** `incapsula_account-policy-association`
+* **New Resource:** `incapsula_application_delivery`
+* **New Resource:** `incapsula_site_monitoring`
+
+* **New DataSource:** `account-data`
+
+
 ## 3.7.0 (June 30, 2022)
 
 FEATURES:
