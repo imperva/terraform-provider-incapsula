@@ -94,7 +94,7 @@ The following arguments are supported:
 * `policy_settings` - (Required) The policy settings as JSON string. See Imperva documentation for help with constructing a correct value.
 * `account_id` - (Optional) Account ID of the policy.
 * `description` - (Optional) The policy description.
-* 
+
 ## Attributes Reference
 
 The following attributes are exported:

@@ -22,6 +22,12 @@ func resourceAccountPolicyAssociation() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
+			"account_id": {
+				Description: "The policy name.",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+			},
 			"default_waf_policy_id": {
 				Description: "The WAF policy which is set as default to the account. The account can only have 1 such id." +
 					"\n The Default policy will be applied automatically to sites that were create after setting it to default.",
@@ -36,12 +42,6 @@ func resourceAccountPolicyAssociation() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-			},
-			"account_id": {
-				Description: "The policy name.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
 			},
 		},
 	}
@@ -93,6 +93,7 @@ func resourceAccountPolicyAssociationUpdate(d *schema.ResourceData, m interface{
 	d.SetId(accountIDStr)
 	return resourceAccountPolicyAssociationRead(d, m)
 }
+
 func resourceAccountPolicyAssociationDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	accountIDStr := d.Get("account_id").(string)
@@ -119,6 +120,7 @@ func resourceAccountPolicyAssociationDelete(d *schema.ResourceData, m interface{
 	d.SetId("")
 	return nil
 }
+
 func resourceAccountPolicyAssociationRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	d.Set("account_id", d.Id())
@@ -131,13 +133,9 @@ func resourceAccountPolicyAssociationRead(d *schema.ResourceData, m interface{})
 	}
 
 	defaultWafPolicyId, nonMandatoryPolicies := filterPoliciesByTypeForAccount(accountID, getAllPoliciesResponse)
-	log.Printf("about to set defaultWafPolicyId %s\nnonMandatoryPolicies:\n%v", defaultWafPolicyId, nonMandatoryPolicies)
 
 	d.Set("default_non_mandatory_policy_ids", nonMandatoryPolicies)
 	d.Set("default_waf_policy_id", defaultWafPolicyId)
-	log.Printf("Read done: default_waf_policy_id is %s\n\ndefault_non_mandatory_policy_ids:\n%v",
-		d.Get("default_waf_policy_id").(string),
-		d.Get("default_non_mandatory_policy_ids").(*schema.Set))
 	return nil
 }
 
@@ -187,7 +185,7 @@ func updateNonMandatoryPolicies(policyIds []interface{}, accountID int, client C
 			}
 		} else {
 
-			if contains(policyIds, strconv.Itoa(policyFromResponse.ID)) {
+			if contains(policyIds, strconv.Itoa(policyFromResponse.ID)){
 				if policyFromResponse.PolicyType == WAF_RULES {
 					log.Printf("[ERROR] Cannot set a policy of type %s as a default non mandatory Policy. Policy ID: %d", policyFromResponse.PolicyType, policyFromResponse.ID)
 					return fmt.Errorf("Cannot set a policy of type %s as a default non mandatory Policy. Policy ID: %d", policyFromResponse.PolicyType, policyFromResponse.ID)
@@ -208,7 +206,7 @@ func updateNonMandatoryPolicies(policyIds []interface{}, accountID int, client C
 			}
 		}
 	}
-	log.Printf("%v", policyIdsCopy)
+
 	if len(policyIdsCopy) > 0 {
 		log.Printf("[ERROR] Non mandatory default policies list contains policies that are not available for this account: %v", policyIdsCopy)
 		return fmt.Errorf("[ERROR] Non mandatory default policies list contains policies that are not available for this account: %v", policyIdsCopy)
@@ -229,7 +227,7 @@ func removePolicy(policy Policy, accountId int, client Client) error {
 
 func updatePolicy(policy Policy, accountId int, client Client) error {
 	currentDefaultPolicyConfigList := policy.DefaultPolicyConfig
-	log.Printf("updatePolicy ID %v for accountID %v currentDefaultPolicyConfigList\n%v", policy.ID, accountId, currentDefaultPolicyConfigList)
+	log.Printf("[DEBUG] updatePolicy ID %v for accountID %v currentDefaultPolicyConfigList\n%v", policy.ID, accountId, currentDefaultPolicyConfigList)
 	for _, defaultPolicyConfig := range currentDefaultPolicyConfigList {
 		if defaultPolicyConfig.AccountID == accountId {
 			log.Print("don't need to update policy")
