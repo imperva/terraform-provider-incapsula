@@ -108,6 +108,7 @@ func testAccCheckIncapsulaSiteConfigBasic(domain string) string {
 	return fmt.Sprintf(`
 		resource "incapsula_site" "testacc-terraform-site" {
 			domain = "%s"
+			domain_validation = "cname"
 		}`,
 		domain,
 	)

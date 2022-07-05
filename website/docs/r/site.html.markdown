@@ -63,7 +63,7 @@ The following arguments are supported:
 * `logs_account_id` - (Optional) Account where logs should be stored. Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `active` - (Optional) Whether the site is active or bypassed by the Imperva network. Options are `active` and `bypass`.
 * `restricted_cname_reuse` - (Optional) Use this option to allow Imperva to detect and add domains that are using the Imperva-provided CNAME (not recommended). One of: true | false.
-* `domain_validation` - (Optional) Sets the domain validation method that will be used to generate an SSL certificate. Options are `email`, `html`, and `dns`.
+* `domain_validation` - (Optional) Sets the domain validation method that will be used to generate an SSL certificate. Options are `email`, `html`, `cname` and `dns`.
 * `approver` - (Optional) Sets the approver e-mail address that will be used to perform SSL domain validation.
 * `ignore_ssl` - (Optional) Sets the ignore SSL flag (if the site is in pending-select-approver state). Pass "true" or empty string in the value parameter.
 * `acceleration_level` - (Optional) Sets the acceleration level of the site. Options are `none`, `standard`, and `aggressive`.
