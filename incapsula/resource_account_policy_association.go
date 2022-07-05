@@ -32,7 +32,7 @@ func resourceAccountPolicyAssociation() *schema.Resource {
 				Description: "The WAF policy which is set as default to the account. The account can only have 1 such id." +
 					"\n The Default policy will be applied automatically to sites that were create after setting it to default.",
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"default_non_mandatory_policy_ids": {
@@ -57,31 +57,36 @@ func resourceAccountPolicyAssociationUpdate(d *schema.ResourceData, m interface{
 		return err
 	}
 
-	//add WAF
-	wafPolicyIDStr := d.Get("default_waf_policy_id").(string)
+	_, ok := d.GetOk("default_waf_policy_id")
+	if ok {
+		//add WAF
+		wafPolicyIDStr := d.Get("default_waf_policy_id").(string)
+		
 
-	if err != nil {
-		log.Printf("[ERROR] Could not convert Waf Policy ID. Error: is not numeric: %s", accountIDStr)
-		return err
-	}
+		if err != nil {
+			log.Printf("[ERROR] Could not convert Waf Policy ID. Error: is not numeric: %s", accountIDStr)
+			return err
+		}
 
-	//to update WAF policy
-	policyGetResponse, err := client.GetPolicy(wafPolicyIDStr)
-	if err != nil {
-		log.Printf("[ERROR] Could not get Incapsula policy: %s - %s\n", wafPolicyIDStr, err)
-		return err
-	}
+		//to update WAF policy
+		policyGetResponse, err := client.GetPolicy(wafPolicyIDStr)
+		if err != nil {
+			log.Printf("[ERROR] Could not get Incapsula policy: %s - %s\n", wafPolicyIDStr, err)
+			return err
+		}
 
-	if policyGetResponse.Value.PolicyType != WAF_RULES {
-		log.Printf("[ERROR] Cannot set a policy of type %s as a default WAF Policy. Policy ID: %d", policyGetResponse.Value.PolicyType, policyGetResponse.Value.ID)
-		return fmt.Errorf("Cannot set a policy of type %s as a default WAF Policy. Policy ID: %d", policyGetResponse.Value.PolicyType, policyGetResponse.Value.ID)
-	}
+		if policyGetResponse.Value.PolicyType != WAF_RULES {
+			log.Printf("[ERROR] Cannot set a policy of type %s as a default WAF Policy. Policy ID: %d", policyGetResponse.Value.PolicyType, policyGetResponse.Value.ID)
+			return fmt.Errorf("Cannot set a policy of type %s as a default WAF Policy. Policy ID: %d", policyGetResponse.Value.PolicyType, policyGetResponse.Value.ID)
+		}
 
-	err = updatePolicy(policyGetResponse.Value, accountID, *client)
-	if err != nil {
-		log.Printf("[ERROR] Could not update Default WAF Policy ID %s for Account ID %d. Reason: %s", wafPolicyIDStr, accountID, err.Error())
-		resourceAccountPolicyAssociationRead(d, m)
-		return err
+		err = updatePolicy(policyGetResponse.Value, accountID, *client)
+		if err != nil {
+			log.Printf("[ERROR] Could not update Default WAF Policy ID %s for Account ID %d. Reason: %s", wafPolicyIDStr, accountID, err.Error())
+			resourceAccountPolicyAssociationRead(d, m)
+			return err
+		}
+
 	}
 
 	err = updateNonMandatoryPolicies(d.Get("default_non_mandatory_policy_ids").(*schema.Set).List(), accountID, *client)
@@ -134,8 +139,10 @@ func resourceAccountPolicyAssociationRead(d *schema.ResourceData, m interface{})
 
 	defaultWafPolicyId, nonMandatoryPolicies := filterPoliciesByTypeForAccount(accountID, getAllPoliciesResponse)
 
+	if defaultWafPolicyId != "0" {
+		d.Set("default_waf_policy_id", defaultWafPolicyId)
+	}
 	d.Set("default_non_mandatory_policy_ids", nonMandatoryPolicies)
-	d.Set("default_waf_policy_id", defaultWafPolicyId)
 	return nil
 }
 
