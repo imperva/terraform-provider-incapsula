@@ -1,5 +1,17 @@
 
-## 3.8.0 (Jul 5, 2022)
+## 3.8.1 (Jul 5, 2022)
+
+IMPROVEMENTS:
+
+* incapsula_site: Add cname option to domain validation options
+
+BUG FIXES:
+
+* incapsula_account_policy_association: change default_waf_policy_id to be optional - for customers who have not migrated yet to waf policy ([#185](https://github.com/imperva/terraform-provider-incapsula/issues/185))
+* incapsula_site: change default values from string to bool ([#186](https://github.com/imperva/terraform-provider-incapsula/issues/186))
+
+
+## 3.8.0 (Jul 4, 2022)
 
 FEATURES:
 
