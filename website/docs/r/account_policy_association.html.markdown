@@ -27,9 +27,15 @@ resource "incapsula_account_policy_association" "example-account-policy-associat
 ```
 ## Argument Reference
 The following arguments are supported:
-* `account_id` - (Mandatory) The account to operate on.
-* `default_waf_policy_id` - (Mandatory) The WAF policy which is set as default to the account. The account can only have 1 such id. The Default policy will be applied automatically to sites that were created after setting it to default.
-* `default_non_mandatory_policy_ids` - (Optional) This list is currently relevant to whitelist and acl policies. More than one policy can be set as default.
+* `account_id` - (Required) The account to operate on.
+* `default_waf_policy_id` - (Required) The WAF policy which is set as default for the account. The account can only have 1 such ID.
+  The Default policy will be applied automatically to sites that are created after setting it to default.
+  This default setting can be set for the current account, or if used by users with credentials of the parent account can also be set for sub-accounts.
+  For customers that have account level policies, this parameter is mandatory. This means that a default policy resource must be created.
+  For customers who have not migrated yet, this parameter should not be set. HOWEVER, once migration occurs, the above is true and a policy resource must be added.
+* `default_non_mandatory_policy_ids` - (Optional)  This list is currently relevant to Allow lists and ACL policies. More than one policy can be set as default.
+  The default policies can be set for the current account, or if used by users with credentials of the parent account can also be set for sub-accounts.
+  Default setting – empty list. No default policy.
 
 ## Import
 
