@@ -92,7 +92,7 @@ func resourceSite() *schema.Resource {
 				Computed:    true,
 			},
 			"domain_validation": {
-				Description: "email or html or dns.",
+				Description: "email or html or dns or cname.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
@@ -300,13 +300,13 @@ func resourceSite() *schema.Resource {
 				Description: "Use 'true' to add the naked domain SAN to a www site’s SSL certificate. Default value: true",
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     "true",
+				Default:     true,
 			},
 			"wildcard_san": {
 				Description: "Use 'true' to add the wildcard SAN or 'false' to add the full domain SAN to the site’s SSL certificate. Default value: true",
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     "true",
+				Default:     true,
 			},
 			// Computed Attributes
 			"site_creation_date": {
