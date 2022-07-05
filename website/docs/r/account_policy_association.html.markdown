@@ -21,8 +21,8 @@ resource "incapsula_account_policy_association" "example-account-policy-associat
         "123888",
         "123999",
         "123444",
-        incapsula.policy.default_acl_policy.id,
-        incapsula.policy.default_allowlist_policy.id,
+        incapsula_policy.default_acl_policy.id,
+        incapsula_policy.default_allowlist_policy.id,
     ]
 }
 ```
@@ -39,8 +39,8 @@ resource "incapsula_account_policy_association" "example-account-policy-associat
         "123888",
         "123999",
         "123444",
-        incapsula.policy.default_acl_policy.id,
-        incapsula.policy.default_allowlist_policy.id,
+        incapsula_policy.default_acl_policy.id,
+        incapsula_policy.default_allowlist_policy.id,
     ]
     default_waf_policy_id            = "1480033"
 }
