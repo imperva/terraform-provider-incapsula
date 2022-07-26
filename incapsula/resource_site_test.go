@@ -5,18 +5,25 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"math/rand"
 )
 
 const siteResourceName = "incapsula_site.testacc-terraform-site"
+
+var generatedDomain string
 
 func GenerateTestDomain(t *testing.T) string {
 	if v := os.Getenv("INCAPSULA_API_ID"); v == "" && t != nil {
 		t.Fatal("INCAPSULA_API_ID must be set for acceptance tests")
 	}
-	return "id" + os.Getenv("INCAPSULA_API_ID") + ".examplesite.com"
+	s3 := rand.NewSource(time.Now().UnixNano())
+	r3 := rand.New(s3)
+	generatedDomain = "id" + os.Getenv("INCAPSULA_API_ID") + strconv.Itoa(r3.Intn(1000)) + ".examplesite.com"
+	return generatedDomain
 }
 
 func TestAccIncapsulaSite_Basic(t *testing.T) {
@@ -26,24 +33,11 @@ func TestAccIncapsulaSite_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaSiteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)),
+				Config: testAccCheckIncapsulaSiteConfigBasic(generatedDomain),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiteExists(siteResourceName),
-					resource.TestCheckResourceAttr(siteResourceName, "domain", GenerateTestDomain(t)),
+					resource.TestCheckResourceAttr(siteResourceName, "domain", generatedDomain),
 				),
-			},
-		},
-	})
-}
-
-func TestAccIncapsulaSite_ImportBasic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckIncapsulaSiteDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)),
 			},
 			{
 				ResourceName:            "incapsula_site.testacc-terraform-site",
@@ -73,7 +67,7 @@ func testAccCheckIncapsulaSiteDestroy(state *terraform.State) error {
 			return fmt.Errorf("Site ID conversion error for %s: %s", siteIDStr, err)
 		}
 
-		_, err = client.SiteStatus(GenerateTestDomain(nil), siteID)
+		_, err = client.SiteStatus(generatedDomain, siteID)
 
 		if err == nil {
 			return fmt.Errorf("Incapsula site for domain: %s (site id: %d) still exists", GenerateTestDomain(nil), siteID)
@@ -114,6 +108,7 @@ func testAccCheckIncapsulaSiteConfigBasic(domain string) string {
 	return fmt.Sprintf(`
 		resource "incapsula_site" "testacc-terraform-site" {
 			domain = "%s"
+			domain_validation = "cname"
 		}`,
 		domain,
 	)

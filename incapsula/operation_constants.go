@@ -12,6 +12,11 @@ const ReadPolicy = "read_policy"
 const UpdatePolicy = "update_policy"
 const DeletePolicy = "delete_policy"
 
+const ReadPoliciesAll = "read_policies_all"
+
+const ReadPolicyAccountAssociatiation = "read_policy_account_association"
+const UpdatePolicyAccountAssociatiation = "update_policy_account_association"
+
 const CreatePolicyAssetAssociation = "create_policy_asset_association"
 const ReadPolicyAssetAssociation = "read_policy_asset_association"
 const DeletePolicyAssetAssociation = "delete_policy_asset_association"

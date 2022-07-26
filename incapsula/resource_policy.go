@@ -80,8 +80,8 @@ func resourcePolicyCreate(d *schema.ResourceData, m interface{}) error {
 		Name:           d.Get("name").(string),
 		Enabled:        d.Get("enabled").(bool),
 		PolicyType:     d.Get("policy_type").(string),
-		AccountID:      d.Get("account_id").(int),
 		Description:    d.Get("description").(string),
+		AccountID:      d.Get("account_id").(int),
 		PolicySettings: policySettings,
 	}
 
@@ -92,11 +92,10 @@ func resourcePolicyCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	// Set the policyID
 	policyID := strconv.Itoa(policyAddResponse.Value.ID)
+
 	d.SetId(policyID)
 	log.Printf("[INFO] Created Incapsula policy with ID: %s\n", policyID)
-
 	return resourcePolicyRead(d, m)
 }
 
@@ -115,8 +114,8 @@ func resourcePolicyRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("name", policyGetResponse.Value.Name)
 	d.Set("enabled", policyGetResponse.Value.Enabled)
 	d.Set("policy_type", policyGetResponse.Value.PolicyType)
-	d.Set("account_id", policyGetResponse.Value.AccountID)
 	d.Set("description", policyGetResponse.Value.Description)
+	d.Set("account_id", policyGetResponse.Value.AccountID)
 
 	// JSON encode policy settings
 	policySettingsJSONBytes, err := json.MarshalIndent(policyGetResponse.Value.PolicySettings, "", "    ")
@@ -153,6 +152,7 @@ func resourcePolicyUpdate(d *schema.ResourceData, m interface{}) error {
 	_, err = client.UpdatePolicy(id, &policySubmitted)
 
 	if err != nil {
+		log.Printf("[ERROR] Could not update Incapsula policy: %s - %s\n", policySubmitted.Name, err)
 		return err
 	}
 
@@ -161,7 +161,6 @@ func resourcePolicyUpdate(d *schema.ResourceData, m interface{}) error {
 
 func resourcePolicyDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-
 	err := client.DeletePolicy(d.Id())
 
 	if err != nil {
