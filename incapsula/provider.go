@@ -112,6 +112,7 @@ func Provider() *schema.Provider {
 			"incapsula_csp_site_domain":              resourceCSPSiteDomain(),
 			"incapsula_application_delivery":         resourceApplicationDelivery(),
 			"incapsula_site_monitoring":              resourceSiteMonitoring(),
+			"incapsula_account_ssl_settings":         resourceAccountSSLSettings(),
 		},
 	}
 

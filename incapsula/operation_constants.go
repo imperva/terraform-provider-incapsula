@@ -117,3 +117,7 @@ const CreateNotificationCenterPolicy = "create_notification_center_policy"
 const ReadNotificationCenterPolicy = "read_notification_center_policy"
 const UpdateNotificationCenterPolicy = "update_notification_center_policy"
 const DeleteNotificationCenterPolicy = "delete_notification_center_policy"
+
+const UpdateAccountSSLSettings = "update_account_ssl_settings"
+const GetAccountSSLSettings = "get_account_ssl_settings"
+const DeleteAccountSSLSettings = "delete_account_ssl_settings"
