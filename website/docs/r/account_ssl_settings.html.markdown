@@ -14,10 +14,10 @@ Provides an Incapsula Account SSL Settings resource.
 ```hcl
 resource "incapsula_account_ssl_settings" "ssl-52546413" {
     account_id = 123
-    imperva_certificate_use_wild_card_san_instead_of_fqdn = true
-    imperva_certificate_add_naked_domain_san_for_www_sites = false
-    imperva_certificate_delegation_allow_cname_validation = true
-    imperva_certificate_delegation_allowed_domains_for_cname_validation = ["example.com"]
+    use_wild_card_san_instead_of_fqdn = true
+    add_naked_domain_san_for_www_sites = false
+    allow_cname_validation = true
+    allowed_domains_for_cname_validation = ["example.com"]
 }
 ```
 
