@@ -24,6 +24,7 @@ const certificateName = "custom-certificate"
 const certificateResource = certificateResourceName + "." + certificateName
 
 var calculatedHash = ""
+var calculatedHashBase64 = ""
 
 func TestAccIncapsulaCustomCertificate_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -35,7 +36,7 @@ func TestAccIncapsulaCustomCertificate_Basic(t *testing.T) {
 				Config: testAccCheckIncapsulaCustomCertificateGoodConfigNoPrivateKey(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaCertificateExists(certificateResourceName),
-					resource.TestCheckResourceAttr(certificateResource, "input_hash", calculatedHash),
+					resource.TestCheckResourceAttr(certificateResource, "input_hash", calculatedHashBase64),
 				),
 			},
 		},
@@ -126,14 +127,30 @@ func generateKeyPair() (string, string) {
 	// Encode certificate using PEM algorythm
 	out := &bytes.Buffer{}
 	pem.Encode(out, &pem.Block{Type: "CERTIFICATE", Bytes: certificate})
+	certificateRes := out.String()
+	pkeyRes := string(privateKeyPEM)
+	calculatedHash = calculateHash(certificateRes+"\n", "", certificateRes+"\n")
 
+	//return certificateRes, pkeyRes
+	return fmt.Sprintf("<<EOT\n%s\nEOT", certificateRes), fmt.Sprintf("<<EOT\n%s\nEOT", pkeyRes)
+	//// encode PEM-encoded certificate with base64 algorith
+	//certificateBase64 := b64.StdEncoding.EncodeToString([]byte(out.String()))
+	//// encode PEM-encoded certificate with base64 algorith
+	//privateKeyBase64 := b64.StdEncoding.EncodeToString(privateKeyPEM)
+	//
+	////save calculated hash for it's verification in step 1 of the test(verify create)
+	//return fmt.Sprintf("<<EOT\n%s\nEOT", certificateBase64), fmt.Sprintf("<<EOT\n%s\nEOT", privateKeyBase64)
+}
+
+func generateKeyPairBase64() (string, string) {
+	cert, pkey := generateKeyPair()
 	// encode PEM-encoded certificate with base64 algorith
-	certificateBase64 := b64.StdEncoding.EncodeToString([]byte(out.String()))
+	certificateBase64 := b64.StdEncoding.EncodeToString([]byte(cert))
 	// encode PEM-encoded certificate with base64 algorith
-	privateKeyBase64 := b64.StdEncoding.EncodeToString(privateKeyPEM)
+	privateKeyBase64 := b64.StdEncoding.EncodeToString([]byte(pkey))
 
 	//save calculated hash for it's verification in step 1 of the test(verify create)
-	calculatedHash = calculateHash(certificateBase64+"\n", "", privateKeyBase64+"\n")
+	calculatedHashBase64 = calculateHash(certificateBase64+"\n", "", privateKeyBase64+"\n")
 	return fmt.Sprintf("<<EOT\n%s\nEOT", certificateBase64), fmt.Sprintf("<<EOT\n%s\nEOT", privateKeyBase64)
 }
 
