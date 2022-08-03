@@ -61,7 +61,6 @@ func resourceAccountPolicyAssociationUpdate(d *schema.ResourceData, m interface{
 	if ok {
 		//add WAF
 		wafPolicyIDStr := d.Get("default_waf_policy_id").(string)
-		
 
 		if err != nil {
 			log.Printf("[ERROR] Could not convert Waf Policy ID. Error: is not numeric: %s", accountIDStr)
