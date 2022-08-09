@@ -121,3 +121,8 @@ const DeleteNotificationCenterPolicy = "delete_notification_center_policy"
 const UpdateAccountSSLSettings = "update_account_ssl_settings"
 const GetAccountSSLSettings = "get_account_ssl_settings"
 const DeleteAccountSSLSettings = "delete_account_ssl_settings"
+
+const CreateMtlsCertifiate = "create_mtls_certificate"
+const ReadMtlsCertifiate = "read_mtls_certificate"
+const UpdateMtlsCertifiate = "update_mtls_certificate"
+const DeleteMtlsCertifiate = "delete_mtls_certificate"

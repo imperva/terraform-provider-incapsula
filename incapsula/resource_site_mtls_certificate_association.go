@@ -12,7 +12,7 @@ func resourceSiteMtlsCertificateAssociation() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceSiteMtlsCertificateAssociationCreate,
 		Read:   resourceSiteMtlsCertificateAssociationRead,
-		Update: nil,
+		Update: resourceSiteMtlsCertificateAssociationCreate,
 		Delete: resourceSiteMtlsCertificateAssociationDelete,
 		//todo
 		Importer: &schema.ResourceImporter{
@@ -20,14 +20,13 @@ func resourceSiteMtlsCertificateAssociation() *schema.Resource {
 				//todo!!!!! KATRIN change all error messages
 				idSlice := strings.Split(d.Id(), "/")
 				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
-					return nil, fmt.Errorf("unexpected format of Incapsula Site to Imperva to Origin mutual TLS Certificate Association resource ID,"+
-						" expected site_id/certificate_id, got %s", d.Id())
+					return nil, fmt.Errorf("unexpected format of Incapsula Site to Imperva to Origin mutual TLS Certificate Association resource ID, expected site_id/certificate_id, got %s", d.Id())
 				}
 
 				d.Set("site_id", idSlice[0])
 				d.Set("certificate_id", idSlice[1])
 
-				log.Printf("[DEBUG] Import Incapsula Site to Imperva to Origin mutual TLS Certificate Association for Site ID %s, mutual TLS Certificate Id %s", idSlice[0], idSlice[1])
+				log.Printf("[DEBUG] Importing Incapsula Site to Imperva to Origin mutual TLS Certificate Association for Site ID %s, mutual TLS Certificate Id %s", idSlice[0], idSlice[1])
 				return []*schema.ResourceData{d}, nil
 			},
 		},
@@ -44,7 +43,6 @@ func resourceSiteMtlsCertificateAssociation() *schema.Resource {
 				Description: "The certificate file in base64 format.",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 			},
 		},
 	}
@@ -83,7 +81,7 @@ func resourceSiteMtlsCertificateAssociationCreate(d *schema.ResourceData, m inte
 		return err
 	}
 
-	err = client.UpdateSiteMtlsCertificateAssociation(
+	err = client.CreateSiteMtlsCertificateAssociation(
 		certificateID,
 		siteID,
 	)

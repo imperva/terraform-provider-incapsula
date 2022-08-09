@@ -13,8 +13,7 @@ import (
 	"strings"
 )
 
-const endpointAddMTLSCertificate = "/certificates-ui/v3/mtls-origin/certificates"
-const endpointGetMTLSCertificateById = "/certificates-ui/v3/mtls-origin/certificates/"
+const endpointMTLSCertificate = "/certificates-ui/v3/mtls-origin/certificates"
 
 type MTLSCertificateGetById struct {
 	Hash string `json:"hash"`
@@ -31,27 +30,27 @@ type MTLSCertificateResponse struct {
 	Data []MTLSCertificate `json:"data"`
 }
 
-func (c *Client) AddMTLSCertificate(certificate, privateKey, passphrase, certificateName, inputHash string) (*MTLSCertificate, error) {
-	log.Printf("[INFO] Adding mTLS certificate")
-	reqURL := fmt.Sprintf("%s%s", c.config.BaseURLAPI, endpointAddMTLSCertificate)
-	return c.editMTLSCertificate(http.MethodPost, reqURL, certificate, privateKey, passphrase, certificateName, inputHash, "Create")
+func (c *Client) AddMTLSCertificate(certificate, privateKey []byte, passphrase, certificateName, inputHash string) (*MTLSCertificate, error) {
+	log.Printf("[INFO] Adding mutual TLS Imperva to Origin Certificate")
+	reqURL := fmt.Sprintf("%s%s", c.config.BaseURLAPI, endpointMTLSCertificate)
+	return c.editMTLSCertificate(http.MethodPost, reqURL, certificate, privateKey, passphrase, certificateName, inputHash, "Create", CreateMtlsCertifiate)
 }
 
-func (c *Client) UpdateMTLSCertificate(certificateID, certificate, privateKey, passphrase, certificateName, inputHash string) (*MTLSCertificate, error) {
-	log.Printf("[INFO] Updating mTLS certificate")
-	reqURL := fmt.Sprintf("%s%s%s", c.config.BaseURLAPI, endpointGetMTLSCertificateById, certificateID)
-	return c.editMTLSCertificate(http.MethodPatch, reqURL, certificate, privateKey, passphrase, certificateName, inputHash, "Update")
+func (c *Client) UpdateMTLSCertificate(certificateID string, certificate, privateKey []byte, passphrase, certificateName, inputHash string) (*MTLSCertificate, error) {
+	log.Printf("[INFO] Updating mutual TLS Imperva to Origin Certificate with ID %s", certificateID)
+	reqURL := fmt.Sprintf("%s%s/%s", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID)
+	return c.editMTLSCertificate(http.MethodPut, reqURL, certificate, privateKey, passphrase, certificateName, inputHash, "Update", UpdateMtlsCertifiate)
 }
 
-func (c *Client) GetTLSCertificate(certificateID string) (*MTLSCertificate, error) {
-	log.Printf("[INFO] Reading mTLS certificate with ID %s", certificateID)
+func (c *Client) GetMTLSCertificate(certificateID string) (*MTLSCertificate, error) {
+	log.Printf("[INFO] Reading mutual TLS Imperva to Origin Certificate with ID %s", certificateID)
 	//todo refactor !! move to separate method
-	reqURL := fmt.Sprintf("%s%s%s", c.config.BaseURLAPI, endpointGetMTLSCertificateById, certificateID)
+	reqURL := fmt.Sprintf("%s%s/%s", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID)
 
 	//todo add operation!!!!!!!!!!!
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, "")
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadMtlsCertifiate)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error creating mTLS Imperva to Origin Certificate: %s", err)
+		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when reading mTLS Imperva to Origin Certificate ID %s: %s", certificateID, err)
 	}
 
 	// Read the body
@@ -61,14 +60,14 @@ func (c *Client) GetTLSCertificate(certificateID string) (*MTLSCertificate, erro
 
 	// Check the response code
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Error status code %d from Incapsula service on fetching mutual TLS Imperva to Origin certificate %s\n: %s", resp.StatusCode, err, string(responseBody))
+		return nil, fmt.Errorf("[ERROR] Error status code %d from Incapsula service on fetching mutual TLS Imperva to Origin certificate ID %s\n: %s\n%s", resp.StatusCode, certificateID, err, string(responseBody))
 	}
 
 	// Dump JSON
 	var mtlsCertificate MTLSCertificateResponse
 	err = json.Unmarshal([]byte(responseBody), &mtlsCertificate)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error parsing mutual TLS Imperva to Origin Certificate JSON response: %s\nresponse: %s", err, string(responseBody))
+		return nil, fmt.Errorf("[ERROR] Error parsing mutual TLS Imperva to Origin Certificate JSON response for certificate ID %s: %s\nresponse: %s", certificateID, err, string(responseBody))
 	}
 	if len(mtlsCertificate.Data) > 0 {
 		return &mtlsCertificate.Data[0], nil
@@ -77,19 +76,17 @@ func (c *Client) GetTLSCertificate(certificateID string) (*MTLSCertificate, erro
 	}
 
 }
-func (c *Client) editMTLSCertificate(hhtpMethod, reqURL, certificate, privateKey, passphrase, certificateName, inputHash, action string) (*MTLSCertificate, error) {
+func (c *Client) editMTLSCertificate(hhtpMethod, reqURL string, certificate, privateKey []byte, passphrase, certificateName, inputHash, action, operation string) (*MTLSCertificate, error) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	//certificate
-	if certificate != "" {
-		fw, err := writer.CreateFormFile("certificateFile", filepath.Base("certificateFile.pfx"))
-		if err != nil {
-			log.Printf("failed to create %s formdata field", "certificateFile")
-		}
-		fw.Write([]byte(certificate))
+
+	fw, err := writer.CreateFormFile("certificateFile", filepath.Base("certificateFile.pfx"))
+	if err != nil {
+		log.Printf("failed to create %s formdata field", "certificateFile")
 	}
-	//pkey
-	if privateKey != "" {
+	fw.Write([]byte(certificate))
+
+	if len(privateKey) > 0 {
 		fw, err := writer.CreateFormFile("privateKeyFile", filepath.Base("privateKeyFile"))
 		if err != nil {
 			log.Printf("failed to create %s formdata field", "privateKeyFile")
@@ -135,12 +132,10 @@ func (c *Client) editMTLSCertificate(hhtpMethod, reqURL, certificate, privateKey
 
 	writer.Close()
 
-	//reqURL := fmt.Sprintf("%s%s", c.config.BaseURLAPI, endpointAddMTLSCertificate)
-	log.Printf("body\n%v", string(body.Bytes()))
 	contentType := writer.FormDataContentType()
-	resp, err := c.DoJsonRequestWithHeadersForm(hhtpMethod, reqURL, body.Bytes(), contentType, "") //todo edit operation name KATRIN!!!
+	resp, err := c.DoJsonRequestWithHeadersForm(hhtpMethod, reqURL, body.Bytes(), contentType, operation)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error creating mTLS Imperva to Origin Certificate: %s", err)
+		return nil, fmt.Errorf("[ERROR] Error while %s mTLS Imperva to Origin Certificate: %s", action, err)
 	}
 
 	// Read the body
@@ -150,7 +145,7 @@ func (c *Client) editMTLSCertificate(hhtpMethod, reqURL, certificate, privateKey
 
 	// Check the response code
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Error status code %d from Incapsula service on %s mutual TLS Imperva to Origin certificate: %s", resp.StatusCode, action, string(responseBody))
+		return nil, fmt.Errorf("[ERROR] Error status code %d from Incapsula service on %s mutual TLS Imperva to Origin certificate: %s", resp.StatusCode, action, string(responseBody))
 	}
 
 	// Dump JSON
@@ -170,10 +165,19 @@ func (c *Client) editMTLSCertificate(hhtpMethod, reqURL, certificate, privateKey
 func (c *Client) DeleteMTLSCertificate(certificateID string) error {
 	log.Printf("[INFO] Deleting mTLS certificate with ID %s", certificateID)
 
-	reqURL := fmt.Sprintf("%s%s%s", c.config.BaseURLAPI, endpointGetMTLSCertificateById, certificateID)
+	reqURL := fmt.Sprintf("%s%s/%s", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID)
 	//todo add operation!!!!!!!!!!!
 
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, "")
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteMtlsCertifiate)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Error from Incapsula service when deleting mTLS Imperva to Origin Certificate ID %s: %s", certificateID, err)
+	}
+
+	// Check the response code
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("[ERROR] Error status code %d from Incapsula service on deleting mutual TLS Imperva to Origin certificate ID %s\n: %s", resp.StatusCode, certificateID, err)
+	}
+
 	// Read the body
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)

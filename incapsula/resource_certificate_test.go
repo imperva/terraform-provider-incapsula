@@ -129,7 +129,7 @@ func generateKeyPair() (string, string) {
 	pem.Encode(out, &pem.Block{Type: "CERTIFICATE", Bytes: certificate})
 	certificateRes := out.String()
 	pkeyRes := string(privateKeyPEM)
-	calculatedHash = calculateHash(certificateRes+"\n", "", certificateRes+"\n")
+	calculatedHash = calculateHash(certificateRes+"\n", "", pkeyRes+"\n")
 
 	//return certificateRes, pkeyRes
 	return fmt.Sprintf("<<EOT\n%s\nEOT", certificateRes), fmt.Sprintf("<<EOT\n%s\nEOT", pkeyRes)
@@ -141,6 +141,12 @@ func generateKeyPair() (string, string) {
 	////save calculated hash for it's verification in step 1 of the test(verify create)
 	//return fmt.Sprintf("<<EOT\n%s\nEOT", certificateBase64), fmt.Sprintf("<<EOT\n%s\nEOT", privateKeyBase64)
 }
+
+//
+//func generateKeyPairCAcert() (string, string) {
+//
+//
+//}
 
 func generateKeyPairBase64() (string, string) {
 	cert, pkey := generateKeyPair()

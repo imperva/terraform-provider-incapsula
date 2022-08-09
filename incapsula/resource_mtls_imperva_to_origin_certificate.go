@@ -3,6 +3,8 @@ package incapsula
 import (
 	//"crypto/sha1"
 	//"encoding/hex"
+	"encoding/base64"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
@@ -14,38 +16,37 @@ func resourceMTLSImpervaToOriginCertificate() *schema.Resource {
 		Read:   resourceMTLSImpervaToOriginCertificateRead,
 		Update: resourceMTLSImpervaToOriginCertificateUpdate,
 		Delete: resourceMTLSImpervaToOriginCertificateDelete,
-		//todo
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
 			"certificate": {
-				Description: "The certificate file in base64 format.",
+				Description: "Your mTLS client certificate file in base64 format. Supported formats: PEM, DER and PFX. Only RSA certificates are currently supported. The certificate RSA key size must be 2048 bit or less. The certificate must be issued by a certificate authority (CA) and cannot be self-signed.",
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
 			},
 			// Optional Arguments
 			"private_key": {
-				Description: "The private key of the certificate in base64 format. Optional in case of PFX certificate file format. This will be encoded in sha256 in terraform state.",
+				Description: "Your private key file in base64 format. Supported formats: PEM, DER. If PFX certificate is used, then this field can remain empty.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
 			},
 			"passphrase": {
-				Description: "The passphrase used to protect your SSL certificate. This will be encoded in sha256 in terraform state.",
+				Description: "Your private key passphrase. Leave empty if the private key is not password protected.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
 			},
 			"certificate_name": {
-				Description: "The certificate name.",
+				Description: "A descriptive name for your mTLS client certificate.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"input_hash": {
-				Description: "inputHash",
+				Description: "Currently ignored. If terraform plan flags this field as changed, it means that any of: certificate, private_key, or passphrase has changed.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
@@ -63,13 +64,31 @@ func resourceMTLSImpervaToOriginCertificate() *schema.Resource {
 func resourceMTLSImpervaToOriginCertificateCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	inputHash := createHash(d)
+
+	encodedCert := d.Get("certificate").(string)
+	// Standard Base64 Decoding
+	decodedCert, err := base64.StdEncoding.DecodeString(encodedCert)
+	if err != nil {
+		fmt.Printf("Error decoding Base64 encoded data %v", err)
+	}
+	fmt.Println(string(decodedCert))
+
+	encodedPKey := d.Get("private_key").(string)
+	// Standard Base64 Decoding
+	decodedPKey, err := base64.StdEncoding.DecodeString(encodedPKey)
+	if err != nil {
+		fmt.Printf("Error decoding Base64 encoded data %v", err)
+	}
+	fmt.Println(string(decodedPKey))
+
 	mTLSCertificateData, err := client.AddMTLSCertificate(
-		d.Get("certificate").(string),
-		d.Get("private_key").(string),
+		decodedCert,
+		decodedPKey,
 		d.Get("passphrase").(string),
 		d.Get("certificate_name").(string),
 		inputHash,
 	)
+
 	if err != nil {
 		return err
 	}
@@ -77,6 +96,7 @@ func resourceMTLSImpervaToOriginCertificateCreate(d *schema.ResourceData, m inte
 	//// TODO: Setting this to arbitrary value as there is only one cert for each site.
 	d.SetId(strconv.Itoa(mTLSCertificateData.Id))
 	d.Set("input_hash", mTLSCertificateData.Hash)
+	log.Printf("[INFO] Created mutual TLS Imperva to Origin Certificate with ID: %s\n", d.Id())
 
 	return resourceMTLSImpervaToOriginCertificateRead(d, m)
 }
@@ -84,7 +104,7 @@ func resourceMTLSImpervaToOriginCertificateCreate(d *schema.ResourceData, m inte
 func resourceMTLSImpervaToOriginCertificateRead(d *schema.ResourceData, m interface{}) error {
 	//// Implement by reading the ListCertificatesResponse for the data center
 	client := m.(*Client)
-	mTLSCertificateData, err := client.GetTLSCertificate(d.Id())
+	mTLSCertificateData, err := client.GetMTLSCertificate(d.Id())
 	if err != nil {
 		return err
 	}
@@ -99,15 +119,32 @@ func resourceMTLSImpervaToOriginCertificateRead(d *schema.ResourceData, m interf
 func resourceMTLSImpervaToOriginCertificateUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	inputHash := createHash(d)
-	log.Printf("hash:\n%s", inputHash)
+
+	encodedCert := d.Get("certificate").(string)
+	// Standard Base64 Decoding
+	decodedCert, err := base64.StdEncoding.DecodeString(encodedCert)
+	if err != nil {
+		log.Printf("Error decoding Base64 encoded data %v", err)
+	}
+	log.Println(string(decodedCert))
+
+	encodedPKey := d.Get("private_key").(string)
+	// Standard Base64 Decoding
+	decodedPKey, err := base64.StdEncoding.DecodeString(encodedPKey)
+	if err != nil {
+		log.Printf("Error decoding Base64 encoded data %v", err)
+	}
+	log.Println(string(decodedPKey))
+
 	mTLSCertificateData, err := client.UpdateMTLSCertificate(
 		d.Id(),
-		d.Get("certificate").(string),
-		d.Get("private_key").(string),
+		decodedCert,
+		decodedPKey,
 		d.Get("passphrase").(string),
 		d.Get("certificate_name").(string),
 		inputHash,
 	)
+
 	if err != nil {
 		return err
 	}
@@ -115,6 +152,8 @@ func resourceMTLSImpervaToOriginCertificateUpdate(d *schema.ResourceData, m inte
 	//// TODO: Setting this to arbitrary value as there is only one cert for each site.
 	d.SetId(strconv.Itoa(mTLSCertificateData.Id))
 	d.Set("input_hash", mTLSCertificateData.Hash)
+
+	log.Printf("[INFO] Updated mutual TLS Imperva to Origin Certificate with ID: %s\n", d.Id())
 	return resourceMTLSImpervaToOriginCertificateRead(d, m)
 }
 
@@ -133,33 +172,3 @@ func resourceMTLSImpervaToOriginCertificateDelete(d *schema.ResourceData, m inte
 
 	return nil
 }
-
-//
-//func createHash(d *schema.ResourceData) string {
-//	certificate := d.Get("certificate").(string)
-//	passphrase := d.Get("passphrase").(string)
-//	privateKey := d.Get("private_key").(string)
-//	result := calculateHash(certificate, passphrase, privateKey)
-//	return result
-//}
-//
-//func calculateHash(certificate, passphrase, privateKey string) string {
-//	h := sha1.New()
-//	stringForHash := certificate + privateKey + passphrase
-//	h.Write([]byte(stringForHash))
-//	byteString := h.Sum(nil)
-//	result := hex.EncodeToString(byteString)
-//	return result
-//}
-
-//todo ????
-//func getOperation(d *schema.ResourceData) string {
-//	isCustomCertificate := d.Get("api_detail") != nil
-//	operation := ReadCustomCertificate
-//	if isCustomCertificate {
-//		operation = ReadHSMCustomCertificate
-//	}
-//	log.Printf("[DEBUG] Selected oprtaion type for rest request is: %s", operation)
-//
-//	return operation
-//}
