@@ -16,39 +16,15 @@ const siteMtlsCrtificateAssociationName = "testacc-terraform-site-mtls-certifica
 func TestAccIncapsulaSiteMtlsCertificateAssociation_Basic(t *testing.T) {
 	log.Printf("========================BEGIN TEST========================")
 	log.Printf("[DEBUG]Running test resource_mtls_imperva_to_origin_certificate.TestAccIncapsulaSiteMtlsCertificateAssociation_Basic")
-	//resource.Test(t, resource.TestCase{
-	//	PreCheck:     func() { testAccPreCheck(t) },
-	//	Providers:    testAccProviders,
-	//	//CheckDestroy: testACCStateMtlsImpervaToOriginCertificateDestroy,
-	//	Steps: []resource.TestStep{
-	//		{
-	//			//Config: testAccCheckMtlsImpervaToOriginCertificateBasic(t),
-	//			Check: resource.ComposeTestCheckFunc(
-	//				testCheckSiteMtlsCertificateAssociationExists(),
-	//				resource.TestCheckResourceAttr(siteMtlsCrtificateAssociationResource, "site_id", ""),
-	//				resource.TestCheckResourceAttr(siteMtlsCrtificateAssociationResource, "certificate_id", ""),
-	//			),
-	//		},
-	//		{
-	//			ResourceName:      siteMtlsCrtificateAssociationResource,
-	//			ImportState:       true,
-	//			ImportStateVerify: true,
-	//			ImportStateIdFunc: testACCStateSiteMtlsCertificateAssociationID,
-	//		},
-	//	},
-	//})
-
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
-		//CheckDestroy: testACCStateSiteMtlsCertificateAssociationDestroy,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testACCStateSiteMtlsCertificateAssociationDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckSiteMtlsCertificateAssociationBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSiteMtlsCertificateAssociationExists(),
-					//resource.TestCheckResourceAttr(mtlsCrtificateResource, "input_hash", calculatedHashCACert),
-					//resource.TestCheckResourceAttr(mtlsCrtificateResource, "certificate_name", "acceptance test certificate"),
 				),
 			},
 		},
@@ -57,7 +33,6 @@ func TestAccIncapsulaSiteMtlsCertificateAssociation_Basic(t *testing.T) {
 
 //todo:
 //check destroy
-
 func testACCStateSiteMtlsCertificateAssociationDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Client)
 
@@ -65,8 +40,6 @@ func testACCStateSiteMtlsCertificateAssociationDestroy(s *terraform.State) error
 		if rs.Type != siteMtlsCrtificateAssociationResourceName {
 			continue
 		}
-		return nil
-
 		siteID, ok := rs.Primary.Attributes["site_id"]
 		if !ok {
 			return fmt.Errorf("Incapsula mTLS certificate is not assigned to Site ID %s (cannot find mandatory parameter site_id)", siteID)
@@ -77,7 +50,7 @@ func testACCStateSiteMtlsCertificateAssociationDestroy(s *terraform.State) error
 			return fmt.Errorf("Resource %s with siteID ID %s still exists", siteMtlsCrtificateAssociationResourceName, siteID)
 		}
 	}
-	return fmt.Errorf("Error finding site_id")
+	return nil
 }
 
 //	check import
@@ -104,23 +77,6 @@ func testCheckSiteMtlsCertificateAssociationExists() resource.TestCheckFunc {
 		for _, resource := range state.RootModule().Resources {
 			log.Printf("\n%v", resource)
 		}
-		//res, ok := state.RootModule().Resources[siteMtlsCrtificateAssociationResource]
-		//if !ok {
-		//	return fmt.Errorf("Incapsula mTLS Imperva to Origin Certificate resource not found : %s", siteMtlsCrtificateAssociationResource)
-		//}
-		//certificateID, ok := res.Primary.Attributes["certificate_id"]
-		//
-		//siteID, ok := res.Primary.Attributes["site_id"]
-		//if !ok {
-		//	return fmt.Errorf("Incapsula mTLS certificate ID %s is not assigned to Site ID %sn (cannot find mandatory parameter site_id)", siteID, certificateID)
-		//}
-		//siteIdInt, err := strconv.Atoi(siteID)
-		//
-		//client := testAccProvider.Meta().(*Client)
-		//response, err := client.GetSiteMtlsCertificateAssociation(siteIdInt)
-		//if err != nil || response == nil {
-		//	return fmt.Errorf("Incapsula mTLS certificate ID %s is not assigned to Site ID %s", certificateID, siteID)
-		//}
 		return nil
 	}
 }
