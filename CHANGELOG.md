@@ -1,4 +1,10 @@
 
+## 3.8.2 (Aug 3, 2022)
+
+BUG FIXES:
+
+* incapsula_application_delivery: return ports to default upon deleting the resource ([#189](https://github.com/imperva/terraform-provider-incapsula/pull/189))
+
 ## 3.8.1 (Jul 5, 2022)
 
 IMPROVEMENTS:

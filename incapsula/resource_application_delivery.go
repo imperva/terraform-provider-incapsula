@@ -393,8 +393,8 @@ func resourceApplicationDeliveryDelete(d *schema.ResourceData, m interface{}) er
 	siteID := d.Get("site_id").(int)
 
 	network := Network{
-		Port:    Port{To: strconv.Itoa(d.Get("port_to").(int))},
-		SslPort: SslPort{To: strconv.Itoa(d.Get("ssl_port_to").(int))},
+		Port:    Port{To: strconv.Itoa(defaultPortTo)},
+		SslPort: SslPort{To: strconv.Itoa(defaultSslPortTo)},
 	}
 
 	customErrorPage := CustomErrorPage{
