@@ -105,7 +105,7 @@ func (c *Client) AddSubAccount(subAccountPayload *SubAccountPayload) (*SubAccoun
 // GetSubAccount gets the Incapsula list of SubAccounts
 func (c *Client) GetSubAccount(parentAccountID int, subAccountID int) (*SubAccount, error) {
 
-	log.Printf("[INFO] Reading Incapsula subaccounts for id: %d)", subAccountID)
+	log.Printf("[INFO] Reading Incapsula subaccounts for id: %d", subAccountID)
 
 	var count = 0
 	var shouldFetch = true
