@@ -19,7 +19,7 @@ func resourceAccountSSLSettings() *schema.Resource {
 				accountId := d.Id()
 
 				d.Set("account_id", accountId)
-				log.Printf("[DEBUG] account ssl settings resource: Import  Account Config JSON for Account ID %d", accountId)
+				log.Printf("[DEBUG] account ssl settings resource: Import  Account Config JSON for Account ID %s", accountId)
 				return []*schema.ResourceData{d}, nil
 			},
 		},
@@ -73,7 +73,7 @@ func resourceAccountSSLSettingsUpdate(ctx context.Context, d *schema.ResourceDat
 		accountID, _ = d.Get("account_id").(string)
 	}
 	accountSSLSettingsDTO := AccountSSLSettingsDTO{}
-	log.Printf("[INFO] Updating Incapsula account SSL settings for Account ID: %d to %v", accountID, d)
+	log.Printf("[INFO] Updating Incapsula account SSL settings for Account ID: %s to %v", accountID, d)
 	impervaCertificateDto := ImpervaCertificate{}
 	if d.Get("add_naked_domain_san_for_www_sites") != nil {
 		fieldVal := d.Get("add_naked_domain_san_for_www_sites").(bool)
@@ -100,23 +100,23 @@ func resourceAccountSSLSettingsUpdate(ctx context.Context, d *schema.ResourceDat
 	accountSSLSettingsDTO.ImpervaCertificate = &impervaCertificateDto
 	accountSSLSettingsDTOResponse, diags := client.UpdateAccountSSLSettings(&accountSSLSettingsDTO, accountID)
 	if diags != nil && diags.HasError() {
-		log.Printf("[ERROR] Could not update Incapsula account SSL settings for Account ID: %d, %v\n", accountID, diags)
+		log.Printf("[ERROR] Could not update Incapsula account SSL settings for Account ID: %s, %v\n", accountID, diags)
 		return diags
 	} else if accountSSLSettingsDTOResponse.Errors != nil {
-		log.Printf("[ERROR] Failed to update Incapsula account SSL settings for Account ID: %d, %v\n", accountID, accountSSLSettingsDTOResponse.Errors[0].Detail)
+		log.Printf("[ERROR] Failed to update Incapsula account SSL settings for Account ID: %s, %v\n", accountID, accountSSLSettingsDTOResponse.Errors[0].Detail)
 		return []diag.Diagnostic{diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Failed to update account SSL settings",
-			Detail:   fmt.Sprintf("Failed to update account SSL settings for account%d, %s", accountID, accountSSLSettingsDTOResponse.Errors[0].Detail),
+			Detail:   fmt.Sprintf("Failed to update account SSL settings for account%s, %s", accountID, accountSSLSettingsDTOResponse.Errors[0].Detail),
 		}}
 	}
 	err := d.Set("account_id", accountID)
 	if err != nil {
-		log.Printf("[ERROR] Could not read Incapsula account SSL settings after update for Account ID: %d, %s\n", accountID, err)
+		log.Printf("[ERROR] Could not read Incapsula account SSL settings after update for Account ID: %s, %s\n", accountID, err)
 		return diag.FromErr(err)
 	}
 	if err != nil {
-		log.Printf("[ERROR] Could not update last_update field of Incapsula account SSL settings resource for Account ID: %d, %s\n", accountID, err)
+		log.Printf("[ERROR] Could not update last_update field of Incapsula account SSL settings resource for Account ID: %s, %s\n", accountID, err)
 		return diag.FromErr(err)
 	}
 	resourceAccountSSLSettingsRead(ctx, d, m)
@@ -132,12 +132,12 @@ func resourceAccountSSLSettingsRead(ctx context.Context, d *schema.ResourceData,
 		accountID, _ = d.Get("account_id").(string)
 	}
 
-	log.Printf("[INFO] Reading Incapsula account SSL settings for Account ID: %d\n", accountID)
+	log.Printf("[INFO] Reading Incapsula account SSL settings for Account ID: %s\n", accountID)
 
 	accountSSLSettingsDTOResponse, diagFromClient := client.GetAccountSSLSettings(accountID)
 
 	if diagFromClient != nil && diagFromClient.HasError() {
-		log.Printf("[ERROR] Could not read Incapsula account SSL settings for Account ID: %d, %v\n", accountID, diagFromClient)
+		log.Printf("[ERROR] Could not read Incapsula account SSL settings for Account ID: %s, %v\n", accountID, diagFromClient)
 		return diagFromClient
 	}
 	accountSSLSettingsDTO := accountSSLSettingsDTOResponse.Data[0]
@@ -168,12 +168,12 @@ func resourceAccountSSLSettingsDelete(ctx context.Context, d *schema.ResourceDat
 		accountID, _ = d.Get("account_id").(string)
 	}
 
-	log.Printf("[INFO] Reseting Incapsula account SSL settings for Account ID: %d\n", accountID)
+	log.Printf("[INFO] Reseting Incapsula account SSL settings for Account ID: %s\n", accountID)
 
 	diag = client.DeleteAccountSSLSettings(accountID)
 
 	if diag != nil && diag.HasError() {
-		log.Printf("[ERROR] Could not delete Incapsula account SSL settings for Account ID: %d, %v\n", accountID, diag[0].Detail)
+		log.Printf("[ERROR] Could not delete Incapsula account SSL settings for Account ID: %s, %v\n", accountID, diag[0].Detail)
 		return diag
 	}
 
