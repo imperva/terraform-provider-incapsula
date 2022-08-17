@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
-	"strconv"
 )
 
 func resourceAccountSSLSettings() *schema.Resource {
@@ -17,10 +16,7 @@ func resourceAccountSSLSettings() *schema.Resource {
 		DeleteContext: resourceAccountSSLSettingsDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-				accountId, err := strconv.Atoi(d.Id())
-				if err != nil {
-					fmt.Errorf("account ssl settings resource: failed to convert Account Id from import command, actual value: %s, expected numeric id", d.Id())
-				}
+				accountId := d.Id()
 
 				d.Set("account_id", accountId)
 				log.Printf("[DEBUG] account ssl settings resource: Import  Account Config JSON for Account ID %d", accountId)
