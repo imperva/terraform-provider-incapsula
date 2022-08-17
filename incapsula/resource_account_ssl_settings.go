@@ -30,7 +30,7 @@ func resourceAccountSSLSettings() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Description: "Numeric identifier of the account to operate on.",
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Required:    true,
 			},
 			"allow_cname_validation": {
@@ -72,9 +72,9 @@ func resourceAccountSSLSettings() *schema.Resource {
 func resourceAccountSSLSettingsUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	var diags diag.Diagnostics
-	accountID, _ := strconv.Atoi(d.Id())
+	accountID := d.Id()
 	if d.Get("account_id") != nil {
-		accountID, _ = d.Get("account_id").(int)
+		accountID, _ = d.Get("account_id").(string)
 	}
 	accountSSLSettingsDTO := AccountSSLSettingsDTO{}
 	log.Printf("[INFO] Updating Incapsula account SSL settings for Account ID: %d to %v", accountID, d)
@@ -131,9 +131,9 @@ func resourceAccountSSLSettingsUpdate(ctx context.Context, d *schema.ResourceDat
 func resourceAccountSSLSettingsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	var diags diag.Diagnostics
-	accountID, _ := strconv.Atoi(d.Id())
+	accountID := d.Id()
 	if d.Get("account_id") != nil {
-		accountID, _ = d.Get("account_id").(int)
+		accountID, _ = d.Get("account_id").(string)
 	}
 
 	log.Printf("[INFO] Reading Incapsula account SSL settings for Account ID: %d\n", accountID)
@@ -160,16 +160,16 @@ func resourceAccountSSLSettingsRead(ctx context.Context, d *schema.ResourceData,
 	if err := d.Set("value_for_cname_validation", accountSSLSettingsDTO.ImpervaCertificate.Delegation.ValueForCNAMEValidation); err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(strconv.Itoa(accountID))
+	d.SetId(accountID)
 	return diags
 }
 
 func resourceAccountSSLSettingsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	var diag diag.Diagnostics
-	accountID, _ := strconv.Atoi(d.Id())
+	accountID := d.Id()
 	if d.Get("account_id") != nil {
-		accountID, _ = d.Get("account_id").(int)
+		accountID, _ = d.Get("account_id").(string)
 	}
 
 	log.Printf("[INFO] Reseting Incapsula account SSL settings for Account ID: %d\n", accountID)

@@ -34,7 +34,7 @@ type AccountSSLSettingsDTOResponse struct {
 }
 
 // UpdateAccountSSLSettings update account SSL settings
-func (c *Client) UpdateAccountSSLSettings(accountSSLSettingsDTO *AccountSSLSettingsDTO, accountId int) (*AccountSSLSettingsDTOResponse, diag.Diagnostics) {
+func (c *Client) UpdateAccountSSLSettings(accountSSLSettingsDTO *AccountSSLSettingsDTO, accountId string) (*AccountSSLSettingsDTOResponse, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] updating account SSL settings to: %v ", accountSSLSettingsDTO)
 
@@ -93,7 +93,7 @@ func (c *Client) UpdateAccountSSLSettings(accountSSLSettingsDTO *AccountSSLSetti
 }
 
 // GetAccountSSLSettings gets the Incapsula managed account's status
-func (c *Client) GetAccountSSLSettings(accountId int) (*AccountSSLSettingsDTOResponse, diag.Diagnostics) {
+func (c *Client) GetAccountSSLSettings(accountId string) (*AccountSSLSettingsDTOResponse, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] Getting account SSL settings of: %d ", accountId)
 
@@ -143,7 +143,7 @@ func (c *Client) GetAccountSSLSettings(accountId int) (*AccountSSLSettingsDTORes
 }
 
 // DeleteAccountSSLSettings gets the Incapsula managed account's status
-func (c *Client) DeleteAccountSSLSettings(accountId int) diag.Diagnostics {
+func (c *Client) DeleteAccountSSLSettings(accountId string) diag.Diagnostics {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] Reseting account SSL settings of: %d ", accountId)
 
@@ -173,10 +173,10 @@ func (c *Client) DeleteAccountSSLSettings(accountId int) diag.Diagnostics {
 	return nil
 }
 
-func getUrl(accountId int, baseUrl string) string {
+func getUrl(accountId string, baseUrl string) string {
 	url := fmt.Sprintf("%s%s", baseUrl, accountSSLSettingsUrl)
-	if accountId > 0 {
-		url = fmt.Sprintf("%s%s?caid=%d", baseUrl, accountSSLSettingsUrl, accountId)
+	if accountId != "" {
+		url = fmt.Sprintf("%s%s?caid=%s", baseUrl, accountSSLSettingsUrl, accountId)
 	}
 	return url
 }
