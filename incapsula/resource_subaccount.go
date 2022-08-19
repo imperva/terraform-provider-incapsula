@@ -98,7 +98,7 @@ func resourceSubAccountRead(d *schema.ResourceData, m interface{}) error {
 
 	log.Printf("[INFO] Reading Incapsula account for Account ID: %d\n", accountID)
 
-	accountStatusResponse, err := client.AccountStatus(accountID)
+	accountStatusResponse, err := client.AccountStatus(accountID, ReadSubAccount)
 
 	// Account object may have been deleted
 	if accountStatusResponse != nil && accountStatusResponse.Res.(float64) == 9403 {
