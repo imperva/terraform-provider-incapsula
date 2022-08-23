@@ -33,13 +33,13 @@ type MTLSCertificateResponse struct {
 func (c *Client) AddMTLSCertificate(certificate, privateKey []byte, passphrase, certificateName, inputHash string) (*MTLSCertificate, error) {
 	log.Printf("[INFO] Adding mutual TLS Imperva to Origin Certificate")
 	reqURL := fmt.Sprintf("%s%s", c.config.BaseURLAPI, endpointMTLSCertificate)
-	return c.editMTLSCertificate(http.MethodPost, reqURL, certificate, privateKey, passphrase, certificateName, inputHash, "Create", CreateMtlsCertifiate)
+	return c.editMTLSCertificate(http.MethodPost, reqURL, certificate, privateKey, passphrase, certificateName, inputHash, "Create", CreateMtlsImpervaToOriginCertifiate)
 }
 
 func (c *Client) UpdateMTLSCertificate(certificateID string, certificate, privateKey []byte, passphrase, certificateName, inputHash string) (*MTLSCertificate, error) {
 	log.Printf("[INFO] Updating mutual TLS Imperva to Origin Certificate with ID %s", certificateID)
 	reqURL := fmt.Sprintf("%s%s/%s", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID)
-	return c.editMTLSCertificate(http.MethodPut, reqURL, certificate, privateKey, passphrase, certificateName, inputHash, "Update", UpdateMtlsCertifiate)
+	return c.editMTLSCertificate(http.MethodPut, reqURL, certificate, privateKey, passphrase, certificateName, inputHash, "Update", UpdateMtlsImpervaToOriginCertifiate)
 }
 
 func (c *Client) GetMTLSCertificate(certificateID string) (*MTLSCertificate, error) {
@@ -48,7 +48,7 @@ func (c *Client) GetMTLSCertificate(certificateID string) (*MTLSCertificate, err
 	reqURL := fmt.Sprintf("%s%s/%s", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID)
 
 	//todo add operation!!!!!!!!!!!
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadMtlsCertifiate)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadMtlsImpervaToOriginCertifiate)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when reading mTLS Imperva to Origin Certificate ID %s: %s", certificateID, err)
 	}
@@ -118,7 +118,7 @@ func (c *Client) editMTLSCertificate(hhtpMethod, reqURL string, certificate, pri
 		}
 	}
 
-	//certificateName
+	//hash
 	if inputHash != "" {
 		fw, err := writer.CreateFormField("hash")
 		if err != nil {
@@ -168,7 +168,7 @@ func (c *Client) DeleteMTLSCertificate(certificateID string) error {
 	reqURL := fmt.Sprintf("%s%s/%s", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID)
 	//todo add operation!!!!!!!!!!!
 
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteMtlsCertifiate)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteMtlsImpervaToOriginCertifiate)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error from Incapsula service when deleting mTLS Imperva to Origin Certificate ID %s: %s", certificateID, err)
 	}
@@ -180,9 +180,7 @@ func (c *Client) DeleteMTLSCertificate(certificateID string) error {
 
 	// Read the body
 	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
-
-	log.Printf("[DEBUG] Incapsula delete mutual TLS Imperva to Origin Certificate JSON response: %s\n", string(responseBody))
+	_, err = ioutil.ReadAll(resp.Body)
 
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error deleting mTLS Imperva to Origin Certificate: %s", err)

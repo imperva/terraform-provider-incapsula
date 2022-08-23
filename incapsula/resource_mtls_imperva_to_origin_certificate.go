@@ -102,7 +102,6 @@ func resourceMTLSImpervaToOriginCertificateCreate(d *schema.ResourceData, m inte
 }
 
 func resourceMTLSImpervaToOriginCertificateRead(d *schema.ResourceData, m interface{}) error {
-	//// Implement by reading the ListCertificatesResponse for the data center
 	client := m.(*Client)
 	mTLSCertificateData, err := client.GetMTLSCertificate(d.Id())
 	if err != nil {

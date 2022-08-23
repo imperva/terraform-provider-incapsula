@@ -72,7 +72,7 @@ func testCheckMtlsImpervaToOriginCertificateExists() resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		res, ok := state.RootModule().Resources[mtlsCrtificateResource]
 		if !ok {
-			return fmt.Errorf("Incapsula mTLS Imperva to Origin Certificate resource not found : %s", apiSecApiConfigResource)
+			return fmt.Errorf("Incapsula mTLS Imperva to Origin Certificate resource not found : %s", mtlsCrtificateResource)
 		}
 		certificateID := res.Primary.ID
 		client := testAccProvider.Meta().(*Client)

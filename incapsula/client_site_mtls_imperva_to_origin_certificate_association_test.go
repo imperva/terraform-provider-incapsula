@@ -17,27 +17,28 @@ func TestClientGetSiteMtlsCertificateAssociationBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := 42
+	certId := 100
 
-	mTLSCertificate, err := client.GetSiteMtlsCertificateAssociation(siteID)
+	_, err := client.GetSiteMtlsCertificateAssociation(certId, siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprint("[ERROR] Error getting Incapsula Site to mTLS certificate association for Site ID 42")) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("[ERROR] Error getting Site to mutual TLS Imperva to Origin Certificate association for Site ID %d", siteID)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
-	if mTLSCertificate != nil {
-		t.Errorf("Should have received a nil mTLSCertificate instance")
-	}
+
 }
 
 func TestClientGetSiteMtlsCertificateAssociationBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
+	certifiateID := 100
 
-	endpoint := fmt.Sprintf("%s?siteId=%d", endpointMTLSCertificate, siteID)
+	endpoint := fmt.Sprintf("/certificates-ui/v3/mtls-origin/certificates/%d/associated-sites/%d", certifiateID, siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(406)
 		if req.URL.String() != endpoint {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
@@ -48,15 +49,15 @@ func TestClientGetSiteMtlsCertificateAssociationBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	mTLSCertificate, err := client.GetSiteMtlsCertificateAssociation(siteID)
+	certificateExists, err := client.GetSiteMtlsCertificateAssociation(certifiateID, siteID)
 
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("[ERROR] Error parsing Incapsula Site to mutual TLS Imperva to Origin Certificate association JSON response for Site ID %d", siteID)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("[ERROR] Error status code 406 from Incapsula service on fetching Incapsula Site to mutual TLS Imperva to Origin certificate association for Site ID %d", siteID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
-	if mTLSCertificate != nil {
+	if certificateExists == true {
 		t.Errorf("Should have received a nil mTLSCertificate instance")
 	}
 }
@@ -65,8 +66,9 @@ func TestClientGetSiteMtlsCertificateAssociationInvalidConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
+	certifiateID := 100
 
-	endpoint := fmt.Sprintf("%s?siteId=%d", endpointMTLSCertificate, siteID)
+	endpoint := fmt.Sprintf("/certificates-ui/v3/mtls-origin/certificates/%d/associated-sites/%d", certifiateID, siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(400)
@@ -74,17 +76,17 @@ func TestClientGetSiteMtlsCertificateAssociationInvalidConfig(t *testing.T) {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.Write([]byte(`
-    "errors": [
-        {
-            "status": 400,
-            "id": "16d37a3dfb2b3aff",
-            "source": {
-                "pointer": "/v3/mtls-origin/certificates"
-            },
-            "title": "Bad Request",
-            "detail": "handleRequest - Got response headers:org.springframework.web.reactive.function.client.DefaultClientResponse$DefaultHeaders@20c80d50, status: 400 BAD_REQUEST, body: {\"errors\":[{\"status\":400,\"id\":\"de31602becdf6d4b\",\"source\":{\"pointer\":\"/mtls-origin/certificates\"},\"title\":\"Bad Request\",\"detail\":\"Certificate already exists\"}]}"
-        }
-    ]
+   "errors": [
+       {
+           "status": 400,
+           "id": "16d37a3dfb2b3aff",
+           "source": {
+               "pointer": "/v3/mtls-origin/certificates"
+           },
+           "title": "Bad Request",
+           "detail": "handleRequest - Got response headers:org.springframework.web.reactive.function.client.DefaultClientResponse$DefaultHeaders@20c80d50, status: 400 BAD_REQUEST, body: {\"errors\":[{\"status\":400,\"id\":\"de31602becdf6d4b\",\"source\":{\"pointer\":\"/mtls-origin/certificates\"},\"title\":\"Bad Request\",\"detail\":\"Certificate already exists\"}]}"
+       }
+   ]
 }
 `))
 	}))
@@ -93,7 +95,7 @@ func TestClientGetSiteMtlsCertificateAssociationInvalidConfig(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	mTLSCertificate, err := client.GetSiteMtlsCertificateAssociation(siteID)
+	certificateExists, err := client.GetSiteMtlsCertificateAssociation(certifiateID, siteID)
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -101,7 +103,7 @@ func TestClientGetSiteMtlsCertificateAssociationInvalidConfig(t *testing.T) {
 	if !strings.HasPrefix(err.Error(), fmt.Sprintf("[ERROR] Error status code 400 from Incapsula service on fetching Incapsula Site to mutual TLS Imperva to Origin certificate association for Site ID %d", siteID)) {
 		t.Errorf("Should have received a bad incap rule error, got: %s", err)
 	}
-	if mTLSCertificate != nil {
+	if certificateExists == true {
 		t.Errorf("Should have received a nil mTLSCertificate instance")
 	}
 }
@@ -110,8 +112,9 @@ func TestClientGetSiteMtlsCertificateAssociationValidConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
+	certifiateID := 100
 
-	endpoint := fmt.Sprintf("%s?siteId=%d", endpointMTLSCertificate, siteID)
+	endpoint := fmt.Sprintf("/certificates-ui/v3/mtls-origin/certificates/%d/associated-sites/%d", certifiateID, siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -119,45 +122,20 @@ func TestClientGetSiteMtlsCertificateAssociationValidConfig(t *testing.T) {
 		if req.URL.String() != endpoint {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
-		rw.Write([]byte(`{
-    "data": [
-        {
-            "certificateId": 1,
-            "issuedTo": "company",
-            "issuedBy": "ca company",
-            "validFrom": 1655011098999,
-            "validUntil": 168456887638629,
-            "chain": "ca cert",
-            "name": "mtls-cert",
-            "creationDate": 1685036052000,
-            "lastUpdate": 1685036052000,
-            "serialNumber": "4345667",
-            "appliedSitesDetails": [
-                {
-                    "externalId": 122222,
-                    "name": "site.incapsula.co",
-                    "accountId": 2121221
-                }
-            ]
-        }
-    ]
-}`))
+
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	mTLSCertificate, err := client.GetSiteMtlsCertificateAssociation(siteID)
+	certificateExists, err := client.GetSiteMtlsCertificateAssociation(certifiateID, siteID)
 
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
-	if mTLSCertificate == nil {
-		t.Errorf("Should not have received a nil addIncapRuleResponse instance")
-	}
-	if mTLSCertificate.Id != 1 {
-		t.Errorf("Certifcate ID doesn't match. Actual : %v", mTLSCertificate.Id)
+	if certificateExists == false {
+		t.Errorf("Should not have received a false in GetSiteMtlsCertificateAssociation")
 	}
 }
 
@@ -194,17 +172,17 @@ func TestClientUpdateSiteMtlsCertificateAssociationInvalidConfig(t *testing.T) {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.Write([]byte(`
-    "errors": [
-        {
-            "status": 400,
-            "id": "16d37a3dfb2b3aff",
-            "source": {
-                "pointer": "/v3/mtls-origin/certificates"
-            },
-            "title": "Bad Request",
-            "detail": "handleRequest - Got response headers:org.springframework.web.reactive.function.client.DefaultClientResponse$DefaultHeaders@20c80d50, status: 400 BAD_REQUEST, body: {\"errors\":[{\"status\":400,\"id\":\"de31602becdf6d4b\",\"source\":{\"pointer\":\"/mtls-origin/certificates\"},\"title\":\"Bad Request\",\"detail\":\"Certificate already exists\"}]}"
-        }
-    ]
+   "errors": [
+       {
+           "status": 400,
+           "id": "16d37a3dfb2b3aff",
+           "source": {
+               "pointer": "/v3/mtls-origin/certificates"
+           },
+           "title": "Bad Request",
+           "detail": "handleRequest - Got response headers:org.springframework.web.reactive.function.client.DefaultClientResponse$DefaultHeaders@20c80d50, status: 400 BAD_REQUEST, body: {\"errors\":[{\"status\":400,\"id\":\"de31602becdf6d4b\",\"source\":{\"pointer\":\"/mtls-origin/certificates\"},\"title\":\"Bad Request\",\"detail\":\"Certificate already exists\"}]}"
+       }
+   ]
 }
 `))
 	}))
@@ -256,7 +234,7 @@ func TestClientDeleteSiteMtlsCertificateAssociationInvalidConfig(t *testing.T) {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.Write([]byte(`
-    {
+   {
 			"errors": [
 	{
 		"status": 500,

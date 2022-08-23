@@ -57,12 +57,12 @@ func resourceSiteMtlsCertificateAssociationRead(d *schema.ResourceData, m interf
 		return err
 	}
 
-	mTLSCertificateData, err := client.GetSiteMtlsCertificateAssociation(siteID)
+	associationExists, err := client.GetSiteMtlsCertificateAssociation(certificateID, siteID)
 	if err != nil {
 		return err
 	}
 
-	if mTLSCertificateData == nil {
+	if associationExists == false {
 		//todo KATRIN - change error message
 		return fmt.Errorf("Couldn't find the Incapsula Site to Imperva to Origin mutual TLS Certificate Association")
 	}
@@ -113,6 +113,7 @@ func validateInput(d *schema.ResourceData) (int, int, error) {
 	siteIDStr := d.Get("site_id").(string)
 	certificateIDStr := d.Get("certificate_id").(string)
 
+	//todo KATRIN - cange message  to gewneral  - not specific resource
 	siteID, err := strconv.Atoi(siteIDStr)
 	if err != nil {
 		return 0, 0, fmt.Errorf("failed to convert Site Id for Incapsula Site to Imperva to Origin mutual TLS Certificate Association resource, actual value: %s, expected numeric id", siteIDStr)

@@ -16,6 +16,7 @@ const siteMtlsCrtificateAssociationName = "testacc-terraform-site-mtls-certifica
 func TestAccIncapsulaSiteMtlsCertificateAssociation_Basic(t *testing.T) {
 	log.Printf("========================BEGIN TEST========================")
 	log.Printf("[DEBUG]Running test resource_mtls_imperva_to_origin_certificate.TestAccIncapsulaSiteMtlsCertificateAssociation_Basic")
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -31,8 +32,9 @@ func TestAccIncapsulaSiteMtlsCertificateAssociation_Basic(t *testing.T) {
 	})
 }
 
-//todo:
-//check destroy
+//todo KATRIN:
+//check destroy!!!!!!
+
 func testACCStateSiteMtlsCertificateAssociationDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Client)
 

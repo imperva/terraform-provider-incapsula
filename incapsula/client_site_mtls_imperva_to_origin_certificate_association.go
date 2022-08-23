@@ -1,46 +1,39 @@
 package incapsula
 
 import (
-	"encoding/json"
+	//"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 )
 
-func (c *Client) GetSiteMtlsCertificateAssociation(siteID int) (*MTLSCertificate, error) {
-	log.Printf("[INFO] Getting mTLS certificate for Site ID %d", siteID)
-	reqURL := fmt.Sprintf("%s%s?siteId=%d", c.config.BaseURLAPI, endpointMTLSCertificate, siteID)
+func (c *Client) GetSiteMtlsCertificateAssociation(certificateID, siteID int) (bool, error) {
+	log.Printf("[INFO] Getting Site to mutual TLS Imperva to Origin Certificate association for Site ID %d", siteID)
+	reqURL := fmt.Sprintf("%s%s/%d/associated-sites/%d", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID, siteID)
 
+	//todo KATRIN add operation
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, "")
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error getting Incapsula Site to mTLS certificate association for Site ID %d: %s", siteID, err)
+		return false, fmt.Errorf("[ERROR] Error getting Site to mutual TLS Imperva to Origin Certificate association for Site ID %d: %s", siteID, err)
 	}
 	// Read the body
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
-	log.Printf("[DEBUG] Incapsula Get mutual TLS Imperva to Origin Certificate JSON response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] Incapsula Get  Site to mutual TLS Imperva to Origin Certificate association JSON response: %s\n", string(responseBody))
 
 	// Check the response code
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("[ERROR] Error status code %d from Incapsula service on fetching Incapsula Site to mutual TLS Imperva to Origin certificate association for Site ID %d\n: %s", resp.StatusCode, siteID, string(responseBody))
-	}
-
-	// Dump JSON
-	var mtlsCertificate MTLSCertificateResponse
-	err = json.Unmarshal([]byte(responseBody), &mtlsCertificate)
-	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error parsing Incapsula Site to mutual TLS Imperva to Origin Certificate association JSON response for Site ID %d: %s\nresponse: %s", siteID, err, string(responseBody))
-	}
-	if len(mtlsCertificate.Data) > 0 {
-		return &mtlsCertificate.Data[0], nil
+	if resp.StatusCode == 404 {
+		return false, err
+	} else if resp.StatusCode == 200 {
+		return true, err
 	} else {
-		return nil, nil
+		return false, fmt.Errorf("[ERROR] Error status code %d from Incapsula service on fetching Incapsula Site to mutual TLS Imperva to Origin certificate association for Site ID %d\n: %s", resp.StatusCode, siteID, string(responseBody))
 	}
 }
 
 func (c *Client) CreateSiteMtlsCertificateAssociation(certificateID, siteID int) error {
-	log.Printf("[INFO] Updating mTLS certificate ID %d for Site ID %d", certificateID, siteID)
+	log.Printf("[INFO] Updating Site to mutual TLS Imperva to Origin Certificate association for certificate ID %d, Site ID %d", certificateID, siteID)
 	reqURL := fmt.Sprintf("%s%s/%d/associated-sites/%d", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID, siteID)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, nil, "")
@@ -60,7 +53,7 @@ func (c *Client) CreateSiteMtlsCertificateAssociation(certificateID, siteID int)
 }
 
 func (c *Client) DeleteSiteMtlsCertificateAssociation(certificateID, siteID int) error {
-	log.Printf("[INFO] Unassigning mTLS certificate ID %d for Site ID %d", certificateID, siteID)
+	log.Printf("[INFO] Unassigning Site to mutual TLS Imperva to Origin Certificate association for certificate ID %d, Site ID %d", certificateID, siteID)
 	reqURL := fmt.Sprintf("%s%s/%d/associated-sites/%d", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID, siteID)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, "")
@@ -76,5 +69,6 @@ func (c *Client) DeleteSiteMtlsCertificateAssociation(certificateID, siteID int)
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("[ERROR] Error status code %d from Incapsula service on fetching site to mutual TLS Imperva to Origin certificate Association for certificate ID %d for Site ID %d\n%s", resp.StatusCode, certificateID, siteID, string(responseBody))
 	}
+	//add logic for 404
 	return nil
 }
