@@ -89,7 +89,7 @@ func testCheckIncapsulaAccountDestroy(state *terraform.State) error {
 			return fmt.Errorf("Account ID conversion error for %s: %s", accountIDStr, err)
 		}
 
-		_, err = client.AccountStatus(accountID)
+		_, err = client.AccountStatus(accountID, ReadAccount)
 
 		if err == nil {
 			return fmt.Errorf("Incapsula account id: %d still exists", accountID)
@@ -117,7 +117,7 @@ func testCheckIncapsulaAccountExists(name string) resource.TestCheckFunc {
 		}
 
 		client := testAccProvider.Meta().(*Client)
-		accountStatusResponse, err := client.AccountStatus(accountID)
+		accountStatusResponse, err := client.AccountStatus(accountID, ReadAccount)
 		if accountStatusResponse == nil {
 			return fmt.Errorf("Incapsula account id: %d does not exist", accountID)
 		}

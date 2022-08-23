@@ -13,7 +13,7 @@ func TestClientUpdateAccountSSlSettingsBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "http://badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	dto := AccountSSLSettingsDTO{}
-	updateAccountSSLSettingsResponse, diag := client.UpdateAccountSSLSettings(&dto, 0)
+	updateAccountSSLSettingsResponse, diag := client.UpdateAccountSSLSettings(&dto, "")
 	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "Timeout exceeded while awaiting") {
 		t.Errorf("Should have received an time out error")
 	}
@@ -40,7 +40,7 @@ func TestClientUpdateAccountSSlSettingsInternalError(t *testing.T) {
 	dto := AccountSSLSettingsDTO{
 		ImpervaCertificate: &imp,
 	}
-	_, diag := client.UpdateAccountSSLSettings(&dto, 0)
+	_, diag := client.UpdateAccountSSLSettings(&dto, "")
 	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "got response status 500, error") {
 		t.Errorf("Should have received an error")
 	}
@@ -64,7 +64,7 @@ func TestClientUpdateAccountSSlSettingsErrorsInBody(t *testing.T) {
 	dto := AccountSSLSettingsDTO{
 		ImpervaCertificate: &imp,
 	}
-	accountSSLSettingsResponse, diag := client.UpdateAccountSSLSettings(&dto, 0)
+	accountSSLSettingsResponse, diag := client.UpdateAccountSSLSettings(&dto, "")
 	if diag != nil {
 		t.Errorf("Should not received an error")
 	}
@@ -91,7 +91,7 @@ func TestClientUpdateAccountSSlSettingsDataInBody(t *testing.T) {
 	dto := AccountSSLSettingsDTO{
 		ImpervaCertificate: &imp,
 	}
-	accountSSLSettingsResponse, diag := client.UpdateAccountSSLSettings(&dto, 0)
+	accountSSLSettingsResponse, diag := client.UpdateAccountSSLSettings(&dto, "")
 	if diag != nil {
 		t.Errorf("Should not received an error")
 	}
@@ -111,7 +111,7 @@ func TestClientGetAccountSSlSettingsDataInBody(t *testing.T) {
 	defer server.Close()
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	accountSSLSettingsResponse, diag := client.GetAccountSSLSettings(0)
+	accountSSLSettingsResponse, diag := client.GetAccountSSLSettings("")
 	if diag != nil {
 		t.Errorf("Should not received an error")
 	}
@@ -132,7 +132,7 @@ func TestClientGetAccountSSlSettingsErrorsInBody(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	accountSSLSettingsResponse, diag := client.GetAccountSSLSettings(0)
+	accountSSLSettingsResponse, diag := client.GetAccountSSLSettings("")
 	if diag != nil {
 		t.Errorf("Should not received an error")
 	}
@@ -152,7 +152,7 @@ func TestClientGetAccountSSlSettingsErrorFromMY(t *testing.T) {
 	defer server.Close()
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	_, diag := client.GetAccountSSLSettings(0)
+	_, diag := client.GetAccountSSLSettings("")
 	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "got response status 500, error") {
 		t.Errorf("Should have received an error")
 	}
@@ -161,7 +161,7 @@ func TestClientGetAccountSSlSettingsErrorFromMY(t *testing.T) {
 func TestClientGetAccountSSlSettingsBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "http://badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	updateAccountSSLSettingsResponse, diag := client.GetAccountSSLSettings(0)
+	updateAccountSSLSettingsResponse, diag := client.GetAccountSSLSettings("")
 	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "Timeout exceeded while awaiting") {
 		t.Errorf("Should have received an time out error")
 	}
@@ -173,7 +173,7 @@ func TestClientGetAccountSSlSettingsBadConnection(t *testing.T) {
 func TestClientDeleteAccountSSlSettingsBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "http://badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	diag := client.DeleteAccountSSLSettings(0)
+	diag := client.DeleteAccountSSLSettings("")
 	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "Timeout exceeded while awaiting") {
 		t.Errorf("Should have received an time out error")
 	}
@@ -190,7 +190,7 @@ func TestClientDeleteAccountSSlSettingsErrorFromMY(t *testing.T) {
 	defer server.Close()
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	diag := client.DeleteAccountSSLSettings(0)
+	diag := client.DeleteAccountSSLSettings("")
 	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "got response status 500") {
 		t.Errorf("Should have received an error")
 	}
@@ -206,7 +206,7 @@ func TestClientDeleteAccountSSlSettings200FromMY(t *testing.T) {
 	defer server.Close()
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	diag := client.DeleteAccountSSLSettings(0)
+	diag := client.DeleteAccountSSLSettings("")
 	if diag != nil || diag.HasError() {
 		t.Errorf("Should not received an error")
 	}

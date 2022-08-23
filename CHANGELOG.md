@@ -1,4 +1,16 @@
 
+## 3.8.4 (Aug 17, 2022)
+
+BUG FIXES:
+
+* incapsula_subaccount: fix 'read' method to use another API to the backend ([#197](https://github.com/imperva/terraform-provider-incapsula/pull/197))
+
+## 3.8.3 (Aug 11, 2022)
+
+BUG FIXES:
+
+* remove future resource from the documentation ([#195](https://github.com/imperva/terraform-provider-incapsula/pull/195))
+
 ## 3.8.2 (Aug 3, 2022)
 
 BUG FIXES:
