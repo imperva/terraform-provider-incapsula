@@ -93,26 +93,41 @@ func resourceSubAccountCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceSubAccountRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	subAccountID, _ := strconv.Atoi(d.Id())
-	subAccount, err := client.GetSubAccount(d.Get("parent_id").(int), subAccountID)
 
-	if err != nil {
-		return err
-	}
+	accountID, _ := strconv.Atoi(d.Id())
 
-	if subAccount == nil {
-		log.Printf("[INFO] Incapsula subaccount %s has already been deleted: %s\n", d.Id(), err)
+	log.Printf("[INFO] Reading Incapsula account for Account ID: %d\n", accountID)
+
+	accountStatusResponse, err := client.AccountStatus(accountID, ReadSubAccount)
+
+	// Account object may have been deleted
+	if accountStatusResponse != nil && accountStatusResponse.Res.(float64) == 9403 {
+		log.Printf("[INFO] Incapsula Account ID %d has already been deleted: %s\n", accountID, err)
 		d.SetId("")
 		return nil
 	}
 
-	d.Set("sub_account_name", subAccount.SubAccountName)
-	d.Set("ref_id", subAccount.RefID)
-	d.Set("log_level", subAccount.LogLevel)
-	d.Set("parent_id", subAccount.ParentID)
-	d.Set("logs_account_id", subAccount.LogsAccountID)
+	if err != nil {
+		log.Printf("[ERROR] Could not read Incapsula subaccount for Account ID: %d, %s\n", accountID, err)
+		return err
+	}
+
+	d.Set("sub_account_name", accountStatusResponse.Account.AccountName)
+	d.Set("ref_id", accountStatusResponse.Account.RefID)
+	//d.Set("log_level", accountStatusResponse.Account.)
+	d.Set("parent_id", accountStatusResponse.Account.ParentID)
+	//d.Set("logs_account_id", accountStatusResponse.Account.LogsAccountID)
 
 	log.Printf("[INFO] Finished reading Incapsula subaccount: %s\n", d.Id())
+	// Get the performance settings for the site
+	defaultAccountDataStorageRegion, err := client.GetAccountDataStorageRegion(d.Id())
+	if err != nil {
+		log.Printf("[ERROR] Could not read Incapsula default data storage region for account id: %d, %s\n", accountID, err)
+		return err
+	}
+	d.Set("data_storage_region", defaultAccountDataStorageRegion.Region)
+
+	log.Printf("[INFO] Finished reading Incapsula account for account ud: %d\n", accountID)
 
 	return nil
 }
