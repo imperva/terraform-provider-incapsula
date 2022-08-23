@@ -13,7 +13,7 @@ Provides an Incapsula Site to Mutual TLS Imperva to Origin Certificate Associati
 
 ```hcl
 resource "incapsula_site_mtls_certificate_association" "site_mtls_association-site1" {
-    certificate_id = incapsula_mtls_imperva_to_origin_certificate.mtls_certificate.id
+    certificate_id =  incapsula_mtls_imperva_to_origin_certificate.mtls_certificate.id
     site_id        =  incapsula_site.example-site.id
 }
 ```
