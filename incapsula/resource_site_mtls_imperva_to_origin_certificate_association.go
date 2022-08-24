@@ -17,7 +17,6 @@ func resourceSiteMtlsCertificateAssociation() *schema.Resource {
 		//todo
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				//todo!!!!! KATRIN change all error messages
 				idSlice := strings.Split(d.Id(), "/")
 				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
 					return nil, fmt.Errorf("unexpected format of Incapsula Site to Imperva to Origin mutual TLS Certificate Association resource ID, expected site_id/certificate_id, got %s", d.Id())
@@ -49,7 +48,6 @@ func resourceSiteMtlsCertificateAssociation() *schema.Resource {
 }
 
 func resourceSiteMtlsCertificateAssociationRead(d *schema.ResourceData, m interface{}) error {
-	//// Implement by reading the ListCertificatesResponse for the data center
 	client := m.(*Client)
 
 	siteID, certificateID, err := validateInput(d)
@@ -63,8 +61,7 @@ func resourceSiteMtlsCertificateAssociationRead(d *schema.ResourceData, m interf
 	}
 
 	if associationExists == false {
-		//todo KATRIN - change error message
-		return fmt.Errorf("Couldn't find the Incapsula Site to Imperva to Origin mutual TLS Certificate Association")
+		return fmt.Errorf("Couldn't find the Incapsula Site - Imperva to Origin mutual TLS Certificate Association")
 	}
 
 	// Generate synthetic ID
@@ -113,7 +110,6 @@ func validateInput(d *schema.ResourceData) (int, int, error) {
 	siteIDStr := d.Get("site_id").(string)
 	certificateIDStr := d.Get("certificate_id").(string)
 
-	//todo KATRIN - cange message  to gewneral  - not specific resource
 	siteID, err := strconv.Atoi(siteIDStr)
 	if err != nil {
 		return 0, 0, fmt.Errorf("failed to convert Site Id for Incapsula Site to Imperva to Origin mutual TLS Certificate Association resource, actual value: %s, expected numeric id", siteIDStr)

@@ -58,8 +58,7 @@ func (c *Client) AddCertificate(siteID, certificate, privateKey, passphrase, inp
 	if passphrase != "" {
 		values.Set("passphrase", passphrase)
 	}
-	log.Printf("AddCertificate certificate\n%v", values)
-	log.Printf("certificate\n%v", certificate)
+
 	// Post to Incapsula
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointCertificateAdd)
 	resp, err := c.PostFormWithHeaders(reqURL, values, CreateCustomCertificate)

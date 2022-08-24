@@ -88,7 +88,6 @@ func (c *Client) DoJsonRequestWithCustomHeaders(method string, url string, data 
 	}
 
 	SetHeaders(c, req, contentTypeApplicationJson, operation, headers)
-	log.Printf("%v", req)
 	return c.httpClient.Do(req)
 }
 
@@ -128,7 +127,6 @@ func (c *Client) DoJsonRequestWithHeadersForm(method string, url string, data []
 	if err != nil {
 		return nil, fmt.Errorf("Error preparing request: %s", err)
 	}
-	log.Printf("DoJsonRequestWithHeadersForm request:\n%v", req)
 	SetHeaders(c, req, contentType, operation, nil)
 	return c.httpClient.Do(req)
 }
@@ -139,12 +137,6 @@ func PrepareJsonRequest(method string, url string, data []byte) (*http.Request, 
 	}
 
 	return http.NewRequest(method, url, bytes.NewReader(data))
-}
-
-func DoRequestWithFormData(method string, url string, data url.Values) (*http.Response, error) {
-	//todo - add headers!!!!
-	// SetHeaders???
-	return http.PostForm(url, data)
 }
 
 func SetHeaders(c *Client, req *http.Request, contentType string, operation string, customHeaders map[string]string) {

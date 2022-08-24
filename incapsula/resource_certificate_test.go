@@ -131,22 +131,10 @@ func generateKeyPair() (string, string) {
 	pkeyRes := string(privateKeyPEM)
 	calculatedHash = calculateHash(certificateRes+"\n", "", pkeyRes+"\n")
 
-	//return certificateRes, pkeyRes
 	return fmt.Sprintf("<<EOT\n%s\nEOT", certificateRes), fmt.Sprintf("<<EOT\n%s\nEOT", pkeyRes)
-	//// encode PEM-encoded certificate with base64 algorith
-	//certificateBase64 := b64.StdEncoding.EncodeToString([]byte(out.String()))
-	//// encode PEM-encoded certificate with base64 algorith
-	//privateKeyBase64 := b64.StdEncoding.EncodeToString(privateKeyPEM)
-	//
-	////save calculated hash for it's verification in step 1 of the test(verify create)
-	//return fmt.Sprintf("<<EOT\n%s\nEOT", certificateBase64), fmt.Sprintf("<<EOT\n%s\nEOT", privateKeyBase64)
 }
 
-//
-//func generateKeyPairCAcert() (string, string) {
-//
-//
-//}
+
 
 func generateKeyPairBase64() (string, string) {
 	cert, pkey := generateKeyPair()

@@ -32,9 +32,6 @@ func TestAccIncapsulaSiteMtlsCertificateAssociation_Basic(t *testing.T) {
 	})
 }
 
-//todo KATRIN:
-//check destroy!!!!!!
-
 func testACCStateSiteMtlsCertificateAssociationDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Client)
 
