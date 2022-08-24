@@ -122,7 +122,7 @@ func GetRequestParamsWithCaid(accountId int) map[string]string {
 	return params
 }
 
-func (c *Client) DoJsonRequestWithHeadersForm(method string, url string, data []byte, contentType string, operation string) (*http.Response, error) {
+func (c *Client) DoFormDataRequestWithHeaders(method string, url string, data []byte, contentType string, operation string) (*http.Response, error) {
 	req, err := PrepareJsonRequest(method, url, data)
 	if err != nil {
 		return nil, fmt.Errorf("Error preparing request: %s", err)

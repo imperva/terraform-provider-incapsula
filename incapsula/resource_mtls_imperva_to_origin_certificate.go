@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-func resourceMTLSImpervaToOriginCertificate() *schema.Resource {
+func resourceMtlsImpervaToOriginCertificate() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceMTLSImpervaToOriginCertificateCreate,
 		Read:   resourceMTLSImpervaToOriginCertificateRead,
@@ -45,6 +45,11 @@ func resourceMTLSImpervaToOriginCertificate() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"account_id": {
+				Description: "Numeric identifier of the account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"input_hash": {
 				Description: "Currently ignored. If terraform plan flags this field as changed, it means that any of: certificate, private_key, or passphrase has changed.",
 				Type:        schema.TypeString,
@@ -64,6 +69,7 @@ func resourceMTLSImpervaToOriginCertificate() *schema.Resource {
 func resourceMTLSImpervaToOriginCertificateCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	inputHash := createHash(d)
+	accountID:= d.Get("account_id").(string)
 
 	encodedCert := d.Get("certificate").(string)
 	// Standard Base64 Decoding
@@ -71,7 +77,6 @@ func resourceMTLSImpervaToOriginCertificateCreate(d *schema.ResourceData, m inte
 	if err != nil {
 		fmt.Printf("Error decoding Base64 encoded data %v", err)
 	}
-	fmt.Println(string(decodedCert))
 
 	encodedPKey := d.Get("private_key").(string)
 	// Standard Base64 Decoding
@@ -79,31 +84,29 @@ func resourceMTLSImpervaToOriginCertificateCreate(d *schema.ResourceData, m inte
 	if err != nil {
 		fmt.Printf("Error decoding Base64 encoded data %v", err)
 	}
-	fmt.Println(string(decodedPKey))
 
-	mTLSCertificateData, err := client.AddMTLSCertificate(
+	_, err = client.AddMTLSCertificate(
 		decodedCert,
 		decodedPKey,
 		d.Get("passphrase").(string),
 		d.Get("certificate_name").(string),
 		inputHash,
+		accountID,
 	)
 
 	if err != nil {
 		return err
 	}
 
-	//// TODO: Setting this to arbitrary value as there is only one cert for each site.
-	d.SetId(strconv.Itoa(mTLSCertificateData.Id))
-	d.Set("input_hash", mTLSCertificateData.Hash)
 	log.Printf("[INFO] Created mutual TLS Imperva to Origin Certificate with ID: %s\n", d.Id())
-
 	return resourceMTLSImpervaToOriginCertificateRead(d, m)
 }
 
 func resourceMTLSImpervaToOriginCertificateRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	mTLSCertificateData, err := client.GetMTLSCertificate(d.Id())
+	accountID:= d.Get("account_id").(string)
+
+	mTLSCertificateData, err := client.GetMTLSCertificate(d.Id(), accountID)
 	if err != nil {
 		return err
 	}
@@ -118,6 +121,7 @@ func resourceMTLSImpervaToOriginCertificateRead(d *schema.ResourceData, m interf
 func resourceMTLSImpervaToOriginCertificateUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	inputHash := createHash(d)
+	accountID:= d.Get("account_id").(string)
 
 	encodedCert := d.Get("certificate").(string)
 	// Standard Base64 Decoding
@@ -142,6 +146,7 @@ func resourceMTLSImpervaToOriginCertificateUpdate(d *schema.ResourceData, m inte
 		d.Get("passphrase").(string),
 		d.Get("certificate_name").(string),
 		inputHash,
+		accountID,
 	)
 
 	if err != nil {
@@ -158,8 +163,9 @@ func resourceMTLSImpervaToOriginCertificateUpdate(d *schema.ResourceData, m inte
 
 func resourceMTLSImpervaToOriginCertificateDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
+	accountID:= d.Get("account_id").(string)
 
-	err := client.DeleteMTLSCertificate(d.Id())
+	err := client.DeleteMTLSCertificate(d.Id(), accountID)
 
 	if err != nil {
 		return err

@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func resourceSiteMtlsCertificateAssociation() *schema.Resource {
+func resourceMtlsImpervaToOriginCertificateSiteAssociation() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceSiteMtlsCertificateAssociationCreate,
 		Read:   resourceSiteMtlsCertificateAssociationRead,

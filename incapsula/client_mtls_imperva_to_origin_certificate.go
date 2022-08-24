@@ -30,24 +30,31 @@ type MTLSCertificateResponse struct {
 	Data []MTLSCertificate `json:"data"`
 }
 
-func (c *Client) AddMTLSCertificate(certificate, privateKey []byte, passphrase, certificateName, inputHash string) (*MTLSCertificate, error) {
+func (c *Client) AddMTLSCertificate(certificate, privateKey []byte, passphrase, certificateName, inputHash, accountID string) (*MTLSCertificate, error) {
 	log.Printf("[INFO] Adding mutual TLS Imperva to Origin Certificate")
 	reqURL := fmt.Sprintf("%s%s", c.config.BaseURLAPI, endpointMTLSCertificate)
+	if accountID != "" {
+		reqURL = fmt.Sprintf("%s%s?caid=%s", c.config.BaseURLAPI, endpointMTLSCertificate, accountID)
+	}
 	return c.editMTLSCertificate(http.MethodPost, reqURL, certificate, privateKey, passphrase, certificateName, inputHash, "Create", CreateMtlsImpervaToOriginCertifiate)
 }
 
-func (c *Client) UpdateMTLSCertificate(certificateID string, certificate, privateKey []byte, passphrase, certificateName, inputHash string) (*MTLSCertificate, error) {
+func (c *Client) UpdateMTLSCertificate(certificateID string, certificate, privateKey []byte, passphrase, certificateName, inputHash, accountID string) (*MTLSCertificate, error) {
 	log.Printf("[INFO] Updating mutual TLS Imperva to Origin Certificate with ID %s", certificateID)
 	reqURL := fmt.Sprintf("%s%s/%s", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID)
+	if accountID!= "" {
+		reqURL = fmt.Sprintf("%s%s/%s?caid=%s", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID, accountID)
+	}
 	return c.editMTLSCertificate(http.MethodPut, reqURL, certificate, privateKey, passphrase, certificateName, inputHash, "Update", UpdateMtlsImpervaToOriginCertifiate)
 }
 
-func (c *Client) GetMTLSCertificate(certificateID string) (*MTLSCertificate, error) {
+func (c *Client) GetMTLSCertificate(certificateID, accountID string) (*MTLSCertificate, error) {
 	log.Printf("[INFO] Reading mutual TLS Imperva to Origin Certificate with ID %s", certificateID)
 	//todo refactor !! move to separate method
 	reqURL := fmt.Sprintf("%s%s/%s", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID)
-
-	//todo add operation!!!!!!!!!!!
+	if accountID!= "" {
+		reqURL = fmt.Sprintf("%s%s/%s?caid=%s", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID, accountID)
+	}
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadMtlsImpervaToOriginCertifiate)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when reading mTLS Imperva to Origin Certificate ID %s: %s", certificateID, err)
@@ -133,7 +140,7 @@ func (c *Client) editMTLSCertificate(hhtpMethod, reqURL string, certificate, pri
 	writer.Close()
 
 	contentType := writer.FormDataContentType()
-	resp, err := c.DoJsonRequestWithHeadersForm(hhtpMethod, reqURL, body.Bytes(), contentType, operation)
+	resp, err := c.DoFormDataRequestWithHeaders(hhtpMethod, reqURL, body.Bytes(), contentType, operation)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error while %s mTLS Imperva to Origin Certificate: %s", action, err)
 	}
@@ -157,12 +164,11 @@ func (c *Client) editMTLSCertificate(hhtpMethod, reqURL string, certificate, pri
 	if len(mtlsCertificate.Data) > 0 {
 		return &mtlsCertificate.Data[0], nil
 	} else {
-		// todo add ID if we have KATRIN!!!!!!
 		return nil, fmt.Errorf("No cerificate found")
 	}
 
 }
-func (c *Client) DeleteMTLSCertificate(certificateID string) error {
+func (c *Client) DeleteMTLSCertificate(certificateID, accountID string) error {
 	log.Printf("[INFO] Deleting mTLS certificate with ID %s", certificateID)
 
 	reqURL := fmt.Sprintf("%s%s/%s", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID)
