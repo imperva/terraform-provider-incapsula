@@ -18,7 +18,6 @@ const contentTypeApplicationUrlEncoded = "application/x-www-form-urlencoded"
 const contentTypeApplicationJson = "application/json"
 
 const durationOfRetriesInSeconds = 30
-const sleepBeforeRetryInSeconds = 2
 
 // Client represents an internal client that brokers calls to the Incapsula API
 type Client struct {
@@ -175,15 +174,10 @@ func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
 			}
 			if responseOnRequest.StatusCode == 502 {
 				log.Printf("[WARN] Error from Incapsula service when reading resource, performing retry")
-				time.Sleep(sleepBeforeRetryInSeconds * time.Second)
 				return resource.RetryableError(fmt.Errorf("error code 502 from incapsula service when reading resource, performing retry"))
 			}
 			return nil
 		})
-		//if still getting 502 after retries and durationOfRetriesInSeconds passed - log will give indication of issue. no further retry.
-		if responseOnRequest.StatusCode == 502 {
-			log.Printf("[ERROR] Error from Incapsula service when reading resource")
-		}
 		return responseOnRequest, errorOnRequest
 	}
 	//if not a "read" request  - don't do retries (retires for updates are risky and result could be non-deterministic)
