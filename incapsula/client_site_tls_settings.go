@@ -46,7 +46,7 @@ func (c *Client) GetSiteTlsSettings(siteID int) (*SiteTlsSettings, error) {
 	var siteTlsSettings SiteTlsSettings
 	err = json.Unmarshal([]byte(responseBody), &siteTlsSettings)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error parsing Incapsula Site to mutual TLS Imperva to Origin Certificate association JSON response for Site ID %d: %s\nresponse: %s", siteID, err, string(responseBody))
+		return nil, fmt.Errorf("[ERROR] Error parsing Incapsula Site TLS Settings JSON response for Site ID %d: %s\nresponse: %s", siteID, err, string(responseBody))
 	}
 
 	return &siteTlsSettings, nil

@@ -87,8 +87,7 @@ func testAccCheckSiteTlsSettingsBasic(t *testing.T) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 	resource "%s" "%s" {
 		site_id = incapsula_site.testacc-terraform-site.id
-		depends_on = ["%s"]
-		
+		depends_on                       = ["%s"]
 		mandatory                        = true
 		ports                            = [12,100,305]
 		is_ports_exception               = true

@@ -91,7 +91,7 @@ func (c *Client) DeleteSiteMtlsClientToImpervaCertificateAssociation(certificate
 
 	// Check the response code
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("[ERROR] Error status code %d from Incapsula service on fetching site to mutual TLS Imperva to Origin certificate Association for certificate ID %d for Site ID %d\n%s", resp.StatusCode, certificateID, siteID, string(responseBody))
+		return fmt.Errorf("[ERROR] Error status code %d from Incapsula service on deleting site to mutual TLS Client to Imperva Certificate Association for certificate ID %d for Site ID %d\n%s", resp.StatusCode, certificateID, siteID, string(responseBody))
 	}
 	//add logic for 404
 	return nil

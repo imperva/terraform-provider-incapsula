@@ -26,7 +26,7 @@ func TestAccIncapsulaSiteClientToImervaCertificateAssociation_Basic(t *testing.T
 		CheckDestroy: testACCStateSiteClientToImervaCertificateAssociationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckSiteMtlsCertificateAssociationBasic(t),
+				Config: testAccCheckClientToImervaCertificateAssociationBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckClientToImervaCertificateAssociationExists(),
 				),
@@ -79,34 +79,38 @@ func testCheckClientToImervaCertificateAssociationExists() resource.TestCheckFun
 
 	return func(state *terraform.State) error {
 		client := testAccProvider.Meta().(*Client)
+		log.Print("\nRESOURCES:\n")
+		for _, resource := range state.RootModule().Resources {
+			log.Printf("\n%v", resource)
 
-		//for _, resource := range state.RootModule().Resources {
-		//	log.Printf("\n%v", resource)
-		//}
-		res, ok := state.RootModule().Resources[siteClientToImervaCertificateAssociationResource]
-		if !ok {
-			return fmt.Errorf("Incapsula mTLS Client To Imperva Certificate resource not found : %s", siteClientToImervaCertificateAssociationResource)
+			if resource.Type != siteClientToImervaCertificateAssociationResourceName {
+				continue
+			}
+			siteID, certificateID, accountID := getResourceDetails(resource)
+
+			response, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(accountID, siteID, certificateID)
+			if err != nil || response == nil {
+				return fmt.Errorf("Incapsula mTLS certificate ID %d is not assigned to Site ID %d", certificateID, siteID)
+			}
+			return nil
+
 		}
-
-		siteID, certificateID, accountID := getResourceDetails(res)
-
-		response, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(accountID, siteID, certificateID)
-		if err != nil || response == nil {
-			return fmt.Errorf("Incapsula mTLS certificate ID %d is not assigned to Site ID %d", certificateID, siteID)
-		}
-		return nil
+		return fmt.Errorf("Error finding %s resource", siteClientToImervaCertificateAssociationResourceName)
 	}
 }
 
 func testAccCheckClientToImervaCertificateAssociationBasic(t *testing.T) string {
-	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + "\n" + testAccCheckMtlsClientToImervaCertificateBasic(t) + "\n" +
+	return testAccCheckIncapsulaCustomCertificateGoodConfig(t) + "\n" + testAccCheckMtlsClientToImervaCertificateBasic(t) + "\n" +
 		fmt.Sprintf(`resource "%s" "%s" {
    account_id     = data.incapsula_account_data.account_data.current_account 
    certificate_id = %s.id
    site_id        = incapsula_site.testacc-terraform-site.id
+   depends_on     = [%s,%s]
 }`, siteClientToImervaCertificateAssociationResourceName,
 			siteClientToImervaCertificateAssociationName,
-			mtlsClientToImervaCertificateResource)
+			mtlsClientToImervaCertificateResource,
+			mtlsClientToImervaCertificateResource,
+			certificateResource)
 }
 
 func getResourceDetails(resourceState *terraform.ResourceState) (int, int, int) {

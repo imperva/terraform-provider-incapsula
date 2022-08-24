@@ -35,31 +35,28 @@ func TestAccIncapsulaMtlsClientToImervaCertificate_Basic(t *testing.T) {
 	})
 }
 
-func testACCStateMtlsClientToImervaCertificateDestroy(s *terraform.State) error {
+func testACCStateMtlsClientToImervaCertificateDestroy(state *terraform.State) error {
 	client := testAccProvider.Meta().(*Client)
 
-	for _, res := range s.RootModule().Resources {
-		if res.Type != mtlsClientToImervaCertificateName {
-			continue
-		}
-		return nil
-
-		certificateID := res.Primary.ID
-		if certificateID == "" {
-			fmt.Errorf("Parameter id was not found in resource %s", mtlsClientToImervaCertificateResourceName)
-		}
-
-		accountID, ok := res.Primary.Attributes["account_id"]
-		if !ok {
-			return fmt.Errorf("Mandatory parameter account_id doesn't exist for Incapsula mTLS Client CA To Imperva Certificate with ID %s", certificateID)
-		}
-
-		_, err := client.GetClientCaCertificate(accountID, certificateID)
-		if err == nil {
-			return fmt.Errorf("Resource %s with cerificate ID %s still exists", mtlsClientToImervaCertificateResourceName, certificateID)
-		}
+	res, ok := state.RootModule().Resources[mtlsClientToImervaCertificateResource]
+	if !ok {
+		return fmt.Errorf("Incapsula mTLS Client CA To Imperva Certificate resource not found : %s", apiSecApiConfigResource)
 	}
-	return fmt.Errorf("Error finding certificate ID for Incapsula mTLS Client CA To Imperva Certificate")
+	certificateID := res.Primary.ID
+	if certificateID == "" {
+		fmt.Errorf("Parameter id was not found in resource %s", mtlsClientToImervaCertificateResourceName)
+	}
+
+	accountID, ok := res.Primary.Attributes["account_id"]
+	if !ok {
+		return fmt.Errorf("Mandatory parameter account_id doesn't exist for Incapsula mTLS Client CA To Imperva Certificate with ID %s", certificateID)
+	}
+
+	_, err := client.GetClientCaCertificate(accountID, certificateID)
+	if err == nil {
+		return fmt.Errorf("Resource %s with cerificate ID %s still exists", mtlsClientToImervaCertificateResourceName, certificateID)
+	}
+	return nil
 }
 
 func testCheckMtlsClientToImervaCertificateExists() resource.TestCheckFunc {
@@ -75,7 +72,7 @@ func testCheckMtlsClientToImervaCertificateExists() resource.TestCheckFunc {
 		}
 
 		client := testAccProvider.Meta().(*Client)
-		_, err := client.GetClientCaCertificate(certificateID, accountID)
+		_, err := client.GetClientCaCertificate(accountID, certificateID)
 		if err != nil {
 			return fmt.Errorf("Incapsula mTLS Client CA To Imperva Certificate with ID %s does not exist for Account ID %s", certificateID, accountID)
 		}
@@ -102,11 +99,7 @@ func testAccCheckMtlsClientToImervaCertificateBasic(t *testing.T) string {
 	cert, _ := generateKeyPairBase64()
 	calculatedHashForClientCACert = calculateHash(cert+"\n", "", "")
 	certRest := fmt.Sprintf("<<EOT\n%s\nEOT", cert)
-	log.Printf("\n\ncertStr ca\n%v", cert)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//clientTLSConf := string(clientTLSConf.Certificates[0].Certificate)
+
 	return fmt.Sprintf(`
 data "incapsula_account_data" "account_data" {
 }

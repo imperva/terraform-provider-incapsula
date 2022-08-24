@@ -22,6 +22,7 @@ resource "incapsula_site_mtls_certificate_association" "site_mtls_association-si
 
 The following arguments are supported:
 
+* `account_id` - (Required) The account to operate on.
 * `certificate_id` - (Required) The Mutual TLS Imperva to Origin Certificate ID.
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 
