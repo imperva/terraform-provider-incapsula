@@ -31,7 +31,6 @@ func (c *Client) GetClientCaCertificate(accountID, certificateID string) (*Clien
 	//todo refactor !! move to separate method baseURLAPI
 	reqURL := fmt.Sprintf("%s/certificate-manager/v2/accounts/%s/client-certificates/%s", c.config.BaseURLAPI, accountID, certificateID)
 
-	//todo add operation!!!!!!!!!!!
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadMtlsClientToImpervaCertifiate)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when reading mTLS Client CA to Imperva Certificate ID %s: %s", certificateID, err)
@@ -97,6 +96,7 @@ func (c *Client) AddClientCaCertificate(certificate []byte, accountID, certifica
 	writer.Close()
 
 	contentType := writer.FormDataContentType()
+	//rename method
 	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, reqURL, body.Bytes(), contentType, CreateMtlsClientToImpervaCertifiate)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula while creating mutual TLS Client To Imperva Certificate for Account ID %s", accountID)
@@ -126,8 +126,6 @@ func (c *Client) DeleteClientCaCertificate(accountID, certificateID string) erro
 	log.Printf("[INFO] Deleting mutual TLS Client To Imperva Certificate ID %s, Account ID %s", certificateID, accountID)
 
 	reqURL := fmt.Sprintf("%s/certificate-manager/v2/accounts/%s/client-certificates/%s", c.config.BaseURLAPI, accountID, certificateID)
-	//todo add operation!!!!!!!!!!!
-
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteMtlsClientToImpervaCertifiate)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error from Incapsula service when deletingmutual TLS Client To Imperva Certificate ID %s: %s", certificateID, err)
@@ -135,7 +133,7 @@ func (c *Client) DeleteClientCaCertificate(accountID, certificateID string) erro
 
 	// Check the response code
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("[ERROR] Error status code %d from Incapsula service on deleting mutual TLS Client To Imperva Certificate ID %s\n: %s", resp.StatusCode, certificateID, err)
+		return fmt.Errorf("[ERROR] Error status code %d from Incapsula service on deleting mutual TLS Client To Imperva Certificate ID %s\n: %v", resp.StatusCode, certificateID, err)
 	}
 
 	// Read the body

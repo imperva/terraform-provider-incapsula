@@ -34,7 +34,6 @@ func (c *Client) GetSiteMtlsClientToImpervaCertificateAssociation(accountID, sit
 		return nil, fmt.Errorf("[ERROR] Error parsing Incapsula Site to mutual TLS Client to Imperva Certificate association JSON response for Site ID %d: %s\nresponse: %s", siteID, err, string(responseBody))
 	}
 
-	//var mtlsClientCertificate ClientCaCertificate
 	if len(clientCaCertificate.AssignedSites) > 0 {
 		log.Printf("%v", clientCaCertificate.AssignedSites)
 
@@ -44,7 +43,6 @@ func (c *Client) GetSiteMtlsClientToImpervaCertificateAssociation(accountID, sit
 			log.Printf("%d", entry)
 			if entry == siteID {
 				found = true
-				//mtlsClientCertificate = entry
 				break
 			}
 		}

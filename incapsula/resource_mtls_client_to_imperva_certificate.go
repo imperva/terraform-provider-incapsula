@@ -19,17 +19,25 @@ func resourceMtlsClientToImpervaCertificate() *schema.Resource {
 		Delete: resourceClientCaCertificateDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				//todo!!!!! KATRIN change all error messages
 				idSlice := strings.Split(d.Id(), "/")
 				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
 					return nil, fmt.Errorf("unexpected format of Incapsula Client CA to Imperva Certificate resource ID, expected account_id/certificate_id, got %s", d.Id())
 				}
 
+				_, err := strconv.Atoi(idSlice[1])
+				if err != nil {
+					fmt.Errorf("failed to convert Site Id from import command, actual value: %s, expected numeric id", idSlice[1])
+				}
+
+				_, err = strconv.Atoi(idSlice[0])
+				if err != nil {
+					fmt.Errorf("failed to convert Account Id from import command, actual value: %s, expected numeric id", idSlice[0])
+				}
+
 				d.Set("account_id", idSlice[0])
 				d.SetId(idSlice[1])
-				//todo KATRIN add check that IDs are numeric
 
-				log.Printf("[DEBUG] Importing Incapsula Site to Client to Imperva mutual TLS Certificate Association for Site ID %s, mutual TLS Certificate Id %s", idSlice[0], idSlice[1])
+				log.Printf("[DEBUG] Importing Incapsula Site to Client to Imperva mutual TLS Certificate for Account ID %s, Certificate Id %s", idSlice[0], idSlice[1])
 				return []*schema.ResourceData{d}, nil
 			},
 		},

@@ -115,7 +115,7 @@ func resourceSiteTlsSetingsUpdate(d *schema.ResourceData, m interface{}) error {
 	siteID, err := strconv.Atoi(siteIDStr)
 	//todo katrin  edit error
 	if err != nil {
-		return fmt.Errorf("failed to convert Site Id for Incapsula Site to Imperva to Origin mutual TLS Certificate Association resource, actual value: %s, expected numeric id", siteIDStr)
+		return fmt.Errorf("failed to convert Site Id for Incapsula Site TLS Settings resource, actual value: %s, expected numeric id", siteIDStr)
 	}
 
 	ports := []int{}
@@ -191,7 +191,7 @@ func resourceSiteTlsSetingsRead(d *schema.ResourceData, m interface{}) error {
 	siteIDStr := d.Get("site_id").(string)
 	siteID, err := strconv.Atoi(siteIDStr)
 	if err != nil {
-		return fmt.Errorf("failed to convert Site Id for Incapsula Site to Imperva to Origin mutual TLS Certificate Association resource, actual value: %s, expected numeric id", siteIDStr)
+		return fmt.Errorf("failed to convert Site Id for Incapsula Site TLS Settings resource, actual value: %s, expected numeric id", siteIDStr)
 	}
 
 	siteTlsSettings, err := client.GetSiteTlsSettings(
@@ -248,7 +248,7 @@ func resourceSiteTlsSetingsDelete(d *schema.ResourceData, m interface{}) error {
 	siteID, err := strconv.Atoi(siteIDStr)
 	//todo katrin  edit error
 	if err != nil {
-		return fmt.Errorf("failed to convert Site Id for Incapsula Site to Imperva to Origin mutual TLS Certificate Association resource, actual value: %s, expected numeric id", siteIDStr)
+		return fmt.Errorf("failed to convert Site Id for Incapsula Site TLS Settings resource, actual value: %s, expected numeric id", siteIDStr)
 	}
 
 	payload := SiteTlsSettings{

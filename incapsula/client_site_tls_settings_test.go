@@ -1,6 +1,5 @@
 package incapsula
 
-
 import (
 	"fmt"
 	"net/http"
@@ -48,7 +47,6 @@ func TestGetSiteTlsSettingsBadJSON(t *testing.T) {
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-
 
 	siteTlsSettings, err := client.GetSiteTlsSettings(siteID)
 	if err == nil {
@@ -143,8 +141,6 @@ func TestGetSiteTlsSettingsValidApiConfig(t *testing.T) {
 	}
 }
 
-
-
 ////////////////////////////////////////////////////////////////
 // UpdateSiteTlsSetings Tests
 ////////////////////////////////////////////////////////////////
@@ -185,7 +181,6 @@ func TestUpdateSiteTlsSetingsBadJSON(t *testing.T) {
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-
 
 	siteTlsSettings, err := client.UpdateSiteTlsSetings(siteID, siteTlsSettingsPayload)
 	if err == nil {
@@ -281,4 +276,3 @@ func TestUpdateSiteTlsSetingsValidConfig(t *testing.T) {
 		t.Errorf("Parameter Mandatory doesn't match. Actual : %v", siteTlsSettings.Mandatory)
 	}
 }
-
