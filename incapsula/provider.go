@@ -115,6 +115,9 @@ func Provider() *schema.Provider {
 			"incapsula_account_ssl_settings":                                resourceAccountSSLSettings(),
 			"incapsula_mtls_imperva_to_origin_certificate":                  resourceMtlsImpervaToOriginCertificate(),
 			"incapsula_mtls_imperva_to_origin_certificate_site_association": resourceMtlsImpervaToOriginCertificateSiteAssociation(),
+			"incapsula_mtls_client_to_imperva_certificate":                  resourceMtlsClientToImpervaCertificate(),
+			"incapsula_mtls_client_to_imperva_certificate_site_association": resourceMtlsClientToImpervaCertificateSiteAssociation(),
+			"incapsula_site_tls_settings":                                   resourceSiteTlsSetings(),
 		},
 	}
 
