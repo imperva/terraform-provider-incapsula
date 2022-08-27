@@ -16,42 +16,32 @@ func resourceMtlsClientToImpervaCertificateSiteAssociation() *schema.Resource {
 		Delete: resourceSiteMtlsClientToImpervaCertificateAssociationDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				d.MarkNewResource()
 				idSlice := strings.Split(d.Id(), "/")
-				if len(idSlice) != 3 || idSlice[0] == "" || idSlice[1] == "" || idSlice[2] == "" {
-					return nil, fmt.Errorf("unexpected format of Incapsula Client to Imperva CA Certificate Site Association resource ID, expected account_idsite_id/certificate_id, got %s", d.Id())
+				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
+					return nil, fmt.Errorf("unexpected format of Incapsula Client to Imperva CA Certificate Site Association resource ID, expected site_id/certificate_id, got %s", d.Id())
 				}
 
-				_, err := strconv.Atoi(idSlice[1])
+				_, err := strconv.Atoi(idSlice[0])
 				if err != nil {
-					fmt.Errorf("failed to convert Site Id from import command, actual value: %s, expected numeric id", idSlice[1])
+					fmt.Errorf("failed to convert Site Id from import command, actual value: %s, expected numeric id", idSlice[0])
 				}
 
-				_, err = strconv.Atoi(idSlice[0])
+				_, err = strconv.Atoi(idSlice[1])
 				if err != nil {
-					fmt.Errorf("failed to convert Account Id from import command, actual value: %s, expected numeric id", idSlice[0])
+					fmt.Errorf("failed to convert Certificate Id from import command, actual value: %s, expected numeric id", idSlice[1])
 				}
 
-				_, err = strconv.Atoi(idSlice[2])
-				if err != nil {
-					fmt.Errorf("failed to convert Certificate Id from import command, actual value: %s, expected numeric id", idSlice[2])
-				}
+				d.Set("site_id", idSlice[0])
+				d.Set("certificate_id", idSlice[1])
 
-				d.Set("account_id", idSlice[0])
-				d.Set("site_id", idSlice[1])
-				d.Set("certificate_id", idSlice[2])
-
-				log.Printf("[DEBUG] Importing Incapsula Client to Imperva CA Certificate Site Association for Site ID %s, mutual TLS Certificate Id %s, account ID %s", idSlice[1], idSlice[2], idSlice[0])
+				log.Printf("[DEBUG] Importing Incapsula Client to Imperva CA Certificate Site Association for Site ID %s, mutual TLS Certificate Id %s,", idSlice[0], idSlice[1])
 				return []*schema.ResourceData{d}, nil
 			},
 		},
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
-			"account_id": {
-				Description: "Account ID to operate on",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
 			"site_id": {
 				Description: "The certificate file in base64 format.", //sopported formats
 				Type:        schema.TypeString,
@@ -69,28 +59,27 @@ func resourceMtlsClientToImpervaCertificateSiteAssociation() *schema.Resource {
 
 func resourceSiteMtlsClientToImpervaCertificateAssociationRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	accountIDStr := d.Get("account_id").(string)
-	accountID, err := strconv.Atoi(accountIDStr)
-	if err != nil {
-		return fmt.Errorf("failed to convert Account Id for Incapsula  Site to mutual TLS Client to Imperva Certificate association resource, actual value: %s, expected numeric id", accountIDStr)
-	}
 
 	siteID, certificateID, err := validateInput(d)
 	if err != nil {
 		return err
 	}
 
-	mTLSCertificateData, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(accountID, siteID, certificateID)
+	mTLSCertificateData, associationExists, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID)
 	if err != nil {
 		return err
 	}
-
+	if !associationExists && !d.IsNewResource() {
+		log.Printf("Site to mutual TLS Imperva to Origin Certificate association with Site ID %s, Certificate ID %s doesn't exist any more. The resource will be deleted from terraform state.", siteID, certificateID)
+		d.SetId("")
+		return nil
+	}
 	if mTLSCertificateData == nil {
-		return fmt.Errorf("Couldn't find the Incapsula Client to Imperva CA Certificate Site Association. Site Id %d, accountID %s, certificate ID %d", siteID)
+		return fmt.Errorf("Couldn't find the Incapsula Client to Imperva CA Certificate Site Association. Site Id %d, certificate ID %d", siteID, certificateID)
 	}
 
 	// Generate synthetic ID
-	syntheticID := fmt.Sprintf("%d/%d/%d", accountID, siteID, certificateID)
+	syntheticID := fmt.Sprintf("%d/%d", siteID, certificateID)
 	d.SetId(syntheticID)
 	log.Printf("[INFO] Created Incapsula Site to Imperva to Origin mutual TLS Certificate Association with ID: %s - site ID (%d) - certificate ID (%d)", syntheticID, siteID, certificateID)
 	return nil
@@ -111,7 +100,6 @@ func resourceSiteMtlsClientToImpervaCertificateAssociationCreate(d *schema.Resou
 		return err
 		//todo -add error message
 	}
-	//todo KATRIN - do we want to call read here?
 	return resourceSiteMtlsClientToImpervaCertificateAssociationRead(d, m)
 }
 

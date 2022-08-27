@@ -32,18 +32,18 @@ func resourceSiteTlsSetings() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
 			"site_id": {
-				Description: "The Site ID of the the site the API security is configured on.",
+				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
 			"mandatory": {
-				Description: "The certificate file in base64 format.",
+				Description: "When set to true, the end user is required to present the client certificate in order to access the site. Default - false.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     mandatoryDefault,
 			},
 			"ports": {
-				Description: "The certificate file in base64 format.", //todo KATRIN change
+				Description: "The ports on which client certificate authentication is supported. If left empty, client certificates are supported on all ports. Default: empty list",
 				Type:        schema.TypeSet,
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
@@ -51,13 +51,13 @@ func resourceSiteTlsSetings() *schema.Resource {
 				Optional: true,
 			},
 			"is_ports_exception": {
-				Description: "The certificate file in base64 format.", //todo KATRIN change
+				Description: "When set to true, client certificates are not supported on the ports listed in the Ports field ('blacklisted'). Default - false.",
 				Type:        schema.TypeBool,
 				Default:     isPortsExceptionDefault,
 				Optional:    true,
 			},
 			"hosts": {
-				Description: "The certificate file in base64 format.", //todo KATRIN change
+				Description: "The hosts on which client certificate authentication is supported. If left empty, client certificates are supported on all hosts. Default: empty list.",
 				Optional:    true,
 				Type:        schema.TypeSet,
 				Elem: &schema.Schema{
@@ -65,14 +65,13 @@ func resourceSiteTlsSetings() *schema.Resource {
 				},
 			},
 			"is_hosts_exception": {
-				Description:  "The certificate file in base64 format.", //todo KATRIN change
-				Type:         schema.TypeBool,
-				Default:      isHostsExceptionDefault,
-				RequiredWith: []string{"hosts"},
-				Optional:     true,
+				Description: "When set to true, client certificates are not supported on the hosts listed in the Hosts field ('blacklisted'). Default - false.",
+				Type:        schema.TypeBool,
+				Default:     isHostsExceptionDefault,
+				Optional:    true,
 			},
 			"fingerprints": {
-				Description: "The certificate file in base64 format.", //todo KATRIN change
+				Description: "Permitted client certificate fingerprints. If left empty, all fingerprints are permitted. Default - empty list.",
 				Type:        schema.TypeSet,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -80,26 +79,26 @@ func resourceSiteTlsSetings() *schema.Resource {
 				Optional: true,
 			},
 			"forward_to_origin": {
-				Description: "The certificate file in base64 format.", //todo KATRIN change
+				Description: "When set to true, the contents specified in headerValue are sent to the origin server in the header specified by headerName. Default - false. If parameter is set to true, specify of `header_name`, `header_value` are required.", //todo KATRIN change
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     forwardToOriginDefault,
 			},
 			"header_name": {
-				Description: "The certificate file in base64 format.", //todo KATRIN change
+				Description: "The name of the header to send header content in. By default, the header name is 'clientCertificateInfo'. Specifying this parameter is relevant only if `forward_to_origin` is set to true.", //todo KATRIN change
 				Type:        schema.TypeString,
 				Default:     headerNameDefault,
 				Optional:    true,
 			},
 			"header_value": {
-				Description:  "The certificate file in base64 format.", //todo KATRIN change
+				Description:  "The content to send in the header specified by headerName. One of the following: FULL_CERT (for full certificate in Base64) COMMON_NAME (for certificate's common name (CN)) FINGERPRINT (for the certificate fingerprints in SHA1) SERIAL_NUMBER (for the certificate's serial number). Specifying this parameter is relevant only if `forward_to_origin` is set to true.", //todo KATRIN change
 				Type:         schema.TypeString,
 				ValidateFunc: validation.StringInSlice([]string{"FULL_CERT", "COMMON_NAME", "FINGERPRINT", "SERIAL_NUMBER"}, false),
 				Optional:     true,
 				Default:      headerValueDefault,
 			},
 			"is_disable_session_resumption": {
-				Description: "The certificate file in base64 format.", //todo KATRIN change
+				Description: "", //todo KATRIN change
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     isDisableSessionResumptionDefault,
@@ -149,40 +148,14 @@ func resourceSiteTlsSetingsUpdate(d *schema.ResourceData, m interface{}) error {
 		payload.HeaderValue = d.Get("header_value").(string)
 	}
 
-	siteTlsSettings, err := client.UpdateSiteTlsSetings(siteID, payload)
+	err = client.UpdateSiteTlsSetings(siteID, payload)
 
 	if err != nil {
 		return err
 	}
 
-	portsRes := &schema.Set{F: schema.HashInt}
-	for i := range siteTlsSettings.Ports {
-		portsRes.Add(siteTlsSettings.Ports[i])
-	}
-
-	hostsRes := &schema.Set{F: schema.HashString}
-	for i := range siteTlsSettings.Hosts {
-		hostsRes.Add(siteTlsSettings.Hosts[i])
-	}
-
-	fingerprintsRes := &schema.Set{F: schema.HashString}
-	for i := range siteTlsSettings.Fingerprints {
-		fingerprintsRes.Add(siteTlsSettings.Fingerprints[i])
-	}
-
-	// TODO: Setting this to arbitrary value as there is only one cert for each site.
 	d.SetId(siteIDStr)
-	d.Set("mandatory", siteTlsSettings.Mandatory)
-	d.Set("ports", portsRes)
-	d.Set("is_ports_exception", siteTlsSettings.IsPortsException)
-	d.Set("hosts", hostsRes)
-	d.Set("is_hosts_exception", siteTlsSettings.IsHostsException)
-	d.Set("fingerprints", fingerprintsRes)
-	d.Set("forward_to_origin", siteTlsSettings.ForwardToOrigin)
-	d.Set("header_name", siteTlsSettings.HeaderName)
-	d.Set("header_value", siteTlsSettings.HeaderValue)
-	d.Set("is_disable_session_resumption", siteTlsSettings.IsDisableSessionResumption)
-	return nil
+	return resourceSiteTlsSetingsRead(d, m)
 }
 
 func resourceSiteTlsSetingsRead(d *schema.ResourceData, m interface{}) error {
@@ -194,26 +167,21 @@ func resourceSiteTlsSetingsRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("failed to convert Site Id for Incapsula Site TLS Settings resource, actual value: %s, expected numeric id", siteIDStr)
 	}
 
-	siteTlsSettings, err := client.GetSiteTlsSettings(
+	siteTlsSettings, objectExists, err := client.GetSiteTlsSettings(
 		siteID,
 	)
-
-	//katrin todo change error
-	if err != nil {
-		log.Printf("[ERROR] Could not update Incapsula API-security Site Configuration on site id: %d - %s\n", d.Get("site_id"), err)
-		return err
+	if !objectExists && !d.IsNewResource() {
+		d.SetId("")
+		return nil
 	}
 
-	log.Printf("%v", siteTlsSettings)
+	if err != nil {
+		return err
+	}
 
 	ports := &schema.Set{F: schema.HashInt}
 	for i := range siteTlsSettings.Ports {
 		ports.Add(siteTlsSettings.Ports[i])
-	}
-
-	hosts := &schema.Set{F: schema.HashString}
-	for i := range siteTlsSettings.Hosts {
-		hosts.Add(siteTlsSettings.Hosts[i])
 	}
 
 	fingerprints := &schema.Set{F: schema.HashString}
@@ -221,7 +189,19 @@ func resourceSiteTlsSetingsRead(d *schema.ResourceData, m interface{}) error {
 		fingerprints.Add(siteTlsSettings.Fingerprints[i])
 	}
 
-	//mTLSCertificateData, err := client.GetClientCaCertificate(d.Id())
+	if len(siteTlsSettings.Hosts) == 0 {
+		log.Print("setting hosts to nil value")
+		d.Set("hosts", nil)
+	} else {
+		hosts := &schema.Set{F: schema.HashString}
+		for i := range siteTlsSettings.Hosts {
+			hosts.Add(siteTlsSettings.Hosts[i])
+		}
+		log.Printf("hostsRes: %v", hosts)
+		d.Set("hosts", hosts)
+
+	}
+
 	if err != nil {
 		return err
 	}
@@ -229,7 +209,6 @@ func resourceSiteTlsSetingsRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("mandatory", siteTlsSettings.Mandatory)
 	d.Set("ports", ports)
 	d.Set("is_ports_exception", siteTlsSettings.IsPortsException)
-	d.Set("hosts", hosts)
 	d.Set("is_hosts_exception", siteTlsSettings.IsHostsException)
 	d.Set("fingerprints", fingerprints)
 	d.Set("forward_to_origin", siteTlsSettings.ForwardToOrigin)
@@ -264,7 +243,7 @@ func resourceSiteTlsSetingsDelete(d *schema.ResourceData, m interface{}) error {
 		HeaderValue:                headerValueDefault,
 	}
 
-	_, err = client.UpdateSiteTlsSetings(siteID, payload)
+	err = client.UpdateSiteTlsSetings(siteID, payload)
 	if err != nil {
 		return fmt.Errorf("Failed to destroy Incapsula Site TLS Settings resource for Site ID %s, error:\n%s", siteIDStr, err)
 	}

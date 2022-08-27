@@ -25,7 +25,7 @@ type ClientCaCertificateWithSites struct {
 	AssignedSites []int  `json:"assignedSites"`
 }
 
-func (c *Client) GetClientCaCertificate(accountID, certificateID string) (*ClientCaCertificateWithSites, error) {
+func (c *Client) GetClientCaCertificate(accountID, certificateID string) (*ClientCaCertificateWithSites, bool, error) {
 	log.Printf("[INFO] Reading mutual TLS Client To Imperva Certificate for ID %s, Account ID %s", certificateID, accountID)
 
 	//todo refactor !! move to separate method baseURLAPI
@@ -33,7 +33,7 @@ func (c *Client) GetClientCaCertificate(accountID, certificateID string) (*Clien
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadMtlsClientToImpervaCertifiate)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when reading mTLS Client CA to Imperva Certificate ID %s: %s", certificateID, err)
+		return nil, true, fmt.Errorf("[ERROR] Error from Incapsula service when reading mTLS Client CA to Imperva Certificate ID %s: %s", certificateID, err)
 	}
 
 	// Read the body
@@ -41,19 +41,22 @@ func (c *Client) GetClientCaCertificate(accountID, certificateID string) (*Clien
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	log.Printf("[DEBUG] Incapsula Get mutual TLS Client To Imperva Certificate ID %s JSON response: %s\n", accountID, string(responseBody))
 
-	// Check the response code
+	// Check if certificate exists
+	if resp.StatusCode == 406 && strings.HasPrefix(string(responseBody), "{") {
+		return nil, false, nil
+	}
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("[ERROR] Error status code %d from Incapsula service on fetching TLS Client to Imperva certificate ID %s\n: %s\n%s", resp.StatusCode, certificateID, err, string(responseBody))
+		return nil, true, fmt.Errorf("[ERROR] Error status code %d from Incapsula service on fetching TLS Client to Imperva certificate ID %s\n: %s\n%s", resp.StatusCode, certificateID, err, string(responseBody))
 	}
 
 	// Dump JSON
 	var clientCaCertificateWithSites ClientCaCertificateWithSites
 	err = json.Unmarshal([]byte(responseBody), &clientCaCertificateWithSites)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error parsing mutual GET TLS Client To Imperva Certificate for Account ID %s JSON response: %s\nresponse: %s", accountID, err, string(responseBody))
+		return nil, true, fmt.Errorf("[ERROR] Error parsing mutual GET TLS Client To Imperva Certificate for Account ID %s JSON response: %s\nresponse: %s", accountID, err, string(responseBody))
 	}
 
-	return &clientCaCertificateWithSites, nil
+	return &clientCaCertificateWithSites, true, nil
 }
 
 func (c *Client) AddClientCaCertificate(certificate []byte, accountID, certificateName string) (*ClientCaCertificate, error) {
@@ -81,17 +84,6 @@ func (c *Client) AddClientCaCertificate(certificate []byte, accountID, certifica
 			log.Printf("failed to write %s formdata field", "cartificate_name")
 		}
 	}
-	////hash
-	//if inputHash != "" {
-	//	fw, err := writer.CreateFormField("hash")
-	//	if err != nil {
-	//		log.Printf("failed to create %s formdata field", "hash")
-	//	}
-	//	_, err = io.Copy(fw, strings.NewReader(inputHash))
-	//	if err != nil {
-	//		log.Printf("failed to write %s formdata field", "hash")
-	//	}
-	//}
 
 	writer.Close()
 
@@ -118,7 +110,10 @@ func (c *Client) AddClientCaCertificate(certificate []byte, accountID, certifica
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error parsing ADD mutual TLS Client To Imperva Certificate for Account ID %s JSON response: %s\nresponse: %s", accountID, err, string(responseBody))
 	}
-	//todo KATRin
+
+	if len(clientCaCertificateList) < 1 {
+		return nil, fmt.Errorf("[ERROR] Failed to create mutual TLS Client To Imperva Certificate for Account ID %s")
+	}
 	return &clientCaCertificateList[0], nil
 }
 

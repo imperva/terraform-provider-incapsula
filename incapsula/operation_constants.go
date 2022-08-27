@@ -135,3 +135,10 @@ const DeleteMtlsImpervaToOriginCertifiate = "delete_mtls_imperva_to_origin_certi
 const CreateMtlsClientToImpervaCertifiate = "create_mtls_client_to_imperva_certificate"
 const ReadMtlsClientToImpervaCertifiate = "read_mtls_client_to_imperva_certificate"
 const DeleteMtlsClientToImpervaCertifiate = "delete_mtls_client_to_imperva_certificate"
+
+const CreateMtlsClientToImpervaCertifiateSiteAssociation = "create_mtls_client_to_imperva_certificate_site_accociation"
+const ReadMtlsClientToImpervaCertifiateSiteAssociation = "read_mtls_client_to_imperva_certificate_site_accociation"
+const DeleteMtlsClientToImpervaCertifiateSiteAssociation = "delete_mtls_client_to_imperva_certificate_site_accociation"
+
+const CreateSiteTlsSettings = "create_site_tls_settings"
+const ReadSiteTlsSettings = "read_site_tls_settings"
