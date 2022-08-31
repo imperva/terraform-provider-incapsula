@@ -36,7 +36,7 @@ func resourceApiSecuritySiteConfig() *schema.Resource {
 			"is_automatic_discovery_api_integration_enabled": {
 				Description: "Parameter shows whether automatic API discovery is enabled",
 				Type:        schema.TypeBool,
-				Required:    true,
+				Required:    false,
 			},
 
 			//Optional
