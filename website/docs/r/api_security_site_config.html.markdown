@@ -30,7 +30,7 @@ resource "incapsula_api_security_site_config" "demo-terraform-api-security-site-
 The following arguments are supported:
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
-* `is_automatic_discovery_api_integration_enabled` - (Required) Parameter shows whether automatic API discovery API
+* `is_automatic_discovery_api_integration_enabled` - (Optional) Parameter shows whether automatic API discovery API
   Integration is enabled.
 * `invalid_url_violation_action` - (Optional) The action taken when an invalid URL Violation occurs. Possible
   values: `ALERT_ONLY` (default value), `BLOCK_REQUEST`, `BLOCK_USER`, `BLOCK_IP`, `IGNORE`.

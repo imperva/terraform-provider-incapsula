@@ -112,7 +112,7 @@ func TestClientAccountStatusBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	accountID := 123
-	accountStatusResponse, err := client.AccountStatus(accountID)
+	accountStatusResponse, err := client.AccountStatus(accountID, ReadAccount)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -136,7 +136,7 @@ func TestClientAccountStatusBadJSON(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	accountID := 123
-	accountStatusResponse, err := client.AccountStatus(accountID)
+	accountStatusResponse, err := client.AccountStatus(accountID, ReadAccount)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -160,7 +160,7 @@ func TestClientAccountStatusInvalidAccount(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	accountID := 123
-	accountStatusResponse, err := client.AccountStatus(accountID)
+	accountStatusResponse, err := client.AccountStatus(accountID, ReadAccount)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -184,7 +184,7 @@ func TestClientAccountStatusValidAccount(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	accountID := 123
-	accountStatusResponse, err := client.AccountStatus(accountID)
+	accountStatusResponse, err := client.AccountStatus(accountID, ReadAccount)
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}

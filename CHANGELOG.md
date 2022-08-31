@@ -1,3 +1,22 @@
+## 3.8.5 (Aug 31, 2022)
+
+BUG FIXES:
+
+* Add retries of read operations when fail ([#200](https://github.com/imperva/terraform-provider-incapsula/pull/200))
+* incapsula_api_security_site_config: make is_automatic_discovery_api_integration_enabled optional to align with BE API ([#205](https://github.com/imperva/terraform-provider-incapsula/pull/205))
+
+
+## 3.8.4 (Aug 17, 2022)
+
+BUG FIXES:
+
+* incapsula_subaccount: fix 'read' method to use another API to the backend ([#197](https://github.com/imperva/terraform-provider-incapsula/pull/197))
+
+## 3.8.3 (Aug 11, 2022)
+
+BUG FIXES:
+
+* remove future resource from the documentation ([#195](https://github.com/imperva/terraform-provider-incapsula/pull/195))
 
 ## 3.8.2 (Aug 3, 2022)
 

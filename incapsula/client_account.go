@@ -136,13 +136,13 @@ func (c *Client) AddAccount(email, refID, userName, planID, accountName, logLeve
 }
 
 // AccountStatus gets the Incapsula managed account's status
-func (c *Client) AccountStatus(accountID int) (*AccountStatusResponse, error) {
+func (c *Client) AccountStatus(accountID int, operation string) (*AccountStatusResponse, error) {
 	log.Printf("[INFO] Getting Incapsula account status for account id: %d\n", accountID)
 
 	// Post form to Incapsula
 	values := url.Values{"account_id": {strconv.Itoa(accountID)}}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountStatus)
-	resp, err := c.PostFormWithHeaders(reqURL, values, ReadAccount)
+	resp, err := c.PostFormWithHeaders(reqURL, values, operation)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting account status for account id %d: %s", accountID, err)
 	}
