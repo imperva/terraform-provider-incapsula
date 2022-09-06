@@ -52,6 +52,14 @@ func resourceSubAccount() *schema.Resource {
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice([]string{"full", "security", "none", "default"}, false),
 			},
+			"data_storage_region": {
+				Description:  "Default data region of the sub account for newly created sites. Options are `APAC`, `EU`, `US` and `DEFAULT`. Defaults to `DEFAULT`.",
+				Type:         schema.TypeString,
+				Default:      "US",
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"APAC", "EU", "US", "AU"}, false),
+				ForceNew:     true,
+			},
 		},
 	}
 }
@@ -83,6 +91,11 @@ func resourceSubAccountCreate(d *schema.ResourceData, m interface{}) error {
 	d.SetId(strconv.Itoa(SubAccountAddResponse.SubAccount.SubAccountID))
 	log.Printf("[DEBUG] Account id for new sub account : %d", SubAccountAddResponse.SubAccount.SubAccountID)
 	log.Printf("[INFO] Created Incapsula subaccount %s\n", subAccountName)
+
+	err = updateDefaultDataStorageRegion(client, d)
+	if err != nil {
+		return err
+	}
 
 	// There may be a timing/race condition here
 	// Set an arbitrary period to sleep
