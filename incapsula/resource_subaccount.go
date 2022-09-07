@@ -13,6 +13,7 @@ func resourceSubAccount() *schema.Resource {
 		Create: resourceSubAccountCreate,
 		Read:   resourceSubAccountRead,
 		Delete: resourceSubAccountDelete,
+		Update: resourceSubAccountUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -37,7 +38,6 @@ func resourceSubAccount() *schema.Resource {
 				Description: "Customer specific identifier for this operation.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 			},
 			"logs_account_id": {
 				Description: "Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.",
@@ -58,7 +58,6 @@ func resourceSubAccount() *schema.Resource {
 				Default:      "US",
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"APAC", "EU", "US", "AU"}, false),
-				ForceNew:     true,
 			},
 		},
 	}
@@ -165,4 +164,29 @@ func resourceSubAccountDelete(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Deleted Incapsula subaccount id: %d\n", subAccountID)
 
 	return nil
+}
+
+func resourceSubAccountUpdate(d *schema.ResourceData, m interface{}) error {
+	client := m.(*Client)
+
+	updateParams := [1]string{"ref_id"}
+	for i := 0; i < len(updateParams); i++ {
+		param := updateParams[i]
+		if d.HasChange(param) && d.Get(param) != "" {
+			log.Printf("[INFO] Updating Incapsula sub-account param (%s) with value (%s) for account_id: %s\n", param, d.Get(param).(string), d.Id())
+			_, err := client.UpdateAccount(d.Id(), param, d.Get(param).(string))
+			if err != nil {
+				log.Printf("[ERROR] Could not update Incapsula sub-account param (%s) with value (%s) for account_id: %s %s\n", param, d.Get(param).(string), d.Id(), err)
+				return err
+			}
+		}
+	}
+
+	err := updateDefaultDataStorageRegion(client, d)
+	if err != nil {
+		return err
+	}
+
+	// Set the rest of the state from the resource read
+	return resourceAccountRead(d, m)
 }
