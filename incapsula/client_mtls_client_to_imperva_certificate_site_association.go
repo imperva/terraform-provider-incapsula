@@ -15,7 +15,7 @@ func (c *Client) GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certif
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadMtlsClientToImpervaCertifiateSiteAssociation)
 	if err != nil {
-		return nil, true, fmt.Errorf("[ERROR] Error getting Site to mutual TLS Client to Imperva Certificate association for Site ID %d, certificate ID %d", siteID, certificateID, err)
+		return nil, true, fmt.Errorf("[ERROR] Error getting Site to mutual TLS Client to Imperva Certificate association for Site ID %d, certificate ID %d\n%v", siteID, certificateID, err)
 	}
 	// Read the body
 	defer resp.Body.Close()

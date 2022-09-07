@@ -60,7 +60,7 @@ func testACCStateMtlsImpervaToOriginCertificateDestroy(s *terraform.State) error
 			fmt.Errorf("Parameter id was not found in resource %s", mtlsCrtificateResourceName)
 		}
 
-		_, err := client.GetMTLSCertificate(certificateID)
+		_, err := client.GetMTLSCertificate(certificateID, "")
 		if err == nil {
 			return fmt.Errorf("Resource %s with cerificate ID %s still exists", mtlsCrtificateResourceName, certificateID)
 		}
@@ -72,11 +72,11 @@ func testCheckMtlsImpervaToOriginCertificateExists() resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		res, ok := state.RootModule().Resources[mtlsCrtificateResource]
 		if !ok {
-			return fmt.Errorf("Incapsula mTLS Imperva to Origin Certificate resource not found : %s", apiSecApiConfigResource)
+			return fmt.Errorf("Incapsula mTLS Imperva to Origin Certificate resource not found : %s", mtlsCrtificateResource)
 		}
 		certificateID := res.Primary.ID
 		client := testAccProvider.Meta().(*Client)
-		_, err := client.GetMTLSCertificate(certificateID)
+		_, err := client.GetMTLSCertificate(certificateID, "")
 		if err != nil {
 			return fmt.Errorf("Incapsula mTLS Imperva to Origin Certificate with ID %s does not exist", certificateID)
 		}

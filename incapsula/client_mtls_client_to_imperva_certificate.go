@@ -1,17 +1,15 @@
 package incapsula
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
-	"mime/multipart"
 	"net/http"
-	"path/filepath"
 	"strings"
 )
+
+const clientCertificateUrl = "/certificate-manager/v2/accounts/"
 
 type ClientCaCertificate struct {
 	Id   int    `json:"id"`
@@ -19,7 +17,6 @@ type ClientCaCertificate struct {
 }
 
 type ClientCaCertificateWithSites struct {
-	//ClientCaCertificate ClientCaCertificate
 	Id            int    `json:"id"`
 	Name          string `json:"name"`
 	AssignedSites []int  `json:"assignedSites"`
@@ -28,8 +25,7 @@ type ClientCaCertificateWithSites struct {
 func (c *Client) GetClientCaCertificate(accountID, certificateID string) (*ClientCaCertificateWithSites, bool, error) {
 	log.Printf("[INFO] Reading mutual TLS Client To Imperva Certificate for ID %s, Account ID %s", certificateID, accountID)
 
-	//todo refactor !! move to separate method baseURLAPI
-	reqURL := fmt.Sprintf("%s/certificate-manager/v2/accounts/%s/client-certificates/%s", c.config.BaseURLAPI, accountID, certificateID)
+	reqURL := fmt.Sprintf("%s%s%s/client-certificates/%s", c.config.BaseURLAPI, clientCertificateUrl, accountID, certificateID)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadMtlsClientToImpervaCertifiate)
 	if err != nil {
@@ -61,35 +57,23 @@ func (c *Client) GetClientCaCertificate(accountID, certificateID string) (*Clien
 
 func (c *Client) AddClientCaCertificate(certificate []byte, accountID, certificateName string) (*ClientCaCertificate, error) {
 	log.Printf("[INFO] Creating mutual TLS Client To Imperva Certificate for Account ID %s", accountID)
-	reqURL := fmt.Sprintf("%s/certificate-manager/v2/accounts/%s/client-certificates", c.config.BaseURLAPI, accountID)
-
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
+	reqURL := fmt.Sprintf("%s%s%s/client-certificates", c.config.BaseURLAPI, clientCertificateUrl, accountID)
+	bodyMap := map[string]interface{}{}
 
 	//certificate file
-	fw, err := writer.CreateFormFile("ca_file", filepath.Base("certificateFile.pfx"))
-	if err != nil {
-		log.Printf("failed to create %s formdata field", "certificateFile")
+	if certificate != nil {
+		bodyMap["ca_file"] = []byte(certificate)
 	}
-	fw.Write([]byte(certificate))
 
 	//certificate name
 	if certificateName != "" {
-		fw, err := writer.CreateFormField("name")
-		if err != nil {
-			log.Printf("failed to create %s formdata field", "passphrase")
-		}
-		_, err = io.Copy(fw, strings.NewReader(certificateName))
-		if err != nil {
-			log.Printf("failed to write %s formdata field", "cartificate_name")
-		}
+		bodyMap["name"] = certificateName
 	}
 
-	writer.Close()
+	body, contentType := c.CreateFormDataBody(bodyMap)
 
-	contentType := writer.FormDataContentType()
-	//rename method
-	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, reqURL, body.Bytes(), contentType, CreateMtlsClientToImpervaCertifiate)
+	resp, err := c.DoFormDataRequestWithHeaders(http.MethodPost, reqURL, body, contentType, CreateMtlsClientToImpervaCertifiate)
+
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula while creating mutual TLS Client To Imperva Certificate for Account ID %s", accountID)
 	}
@@ -112,7 +96,7 @@ func (c *Client) AddClientCaCertificate(certificate []byte, accountID, certifica
 	}
 
 	if len(clientCaCertificateList) < 1 {
-		return nil, fmt.Errorf("[ERROR] Failed to create mutual TLS Client To Imperva Certificate for Account ID %s")
+		return nil, fmt.Errorf("[ERROR] Failed to create mutual TLS Client To Imperva Certificate for Account ID %s", accountID)
 	}
 	return &clientCaCertificateList[0], nil
 }
@@ -120,7 +104,7 @@ func (c *Client) AddClientCaCertificate(certificate []byte, accountID, certifica
 func (c *Client) DeleteClientCaCertificate(accountID, certificateID string) error {
 	log.Printf("[INFO] Deleting mutual TLS Client To Imperva Certificate ID %s, Account ID %s", certificateID, accountID)
 
-	reqURL := fmt.Sprintf("%s/certificate-manager/v2/accounts/%s/client-certificates/%s", c.config.BaseURLAPI, accountID, certificateID)
+	reqURL := fmt.Sprintf("%s%s%s/client-certificates/%s", c.config.BaseURLAPI, clientCertificateUrl, accountID, certificateID)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteMtlsClientToImpervaCertifiate)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error from Incapsula service when deletingmutual TLS Client To Imperva Certificate ID %s: %s", certificateID, err)

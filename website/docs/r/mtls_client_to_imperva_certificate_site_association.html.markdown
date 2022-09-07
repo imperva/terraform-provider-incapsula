@@ -1,3 +1,4 @@
+---
 layout: "incapsula"
 page_title: "Incapsula: site-mtls-client-to-imperva-certificate-association"
 sidebar_current: "docs-incapsula-site-mtls-client-to-imperva-certificate-association"
@@ -5,9 +6,9 @@ description: |-
 Provides an Incapsula Site to TLS Client to Imperva CA Certificate Association resource.
 ---
 
-# incapsula_site_client_to_imperva_certificate_association
+# incapsula_mtls_client_to_imperva_certificate_site_association
 
-Provides an Incapsula Site to TLS Client to Imperva CA Certificate Association resource.
+Provides an Incapsula  mTLS Client to Imperva CA Certificate Site Association resource.
 
 ## Example Usage
 

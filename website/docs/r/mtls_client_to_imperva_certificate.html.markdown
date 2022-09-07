@@ -1,3 +1,4 @@
+---
 layout: "incapsula"
 page_title: "Incapsula: site-mtls-certificate-association"
 sidebar_current: "docs-incapsula-site-mtls-certificate-association"
@@ -5,16 +6,38 @@ description: |-
 Provides an Incapsula Site to Mutual TLS Imperva to Origin Certificate Association resource.
 ---
 
-# incapsula_site_mtls_certificate_association
+# incapsula_mtls_client_to_imperva_certificate
 
-Provides an Incapsula Site to Mutual TLS Imperva to Origin Certificate Association resource.
+Provides a Mutual TLS Client to Imperva CA Certificate resource.
+Mutual TLS Imperva to Origin Certificates must be one of the following formats: PEM, CRT, CER or CA.
 
 ## Example Usage
+Reference to account data source in `account_id` field
 
 ```hcl
-resource "incapsula_site_mtls_certificate_association" "site_mtls_association-site1" {
-    certificate_id = incapsula_mtls_imperva_to_origin_certificate.mtls_certificate.id
-    site_id        =  incapsula_site.example-site.id
+data "incapsula_account_data" "account_data" {
+}
+
+resource "incapsula_mtls_client_to_imperva_certificate" "client_ca_certificate_1"{
+  certificate_name = "pem certificate example"
+  certificate      = filebase64("./ca_certificate.pem")
+  account_id       =  data.incapsula_account_data.account_data.current_account
+}
+```
+
+Reference to subaccount resource in `account_id` field
+
+```hcl
+resource "incapsula_subaccount" "example-subaccount" {
+  sub_account_name  = "Example SubAccount"
+  logs_account_id   = "789"
+  log_level         = "full"
+}
+
+resource "incapsula_mtls_client_to_imperva_certificate" "client_ca_certificate_1"{
+  certificate_name = "pem certificate example"
+  certificate      = filebase64("./ca_certificate.pem")
+  account_id       = incapsula_subaccount.example-subaccount.id
 }
 ```
 
@@ -22,19 +45,21 @@ resource "incapsula_site_mtls_certificate_association" "site_mtls_association-si
 
 The following arguments are supported:
 
-* `certificate_id` - (Required) The Mutual TLS Imperva to Origin Certificate ID.
-* `site_id` - (Required) Numeric identifier of the site to operate on.
+* `certificate` - (Required) Your mTLS client certificate file. Supported formats: PEM, CRT, CER and CA.
+  You can use the Terraform HCL `filebase64` directive to pull in the contents from a file. You can also inline the certificate in the configuration.
+* `account_id` - (Required) Numeric identifier of the account to operate on.
+* `certificate_name` - (Optional) A descriptive name for your mTLS Client Certificate.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-* `id` - Incapsula Site to Mutual TLS Imperva to Origin Certificate Association. The ID composed of 2 parts: `site_id` and `certificate_id` separated by slash.
+* `id` - Unique identifier of the Mutual TLS Imperva to Origin Certificate.
 
 ## Import
 
-Incapsula Mutual TLS Imperva to Origin Certificate can be imported using `site_id` and `certificate_id` separated by slash:
+Incapsula Mutual TLS Imperva to Origin Certificate can be imported using `account_id` and `certificate_id`:
 
 ```
-$ terraform import incapsula_site-mtls-certificate-association.site_mtls_association-site1 site_id/certificate_id
+$ terraform import incapsula_mtls_client_to_imperva_certificate.client_ca_certificate_1 account_id/certificate_id
 ```

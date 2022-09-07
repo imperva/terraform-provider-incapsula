@@ -136,7 +136,6 @@ func generateKeyPair() (string, string) {
 	calculatedHash = calculateHash(certificateRes+"\n", "", pkeyRes+"\n")
 
 	return fmt.Sprintf("<<EOT\n%s\nEOT", certificateRes), fmt.Sprintf("<<EOT\n%s\nEOT", pkeyRes)
-
 }
 
 func generateKeyPairBase64() (string, string) {
@@ -149,7 +148,6 @@ func generateKeyPairBase64() (string, string) {
 	//save calculated hash for it's verification in step 1 of the test(verify create)
 	calculatedHashBase64 = calculateHash(certificateBase64+"\n", "", privateKeyBase64+"\n")
 	return certificateBase64, privateKeyBase64
-	//return fmt.Sprintf("<<EOT\n%s\nEOT", certificateBase64), fmt.Sprintf("<<EOT\n%s\nEOT", privateKeyBase64)
 }
 
 func getCertificateTemplate() *x509.Certificate {

@@ -16,16 +16,16 @@ const headerNameDefault = "clientCertificateInfo"
 const headerValueDefault = "FULL_CERT"
 const isDisableSessionResumptionDefault = false
 
-func resourceSiteTlsSetings() *schema.Resource {
+func resourceMtlsClientToImpervaCertificateSetings() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceSiteTlsSetingsUpdate,
-		Read:   resourceSiteTlsSetingsRead,
-		Update: resourceSiteTlsSetingsUpdate,
-		Delete: resourceSiteTlsSetingsDelete,
+		Create: resourceeMtlsClientToImpervaCertificateSetingsUpdate,
+		Read:   resourceeMtlsClientToImpervaCertificateSetingsRead,
+		Update: resourceeMtlsClientToImpervaCertificateSetingsUpdate,
+		Delete: resourceeMtlsClientToImpervaCertificateSetingsDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				d.Set("site_id", d.Id())
-				log.Printf("[DEBUG] Importing Site TLS Settings for Site ID %s", d.Id())
+				log.Printf("[DEBUG] Importing Incapsula MTLS Client to Imperva Certificate Site Settings for Site ID %s", d.Id())
 				return []*schema.ResourceData{d}, nil
 			},
 		},
@@ -36,7 +36,7 @@ func resourceSiteTlsSetings() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"mandatory": {
+			"require_client_certificate": {
 				Description: "When set to true, the end user is required to present the client certificate in order to access the site. Default - false.",
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -98,7 +98,7 @@ func resourceSiteTlsSetings() *schema.Resource {
 				Default:      headerValueDefault,
 			},
 			"is_disable_session_resumption": {
-				Description: "", //todo KATRIN change
+				Description: "Disables SSL session resumption for site. Needed when Incapsula Client Certificate is needed only for specific hosts/ports and site have clients that reuse TLS session across different hosts/ports. Default: false.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     isDisableSessionResumptionDefault,
@@ -107,14 +107,13 @@ func resourceSiteTlsSetings() *schema.Resource {
 	}
 }
 
-func resourceSiteTlsSetingsUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceeMtlsClientToImpervaCertificateSetingsUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	siteIDStr := d.Get("site_id").(string)
 	siteID, err := strconv.Atoi(siteIDStr)
-	//todo katrin  edit error
 	if err != nil {
-		return fmt.Errorf("failed to convert Site Id for Incapsula Site TLS Settings resource, actual value: %s, expected numeric id", siteIDStr)
+		return fmt.Errorf("failed to convert Site Id for Incapsula MTLS Client to Imperva Certificate Site Settings resource, actual value: %s, expected numeric id", siteIDStr)
 	}
 
 	ports := []int{}
@@ -133,7 +132,7 @@ func resourceSiteTlsSetingsUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	payload := SiteTlsSettings{
-		Mandatory:                  d.Get("mandatory").(bool),
+		Mandatory:                  d.Get("require_client_certificate").(bool),
 		Ports:                      ports,
 		IsPortsException:           d.Get("is_ports_exception").(bool),
 		Hosts:                      hosts,
@@ -155,16 +154,16 @@ func resourceSiteTlsSetingsUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(siteIDStr)
-	return resourceSiteTlsSetingsRead(d, m)
+	return resourceeMtlsClientToImpervaCertificateSetingsRead(d, m)
 }
 
-func resourceSiteTlsSetingsRead(d *schema.ResourceData, m interface{}) error {
+func resourceeMtlsClientToImpervaCertificateSetingsRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	siteIDStr := d.Get("site_id").(string)
 	siteID, err := strconv.Atoi(siteIDStr)
 	if err != nil {
-		return fmt.Errorf("failed to convert Site Id for Incapsula Site TLS Settings resource, actual value: %s, expected numeric id", siteIDStr)
+		return fmt.Errorf("failed to convert Site Id for Incapsula MTLS Client to Imperva Certificate Site Settings resource, actual value: %s, expected numeric id", siteIDStr)
 	}
 
 	siteTlsSettings, objectExists, err := client.GetSiteTlsSettings(
@@ -179,38 +178,43 @@ func resourceSiteTlsSetingsRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	ports := &schema.Set{F: schema.HashInt}
-	for i := range siteTlsSettings.Ports {
-		ports.Add(siteTlsSettings.Ports[i])
+	if len(siteTlsSettings.Ports) == 0 {
+		d.Set("ports", nil)
+	} else {
+		ports := &schema.Set{F: schema.HashInt}
+		for i := range siteTlsSettings.Ports {
+			ports.Add(siteTlsSettings.Ports[i])
+		}
+		d.Set("ports", ports)
 	}
 
-	fingerprints := &schema.Set{F: schema.HashString}
-	for i := range siteTlsSettings.Fingerprints {
-		fingerprints.Add(siteTlsSettings.Fingerprints[i])
+	if len(siteTlsSettings.Fingerprints) == 0 {
+		d.Set("fingerprints", nil)
+	} else {
+		fingerprints := &schema.Set{F: schema.HashString}
+		for i := range siteTlsSettings.Fingerprints {
+			fingerprints.Add(siteTlsSettings.Fingerprints[i])
+		}
+		d.Set("fingerprints", fingerprints)
 	}
 
 	if len(siteTlsSettings.Hosts) == 0 {
-		log.Print("setting hosts to nil value")
 		d.Set("hosts", nil)
 	} else {
 		hosts := &schema.Set{F: schema.HashString}
 		for i := range siteTlsSettings.Hosts {
 			hosts.Add(siteTlsSettings.Hosts[i])
 		}
-		log.Printf("hostsRes: %v", hosts)
 		d.Set("hosts", hosts)
-
 	}
 
 	if err != nil {
 		return err
 	}
 
-	d.Set("mandatory", siteTlsSettings.Mandatory)
-	d.Set("ports", ports)
+	d.Set("require_client_certificate", siteTlsSettings.Mandatory)
 	d.Set("is_ports_exception", siteTlsSettings.IsPortsException)
 	d.Set("is_hosts_exception", siteTlsSettings.IsHostsException)
-	d.Set("fingerprints", fingerprints)
 	d.Set("forward_to_origin", siteTlsSettings.ForwardToOrigin)
 	d.Set("header_name", siteTlsSettings.HeaderName)
 	d.Set("header_value", siteTlsSettings.HeaderValue)
@@ -220,14 +224,13 @@ func resourceSiteTlsSetingsRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceSiteTlsSetingsDelete(d *schema.ResourceData, m interface{}) error {
+func resourceeMtlsClientToImpervaCertificateSetingsDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	siteIDStr := d.Get("site_id").(string)
 	siteID, err := strconv.Atoi(siteIDStr)
-	//todo katrin  edit error
 	if err != nil {
-		return fmt.Errorf("failed to convert Site Id for Incapsula Site TLS Settings resource, actual value: %s, expected numeric id", siteIDStr)
+		return fmt.Errorf("failed to convert Site Id for Incapsula MTLS Client to Imperva Certificate Site Settings resource, actual value: %s, expected numeric id", siteIDStr)
 	}
 
 	payload := SiteTlsSettings{
@@ -245,7 +248,7 @@ func resourceSiteTlsSetingsDelete(d *schema.ResourceData, m interface{}) error {
 
 	err = client.UpdateSiteTlsSetings(siteID, payload)
 	if err != nil {
-		return fmt.Errorf("Failed to destroy Incapsula Site TLS Settings resource for Site ID %s, error:\n%s", siteIDStr, err)
+		return fmt.Errorf("Failed to destroy Incapsula MTLS Client to Imperva Certificate Site Settings resource for Site ID %s, error:\n%s", siteIDStr, err)
 	}
 
 	d.SetId("")

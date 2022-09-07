@@ -48,16 +48,21 @@ func resourceMtlsClientToImpervaCertificate() *schema.Resource {
 				Description: "The certificate file in base64 format.",
 				Type:        schema.TypeString,
 				Required:    true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if new == ignoreSensitivaeVariableString {
+						return true
+					}
+					return false
+				},
 			},
 			"account_id": {
-				Description: "Account ID", //todo add
+				Description: "Account ID to operte on",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
 			// Optional Arguments
 			"certificate_name": {
-				//todo KATRIN  change desc
-				Description: "The private key of the certificate in base64 format. Optional in case of PFX certificate file format. This will be encoded in sha256 in terraform state.",
+				Description: "The certificate name",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
@@ -72,11 +77,16 @@ func resourceClientCaCertificateCreate(d *schema.ResourceData, m interface{}) er
 	client := m.(*Client)
 	encodedCert := d.Get("certificate").(string)
 	// Standard Base64 Decoding
-	decodedCert, err := base64.StdEncoding.DecodeString(encodedCert)
-	if err != nil {
-		fmt.Printf("Error decoding Base64 encoded data from certificate field of incapsula_site_tls_settings resource %v", err)
+	var decodedCert []byte
+	var err error
+	if encodedCert == ignoreSensitivaeVariableString {
+		decodedCert = nil
+	} else {
+		decodedCert, err = base64.StdEncoding.DecodeString(encodedCert)
+		if err != nil {
+			fmt.Printf("Error decoding Base64 encoded data from certificate field of incapsula_site_tls_settings resource %v", err)
+		}
 	}
-
 	mTLSCertificate, err := client.AddClientCaCertificate(
 		decodedCert,
 		d.Get("account_id").(string),

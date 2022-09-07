@@ -70,7 +70,7 @@ func resourceSiteMtlsClientToImpervaCertificateAssociationRead(d *schema.Resourc
 		return err
 	}
 	if !associationExists && !d.IsNewResource() {
-		log.Printf("Site to mutual TLS Imperva to Origin Certificate association with Site ID %s, Certificate ID %s doesn't exist any more. The resource will be deleted from terraform state.", siteID, certificateID)
+		log.Printf("Site to mutual TLS Imperva to Origin Certificate association with Site ID %d, Certificate ID %d doesn't exist any more. The resource will be deleted from terraform state.", siteID, certificateID)
 		d.SetId("")
 		return nil
 	}

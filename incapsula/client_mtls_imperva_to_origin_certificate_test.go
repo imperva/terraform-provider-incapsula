@@ -16,8 +16,9 @@ func TestGetMTLSCertificateBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	certificateID := "42"
+	accountID := "777"
 
-	mTLSCertificateResponse, err := client.GetMTLSCertificate(certificateID)
+	mTLSCertificateResponse, err := client.GetMTLSCertificate(certificateID, accountID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -34,7 +35,9 @@ func TestGetMTLSCertificateBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	certificateID := "42"
-	endpoint := fmt.Sprintf("%s/%s", endpointMTLSCertificate, certificateID)
+	accountID := "777"
+
+	endpoint := fmt.Sprintf("%s/%s?caid=%s", endpointMTLSCertificate, certificateID, accountID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -47,7 +50,7 @@ func TestGetMTLSCertificateBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	mTLSCertificateResponse, err := client.GetMTLSCertificate(certificateID)
+	mTLSCertificateResponse, err := client.GetMTLSCertificate(certificateID, accountID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -63,7 +66,9 @@ func TestGetMTLSCertificateInvalidApiConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	certificateID := "42"
-	endpoint := fmt.Sprintf("%s/%s", endpointMTLSCertificate, certificateID)
+	accountID := "777"
+
+	endpoint := fmt.Sprintf("%s/%s?caid=%s", endpointMTLSCertificate, certificateID, accountID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(500)
@@ -89,7 +94,7 @@ func TestGetMTLSCertificateInvalidApiConfig(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	mTLSCertificateResponse, err := client.GetMTLSCertificate(certificateID)
+	mTLSCertificateResponse, err := client.GetMTLSCertificate(certificateID, accountID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -105,7 +110,9 @@ func TestGetMTLSCertificateValidApiConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	certificateID := "42"
-	endpoint := fmt.Sprintf("%s/%s", endpointMTLSCertificate, certificateID)
+	accountID := "777"
+
+	endpoint := fmt.Sprintf("%s/%s?caid=%s", endpointMTLSCertificate, certificateID, accountID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -142,7 +149,7 @@ func TestGetMTLSCertificateValidApiConfig(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	mTLSCertificateResponse, err := client.GetMTLSCertificate(certificateID)
+	mTLSCertificateResponse, err := client.GetMTLSCertificate(certificateID, accountID)
 
 	if err != nil {
 		t.Errorf("Should not have received an error : %s\n, %v", err.Error(), mTLSCertificateResponse)
@@ -166,8 +173,9 @@ func TestEditMTLSCertificateBadConnection(t *testing.T) {
 	passphrase := "passphrase"
 	certificateName := "certificateName"
 	inputHash := "inputHash"
+	accountID := "777"
 
-	mTLSCertificateResponse, err := client.AddMTLSCertificate(certificate, privateKey, passphrase, certificateName, inputHash)
+	mTLSCertificateResponse, err := client.AddMTLSCertificate(certificate, privateKey, passphrase, certificateName, inputHash, accountID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -190,7 +198,8 @@ func TestEditMTLSCertificateBadJSON(t *testing.T) {
 	certificateName := "certificateName"
 	inputHash := "inputHash"
 	certificateID := "21"
-	endpoint := fmt.Sprintf("%s/%s", endpointMTLSCertificate, certificateID)
+	accountID := "777"
+	endpoint := fmt.Sprintf("%s/%s?caid=%s", endpointMTLSCertificate, certificateID, accountID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -203,7 +212,7 @@ func TestEditMTLSCertificateBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	mTLSCertificateResponse, err := client.UpdateMTLSCertificate(certificateID, certificate, privateKey, passphrase, certificateName, inputHash)
+	mTLSCertificateResponse, err := client.UpdateMTLSCertificate(certificateID, certificate, privateKey, passphrase, certificateName, inputHash, accountID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -250,7 +259,7 @@ func TestEditMTLSCertificateApiConfig(t *testing.T) {
 	certificateName := "certificateName"
 	inputHash := "inputHash"
 
-	mTLSCertificateResponse, err := client.AddMTLSCertificate(certificate, privateKey, passphrase, certificateName, inputHash)
+	mTLSCertificateResponse, err := client.AddMTLSCertificate(certificate, privateKey, passphrase, certificateName, inputHash, "")
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -272,8 +281,9 @@ func TestEditMTLSCertificateValidApiConfig(t *testing.T) {
 	passphrase := "passphrase"
 	certificateName := "certificateName"
 	inputHash := "inputHash"
+	accountID := "777"
 
-	endpoint := fmt.Sprintf("%s", endpointMTLSCertificate)
+	endpoint := fmt.Sprintf("%s?=caid=%s", endpointMTLSCertificate, accountID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -310,7 +320,7 @@ func TestEditMTLSCertificateValidApiConfig(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	mTLSCertificateResponse, err := client.AddMTLSCertificate(certificate, privateKey, passphrase, certificateName, inputHash)
+	mTLSCertificateResponse, err := client.AddMTLSCertificate(certificate, privateKey, passphrase, certificateName, inputHash, accountID)
 
 	if err != nil {
 		t.Errorf("Should not have received an error : %s\n, %v", err.Error(), mTLSCertificateResponse)
@@ -330,8 +340,9 @@ func TestDeleteMTLSCertificateBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	certificateID := "42"
+	accountID := "777"
 
-	err := client.DeleteMTLSCertificate(certificateID)
+	err := client.DeleteMTLSCertificate(certificateID, accountID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -344,7 +355,9 @@ func TestDeleteMTLSCertificateInvalidConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	certificateID := "42"
-	endpoint := fmt.Sprintf("%s/%s", endpointMTLSCertificate, certificateID)
+	accountID := "777"
+
+	endpoint := fmt.Sprintf("%s/%s?caid=%s", endpointMTLSCertificate, certificateID, accountID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(400)
@@ -370,7 +383,7 @@ func TestDeleteMTLSCertificateInvalidConfig(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	err := client.DeleteMTLSCertificate(certificateID)
+	err := client.DeleteMTLSCertificate(certificateID, accountID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -384,7 +397,9 @@ func TestDeleteMTLSCertificateValidConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	certificateID := "42"
-	endpoint := fmt.Sprintf("%s/%s", endpointMTLSCertificate, certificateID)
+	accountID := "777"
+
+	endpoint := fmt.Sprintf("%s/%s?caid=%s", endpointMTLSCertificate, certificateID, accountID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -398,7 +413,7 @@ func TestDeleteMTLSCertificateValidConfig(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	err := client.DeleteMTLSCertificate(certificateID)
+	err := client.DeleteMTLSCertificate(certificateID, accountID)
 
 	if err != nil {
 		t.Errorf("Should not have received an error : %v\n", err.Error())

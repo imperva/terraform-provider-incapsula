@@ -46,9 +46,9 @@ func testACCStateSiteClientToImervaCertificateAssociationDestroy(s *terraform.St
 		}
 		return nil
 
-		siteID, certificateID, accountID := getResourceDetails(res)
+		siteID, certificateID := getResourceDetails(res)
 
-		_, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(accountID, siteID, certificateID)
+		_, _, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID)
 		if err == nil {
 			return fmt.Errorf("Resource %s with siteID ID %d still exists", siteMtlsCrtificateAssociationResourceName, siteID)
 		}
@@ -86,9 +86,9 @@ func testCheckClientToImervaCertificateAssociationExists() resource.TestCheckFun
 			if resource.Type != siteClientToImervaCertificateAssociationResourceName {
 				continue
 			}
-			siteID, certificateID, accountID := getResourceDetails(resource)
+			siteID, certificateID := getResourceDetails(resource)
 
-			response, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(accountID, siteID, certificateID)
+			response, _, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID)
 			if err != nil || response == nil {
 				return fmt.Errorf("Incapsula mTLS certificate ID %d is not assigned to Site ID %d", certificateID, siteID)
 			}
@@ -113,7 +113,7 @@ func testAccCheckClientToImervaCertificateAssociationBasic(t *testing.T) string 
 			certificateResource)
 }
 
-func getResourceDetails(resourceState *terraform.ResourceState) (int, int, int) {
+func getResourceDetails(resourceState *terraform.ResourceState) (int, int) {
 	siteID, err := strconv.Atoi(resourceState.Primary.Attributes["site_id"])
 	if err != nil {
 		fmt.Errorf("Error parsing site ID %s to int for %s resource destroy test", resourceState.Primary.Attributes["site_id"], siteClientToImervaCertificateAssociationResourceName)
@@ -124,10 +124,6 @@ func getResourceDetails(resourceState *terraform.ResourceState) (int, int, int) 
 		fmt.Errorf("Error parsing certificate ID %v to int for %s resource destroy test", resourceState.Primary.Attributes["certificate_id"], siteClientToImervaCertificateAssociationResourceName)
 	}
 
-	accountID, err := strconv.Atoi(resourceState.Primary.Attributes["account_id"])
-	if err != nil {
-		fmt.Errorf("Error parsing acount ID %v to int for %s resource destroy test", resourceState.Primary.Attributes["account_id"], siteClientToImervaCertificateAssociationResourceName)
-	}
-	return siteID, certificateID, accountID
+	return siteID, certificateID
 
 }

@@ -122,18 +122,18 @@ const UpdateAccountSSLSettings = "update_account_ssl_settings"
 const GetAccountSSLSettings = "get_account_ssl_settings"
 const DeleteAccountSSLSettings = "delete_account_ssl_settings"
 
-const CreateMtlsCertifiate = "create_mtls_certificate"
-const ReadMtlsCertifiate = "read_mtls_certificate"
-const UpdateMtlsCertifiate = "update_mtls_certificate"
-const DeleteMtlsCertifiate = "delete_mtls_certificate"
-
 const CreateMtlsImpervaToOriginCertifiate = "create_mtls_imperva_to_origin_certificate"
 const ReadMtlsImpervaToOriginCertifiate = "read_mtls_imperva_to_origin_certificate"
 const UpdateMtlsImpervaToOriginCertifiate = "update_mtls_imperva_to_origin_certificate"
 const DeleteMtlsImpervaToOriginCertifiate = "delete_mtls_imperva_to_origin_certificate"
 
+const CreateSiteMtlsImpervaToOriginCertifiateAssociation = "create_site_mtls_imperva_to_origin_certificate_association"
+const ReadSiteMtlsImpervaToOriginCertifiateAssociation = "read_site_mtls_imperva_to_origin_certificate_association"
+const DeleteSiteMtlsImpervaToOriginCertifiateAssociation = "delete_site_mtls_imperva_to_origin_certificate_association"
+
 const CreateMtlsClientToImpervaCertifiate = "create_mtls_client_to_imperva_certificate"
 const ReadMtlsClientToImpervaCertifiate = "read_mtls_client_to_imperva_certificate"
+const UpdateMtlsClientToImpervaCertifiate = "update_mtls_client_to_imperva_certificate"
 const DeleteMtlsClientToImpervaCertifiate = "delete_mtls_client_to_imperva_certificate"
 
 const CreateMtlsClientToImpervaCertifiateSiteAssociation = "create_mtls_client_to_imperva_certificate_site_accociation"

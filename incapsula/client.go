@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -26,7 +29,36 @@ type Client struct {
 func NewClient(config *Config) *Client {
 	client := &http.Client{}
 
-	return &Client{config: config, httpClient: client, providerVersion: "3.8.2"}
+	return &Client{config: config, httpClient: client, providerVersion: "3.8.4"}
+}
+
+func (c *Client) CreateFormDataBody(bodyMap map[string]interface{}) ([]byte, string) {
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	for key, value := range bodyMap {
+		switch value.(type) {
+		case string:
+			fw, err := writer.CreateFormField(key)
+			if err != nil {
+				log.Printf("failed to create %s formdata field", key)
+			}
+			_, err = io.Copy(fw, strings.NewReader(fmt.Sprintf("%v", value)))
+			break
+		case []byte:
+			fw, err := writer.CreateFormFile(key, filepath.Base(key+".pfx")) //todo KATRIN try to remove .pfx
+			if err != nil {
+				log.Printf("failed to create %s formdata field", key)
+			}
+			fw.Write(value.([]byte))
+			break
+		default:
+			//throw error
+		}
+	}
+	writer.Close()
+
+	return body.Bytes(), writer.FormDataContentType()
 }
 
 // Verify checks the API credentials
@@ -88,7 +120,6 @@ func (c *Client) DoJsonRequestWithCustomHeaders(method string, url string, data 
 	}
 
 	SetHeaders(c, req, contentTypeApplicationJson, operation, headers)
-	log.Printf("%v", req)
 	return c.httpClient.Do(req)
 }
 
@@ -123,13 +154,15 @@ func GetRequestParamsWithCaid(accountId int) map[string]string {
 	return params
 }
 
-func (c *Client) DoJsonRequestWithHeadersForm(method string, url string, data []byte, contentType string, operation string) (*http.Response, error) {
+func (c *Client) DoFormDataRequestWithHeaders(method string, url string, data []byte, contentType string, operation string) (*http.Response, error) {
+	log.Printf("got body to send:\n%v", string(data))
 	req, err := PrepareJsonRequest(method, url, data)
 	if err != nil {
 		return nil, fmt.Errorf("Error preparing request: %s", err)
 	}
-	log.Printf("DoJsonRequestWithHeadersForm request:\n%v", req)
 	SetHeaders(c, req, contentType, operation, nil)
+
+	log.Printf("%v", req)
 	return c.httpClient.Do(req)
 }
 
@@ -139,12 +172,6 @@ func PrepareJsonRequest(method string, url string, data []byte) (*http.Request, 
 	}
 
 	return http.NewRequest(method, url, bytes.NewReader(data))
-}
-
-func DoRequestWithFormData(method string, url string, data url.Values) (*http.Response, error) {
-	//todo - add headers!!!!
-	// SetHeaders???
-	return http.PostForm(url, data)
 }
 
 func SetHeaders(c *Client, req *http.Request, contentType string, operation string, customHeaders map[string]string) {
@@ -159,5 +186,4 @@ func SetHeaders(c *Client, req *http.Request, contentType string, operation stri
 			req.Header.Set(name, value)
 		}
 	}
-
 }

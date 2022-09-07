@@ -18,7 +18,7 @@ func TestGetClientCaCertificateBadConnection(t *testing.T) {
 	certificateID := "42"
 	accountID := "100"
 
-	mTLSClientToImpervaCertificateResponse, err := client.GetClientCaCertificate(accountID, certificateID)
+	mTLSClientToImpervaCertificateResponse, _, err := client.GetClientCaCertificate(accountID, certificateID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -49,7 +49,7 @@ func TestGetClientCaCertificateBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	mTLSClientToImpervaCertificateResponse, err := client.GetClientCaCertificate(accountID, certificateID)
+	mTLSClientToImpervaCertificateResponse, _, err := client.GetClientCaCertificate(accountID, certificateID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -92,7 +92,7 @@ func TestGetClientCaCertificateInvalidApiConfig(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	mTLSClientToImpervaCertificateResponse, err := client.GetClientCaCertificate(accountID, certificateID)
+	mTLSClientToImpervaCertificateResponse, _, err := client.GetClientCaCertificate(accountID, certificateID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -130,7 +130,7 @@ func TestGetClientCaCertificateValidApiConfig(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	mTLSClientToImpervaCertificateResponse, err := client.GetClientCaCertificate(accountID, certificateID)
+	mTLSClientToImpervaCertificateResponse, _, err := client.GetClientCaCertificate(accountID, certificateID)
 
 	if err != nil {
 		t.Errorf("Should not have received an error : %s\n, %v", err.Error(), mTLSClientToImpervaCertificateResponse)
