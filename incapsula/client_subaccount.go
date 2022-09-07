@@ -37,7 +37,7 @@ type SubAccountPayload struct {
 	RefID          string `json:"ref_id,omitempty"`
 	LogLevel       string `json:"log_level,omitempty"`
 	ParentID       int    `json:"parent_id,omitempty"`
-	LogsAccountID  int    `json:"logs_account_id",omitempty"`
+	LogsAccountID  int    `json:"logs_account_id,omitempty"`
 }
 
 // AddSubAccount adds a SubAccount to be managed by Incapsula
