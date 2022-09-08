@@ -42,7 +42,7 @@ func (c *Client) AddMTLSCertificate(certificate, privateKey []byte, passphrase, 
 func (c *Client) UpdateMTLSCertificate(certificateID string, certificate, privateKey []byte, passphrase, certificateName, inputHash, accountID string) (*MTLSCertificate, error) {
 	log.Printf("[INFO] Updating mutual TLS Imperva to Origin Certificate with ID %s", certificateID)
 	reqURL := fmt.Sprintf("%s%s/%s", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID)
-	if accountID!= "" {
+	if accountID != "" {
 		reqURL = fmt.Sprintf("%s%s/%s?caid=%s", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID, accountID)
 	}
 	return c.editMTLSCertificate(http.MethodPut, reqURL, certificate, privateKey, passphrase, certificateName, inputHash, "Update", UpdateMtlsImpervaToOriginCertifiate)
@@ -52,7 +52,7 @@ func (c *Client) GetMTLSCertificate(certificateID, accountID string) (*MTLSCerti
 	log.Printf("[INFO] Reading mutual TLS Imperva to Origin Certificate with ID %s", certificateID)
 	//todo refactor !! move to separate method
 	reqURL := fmt.Sprintf("%s%s/%s", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID)
-	if accountID!= "" {
+	if accountID != "" {
 		reqURL = fmt.Sprintf("%s%s/%s?caid=%s", c.config.BaseURLAPI, endpointMTLSCertificate, certificateID, accountID)
 	}
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadMtlsImpervaToOriginCertifiate)

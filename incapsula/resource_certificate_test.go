@@ -138,7 +138,6 @@ func generateKeyPair() (string, string) {
 	return fmt.Sprintf("<<EOT\n%s\nEOT", certificateRes), fmt.Sprintf("<<EOT\n%s\nEOT", pkeyRes)
 }
 
-
 func generateKeyPairBase64() (string, string) {
 	cert, pkey := generateKeyPair()
 	// encode PEM-encoded certificate with base64 algorith

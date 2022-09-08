@@ -69,7 +69,7 @@ func resourceMtlsImpervaToOriginCertificate() *schema.Resource {
 func resourceMTLSImpervaToOriginCertificateCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	inputHash := createHash(d)
-	accountID:= d.Get("account_id").(string)
+	accountID := d.Get("account_id").(string)
 
 	encodedCert := d.Get("certificate").(string)
 	// Standard Base64 Decoding
@@ -104,7 +104,7 @@ func resourceMTLSImpervaToOriginCertificateCreate(d *schema.ResourceData, m inte
 
 func resourceMTLSImpervaToOriginCertificateRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	accountID:= d.Get("account_id").(string)
+	accountID := d.Get("account_id").(string)
 
 	mTLSCertificateData, err := client.GetMTLSCertificate(d.Id(), accountID)
 	if err != nil {
@@ -121,7 +121,7 @@ func resourceMTLSImpervaToOriginCertificateRead(d *schema.ResourceData, m interf
 func resourceMTLSImpervaToOriginCertificateUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	inputHash := createHash(d)
-	accountID:= d.Get("account_id").(string)
+	accountID := d.Get("account_id").(string)
 
 	encodedCert := d.Get("certificate").(string)
 	// Standard Base64 Decoding
@@ -163,7 +163,7 @@ func resourceMTLSImpervaToOriginCertificateUpdate(d *schema.ResourceData, m inte
 
 func resourceMTLSImpervaToOriginCertificateDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	accountID:= d.Get("account_id").(string)
+	accountID := d.Get("account_id").(string)
 
 	err := client.DeleteMTLSCertificate(d.Id(), accountID)
 
