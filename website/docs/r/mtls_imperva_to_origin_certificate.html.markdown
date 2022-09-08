@@ -45,7 +45,7 @@ resource "incapsula_mtls_imperva_to_origin_certificate" "mtls_certificate"{
 
 `Exported Certificate - data placeholder` value will be set in `certificate`, `private_key`, `passphrase` fields in the result of account export.
 You cannot update the resource until you'll specify a real values instead of `Exported Certificate - data placeholder` value for the mentioned earlier fields.
-Example of exported resource result:
+Example of exported resource:
 
 ```hcl
 resource "incapsula_mtls_imperva_to_origin_certificate" "incapsula_mtls_imperva_to_origin_certificate-679" { 
