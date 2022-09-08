@@ -53,7 +53,7 @@ func resourceSubAccount() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"full", "security", "none", "default"}, false),
 			},
 			"data_storage_region": {
-				Description:  "Default data region of the sub account for newly created sites. Options are `APAC`, `EU`, `US` and `DEFAULT`. Defaults to `DEFAULT`.",
+				Description:  "Default data region of the sub account for newly created sites. Options are `APAC`, `EU`, `US` and `AU`. Defaults to `DEFAULT`.",
 				Type:         schema.TypeString,
 				Default:      "US",
 				Optional:     true,
