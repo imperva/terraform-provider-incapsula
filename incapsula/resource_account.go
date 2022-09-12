@@ -80,11 +80,10 @@ func resourceAccount() *schema.Resource {
 				Optional:    true,
 			},
 			"naked_domain_san_for_new_www_sites": {
-				Description:  "Add naked domain SAN to Incapsula SSL certificates for new www sites. Options are `true` and `false`. Defaults to `true`",
-				Type:         schema.TypeString,
-				Default:      "true",
-				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"true", "false", "default"}, false),
+				Description: "Add naked domain SAN to Incapsula SSL certificates for new www sites. Options are `true` and `false`. Defaults to `true`",
+				Type:        schema.TypeBool,
+				Default:     true,
+				Optional:    true,
 			},
 			"wildcard_san_for_new_sites": {
 				Description:  "Add wildcard SAN to Incapsula SSL certificates for new sites. Options are `true`, `false` and `default`. Defaults to `default`",
