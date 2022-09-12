@@ -44,5 +44,5 @@ The following attributes are exported:
 Incapsula Mutual TLS Imperva to Origin Certificate can be imported using `site_id` and `certificate_id` separated by slash:
 
 ```
-$ terraform import incapsula_site-mtls-certificate-association.site_mtls_association-site1 site_id/certificate_id
+$ terraform import incapsula_mtls_imperva_to_origin_certificate_site_association.site_mtls_association-site1 site_id/certificate_id
 ```
