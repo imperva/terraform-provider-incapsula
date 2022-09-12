@@ -9,6 +9,7 @@ description: |- Provides an Incapsula MTLS Client to Imperva Certificate Site Se
 
 Provides an Incapsula mTLS Client to Imperva Certificate Site Settings resource.
 If your site needs to support client certificates, you can upload your CA certificate to Imperva and configure your websites to use it.
+On destroy settings will be changed to default values and resource will stop being managed by Terraform.
 
 ## Example Usage
 Associate 2 different certificates to the same site.
@@ -49,7 +50,7 @@ resource "incapsula_mtls_client_to_imperva_certificate_site_settings" "demo_clie
     hosts                            = ["host.com", "site.ca"]
     is_hosts_exception               = true
     fingerprints                     = ["fingerprint1", "fingerprint2"]
-    forward_to_origin                = false
+    forward_to_origin                = true
     header_name                      = "header"
     header_value                     = "SERIAL_NUMBER"
     is_disable_session_resumption    = true
@@ -73,7 +74,7 @@ The following arguments are supported:
 * `fingerprints` - (Optional) Permitted client certificate fingerprints. If left empty, all fingerprints are permitted. Default - empty list.
 * `forward_to_origin` - (Optional) When set to true, the contents specified in headerValue are sent to the origin server in the header specified by headerName. Default - false. If parameter is set to true, specify of `header_name`, `header_value` are required.
 * `header_name` - (Optional) The name of the header to send header content in. By default, the header name is 'clientCertificateInfo'. Specifying this parameter is relevant only if `forward_to_origin` is set to true. Default - `clientCertificateInfo`.
-* `header_value` - (Optional) The content to send in the header specified by headerName. One of the following: FULL_CERT (for full certificate in Base64) COMMON_NAME (for certificate's common name (CN)) FINGERPRINT (for the certificate fingerprints in SHA1) SERIAL_NUMBER (for the certificate's serial number). Parameter is required if `forward_to_origin` is set to true. Default: `FULL_CERT`.
+* `header_value` - (Optional) The content to send in the header specified by headerName. One of the following: `FULL_CERT` (for full certificate in Base64) `COMMON_NAME` (for certificate's common name (CN)) `FINGERPRINT` (for the certificate fingerprints in SHA1) `SERIAL_NUMBER` (for the certificate's serial number). Parameter is required if `forward_to_origin` is set to true. Default: `FULL_CERT`.
 * `is_disable_session_resumption` - (Optional) Disables SSL session resumption for site. Needed when Incapsula Client Certificate is needed only for specific hosts/ports and site have clients that reuse TLS session across different hosts/ports. Default - false.
 
 ## Attributes Reference

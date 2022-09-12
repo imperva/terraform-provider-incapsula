@@ -10,6 +10,7 @@ Provides an Incapsula Site to Mutual TLS Imperva to Origin Certificate Associati
 
 Provides a Mutual TLS Client to Imperva CA Certificate resource.
 Mutual TLS Imperva to Origin Certificates must be one of the following formats: PEM, CRT, CER or CA.
+Update action is not supported for current resource. Please create a new Imperva CA Certificate resource and only then, delete the old one.
 
 ## Example Usage
 Reference to account data source in `account_id` field

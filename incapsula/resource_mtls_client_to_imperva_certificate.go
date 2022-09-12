@@ -11,6 +11,8 @@ import (
 	"strings"
 )
 
+const ignoreSensitiveVariableString = "Exported Certificate - data placeholder"
+
 func resourceMtlsClientToImpervaCertificate() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceClientCaCertificateCreate,
@@ -49,7 +51,7 @@ func resourceMtlsClientToImpervaCertificate() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if new == ignoreSensitivaeVariableString {
+					if new == ignoreSensitiveVariableString {
 						return true
 					}
 					return false
@@ -79,14 +81,12 @@ func resourceClientCaCertificateCreate(d *schema.ResourceData, m interface{}) er
 	// Standard Base64 Decoding
 	var decodedCert []byte
 	var err error
-	if encodedCert == ignoreSensitivaeVariableString {
-		decodedCert = nil
-	} else {
-		decodedCert, err = base64.StdEncoding.DecodeString(encodedCert)
-		if err != nil {
-			fmt.Printf("Error decoding Base64 encoded data from certificate field of incapsula_site_tls_settings resource %v", err)
-		}
+
+	decodedCert, err = base64.StdEncoding.DecodeString(encodedCert)
+	if err != nil {
+		fmt.Printf("Error decoding Base64 encoded data from certificate field of incapsula_site_tls_settings resource %v", err)
 	}
+
 	mTLSCertificate, err := client.AddClientCaCertificate(
 		decodedCert,
 		d.Get("account_id").(string),
