@@ -11,7 +11,6 @@ import (
 	"strings"
 )
 
-const ignoreSensitiveVariableString = "Exported Certificate - data placeholder"
 
 func resourceMtlsClientToImpervaCertificate() *schema.Resource {
 	return &schema.Resource{
