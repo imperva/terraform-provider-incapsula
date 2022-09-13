@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
-	"strconv"
 	"strings"
 )
 
@@ -104,22 +103,4 @@ func resourceSiteMtlsCertificateAssociationDelete(d *schema.ResourceData, m inte
 
 	d.SetId("")
 	return nil
-}
-
-func validateInput(d *schema.ResourceData) (int, int, error) {
-	siteIDStr := d.Get("site_id").(string)
-	certificateIDStr := d.Get("certificate_id").(string)
-
-	siteID, err := strconv.Atoi(siteIDStr)
-	if err != nil {
-		return 0, 0, fmt.Errorf("failed to convert Site Id, actual value: %s, expected numeric id", siteIDStr)
-	}
-
-	certificateID, err := strconv.Atoi(certificateIDStr)
-	if err != nil {
-		return 0, 0, fmt.Errorf("failed to convert certificate Id, actual value: %s, expected numeric id", certificateIDStr)
-	}
-	log.Printf("site_id %d\ncertificate_id - %d", siteID, certificateID)
-
-	return siteID, certificateID, nil
 }
