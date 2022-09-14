@@ -1,3 +1,8 @@
+## 3.8.6
+
+* Make `invalid_param_name_violation_action` deprecated in the `incapsula_api_security_site_config` resource
+* Make `invalid_param_name_violation_action` deprecated in the `incapsula_api_security_api_config` resource
+
 ## 3.8.5 (Aug 31, 2022)
 
 BUG FIXES:
