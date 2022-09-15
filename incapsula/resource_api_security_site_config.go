@@ -74,6 +74,7 @@ func resourceApiSecuritySiteConfig() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE"}, false),
 				Default:      "ALERT_ONLY",
+				Deprecated:   "invalid_param_name_violation_action field is deprecated",
 			},
 			"is_api_only_site": {
 				Description: "Apply positive security model for all traffic on the site. Applying the positive security model for all traffic on the site may lead to undesired request blocking.",
