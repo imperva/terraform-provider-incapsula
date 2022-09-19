@@ -113,6 +113,7 @@ func Provider() *schema.Provider {
 			"incapsula_application_delivery":         resourceApplicationDelivery(),
 			"incapsula_site_monitoring":              resourceSiteMonitoring(),
 			"incapsula_account_ssl_settings":         resourceAccountSSLSettings(),
+			"incapsula_bots_configuration":           resourceBotsConfiguration(),
 		},
 	}
 
