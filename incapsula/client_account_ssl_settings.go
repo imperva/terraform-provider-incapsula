@@ -25,7 +25,9 @@ type ImpervaCertificate struct {
 
 // AccountSSLSettingsDTO contains the SSL settings of an account
 type AccountSSLSettingsDTO struct {
-	ImpervaCertificate *ImpervaCertificate `json:"impervaCertificate,omitempty"`
+	ImpervaCertificate         *ImpervaCertificate `json:"impervaCertificate,omitempty"`
+	EnableHSTSForNewSites      *bool               `json:"enableHSTSForNewSites,omitempty"`
+	AllowSupportOldTLSVersions *bool               `json:"allowSupportOldTLSVersions,omitempty"`
 }
 
 type AccountSSLSettingsDTOResponse struct {
