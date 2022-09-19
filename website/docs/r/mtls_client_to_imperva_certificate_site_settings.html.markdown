@@ -1,14 +1,14 @@
 ---
 layout: "incapsula"
-page_title: "Incapsula: incap-mtls_client_to_imperva_certificate_site_settings"
-sidebar_current: "docs-incapsula-resource-mtls-client-to-imperva-certificate-site-settings"
+page_title: "Incapsula: incap-mtls-client-to-imperva-ca-certificate-site-settings"
+sidebar_current: "docs-incapsula-resource-mtls-client-to-imperva-ca-certificate-site-settings"
 description: |- Provides an Incapsula MTLS Client to Imperva Certificate Site Settings resource.
 ---
 
-# incapsula_mtls_client_to_imperva_certificate_site_settings
+# incapsula_mtls_client_to_imperva_ca_certificate_site_settings
 
 Provides an Incapsula mTLS Client to Imperva Certificate Site Settings resource.
-If your site needs to support client certificates, you can upload your CA certificate to Imperva and configure your websites to use it.
+This resource is used to set parameters relevant to the Mutual TLS Client to Imperva Certificate functionality.
 On destroy settings will be changed to default values and resource will stop being managed by Terraform.
 
 ## Example Usage
@@ -16,25 +16,25 @@ Associate 2 different certificates to the same site.
 Use of `depends_on` parameter to ensure proper order of editing related resources
 
 ```hcl
-resource "incapsula_mtls_client_to_imperva_certificate" "client_ca_certificate_1" {
+resource "incapsula_mtls_client_to_imperva_ca_certificate" "client_ca_certificate_1" {
     account_id         = data.incapsula_account_data.account_data.current_account
     certificate        = filebase64("./cert.der")
     certificate_name   = "der certificate example 1"
 }
 
-resource "incapsula_mtls_client_to_imperva_certificate" "client_ca_certificate_2" {
+resource "incapsula_mtls_client_to_imperva_ca_certificate" "client_ca_certificate_2" {
     account_id         = data.incapsula_account_data.account_data.current_account
     certificate        = filebase64("./cert.pem")
     certificate_name   = "pem certificate example 2"
 }
 
-resource "incapsula_mtls_client_to_imperva_certificate_site_association" "client_ca_certificate__site_association_1" {
-    certificate_id     = incapsula_mtls_client_to_imperva_certificate.client_ca_certificate_1.id
+resource "incapsula_mtls_client_to_imperva_ca_certificate_site_association" "client_ca_certificate__site_association_1" {
+    certificate_id     = incapsula_mtls_client_to_imperva_ca_certificate.client_ca_certificate_1.id
     site_id            = incapsula_site.example-site.id
 }
 
-resource "incapsula_mtls_client_to_imperva_certificate_site_association" "site_client_ca_certificate_site_association_2" {
-    certificate_id     = incapsula_mtls_client_to_imperva_certificate.client_ca_certificate_2.id
+resource "incapsula_mtls_client_to_imperva_ca_certificate_site_association" "site_client_ca_certificate_site_association_2" {
+    certificate_id     = incapsula_mtls_client_to_imperva_ca_certificate.client_ca_certificate_2.id
     site_id            = incapsula_site.example-site.id
 }
 ```
@@ -42,7 +42,7 @@ resource "incapsula_mtls_client_to_imperva_certificate_site_association" "site_c
 Use of `depends_on` parameter to ensure proper order of editing related resources
 
 ```hcl
-resource "incapsula_mtls_client_to_imperva_certificate_site_settings" "demo_client_to_imperva_certificate_site_settings" {
+resource "incapsula_mtls_client_to_imperva_ca_certificate_site_settings" "demo_client_to_imperva_certificate_site_settings" {
     site_id                          = incapsula_site.example-site.id
     require_client_certificate       = true
     ports                            = [100,120,292]
@@ -55,8 +55,8 @@ resource "incapsula_mtls_client_to_imperva_certificate_site_settings" "demo_clie
     header_value                     = "SERIAL_NUMBER"
     is_disable_session_resumption    = true
     depends_on                       = [
-        incapsula_mtls_client_to_imperva_certificate_site_association.client_ca_certificate_site_association_1,
-        incapsula_mtls_client_to_imperva_certificate_site_association.client_ca_certificate_site_association_2
+        incapsula_mtls_client_to_imperva_ca_certificate_site_association.client_ca_certificate_site_association_1,
+        incapsula_mtls_client_to_imperva_ca_certificate_site_association.client_ca_certificate_site_association_2
     ]
 }
 ```
@@ -81,14 +81,14 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - Value of Site ID in the Incapsula MTLS Client to Imperva Certificate Site Settings.
+* `id` - Value of Site ID in the Imperva Mutual TLS Client to Imperva CA Certificate Site Settings.
 
 ## Import
 
-Incapsula mTLS Client to Imperva Certificate Site Settings can be imported using Site ID :
+Incapsula mutual TLS Client to Imperva Certificate Site Settings can be imported using Site ID :
 
 ```
-$ terraform import incapsula_mtls_client_to_imperva_certificate_site_settings.demo_client_to_imperva_certificate_site_settings 1234
+$ terraform import incapsula_mtls_client_to_imperva_ca_certificate_site_settings.demo_client_to_imperva_certificate_site_settings 1234
 
 ```
 

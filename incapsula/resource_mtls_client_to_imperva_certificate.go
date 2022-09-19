@@ -72,7 +72,7 @@ func resourceMtlsClientToImpervaCertificate() *schema.Resource {
 }
 
 func resourceClientCaCertificateUpdate(d *schema.ResourceData, m interface{}) error {
-	return fmt.Errorf("Update action is not supported for resource incapsula_mtls_client_to_imperva_certificate. Please create a new resource and only then, delete this one.")
+	return fmt.Errorf("Update action is not supported for current resource. Please create a new Mutual TLS Client to Imperva CA Certificate resource and only then, delete the old one.")
 }
 func resourceClientCaCertificateCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)

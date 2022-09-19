@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-const siteTlsSettingsResourceName = "incapsula_mtls_client_to_imperva_certificate_site_settings"
+const siteTlsSettingsResourceName = "incapsula_mtls_client_to_imperva_ca_certificate_site_settings"
 const siteTlsSettingsResource = siteTlsSettingsResourceName + "." + siteTlsSettingsgName
 const siteTlsSettingsgName = "testacc-terraform-site_tls_settings"
 

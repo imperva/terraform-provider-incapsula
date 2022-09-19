@@ -9,8 +9,8 @@ import (
 	"testing"
 )
 
-const siteClientToImervaCertificateAssociationResourceName = "incapsula_mtls_site_client_to_imperva_certificate_association"
-const siteClientToImervaCertificateAssociationResource = siteMtlsCrtificateAssociationResourceName + "." + siteMtlsCrtificateAssociationName
+const siteClientToImervaCertificateAssociationResourceName = "incapsula_mtls_client_to_imperva_ca_certificate_site_association"
+const siteClientToImervaCertificateAssociationResource = siteClientToImervaCertificateAssociationResourceName + "." + siteClientToImervaCertificateAssociationName
 const siteClientToImervaCertificateAssociationName = "testacc-terraform-site-client-to-imperva-certificate-certificate-association"
 
 //todo KATRIN:
