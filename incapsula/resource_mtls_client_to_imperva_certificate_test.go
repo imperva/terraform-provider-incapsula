@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-const mtlsClientToImervaCertificateResourceName = "incapsula_mtls_client_to_imperva_certificate"
+const mtlsClientToImervaCertificateResourceName = "incapsula_mtls_client_to_imperva_ca_certificate"
 const mtlsClientToImervaCertificateResource = mtlsClientToImervaCertificateResourceName + "." + mtlsClientToImervaCertificateName
 const mtlsClientToImervaCertificateName = "testacc-terraform-client_to_imperva_certificate"
 
@@ -27,7 +27,6 @@ func TestAccIncapsulaMtlsClientToImervaCertificate_Basic(t *testing.T) {
 				Config: testAccCheckMtlsClientToImervaCertificateBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckMtlsClientToImervaCertificateExists(),
-					//resource.TestCheckResourceAttr(mtlsClientToImervaCertificateResource, "hash", calculatedHashForClientCACert),
 					resource.TestCheckResourceAttr(mtlsClientToImervaCertificateResource, "certificate_name", "acceptance test CA certificate"),
 				),
 			},
