@@ -1,9 +1,9 @@
 ---
 layout: "incapsula"
-page_title: "Incapsula: data-centers-configuration"
-sidebar_current: "docs-incapsula-resource-data-centers-configuration"
+page_title: "Incapsula: bots-configuration"
+sidebar_current: "docs-incapsula-resource-bots-configuration"
 description: |-
-  Provides a Incapsula Data Centers Configuration resource.
+  Provides a Incapsula BOT Access Control Configuration resource.
 ---
 
 # incapsula_bots_configuration
