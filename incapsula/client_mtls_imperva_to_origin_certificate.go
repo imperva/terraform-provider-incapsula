@@ -92,7 +92,7 @@ func (c *Client) editMTLSCertificate(hhtpMethod, reqURL string, certificate, pri
 	if privateKey != nil && len(privateKey) > 0 {
 		bodyMap["privateKeyFile"] = []byte(privateKey)
 	}
-	if passphrase != "" && passphrase != ignoreSensitivaeVariableString {
+	if passphrase != "" && passphrase != ignoreSensitiveVariableString {
 		bodyMap["passphrase"] = passphrase
 	}
 	//certificateName
