@@ -90,7 +90,7 @@ func testCheckAccAccountSSLSettingsAfterFullUpdate() resource.TestCheckFunc {
 		}
 
 		client := testAccProvider.Meta().(*Client)
-		settings, diagnostics := client.GetAccountSSLSettings(0)
+		settings, diagnostics := client.GetAccountSSLSettings("")
 		if diagnostics != nil && diagnostics.HasError() {
 			return fmt.Errorf("failed to get account ssl settings after full update resource %s", accountSSLSettingsResourceName)
 		}
@@ -111,7 +111,7 @@ func testCheckAccAccountSSLSettingsAfterPartialUpdate1() resource.TestCheckFunc 
 		}
 
 		client := testAccProvider.Meta().(*Client)
-		settings, diagnostics := client.GetAccountSSLSettings(0)
+		settings, diagnostics := client.GetAccountSSLSettings("")
 		if diagnostics != nil && diagnostics.HasError() {
 			return fmt.Errorf("failed to get account ssl settings after partial update1 resource %s", accountSSLSettingsResourceName)
 		}
@@ -132,7 +132,7 @@ func testCheckAccAccountSSLSettingsAfterPartialUpdate2() resource.TestCheckFunc 
 		}
 
 		client := testAccProvider.Meta().(*Client)
-		settings, diagnostics := client.GetAccountSSLSettings(0)
+		settings, diagnostics := client.GetAccountSSLSettings("")
 		if diagnostics != nil && diagnostics.HasError() {
 			return fmt.Errorf("failed to get account ssl settings after partia2 update1 resource %s", accountSSLSettingsResourceName)
 		}
@@ -153,7 +153,7 @@ func testCheckAccAccountSSLSettingsAfterPartialUpdate3() resource.TestCheckFunc 
 		}
 
 		client := testAccProvider.Meta().(*Client)
-		settings, diagnostics := client.GetAccountSSLSettings(0)
+		settings, diagnostics := client.GetAccountSSLSettings("")
 		if diagnostics != nil && diagnostics.HasError() {
 			return fmt.Errorf("failed to get account ssl settings after partia3 update1 resource %s", accountSSLSettingsResourceName)
 		}

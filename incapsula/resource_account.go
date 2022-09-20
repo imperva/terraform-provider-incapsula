@@ -84,7 +84,7 @@ func resourceAccount() *schema.Resource {
 				Type:         schema.TypeString,
 				Default:      "true",
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"true", "false", "default"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"true", "false"}, false),
 			},
 			"wildcard_san_for_new_sites": {
 				Description:  "Add wildcard SAN to Incapsula SSL certificates for new sites. Options are `true`, `false` and `default`. Defaults to `default`",
@@ -172,7 +172,7 @@ func resourceAccountRead(d *schema.ResourceData, m interface{}) error {
 
 	log.Printf("[INFO] Reading Incapsula account for Account ID: %d\n", accountID)
 
-	accountStatusResponse, err := client.AccountStatus(accountID)
+	accountStatusResponse, err := client.AccountStatus(accountID, ReadAccount)
 
 	// Account object may have been deleted
 	if accountStatusResponse != nil && accountStatusResponse.Res.(float64) == 9403 {

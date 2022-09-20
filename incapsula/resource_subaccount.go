@@ -13,6 +13,7 @@ func resourceSubAccount() *schema.Resource {
 		Create: resourceSubAccountCreate,
 		Read:   resourceSubAccountRead,
 		Delete: resourceSubAccountDelete,
+		Update: resourceSubAccountUpdate,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -37,7 +38,6 @@ func resourceSubAccount() *schema.Resource {
 				Description: "Customer specific identifier for this operation.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 			},
 			"logs_account_id": {
 				Description: "Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.",
@@ -51,6 +51,13 @@ func resourceSubAccount() *schema.Resource {
 				Optional:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.StringInSlice([]string{"full", "security", "none", "default"}, false),
+			},
+			"data_storage_region": {
+				Description:  "Default data region of the sub account for newly created sites. Options are `APAC`, `EU`, `US` and `AU`. Defaults to `DEFAULT`.",
+				Type:         schema.TypeString,
+				Default:      "US",
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"APAC", "EU", "US", "AU"}, false),
 			},
 		},
 	}
@@ -84,6 +91,11 @@ func resourceSubAccountCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[DEBUG] Account id for new sub account : %d", SubAccountAddResponse.SubAccount.SubAccountID)
 	log.Printf("[INFO] Created Incapsula subaccount %s\n", subAccountName)
 
+	err = updateDefaultDataStorageRegion(client, d)
+	if err != nil {
+		return err
+	}
+
 	// There may be a timing/race condition here
 	// Set an arbitrary period to sleep
 	time.Sleep(3 * time.Second)
@@ -93,26 +105,41 @@ func resourceSubAccountCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceSubAccountRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	subAccountID, _ := strconv.Atoi(d.Id())
-	subAccount, err := client.GetSubAccount(d.Get("parent_id").(int), subAccountID)
 
-	if err != nil {
-		return err
-	}
+	accountID, _ := strconv.Atoi(d.Id())
 
-	if subAccount == nil {
-		log.Printf("[INFO] Incapsula subaccount %s has already been deleted: %s\n", d.Id(), err)
+	log.Printf("[INFO] Reading Incapsula account for Account ID: %d\n", accountID)
+
+	accountStatusResponse, err := client.AccountStatus(accountID, ReadSubAccount)
+
+	// Account object may have been deleted
+	if accountStatusResponse != nil && accountStatusResponse.Res.(float64) == 9403 {
+		log.Printf("[INFO] Incapsula Account ID %d has already been deleted: %s\n", accountID, err)
 		d.SetId("")
 		return nil
 	}
 
-	d.Set("sub_account_name", subAccount.SubAccountName)
-	d.Set("ref_id", subAccount.RefID)
-	d.Set("log_level", subAccount.LogLevel)
-	d.Set("parent_id", subAccount.ParentID)
-	d.Set("logs_account_id", subAccount.LogsAccountID)
+	if err != nil {
+		log.Printf("[ERROR] Could not read Incapsula subaccount for Account ID: %d, %s\n", accountID, err)
+		return err
+	}
+
+	d.Set("sub_account_name", accountStatusResponse.Account.AccountName)
+	d.Set("ref_id", accountStatusResponse.Account.RefID)
+	//d.Set("log_level", accountStatusResponse.Account.)
+	d.Set("parent_id", accountStatusResponse.Account.ParentID)
+	//d.Set("logs_account_id", accountStatusResponse.Account.LogsAccountID)
 
 	log.Printf("[INFO] Finished reading Incapsula subaccount: %s\n", d.Id())
+	// Get the performance settings for the site
+	defaultAccountDataStorageRegion, err := client.GetAccountDataStorageRegion(d.Id())
+	if err != nil {
+		log.Printf("[ERROR] Could not read Incapsula default data storage region for account id: %d, %s\n", accountID, err)
+		return err
+	}
+	d.Set("data_storage_region", defaultAccountDataStorageRegion.Region)
+
+	log.Printf("[INFO] Finished reading Incapsula account for account ud: %d\n", accountID)
 
 	return nil
 }
@@ -137,4 +164,29 @@ func resourceSubAccountDelete(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Deleted Incapsula subaccount id: %d\n", subAccountID)
 
 	return nil
+}
+
+func resourceSubAccountUpdate(d *schema.ResourceData, m interface{}) error {
+	client := m.(*Client)
+
+	updateParams := [1]string{"ref_id"}
+	for i := 0; i < len(updateParams); i++ {
+		param := updateParams[i]
+		if d.HasChange(param) && d.Get(param) != "" {
+			log.Printf("[INFO] Updating Incapsula sub-account param (%s) with value (%s) for account_id: %s\n", param, d.Get(param).(string), d.Id())
+			_, err := client.UpdateAccount(d.Id(), param, d.Get(param).(string))
+			if err != nil {
+				log.Printf("[ERROR] Could not update Incapsula sub-account param (%s) with value (%s) for account_id: %s %s\n", param, d.Get(param).(string), d.Id(), err)
+				return err
+			}
+		}
+	}
+
+	err := updateDefaultDataStorageRegion(client, d)
+	if err != nil {
+		return err
+	}
+
+	// Set the rest of the state from the resource read
+	return resourceAccountRead(d, m)
 }

@@ -12,6 +12,7 @@ import (
 const subAccountResourceType = "incapsula_subaccount"
 const subAccountResourceName = "example_subaccount"
 const subAccountName = "acceptance-subaccount-test-1"
+const dataStorageRegionName = "APAC"
 
 func TestAccIncapsulaSubAccount_Basic(t *testing.T) {
 	log.Printf("========================BEGIN TEST========================")
@@ -27,6 +28,7 @@ func TestAccIncapsulaSubAccount_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSubAccountExists(),
 					resource.TestCheckResourceAttr(subAccountResourceType+"."+subAccountResourceName, "sub_account_name", subAccountName),
+					resource.TestCheckResourceAttr(subAccountResourceType+"."+subAccountResourceName, "data_storage_region", dataStorageRegionName),
 				),
 			},
 			{
@@ -42,9 +44,10 @@ func TestAccIncapsulaSubAccount_Basic(t *testing.T) {
 func getAccIncapsulaSubAccountConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "%s" "%s" {
-			sub_account_name = "%s"
+			sub_account_name = "%s",
+			data_storage_region = "%s"
 		}`,
-		subAccountResourceType, subAccountResourceName, subAccountName,
+		subAccountResourceType, subAccountResourceName, subAccountName, dataStorageRegionName,
 	)
 }
 
@@ -59,14 +62,14 @@ func testAccIncapsulaSubAccountDestroy(state *terraform.State) error {
 		subAccountIDStr := res.Primary.ID
 		subAccountID, _ := strconv.Atoi(subAccountIDStr)
 
-		subAccount, err := client.GetSubAccount(0, subAccountID)
+		subAccount, err := client.AccountStatus(subAccountID, ReadSubAccount)
 		if err != nil {
 			return err
 		}
 
 		found := false
 
-		if subAccount != nil && subAccount.SubAccountID == subAccountID {
+		if subAccount != nil && subAccount.AccountID == subAccountID {
 			log.Printf("[INFO] subaccount : %v\n", subAccount)
 			found = true
 		}
@@ -116,14 +119,14 @@ func testCheckIncapsulaSubAccountExists() resource.TestCheckFunc {
 
 		client := testAccProvider.Meta().(*Client)
 		log.Printf("[INFO] **** subAccountID: %d", subAccountID)
-		subAccount, err := client.GetSubAccount(0, subAccountID)
+		subAccount, err := client.AccountStatus(subAccountID, ReadSubAccount)
 		if err != nil {
 			return err
 		}
 
 		found := false
 
-		if subAccount != nil && subAccount.SubAccountID == subAccountID {
+		if subAccount != nil && subAccount.AccountID == subAccountID {
 			log.Printf("[INFO] subaccount : %v\n", subAccount)
 			found = true
 		}
