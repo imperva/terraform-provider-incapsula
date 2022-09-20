@@ -11,7 +11,6 @@ import (
 	"strings"
 )
 
-
 func resourceMtlsClientToImpervaCertificate() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceClientCaCertificateCreate,
