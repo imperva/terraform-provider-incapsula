@@ -105,7 +105,7 @@ func (c *Client) editMTLSCertificate(hhtpMethod, reqURL string, certificate, pri
 	}
 
 	bodyNew, contentTypeNew := c.CreateFormDataBody(bodyMap)
-	resp, err := c.DoFormDataRequestWithHeaders(hhtpMethod, reqURL, bodyNew, contentTypeNew, CreateMtlsClientToImpervaCertifiate)
+	resp, err := c.DoJsonRequestWithHeadersForm(hhtpMethod, reqURL, bodyNew, contentTypeNew, CreateMtlsClientToImpervaCertifiate)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error while %s mTLS Imperva to Origin Certificate: %s", action, err)
 	}

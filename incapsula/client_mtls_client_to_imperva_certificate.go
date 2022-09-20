@@ -72,7 +72,7 @@ func (c *Client) AddClientCaCertificate(certificate []byte, accountID, certifica
 
 	body, contentType := c.CreateFormDataBody(bodyMap)
 
-	resp, err := c.DoFormDataRequestWithHeaders(http.MethodPost, reqURL, body, contentType, CreateMtlsClientToImpervaCertifiate)
+	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, reqURL, body, contentType, CreateMtlsClientToImpervaCertifiate)
 
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula while creating mutual TLS Client To Imperva Certificate for Account ID %s", accountID)
