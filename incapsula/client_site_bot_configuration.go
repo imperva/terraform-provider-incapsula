@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type BotStruct struct {
@@ -81,6 +82,35 @@ func (c *Client) GetBotAccessControlConfiguration(siteID string) (*BotsConfigura
 	err = json.Unmarshal([]byte(responseBody), &responseDTO)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing Bot Access Control list JSON response for siteID: %s %s\nresponse: %s", siteID, err, string(responseBody))
+	}
+
+	return &responseDTO, nil
+}
+
+// GetClientApplicationsMetadata - Retrieve the Bot Access Control Metadata
+func (c *Client) GetClientApplicationsMetadata() (*ClientApps, error) {
+	log.Printf("[INFO] Getting Client Applications Metadata\n")
+
+	// Get request to Incapsula
+	baseURLIntegration := strings.Replace(c.config.BaseURL, "/prov/", "/integration/", 1)
+	reqURL := fmt.Sprintf("%s/clapps", baseURLIntegration)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, nil, ReadClientApplications)
+	if err != nil {
+		return nil, fmt.Errorf("Error executing get Bot Access Control Metadata request %s", err)
+	}
+
+	// Read the body
+	defer resp.Body.Close()
+	responseBody, err := ioutil.ReadAll(resp.Body)
+
+	// Dump JSON
+	log.Printf("[DEBUG] Incapsula Client Applications Metadata JSON response: %s\n", string(responseBody))
+
+	// Parse the JSON
+	var responseDTO ClientApps
+	err = json.Unmarshal([]byte(responseBody), &responseDTO)
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing Client Applications Metadata list JSON response: %s\nresponse: %s", err, string(responseBody))
 	}
 
 	return &responseDTO, nil
