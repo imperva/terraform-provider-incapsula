@@ -65,9 +65,8 @@ func (c *Client) DeleteSiteMtlsCertificateAssociation(certificateID, siteID int)
 	log.Printf("[DEBUG] Incapsula delete Site to Imperva to Origin mutual TLS Certificate Association JSON response: %s\n", string(responseBody))
 
 	// Check the response code
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != 200 && resp.StatusCode != 404 {
 		return fmt.Errorf("[ERROR] Error status code %d from Incapsula service on fetching site to mutual TLS Imperva to Origin certificate Association for certificate ID %d for Site ID %d\n%s", resp.StatusCode, certificateID, siteID, string(responseBody))
 	}
-	//add logic for 404
 	return nil
 }

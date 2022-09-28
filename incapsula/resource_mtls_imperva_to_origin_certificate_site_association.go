@@ -83,7 +83,6 @@ func resourceSiteMtlsCertificateAssociationCreate(d *schema.ResourceData, m inte
 	)
 	if err != nil {
 		return err
-		//todo -add error message
 	}
 	return resourceSiteMtlsCertificateAssociationRead(d, m)
 }
@@ -97,7 +96,6 @@ func resourceSiteMtlsCertificateAssociationDelete(d *schema.ResourceData, m inte
 		siteID,
 	)
 	if err != nil {
-		//todo - check error
 		return err
 	}
 
