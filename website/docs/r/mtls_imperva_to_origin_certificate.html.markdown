@@ -44,7 +44,10 @@ resource "incapsula_mtls_imperva_to_origin_certificate" "mtls_certificate"{
 ```
 
 `Exported Certificate - data placeholder` value will be set in `certificate`, `private_key`, `passphrase` fields in the result of account export.
-You cannot update the resource until you'll specify a real values instead of `Exported Certificate - data placeholder` value for the mentioned earlier fields.
+The reason for using these values is that this certificate currently exists in the account configuration and this resource allows using it with new sites configured via Terraform.
+Note - This resource cannot be updated unless you specify a real values to all relevant fields instead of `Exported Certificate - data placeholder`.
+In exported resources, the certificate_name cannot be changed as well until real values are set. 
+
 Example of exported resource:
 
 ```hcl
