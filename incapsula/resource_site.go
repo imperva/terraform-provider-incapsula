@@ -123,6 +123,7 @@ func resourceSite() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
+				Deprecated: "restricted_cname_reuse field is deprecated",
 			},
 			"domain_redirect_to_full": {
 				Description: "true or empty string.",

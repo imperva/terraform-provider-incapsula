@@ -1,3 +1,7 @@
+## Not Released
+
+* Make `restricted_cname_reuse` deprecated in the `incapsula_site` resource
+
 ## 3.8.5 (Aug 31, 2022)
 
 BUG FIXES:
