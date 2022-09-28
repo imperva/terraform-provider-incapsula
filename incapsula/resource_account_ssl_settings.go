@@ -38,6 +38,7 @@ func resourceAccountSSLSettings() *schema.Resource {
 			"value_for_cname_validation": {
 				Description: "The value of the CNAME records that need to create for each domain under the allowed_domains_for_cname_validation list to allow delegation.",
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
 			},
 			"allowed_domains_for_cname_validation": {
@@ -60,6 +61,18 @@ func resourceAccountSSLSettings() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
+			},
+			"allow_support_old_tls_versions": {
+				Description: "When true, sites under the account or sub-accounts can allow support of old TLS versions traffic. This can be configured only on the parent account level.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+			},
+			"enable_hsts_for_new_sites": {
+				Description: "When true, enables HSTS support for newly created websites.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
 			},
 		},
 	}
@@ -98,6 +111,14 @@ func resourceAccountSSLSettingsUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 	impervaCertificateDto.Delegation = &delegationDto
 	accountSSLSettingsDTO.ImpervaCertificate = &impervaCertificateDto
+	if d.Get("allow_support_old_tls_versions") != nil {
+		fieldVal := d.Get("allow_support_old_tls_versions").(bool)
+		accountSSLSettingsDTO.AllowSupportOldTLSVersions = &fieldVal
+	}
+	if d.Get("enable_hsts_for_new_sites") != nil {
+		fieldVal := d.Get("enable_hsts_for_new_sites").(bool)
+		accountSSLSettingsDTO.EnableHSTSForNewSites = &fieldVal
+	}
 	accountSSLSettingsDTOResponse, diags := client.UpdateAccountSSLSettings(&accountSSLSettingsDTO, accountID)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] Could not update Incapsula account SSL settings for Account ID: %s, %v\n", accountID, diags)
@@ -154,6 +175,12 @@ func resourceAccountSSLSettingsRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 	if err := d.Set("value_for_cname_validation", accountSSLSettingsDTO.ImpervaCertificate.Delegation.ValueForCNAMEValidation); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("enable_hsts_for_new_sites", accountSSLSettingsDTO.EnableHSTSForNewSites); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("allow_support_old_tls_versions", accountSSLSettingsDTO.AllowSupportOldTLSVersions); err != nil {
 		return diag.FromErr(err)
 	}
 	d.SetId(accountID)

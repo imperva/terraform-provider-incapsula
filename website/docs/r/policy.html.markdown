@@ -12,6 +12,8 @@ Provides a Incapsula Policy resource.
 
 **Note**: We are currently rolling out the new WAF Rules policy type. It may not yet be available in your account.
 
+** When updating the WAF Rules policy (policy_type=WAF_RULES), all 4 setting types (policySettingType) are mandatory (REMOTE_FILE_INCLUSION, ILLEGAL_RESOURCE_ACCESS, CROSS_SITE_SCRIPTING, SQL_INJECTION).
+
 ## Example Usage
 
 ```hcl

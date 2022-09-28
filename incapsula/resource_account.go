@@ -84,7 +84,7 @@ func resourceAccount() *schema.Resource {
 				Type:         schema.TypeString,
 				Default:      "true",
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"true", "false", "default"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"true", "false"}, false),
 			},
 			"wildcard_san_for_new_sites": {
 				Description:  "Add wildcard SAN to Incapsula SSL certificates for new sites. Options are `true`, `false` and `default`. Defaults to `default`",

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"io"
 	"io/ioutil"
 	"log"
@@ -13,10 +14,13 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const contentTypeApplicationUrlEncoded = "application/x-www-form-urlencoded"
 const contentTypeApplicationJson = "application/json"
+
+const durationOfRetriesInSeconds = 30
 
 // Client represents an internal client that brokers calls to the Incapsula API
 type Client struct {
@@ -110,7 +114,7 @@ func (c *Client) PostFormWithHeaders(url string, data url.Values, operation stri
 	}
 
 	SetHeaders(c, req, contentTypeApplicationUrlEncoded, operation, nil)
-	return c.httpClient.Do(req)
+	return c.executeRequest(req)
 }
 
 func (c *Client) DoJsonRequestWithCustomHeaders(method string, url string, data []byte, headers map[string]string, operation string) (*http.Response, error) {
@@ -120,7 +124,8 @@ func (c *Client) DoJsonRequestWithCustomHeaders(method string, url string, data 
 	}
 
 	SetHeaders(c, req, contentTypeApplicationJson, operation, headers)
-	return c.httpClient.Do(req)
+
+	return c.executeRequest(req)
 }
 
 func (c *Client) DoJsonRequestWithHeaders(method string, url string, data []byte, operation string) (*http.Response, error) {
@@ -140,7 +145,7 @@ func (c *Client) DoJsonAndQueryParamsRequestWithHeaders(method string, url strin
 
 	SetHeaders(c, req, contentTypeApplicationJson, operation, nil)
 
-	return c.httpClient.Do(req)
+	return c.executeRequest(req)
 }
 
 // GetRequestParamsWithCaid Use this function if you want to add caid to your request as a query param.
@@ -155,15 +160,13 @@ func GetRequestParamsWithCaid(accountId int) map[string]string {
 }
 
 func (c *Client) DoFormDataRequestWithHeaders(method string, url string, data []byte, contentType string, operation string) (*http.Response, error) {
-	log.Printf("got body to send:\n%v", string(data))
 	req, err := PrepareJsonRequest(method, url, data)
 	if err != nil {
 		return nil, fmt.Errorf("Error preparing request: %s", err)
 	}
-	SetHeaders(c, req, contentType, operation, nil)
 
-	log.Printf("%v", req)
-	return c.httpClient.Do(req)
+	SetHeaders(c, req, contentType, operation, nil)
+	return c.executeRequest(req)
 }
 
 func PrepareJsonRequest(method string, url string, data []byte) (*http.Request, error) {
@@ -186,4 +189,28 @@ func SetHeaders(c *Client, req *http.Request, contentType string, operation stri
 			req.Header.Set(name, value)
 		}
 	}
+}
+
+func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
+	//if "read" action then we want to allow retries in case of timeout from incapsula service
+	operation := req.Header.Get("x-tf-operation")
+	if req.Method == http.MethodGet || (req.Method == http.MethodPost && strings.HasPrefix(strings.ToLower(operation), "read")) {
+		var responseOnRequest *http.Response
+		var errorOnRequest error
+		resource.Retry(durationOfRetriesInSeconds*time.Second, func() *resource.RetryError {
+			responseOnRequest, errorOnRequest = c.httpClient.Do(req)
+			if errorOnRequest != nil {
+				log.Printf("[ERROR] Error from Incapsula service when reading resource")
+				return resource.NonRetryableError(errorOnRequest)
+			}
+			if responseOnRequest.StatusCode == 502 {
+				log.Printf("[WARN] Error from Incapsula service when reading resource, performing retry")
+				return resource.RetryableError(fmt.Errorf("error code 502 from incapsula service when reading resource, performing retry"))
+			}
+			return nil
+		})
+		return responseOnRequest, errorOnRequest
+	}
+	//if not a "read" request  - don't do retries (retires for updates are risky and result could be non-deterministic)
+	return c.httpClient.Do(req)
 }
