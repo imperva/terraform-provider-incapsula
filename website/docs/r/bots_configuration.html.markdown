@@ -8,23 +8,38 @@ description: |-
 
 # incapsula_bots_configuration
 
-Provides an Incapsula BOT Access Control Configuration resource. 
-Each Site have a Good Bots list already configured and may be changed by calling the API/via Terraform.
+Provides an Incapsula BOT Access Control Configuration resource.
+Each Site has Good and Bad Bots list already configured. This resource allows you to customize them.
 <br/>
 <strong>canceled_good_bots</strong> list is used to cancel (uncheck in UI) the default Good Bots.
 <br/>
 <strong>bad_bots</strong> list is used to customize additional bad bots
 <br/>
 Imperva’s predefined list of bad bots:
-https://docs.imperva.com/bundle/cloud-application-security/page/settings/client-classification.htm
+In order to get the latest list, use the /api/integration/v1/clapps found in the Integration section of the Cloud Application Security v1/v3 API Definition page (!!! this should point to  https://docs.imperva.com/bundle/cloud-application-security/page/cloud-v1-api-definition.htm).
+
 
 ## Example Usage
 
 ```hcl
+data "incapsula_client_apps_data" "client_apps_canceled_good_bots" {
+  filter=["Googlebot","SiteUptime"]
+}
+
+data "incapsula_client_apps_data" "client_apps_bad_bots" {
+  filter=["Setoozbot","Chinese Bot","Firefox"]
+}
+
 resource "incapsula_bots_configuration" "example-basic-bots-configuration" {
   site_id = incapsula_site.example-basic-site.id
-  canceled_good_bots = [6,16,17,20]
-  bad_bots = [537,530,531,66]
+  
+  canceled_good_bots=data.incapsula_client_apps_data.client_apps_canceled_good_bots.ids
+
+  bad_bots = [
+        data.incapsula_client_apps_data.client_apps_bad_bots.map["Google Translate"],
+        data.incapsula_client_apps_data.client_apps_bad_bots.map["Googlebot"],
+        530, 531, 537
+  ]
 }
 ```
 
@@ -38,14 +53,12 @@ The following arguments are supported:
 * `canceled_good_bots` - (Optional) List of Bot IDs taken from Imperva’s predefined list of bad bots **
 * `bad_bots` - (Optional) List of Bot IDs taken from Imperva’s predefined list of bad bots **
 
-** Imperva’s predefined list of bad bots:
-https://docs.imperva.com/bundle/cloud-application-security/page/settings/client-classification.htm
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-* `id` - Unique identifier in the API for the nots configuration. The id is identical to Site id.
+* `id` - Unique identifier in the API for the bots configuration. The id is identical to Site id.
 
 ## Import
 

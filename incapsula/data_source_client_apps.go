@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"log"
 	"math"
 	"strconv"
 	"strings"
@@ -26,16 +25,28 @@ func dataSourceClientApps() *schema.Resource {
 
 		// Computed Attributes
 		Schema: map[string]*schema.Schema{
+			"filter": {
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Description: "Filter by Data Center name",
+				Optional:    true,
+			},
 			"map": {
 				Type:        schema.TypeMap,
 				Description: "Map of all the client applications",
-				StateFunc: func(val any) string {
-					log.Printf("StateFunc IN")
-					return strings.ToLower(val.(string))
-				},
-				Computed: true,
+				Computed:    true,
 				Elem: &schema.Schema{
-					Type: schema.TypeString,
+					Type: schema.TypeInt,
+				},
+			},
+			"ids": {
+				Type:        schema.TypeSet,
+				Description: "Set of all the client applications ids filtered",
+				Computed:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeInt,
 				},
 			},
 		},
@@ -57,17 +68,32 @@ func dataSourceClientAppsRead(ctx context.Context, d *schema.ResourceData, m int
 		return diag.Errorf("Error getting Client Applications Metadata: %v", responseDTO.DebugInfo)
 	}
 
-	var clientApps = make(map[string]string, len(responseDTO.ClientApps))
+	v, _ := d.GetOk("filter")
+	filteredValues := v.(*schema.Set)
+	filteredValuesMap := make(map[string]struct{}, len(filteredValues.List()))
+	for _, v := range filteredValues.List() {
+		filteredValuesMap[strings.ToLower(v.(string))] = struct{}{}
+	}
+
+	var clientApps = make(map[string]int, len(responseDTO.ClientApps))
+	var clientAppsIds = make([]int, 0)
+
 	for clientId, clientName := range responseDTO.ClientApps {
-		clientApps[clientName] = clientId
+		clientIdInt, _ := strconv.Atoi(clientId)
+		if len(filteredValuesMap) > 0 {
+			if _, ok := filteredValuesMap[strings.ToLower(clientName)]; ok {
+				clientAppsIds = append(clientAppsIds, clientIdInt)
+			}
+		}
+		clientApps[clientName] = clientIdInt
 		// To avoid user typo error
-		clientApps[strings.ToLower(clientName)] = clientId
-		clientApps[strings.ToUpper(clientName)] = clientId
+		clientApps[strings.ToLower(clientName)] = clientIdInt
+		clientApps[strings.ToUpper(clientName)] = clientIdInt
 	}
 
 	d.SetId(strconv.Itoa(math.MaxUint8))
 	d.Set("map", clientApps)
-	log.Printf("[DEBUG] map: %v\n", d.Get("map"))
+	d.Set("ids", clientAppsIds)
 
 	return nil
 }

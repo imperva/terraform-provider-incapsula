@@ -144,8 +144,8 @@ func resourceBotsConfigurationRead(d *schema.ResourceData, m interface{}) error 
 	sort.Ints(badBotsList)
 	d.Set(badBots, badBotsList)
 
-	log.Printf("[DEV] resourceBotsConfigurationRead - canceledGoodBots: %+v\n", canceledGoodBotsList)
-	log.Printf("[DEV] resourceBotsConfigurationRead - badBotsList: %+v\n", badBotsList)
+	log.Printf("[DEBUG] resourceBotsConfigurationRead - canceledGoodBots: %+v\n", canceledGoodBotsList)
+	log.Printf("[DEBUG] resourceBotsConfigurationRead - badBotsList: %+v\n", badBotsList)
 
 	return nil
 }
