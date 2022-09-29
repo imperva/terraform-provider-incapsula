@@ -9,7 +9,7 @@ description: |-
 # incapsula_bots_configuration
 
 Provides an Incapsula BOT Access Control Configuration resource.
-Each Site has Good and Bad Bots list already configured. This resource allows you to customize them.
+Each Site has a Good Bots list and a Bad Bots list already configured. This resource allows you to customize them.
 <br/>
 <strong>canceled_good_bots</strong> list is used to cancel (uncheck in UI) the default Good Bots.
 <br/>
