@@ -24,6 +24,7 @@ const certificateName = "custom-certificate"
 const certificateResource = certificateResourceName + "." + certificateName
 
 var calculatedHash = ""
+var calculatedHashBase64 = ""
 
 func TestAccIncapsulaCustomCertificate_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -32,10 +33,10 @@ func TestAccIncapsulaCustomCertificate_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaCertificateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaCustomCertificateGoodConfigNoPrivateKey(t),
+				Config: testAccCheckIncapsulaCustomCertificateGoodConfig(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaCertificateExists(certificateResourceName),
-					resource.TestCheckResourceAttr(certificateResource, "input_hash", calculatedHash),
+					resource.TestCheckResourceAttr(certificateResource, "input_hash", calculatedHashBase64),
 				),
 			},
 		},
@@ -85,15 +86,19 @@ func testAccCheckIncapsulaCertificateDestroy(state *terraform.State) error {
 	return fmt.Errorf("Error finding site_id in destroy custom certificate test")
 }
 
-func testAccCheckIncapsulaCustomCertificateGoodConfigNoPrivateKey(t *testing.T) string {
-	cert, privateKey := generateKeyPair()
+func testAccCheckIncapsulaCustomCertificateGoodConfig(t *testing.T) string {
+	cert, pkey := generateKeyPairBase64()
+	certRes := fmt.Sprintf("<<EOT\n%s\nEOT", cert)
+	pkeyRes := fmt.Sprintf("<<EOT\n%s\nEOT", pkey)
+	//cert, privateKey := generateKeyPair()
+	//generateKeyPairBase64
 	result := testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "%s" "%s" {
   site_id = incapsula_site.testacc-terraform-site.id
   certificate = %s
   private_key = %s
 depends_on = ["%s"]
-}`, certificateResourceName, certificateName, cert, privateKey, siteResourceName)
+}`, certificateResourceName, certificateName, certRes, pkeyRes, siteResourceName)
 	return result
 }
 
@@ -126,15 +131,23 @@ func generateKeyPair() (string, string) {
 	// Encode certificate using PEM algorythm
 	out := &bytes.Buffer{}
 	pem.Encode(out, &pem.Block{Type: "CERTIFICATE", Bytes: certificate})
+	certificateRes := out.String()
+	pkeyRes := string(privateKeyPEM)
+	calculatedHash = calculateHash(certificateRes+"\n", "", pkeyRes+"\n")
 
+	return fmt.Sprintf("<<EOT\n%s\nEOT", certificateRes), fmt.Sprintf("<<EOT\n%s\nEOT", pkeyRes)
+}
+
+func generateKeyPairBase64() (string, string) {
+	cert, pkey := generateKeyPair()
 	// encode PEM-encoded certificate with base64 algorith
-	certificateBase64 := b64.StdEncoding.EncodeToString([]byte(out.String()))
+	certificateBase64 := b64.StdEncoding.EncodeToString([]byte(cert))
 	// encode PEM-encoded certificate with base64 algorith
-	privateKeyBase64 := b64.StdEncoding.EncodeToString(privateKeyPEM)
+	privateKeyBase64 := b64.StdEncoding.EncodeToString([]byte(pkey))
 
 	//save calculated hash for it's verification in step 1 of the test(verify create)
-	calculatedHash = calculateHash(certificateBase64+"\n", "", privateKeyBase64+"\n")
-	return fmt.Sprintf("<<EOT\n%s\nEOT", certificateBase64), fmt.Sprintf("<<EOT\n%s\nEOT", privateKeyBase64)
+	calculatedHashBase64 = calculateHash(certificateBase64+"\n", "", privateKeyBase64+"\n")
+	return certificateBase64, privateKeyBase64
 }
 
 func getCertificateTemplate() *x509.Certificate {

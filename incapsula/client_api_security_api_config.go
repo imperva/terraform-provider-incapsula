@@ -136,7 +136,7 @@ func (c *Client) CreateApiSecurityApiConfig(siteId int, apiConfigPayload *ApiSec
 
 	reqURL := fmt.Sprintf("%s%s%d", c.config.BaseURLAPI, apiConfigUrl, siteId)
 	contentType := writer.FormDataContentType()
-	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, reqURL, body.Bytes(), contentType, CreateApiSecApiConfig)
+	resp, err := c.DoFormDataRequestWithHeaders(http.MethodPost, reqURL, body.Bytes(), contentType, CreateApiSecApiConfig)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error adding API Security API Config for site %d: %s", siteId, err)
 	}
@@ -221,7 +221,7 @@ func (c *Client) UpdateApiSecurityApiConfig(siteId int, apiId string, apiConfigP
 
 	reqURL := fmt.Sprintf("%s%s%d/%s", c.config.BaseURLAPI, apiConfigUrl, siteId, apiId)
 	contentType := writer.FormDataContentType()
-	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, reqURL, body.Bytes(), contentType, UpdateApiSecApiConfig)
+	resp, err := c.DoFormDataRequestWithHeaders(http.MethodPost, reqURL, body.Bytes(), contentType, UpdateApiSecApiConfig)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error updating API Security API Config for site id %d, API id %s :%s", siteId, apiId, err)
 	}

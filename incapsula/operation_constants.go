@@ -121,3 +121,12 @@ const DeleteNotificationCenterPolicy = "delete_notification_center_policy"
 const UpdateAccountSSLSettings = "update_account_ssl_settings"
 const GetAccountSSLSettings = "get_account_ssl_settings"
 const DeleteAccountSSLSettings = "delete_account_ssl_settings"
+
+const CreateMtlsImpervaToOriginCertifiate = "create_mtls_imperva_to_origin_certificate"
+const ReadMtlsImpervaToOriginCertifiate = "read_mtls_imperva_to_origin_certificate"
+const UpdateMtlsImpervaToOriginCertifiate = "update_mtls_imperva_to_origin_certificate"
+const DeleteMtlsImpervaToOriginCertifiate = "delete_mtls_imperva_to_origin_certificate"
+
+const CreateSiteMtlsImpervaToOriginCertifiateAssociation = "create_site_mtls_imperva_to_origin_certificate_association"
+const ReadSiteMtlsImpervaToOriginCertifiateAssociation = "read_site_mtls_imperva_to_origin_certificate_association"
+const DeleteSiteMtlsImpervaToOriginCertifiateAssociation = "delete_site_mtls_imperva_to_origin_certificate_association"
