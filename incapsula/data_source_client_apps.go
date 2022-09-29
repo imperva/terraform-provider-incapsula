@@ -30,7 +30,7 @@ func dataSourceClientApps() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Description: "Filter by Data Center name",
+				Description: "Filter by Client Application name",
 				Optional:    true,
 			},
 			"map": {
@@ -43,7 +43,7 @@ func dataSourceClientApps() *schema.Resource {
 			},
 			"ids": {
 				Type:        schema.TypeSet,
-				Description: "Set of all the client applications ids filtered",
+				Description: "Set of client applications ids filtered by name",
 				Computed:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
