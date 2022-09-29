@@ -14,9 +14,10 @@ Each Site has Good and Bad Bots list already configured. This resource allows yo
 <strong>canceled_good_bots</strong> list is used to cancel (uncheck in UI) the default Good Bots.
 <br/>
 <strong>bad_bots</strong> list is used to customize additional bad bots
-<br/>
-Imperva’s predefined list of bad bots:
-In order to get the latest list, use the /api/integration/v1/clapps found in the Integration section of the Cloud Application Security v1/v3 API Definition page (!!! this should point to  https://docs.imperva.com/bundle/cloud-application-security/page/cloud-v1-api-definition.htm).
+<br/>Imperva’s predefined list of bad bots.
+
+In order to get the latest list, use the <b>/api/integration/v1/clapps</b> found in the <b>Integration</b> section of the 
+[Cloud Application Security v1/v3 API Definition page.](https://docs.imperva.com/bundle/cloud-application-security/page/cloud-v1-api-definition.htm)
 
 
 ## Example Usage

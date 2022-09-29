@@ -8,8 +8,9 @@ Provides an Incapsula Client Applications data source.
 
 # incapsula_client_apps_data
 
-Provides the ability to use "human-readable" strings identifying the different applications.
-In order to get the latest list, use the /api/integration/v1/clapps found in the Integration section of the Cloud Application Security v1/v3 API Definition page (!!! this should point to  https://docs.imperva.com/bundle/cloud-application-security/page/cloud-v1-api-definition.htm).
+Provides the ability to use "human-readable" strings identifying the different applications.<p>
+In order to get the latest list, use the <b>/api/integration/v1/clapps</b> found in the <b>Integration</b> section of the
+[Cloud Application Security v1/v3 API Definition page.](https://docs.imperva.com/bundle/cloud-application-security/page/cloud-v1-api-definition.htm)
 
 Filtering is optional. When used, it will generate the `ids` attribute.
 
