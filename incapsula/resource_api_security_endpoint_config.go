@@ -83,6 +83,7 @@ func resourceApiSecurityEndpointConfig() *schema.Resource {
 				Optional:     true,
 				Default:      "DEFAULT",
 				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE", "DEFAULT"}, false),
+				Deprecated:   "invalid_param_name_violation_action field is deprecated",
 			},
 		},
 	}

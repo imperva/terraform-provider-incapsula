@@ -21,7 +21,6 @@ resource "incapsula_api_security_site_config" "demo-terraform-api-security-site-
   	invalid_method_violation_action = "BLOCK_REQUEST"
   	missing_param_violation_action = "IGNORE"
   	invalid_param_value_violation_action = "IGNORE"
-  	invalid_param_name_violation_action = "ALERT_ONLY"
 }
 ```
 

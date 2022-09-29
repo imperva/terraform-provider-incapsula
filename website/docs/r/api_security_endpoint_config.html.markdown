@@ -18,7 +18,6 @@ resource "incapsula_api_security_endpoint_config" "demo-api-security-endpoint-co
     api_id = incapsula_api_security_api_config.demo_api_security_api_config.id
     path = "/endpoint/unit/{id}"
 	method = "GET"
-	invalid_param_name_violation_action = "BLOCK_REQUEST"
 	invalid_param_value_violation_action = "ALERT_ONLY"
 	missing_param_violation_action = "BLOCK_IP"
 }
