@@ -109,7 +109,7 @@ func dataSourceClientAppsRead(ctx context.Context, d *schema.ResourceData, m int
 
 		if _, ok := ClientAppsLower[botNameLowerCase]; !ok {
 			proposalMessage := ""
-			if len(botNameLowerCase) >= 2 {
+			if len(botNameLowerCase) >= 2 && len(ClientAppsGroup[botNameLowerCase[0:2]]) > 0 {
 				proposalClientNames := "'" + strings.Join(ClientAppsGroup[botNameLowerCase[0:2]], "','") + "'"
 				proposalMessage = fmt.Sprintf("- Do you mean: %+v:", proposalClientNames)
 			}
