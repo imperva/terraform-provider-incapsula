@@ -118,7 +118,7 @@ func resourceBotsConfigurationRead(d *schema.ResourceData, m interface{}) error 
 
 	if responseDTO.Errors != nil && len(responseDTO.Errors) > 0 {
 		if responseDTO.Errors[0].Status == "404" {
-			log.Printf("[INFO] Incapsula Site ID %s has already been deleted: %s\n", d.Get(siteId), responseDTO.Errors)
+			log.Printf("[INFO] Incapsula Site with ID %s has already been deleted: %s\n", d.Get(siteId), responseDTO.Errors)
 			d.SetId("")
 			return nil
 		}
