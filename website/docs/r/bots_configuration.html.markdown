@@ -22,19 +22,58 @@ In order to get the latest list, use the <b>/api/integration/v1/clapps</b> found
 
 ## Example Usage
 
+### Basic Usage - Lists
+
+The basic usage is to use lists of client application ids.
+
+```hcl
+resource "incapsula_bots_configuration" "example-basic-bots-configuration" {
+  site_id = incapsula_site.example-basic-site.id
+  canceled_good_bots = [6, 17]
+  bad_bots = [1, 62, 245, 18]
+}
+```
+
+### Data Sources Usage
+
+Using `incapsula_client_apps_data` data sources we can use Client Application names that is more "human-readable".
+
+We can access this data sources in 2 ways:
+* `ids` - Contains the Ids of each Client Application name set in `filter` argument (if set in the data source)
+* `map` - Contains all the Client Application (names to ids map)
+
 ```hcl
 data "incapsula_client_apps_data" "client_apps_canceled_good_bots" {
   filter=["Googlebot","SiteUptime"]
 }
 
-data "incapsula_client_apps_data" "client_apps_bad_bots" {
-  filter=["Setoozbot","Chinese Bot","Firefox"]
+data "incapsula_client_apps_data" "client_apps" {
 }
 
 resource "incapsula_bots_configuration" "example-basic-bots-configuration" {
   site_id = incapsula_site.example-basic-site.id
   
-  canceled_good_bots=data.incapsula_client_apps_data.client_apps_canceled_good_bots.ids
+  canceled_good_bots = data.incapsula_client_apps_data.client_apps_canceled_good_bots.ids
+
+  bad_bots = [
+        data.incapsula_client_apps_data.client_apps_bad_bots.map["Google Translate"],
+        data.incapsula_client_apps_data.client_apps_bad_bots.map["Googlebot"]
+  ]
+}
+```
+
+### Combination Usage
+
+We always can combine both usages; list and datasource in the same resource or map and list in the same block.
+
+```hcl
+data "incapsula_client_apps_data" "client_apps" {
+}
+
+resource "incapsula_bots_configuration" "example-basic-bots-configuration" {
+  site_id = incapsula_site.example-basic-site.id
+  
+  canceled_good_bots = [6, 17]  
 
   bad_bots = [
         data.incapsula_client_apps_data.client_apps_bad_bots.map["Google Translate"],
