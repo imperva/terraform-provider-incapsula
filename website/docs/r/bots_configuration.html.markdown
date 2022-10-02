@@ -13,8 +13,8 @@ Each Site has a Good Bots list and a Bad Bots list already configured. This reso
 <br/>
 <strong>canceled_good_bots</strong> list is used to cancel (uncheck in UI) the default Good Bots.
 <br/>
-<strong>bad_bots</strong> list is used to customize additional bad bots
-<br/>Imperva’s predefined list of bad bots.
+<strong>bad_bots</strong> list is used to customize additional Bad Bots
+from Imperva’s predefined list of bad bots.
 
 In order to get the latest list, use the <b>/api/integration/v1/clapps</b> found in the <b>Integration</b> section of the 
 [Cloud Application Security v1/v3 API Definition page.](https://docs.imperva.com/bundle/cloud-application-security/page/cloud-v1-api-definition.htm)
@@ -38,7 +38,7 @@ resource "incapsula_bots_configuration" "example-basic-bots-configuration" {
 
 Using `incapsula_client_apps_data` data sources we can use Client Application names that is more "human-readable".
 
-We can access this data sources in 2 ways:
+Both lists (canceled_good_bots and bad_bots) can access the data sources in 2 ways:
 * `ids` - Contains the Ids of each Client Application name set in `filter` argument (if set in the data source)
 * `map` - Contains all the Client Application (names to ids map)
 
@@ -90,20 +90,25 @@ resource "incapsula_bots_configuration" "example-basic-bots-configuration" {
 The following arguments are supported:
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
-* `canceled_good_bots` - (Optional) List of Bot IDs taken from Imperva’s predefined list of bad bots **
+
+* `canceled_good_bots` - (Optional) List of Bot IDs taken from Imperva’s predefined list of bad bots
+
+  Default value is an empty list - Will restore the default Canceled Good Bots list
+
 * `bad_bots` - (Optional) List of Bot IDs taken from Imperva’s predefined list of bad bots **
 
+  Default value is an empty list - Will restore the default Bad Bots list (empty list)
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-* `id` - Unique identifier in the API for the bots configuration. The id is identical to Site id.
+* `id` - Unique identifier in the API for the bots configuration.
 
 ## Import
 
-Bots Configuration can be imported using the `id`, e.g.:
-
+Bots Configuration can be imported using the `id` -
+the id is identical to Site id, e.g.:
 ```
 $ terraform import incapsula_bots_configuration.demo 1234
 ```
