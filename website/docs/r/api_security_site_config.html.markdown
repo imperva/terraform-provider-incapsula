@@ -31,7 +31,7 @@ The following arguments are supported:
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `is_automatic_discovery_api_integration_enabled` - (Optional) Parameter shows whether automatic API discovery API
-  Integration is enabled.
+  Integration is enabled. This field should not be set if `API Security Add-On` subscription is not available.
 * `invalid_url_violation_action` - (Optional) The action taken when an invalid URL Violation occurs. Possible
   values: `ALERT_ONLY` (default value), `BLOCK_REQUEST`, `BLOCK_USER`, `BLOCK_IP`, `IGNORE`.
 * `invalid_method_violation_action` - (Optional) The action taken when an invalid method Violation occurs. Possible
