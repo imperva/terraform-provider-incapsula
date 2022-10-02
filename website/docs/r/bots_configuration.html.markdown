@@ -95,7 +95,7 @@ The following arguments are supported:
 
   Default value is an empty list - Will restore the default Canceled Good Bots list
 
-* `bad_bots` - (Optional) List of Bot IDs taken from Imperva’s predefined list of bad bots **
+* `bad_bots` - (Optional) List of Bot IDs taken from Imperva’s predefined list of bad bots
 
   Default value is an empty list - Will restore the default Bad Bots list (empty list)
 
