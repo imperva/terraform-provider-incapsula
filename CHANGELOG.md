@@ -1,3 +1,9 @@
+## 3.8.7 (Oct 3, 2022)
+
+BUG FIXES:
+* remove future resource from the documentation ([#219](https://github.com/imperva/terraform-provider-incapsula/pull/219))
+
+
 ## 3.8.6 (Oct 2, 2022)
 
 IMPROVEMENTS:
