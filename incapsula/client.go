@@ -33,7 +33,36 @@ type Client struct {
 func NewClient(config *Config) *Client {
 	client := &http.Client{}
 
-	return &Client{config: config, httpClient: client, providerVersion: "3.8.5"}
+	return &Client{config: config, httpClient: client, providerVersion: "3.8.6"}
+}
+
+func (c *Client) CreateFormDataBody(bodyMap map[string]interface{}) ([]byte, string) {
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	for key, value := range bodyMap {
+		switch value.(type) {
+		case string:
+			fw, err := writer.CreateFormField(key)
+			if err != nil {
+				log.Printf("failed to create %s formdata field", key)
+			}
+			_, err = io.Copy(fw, strings.NewReader(fmt.Sprintf("%v", value)))
+			break
+		case []byte:
+			fw, err := writer.CreateFormFile(key, filepath.Base(key+".pfx")) //todo KATRIN try to remove .pfx
+			if err != nil {
+				log.Printf("failed to create %s formdata field", key)
+			}
+			fw.Write(value.([]byte))
+			break
+		default:
+			//throw error
+		}
+	}
+	writer.Close()
+
+	return body.Bytes(), writer.FormDataContentType()
 }
 
 func (c *Client) CreateFormDataBody(bodyMap map[string]interface{}) ([]byte, string) {

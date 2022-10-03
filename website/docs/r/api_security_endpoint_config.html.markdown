@@ -34,6 +34,10 @@ The following arguments are supported:
 * `invalid_param_value_violation_action` - (Optional) The action taken when an invalid parameter value Violation occurs.
   Possible values: `ALERT_ONLY`, `BLOCK_REQUEST`, `BLOCK_USER`, `BLOCK_IP`, `IGNORE`, `DEFAULT`. Assigning `DEFAULT`
   will inherit the action from parent object.
+  
+  > **NOTE:** `invalid_param_name_violation_action` parameter is currently not supported. Please do not use/change value.
+
+  
 * `invalid_param_name_violation_action` - (Optional) The action taken when an invalid parameter value Violation occurs.
   Possible values: `ALERT_ONLY`, `BLOCK_REQUEST`, `BLOCK_USER`, `BLOCK_IP`, `IGNORE`, `DEFAULT`. Assigning `DEFAULT`
   will inherit the action from parent object.
