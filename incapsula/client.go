@@ -27,7 +27,6 @@ type Client struct {
 	config          *Config
 	httpClient      *http.Client
 	providerVersion string
-	accountStatus   *AccountStatusResponse
 }
 
 // NewClient creates a new client with the provided configuration
