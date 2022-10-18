@@ -130,3 +130,10 @@ const DeleteMtlsImpervaToOriginCertifiate = "delete_mtls_imperva_to_origin_certi
 const CreateSiteMtlsImpervaToOriginCertifiateAssociation = "create_site_mtls_imperva_to_origin_certificate_association"
 const ReadSiteMtlsImpervaToOriginCertifiateAssociation = "read_site_mtls_imperva_to_origin_certificate_association"
 const DeleteSiteMtlsImpervaToOriginCertifiateAssociation = "delete_site_mtls_imperva_to_origin_certificate_association"
+
+const CreateAccountRole = "create_account_role"
+const ReadAccountRole = "read_account_role"
+const UpdateAccountRole = "update_account_role"
+const DeleteAccountRole = "delete_account_role"
+
+const ReadAccountAbilities = "read_account_abilities"
