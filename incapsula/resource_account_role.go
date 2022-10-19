@@ -31,8 +31,8 @@ func resourceAccountRole() *schema.Resource {
 			},
 
 			// Optional Arguments
-			"abilities": {
-				Description: "List of account ability keys that the role contains.",
+			"permissions": {
+				Description: "List of account permission keys that the role contains.",
 				Type:        schema.TypeSet,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -48,29 +48,29 @@ func resourceAccountRole() *schema.Resource {
 	}
 }
 
-func populateRoleAbilities(d *schema.ResourceData) []string {
-	abilities := d.Get("abilities").(*schema.Set)
+func populateRolePermissions(d *schema.ResourceData) []string {
+	permissions := d.Get("permissions").(*schema.Set)
 
-	var abilitiesSlice = make([]string, len(abilities.List()))
+	var permissionsSlice = make([]string, len(permissions.List()))
 
 	var dcInd = 0
-	for _, ability := range abilities.List() {
-		abilityKey := ability.(string)
+	for _, permission := range permissions.List() {
+		permissionKey := permission.(string)
 
-		if abilityKey != "" {
-			abilitiesSlice[dcInd] = abilityKey
+		if permissionKey != "" {
+			permissionsSlice[dcInd] = permissionKey
 		}
 		dcInd++
 	}
 
-	log.Printf("[DEBUG] populateRoleAbilities - RoleAbility: %+v\n", abilitiesSlice)
-	return abilitiesSlice
+	log.Printf("[DEBUG] populateRolePermissions - RolePermissions: %+v\n", permissionsSlice)
+	return permissionsSlice
 }
 
 func populateRoleDetailsDTO(d *schema.ResourceData) RoleDetailsBasicDTO {
 	requestDTO := RoleDetailsBasicDTO{}
 	requestDTO.RoleName = d.Get("name").(string)
-	requestDTO.RoleAbilities = populateRoleAbilities(d)
+	requestDTO.RoleAbilities = populateRolePermissions(d)
 
 	// TODO - Check how roleDescription is optional in UI but not in API
 	// https://gitlab/engineering/services/user-management/-/blob/master/src/main/java/com/imperva/microservice/services/apis/RolesApiServiceImpl.java#L346-352
@@ -140,7 +140,7 @@ func resourceAccountRoleRead(d *schema.ResourceData, m interface{}) error {
 	for _, roleAbility := range accountRoleResponse.RoleAbilities {
 		abilitiesList = append(abilitiesList, roleAbility.AbilityKey)
 	}
-	d.Set("abilities", abilitiesList)
+	d.Set("permissions", abilitiesList)
 
 	log.Printf("[INFO] Finished reading Incapsula account role id: %d\n", roleID)
 
