@@ -1,6 +1,19 @@
+
+## 3.8.8 (Oct 20, 2022)
+
+FEATURES:
+
+* **New Resource:** `incapsula_mtls_client_to_imperva_ca_certificate`
+
+BUG FIXES:
+
+* fix documentation of api_security_api_config ([#224](https://github.com/imperva/terraform-provider-incapsula/pull/224))
+
+
 ## 3.8.7 (Oct 3, 2022)
 
 BUG FIXES:
+
 * remove future resource from the documentation ([#219](https://github.com/imperva/terraform-provider-incapsula/pull/219))
 
 
