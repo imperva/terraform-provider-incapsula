@@ -1,3 +1,22 @@
+## 3.8.7 (Oct 3, 2022)
+
+BUG FIXES:
+* remove future resource from the documentation ([#219](https://github.com/imperva/terraform-provider-incapsula/pull/219))
+
+
+## 3.8.6 (Oct 2, 2022)
+
+IMPROVEMENTS:
+
+* incapsula_subaccount: Support for setting default data region for subaccounts ([#207](https://github.com/imperva/terraform-provider-incapsula/pull/207))
+
+BUG FIXES:
+
+* incapsula_policy: fixing bug that clears policy account's defaults when updating policy resource. ([#211](https://github.com/imperva/terraform-provider-incapsula/pull/211))
+* The parameters `incapsula_site.restricted_cname_reuse` and `invalid_param_name_violation_action` in all `incapsula_api_security` resources should not be used as they are currently not supported (will be in the future) ([#215](https://github.com/imperva/terraform-provider-incapsula/pull/215))
+   
+
+
 ## 3.8.5 (Aug 31, 2022)
 
 BUG FIXES:

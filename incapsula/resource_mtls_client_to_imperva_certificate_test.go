@@ -51,8 +51,8 @@ func testACCStateMtlsClientToImervaCertificateDestroy(state *terraform.State) er
 		return fmt.Errorf("Mandatory parameter account_id doesn't exist for Incapsula mTLS Client CA To Imperva Certificate with ID %s", certificateID)
 	}
 
-	_, _, err := client.GetClientCaCertificate(accountID, certificateID)
-	if err == nil {
+	_, exists, _ := client.GetClientCaCertificate(accountID, certificateID)
+	if exists == true {
 		return fmt.Errorf("Resource %s with cerificate ID %s still exists", mtlsClientToImervaCertificateResourceName, certificateID)
 	}
 	return nil

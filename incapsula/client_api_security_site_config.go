@@ -31,7 +31,7 @@ type ApiSecuritySiteConfigPostResponse struct {
 
 type ApiSecuritySiteConfigPostPayload struct {
 	ApiOnlySite                               bool             `json:"apiOnlySite"`
-	IsAutomaticDiscoveryApiIntegrationEnabled bool             `json:"isAutomaticDiscoveryApiIntegrationEnabled"`
+	IsAutomaticDiscoveryApiIntegrationEnabled bool             `json:"isAutomaticDiscoveryApiIntegrationEnabled,omitempty"`
 	NonApiRequestViolationAction              string           `json:"nonApiRequestViolationAction"`
 	ViolationActions                          ViolationActions `json:"violationActions"`
 }

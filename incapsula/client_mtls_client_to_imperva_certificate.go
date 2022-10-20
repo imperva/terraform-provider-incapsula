@@ -39,6 +39,7 @@ func (c *Client) GetClientCaCertificate(accountID, certificateID string) (*Clien
 
 	// Check if certificate exists
 	if resp.StatusCode == 406 && strings.HasPrefix(string(responseBody), "{") {
+		log.Printf("GOT 406 status!!!!!")
 		return nil, false, nil
 	}
 	if resp.StatusCode != 200 {
@@ -72,7 +73,7 @@ func (c *Client) AddClientCaCertificate(certificate []byte, accountID, certifica
 
 	body, contentType := c.CreateFormDataBody(bodyMap)
 
-	resp, err := c.DoJsonRequestWithHeadersForm(http.MethodPost, reqURL, body, contentType, CreateMtlsClientToImpervaCertifiate)
+	resp, err := c.DoFormDataRequestWithHeaders(http.MethodPost, reqURL, body, contentType, CreateMtlsClientToImpervaCertifiate)
 
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula while creating mutual TLS Client To Imperva Certificate for Account ID %s", accountID)

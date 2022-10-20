@@ -104,7 +104,7 @@ func TestGetSiteTlsSettingsValidApiConfig(t *testing.T) {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.Write([]byte(`{
-  "require_client_certificate": true,
+  "mandatory": true,
   "ports": [
     80,
     9000

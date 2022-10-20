@@ -19,7 +19,7 @@ resource "incapsula_api_security_site_config" "demo-terraform-api-security-site-
   	non_api_request_violation_action = "ALERT_ONLY"
   	invalid_url_violation_action = "BLOCK_IP"
   	invalid_method_violation_action = "BLOCK_REQUEST"
-  	missing_param_violation_action = "DEFAULT"
+  	missing_param_violation_action = "BLOCK_IP"
   	invalid_param_value_violation_action = "IGNORE"
   	invalid_param_name_violation_action = "ALERT_ONLY"
 }
@@ -31,7 +31,7 @@ The following arguments are supported:
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `is_automatic_discovery_api_integration_enabled` - (Optional) Parameter shows whether automatic API discovery API
-  Integration is enabled.
+  Integration is enabled. This field should not be set if `API Security Add-On` subscription is not available.
 * `invalid_url_violation_action` - (Optional) The action taken when an invalid URL Violation occurs. Possible
   values: `ALERT_ONLY` (default value), `BLOCK_REQUEST`, `BLOCK_USER`, `BLOCK_IP`, `IGNORE`.
 * `invalid_method_violation_action` - (Optional) The action taken when an invalid method Violation occurs. Possible
@@ -42,6 +42,9 @@ The following arguments are supported:
   Possible values: `ALERT_ONLY` (default value), `BLOCK_REQUEST`, `BLOCK_USER`, `BLOCK_IP`, `IGNORE`.
 * `invalid_param_name_violation_action` - (Optional) The action taken when an invalid parameter value Violation occurs.
   Possible values: `ALERT_ONLY` (default value), `BLOCK_REQUEST`, `BLOCK_USER`, `BLOCK_IP`, `IGNORE`.
+  
+  > **NOTE:** `invalid_param_name_violation_action` parameter is currently not supported. Please do not use/change value.
+  
 * `is_api_only_site` - (Optional) Apply positive security model for all traffic on the site. Applying the positive
   security model for all traffic on the site may lead to undesired request blocking.
 * `non_api_request_violation_action` - (Optional) Action to be taken for traffic on the site that does not target the

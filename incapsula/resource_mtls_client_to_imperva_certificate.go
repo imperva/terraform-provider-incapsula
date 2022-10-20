@@ -111,7 +111,7 @@ func resourceClientCaCertificateRead(d *schema.ResourceData, m interface{}) erro
 		return nil
 	}
 
-	if err != nil {
+	if err != nil || !certificateExits {
 		return err
 	}
 

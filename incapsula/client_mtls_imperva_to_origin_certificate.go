@@ -71,7 +71,6 @@ func (c *Client) GetMTLSCertificate(certificateID, accountID string) (*MTLSCerti
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("[ERROR] Error status code %d from Incapsula service on fetching mutual TLS Imperva to Origin certificate ID %s\n: %s\n%s", resp.StatusCode, certificateID, err, string(responseBody))
 	}
-
 	// Dump JSON
 	var mtlsCertificate MTLSCertificateResponse
 	err = json.Unmarshal([]byte(responseBody), &mtlsCertificate)
@@ -105,7 +104,7 @@ func (c *Client) editMTLSCertificate(hhtpMethod, reqURL string, certificate, pri
 	}
 
 	bodyNew, contentTypeNew := c.CreateFormDataBody(bodyMap)
-	resp, err := c.DoJsonRequestWithHeadersForm(hhtpMethod, reqURL, bodyNew, contentTypeNew, CreateMtlsClientToImpervaCertifiate)
+	resp, err := c.DoFormDataRequestWithHeaders(hhtpMethod, reqURL, bodyNew, contentTypeNew, operation)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error while %s mTLS Imperva to Origin Certificate: %s", action, err)
 	}

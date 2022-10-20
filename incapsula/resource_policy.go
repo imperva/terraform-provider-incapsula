@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -140,13 +141,25 @@ func resourcePolicyUpdate(d *schema.ResourceData, m interface{}) error {
 	var policySettings []PolicySetting
 	err = json.Unmarshal([]byte(policySettingsString), &policySettings)
 
+	policyGetResponse, err := client.GetPolicy(d.Id())
+	if err != nil {
+		log.Printf("[ERROR] Could not get Incapsula policy: %d - %s\n", id, err)
+		if strings.Contains(err.Error(), "404") {
+			log.Printf("[INFO] Incapsula policy ID %d has already been deleted: %s\n", id, err)
+			d.SetId("")
+			return nil
+		}
+		return err
+	}
+
 	policySubmitted := PolicySubmitted{
-		Name:           d.Get("name").(string),
-		Enabled:        d.Get("enabled").(bool),
-		PolicyType:     d.Get("policy_type").(string),
-		AccountID:      d.Get("account_id").(int),
-		Description:    d.Get("description").(string),
-		PolicySettings: policySettings,
+		Name:                d.Get("name").(string),
+		Enabled:             d.Get("enabled").(bool),
+		PolicyType:          d.Get("policy_type").(string),
+		AccountID:           d.Get("account_id").(int),
+		Description:         d.Get("description").(string),
+		DefaultPolicyConfig: policyGetResponse.Value.DefaultPolicyConfig,
+		PolicySettings:      policySettings,
 	}
 
 	_, err = client.UpdatePolicy(id, &policySubmitted)

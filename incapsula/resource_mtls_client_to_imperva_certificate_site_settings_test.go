@@ -24,7 +24,7 @@ func TestAccIncapsulaSiteTlsSettings_basic(t *testing.T) {
 				Config: testAccCheckSiteTlsSettingsBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSiteTlsSettingsExists(siteTlsSettingsResource),
-					resource.TestCheckResourceAttr(siteTlsSettingsResource, "mandatory", "true"),
+					resource.TestCheckResourceAttr(siteTlsSettingsResource, "require_client_certificate", "true"),
 					//resource.TestCheckResourceAttr(siteTlsSettingsResource, "ports", "[12,100,305]"),
 					resource.TestCheckResourceAttr(siteTlsSettingsResource, "is_ports_exception", "true"),
 					//resource.TestCheckResourceAttr(siteTlsSettingsResource, "hosts", "[\"test.com\", \"secondtest.au\"]"),
@@ -88,7 +88,7 @@ func testAccCheckSiteTlsSettingsBasic(t *testing.T) string {
 	resource "%s" "%s" {
 		site_id = incapsula_site.testacc-terraform-site.id
 		depends_on                       = ["%s"]
-		mandatory                        = true
+		require_client_certificate       = true
 		ports                            = [12,100,305]
 		is_ports_exception               = true
 		hosts                            = ["test.com", "secondtest.au"]

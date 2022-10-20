@@ -32,6 +32,7 @@ func resourceCertificate() *schema.Resource {
 				Description: "The certificate file in base64 format.",
 				Type:        schema.TypeString,
 				Required:    true,
+				Sensitive:   true,
 			},
 			// Optional Arguments
 			"private_key": {

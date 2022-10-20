@@ -35,7 +35,7 @@ func TestClientGetSiteMtlsClientToImpervaCertificateAssociationBadJSON(t *testin
 	siteID := 42
 	certificateID := 100
 
-	endpoint := fmt.Sprintf("/certificate-manager/v2/accounts/%d/client-certificates/%d", accountID, certificateID)
+	endpoint := fmt.Sprintf("/certificate-manager/v2/sites/%d/client-certificates", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -66,10 +66,9 @@ func TestClientGetSiteMtlsClientToImpervaCertificateAssociationInvalidConfig(t *
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
-	accountID := 88
 	certificateID := 100
 
-	endpoint := fmt.Sprintf("/certificate-manager/v2/accounts/%d/client-certificates/%d", accountID, certificateID)
+	endpoint := fmt.Sprintf("/certificate-manager/v2/sites/%d/client-certificates", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(500)
@@ -112,10 +111,9 @@ func TestClientGetSiteMtlsClientToImpervaCertificateAssociationValidConfig(t *te
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
-	accountID := 88
 	certificateID := 100
 
-	endpoint := fmt.Sprintf("/certificate-manager/v2/accounts/%d/client-certificates/%d", accountID, certificateID)
+	endpoint := fmt.Sprintf("/certificate-manager/v2/sites/%d/client-certificates", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -123,15 +121,22 @@ func TestClientGetSiteMtlsClientToImpervaCertificateAssociationValidConfig(t *te
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.Write([]byte(`
-   {
-  "id": 1,
-  "name": "some name",
-  "serialNumber": "string",
-  "issuer": "string",
-  "creationDate": "string",
-  "assignedSites":[123,222,42]
-}
-`))
+[
+  {
+    "id": 100,
+    "name": "some name",
+    "serialNumber": "5555",
+    "issuer": "issuer",
+    "hash": ""
+  },
+  {
+    "id": 12,
+    "name": "test ca cert 2",
+    "serialNumber": "6666",
+    "issuer": "issuer",
+    "hash": ""
+  }
+]`))
 	}))
 	defer server.Close()
 

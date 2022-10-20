@@ -102,7 +102,6 @@ func testCheckClientToImervaCertificateAssociationExists() resource.TestCheckFun
 func testAccCheckClientToImervaCertificateAssociationBasic(t *testing.T) string {
 	return testAccCheckIncapsulaCustomCertificateGoodConfig(t) + "\n" + testAccCheckMtlsClientToImervaCertificateBasic(t) + "\n" +
 		fmt.Sprintf(`resource "%s" "%s" {
-   account_id     = data.incapsula_account_data.account_data.current_account 
    certificate_id = %s.id
    site_id        = incapsula_site.testacc-terraform-site.id
    depends_on     = [%s,%s]

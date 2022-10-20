@@ -113,6 +113,8 @@ func Provider() *schema.Provider {
 			"incapsula_application_delivery":                                   resourceApplicationDelivery(),
 			"incapsula_site_monitoring":                                        resourceSiteMonitoring(),
 			"incapsula_account_ssl_settings":                                   resourceAccountSSLSettings(),
+			"incapsula_mtls_imperva_to_origin_certificate":                     resourceMtlsImpervaToOriginCertificate(),
+			"incapsula_mtls_imperva_to_origin_certificate_site_association":    resourceMtlsImpervaToOriginCertificateSiteAssociation(),
 			"incapsula_mtls_client_to_imperva_ca_certificate":                  resourceMtlsClientToImpervaCertificate(),
 			"incapsula_mtls_client_to_imperva_ca_certificate_site_association": resourceMtlsClientToImpervaCertificateSiteAssociation(),
 			"incapsula_mtls_client_to_imperva_ca_certificate_site_settings":    resourceMtlsClientToImpervaCertificateSetings(),

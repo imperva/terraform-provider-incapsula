@@ -283,7 +283,7 @@ func TestEditMTLSCertificateValidApiConfig(t *testing.T) {
 	inputHash := "inputHash"
 	accountID := "777"
 
-	endpoint := fmt.Sprintf("%s?=caid=%s", endpointMTLSCertificate, accountID)
+	endpoint := fmt.Sprintf("%s?caid=%s", endpointMTLSCertificate, accountID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -357,7 +357,7 @@ func TestDeleteMTLSCertificateInvalidConfig(t *testing.T) {
 	certificateID := "42"
 	accountID := "777"
 
-	endpoint := fmt.Sprintf("%s/%s?caid=%s", endpointMTLSCertificate, certificateID, accountID)
+	endpoint := fmt.Sprintf("%s/%s", endpointMTLSCertificate, certificateID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(400)
@@ -399,7 +399,7 @@ func TestDeleteMTLSCertificateValidConfig(t *testing.T) {
 	certificateID := "42"
 	accountID := "777"
 
-	endpoint := fmt.Sprintf("%s/%s?caid=%s", endpointMTLSCertificate, certificateID, accountID)
+	endpoint := fmt.Sprintf("%s/%s", endpointMTLSCertificate, certificateID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
