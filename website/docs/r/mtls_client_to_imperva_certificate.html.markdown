@@ -36,7 +36,7 @@ resource "incapsula_subaccount" "example-subaccount" {
   log_level         = "full"
 }
 
-resource "incapsula_mtls_client_to_imperva_certificate" "client_ca_certificate_1"{
+resource "incapsula_mtls_client_to_imperva_ca_certificate" "client_ca_certificate_1"{
   certificate_name = "pem certificate example"
   certificate      = filebase64("./ca_certificate.pem")
   account_id       = incapsula_subaccount.example-subaccount.id
