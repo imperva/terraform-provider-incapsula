@@ -1,4 +1,11 @@
 
+## 3.9.1 (Oct 20, 2022)
+
+BUG FIXES:
+
+* documentation corrections ([#229](https://github.com/imperva/terraform-provider-incapsula/pull/229))
+
+
 ## 3.9.0 (Oct 20, 2022)
 
 FEATURES:
