@@ -4,6 +4,8 @@
 FEATURES:
 
 * **New Resource:** `incapsula_mtls_client_to_imperva_ca_certificate`
+* **New Resource:** `incapsula_mtls_client_to_imperva_ca_certificate_site_settings`
+* **New Resource:** `incapsula_mtls_client_to_imperva_ca_certificate_site_association`
 
 BUG FIXES:
 
