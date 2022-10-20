@@ -9,9 +9,9 @@ Provides a Mutual TLS Client to Imperva CA Certificate resource.
 # incapsula_mtls_client_to_imperva_ca_certificate
 
 Provides a Mutual TLS Client to Imperva CA Certificate resource.
-This resource is used to upload the client CA certificate used by Imperva to validate the client certificate
-Mutual TLS Client to Imperva Certificates must be one of the following formats: PEM, CRT, CER or CA.
-Update action is not supported for current resource. Please create a new Mutual TLS Client to Imperva CA Certificate resource and only then, delete the old one.
+This resource is used to upload the client CA certificate used by Imperva to validate the client certificate.
+Mutual TLS Client to Imperva Certificates must be in one of the following formats: PEM, CRT, CER or CA.
+The update action is not supported for the current resource. Please, please create a new Mutual TLS Client to Imperva CA Certificate resource and then - delete the old one.
 
 ## Example Usage
 Reference to account data source in `account_id` field
@@ -43,10 +43,11 @@ resource "incapsula_mtls_client_to_imperva_certificate" "client_ca_certificate_1
 }
 ```
 
-`Exported Certificate - data placeholder` value will be set in the `certificate` field in the result of account export.
-The reason for using these values is that this certificate currently exists in the account configuration and this resource allows using it with new sites configured via Terraform.
-Note - This resource cannot be updated unless you specify a real values to the `certificate` field instead of `Exported Certificate - data placeholder`.
-In exported resources, the certificate_name cannot be changed as well until real values are set.
+> **NOTE:** 
+When a resource is exported, the certificate field will be defined with the value `Exported Certificate - data placeholder`.
+The reason for using these values is that this certificate currently exists in the account configuration and this resource enables it to be used with new sites configured via Terraform.
+Note - This resource cannot be updated unless you specify a real value for the `certificate` field instead of `Exported Certificate - data placeholder`.
+To clarify, the `certificate_name` cannot be changed in exported resources unless real `certificate` value is set.
 
 Example of exported resource:
 
@@ -63,7 +64,7 @@ resource "incapsula_mtls_client_to_imperva_ca_certificate" "client_ca_certificat
 The following arguments are supported:
 
 * `certificate` - (Required) Your mTLS client certificate file. Supported formats: PEM, CRT, CER and CA.
-  You can use the Terraform HCL `filebase64` directive to pull in the contents from a file. You can also inline the certificate in the configuration.
+  You can use the Terraform HCL `filebase64` directive to pull in the contents from a file. You can also embed the certificate in the configuration.
 * `account_id` - (Required) Numeric identifier of the account to operate on.
 * `certificate_name` - (Optional) A descriptive name for your mTLS Client Certificate.
 
@@ -75,7 +76,7 @@ The following attributes are exported:
 
 ## Import
 
-Incapsula Mutual TLS Imperva to Origin Certificate can be imported using `account_id` and `certificate_id`:
+Your Incapsula Mutual TLS Imperva to Origin Certificate can be imported using `account_id` and `certificate_id`:
 
 ```
 $ terraform import incapsula_mtls_client_to_imperva_ca_certificate.client_ca_certificate_1 account_id/certificate_id

@@ -6,7 +6,7 @@ description: |-
 Provides an Incapsula Site to Mutual TLS Client to Imperva CA Certificate Association resource.
 ---
 
-# imperva_mtls_client_to_imperva_ca_certificate_site_association
+# incapsula_mtls_client_to_imperva_ca_certificate_site_association
 
 Provides an Incapsula Mutual TLS Client to Imperva CA Certificate Association resource.
 
@@ -54,11 +54,11 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - Incapsula Mutual TLS Client to Imperva CA Certificate Association ID. The ID composed of 2 parts: `site_id` and `certificate_id` separated by slash.
+* `id` - Incapsula Mutual TLS Client to Imperva CA Certificate Association ID. The ID is composed of 2 parts: `site_id` and `certificate_id` separated by a slash.
 
 ## Import
 
-Incapsula Mutual TLS Client to Imperva CA Certificate Association can be imported using `site_id` and `certificate_id` separated by slash:
+Incapsula Mutual TLS Client to Imperva CA Certificate Association can be imported using `site_id` and `certificate_id` separated by a slash:
 
 ```
 $ terraform import incapsula_mtls_client_to_imperva_ca_certificate_site_association.site_certificate_association_1 site_id/certificate_id

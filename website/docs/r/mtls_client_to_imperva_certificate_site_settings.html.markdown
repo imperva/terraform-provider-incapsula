@@ -1,7 +1,7 @@
 ---
 layout: "incapsula"
-page_title: "Incapsula: incap-mtls-client-to-imperva-ca-certificate-site-settings"
-sidebar_current: "docs-incapsula-resource-mtls-client-to-imperva-ca-certificate-site-settings"
+page_title: "Incapsula: mtls-client-to-incapsula-ca-certificate-site-settings"
+sidebar_current: "docs-incapsula-resource-mtls-client-to-incapsula-ca-certificate-site-settings"
 description: |- Provides an Incapsula MTLS Client to Imperva Certificate Site Settings resource.
 ---
 
@@ -9,11 +9,11 @@ description: |- Provides an Incapsula MTLS Client to Imperva Certificate Site Se
 
 Provides an Incapsula mTLS Client to Imperva Certificate Site Settings resource.
 This resource is used to set parameters relevant to the Mutual TLS Client to Imperva Certificate functionality.
-On destroy settings will be changed to default values and resource will stop being managed by Terraform.
+On destroy, settings will be reverted to default values and the resource will no longer be managed by Terraform.
 
 ## Example Usage
-Associate 2 different certificates to the same site.
-Use of `depends_on` parameter to ensure proper order of editing related resources
+Associate 2 different certificates with the same site.
+Use the `depends_on` parameter to ensure that related resources are applied in the proper order.
 
 ```hcl
 resource "incapsula_mtls_client_to_imperva_ca_certificate" "client_ca_certificate_1" {
@@ -38,8 +38,7 @@ resource "incapsula_mtls_client_to_imperva_ca_certificate_site_association" "sit
     site_id            = incapsula_site.example-site.id
 }
 ```
-
-Use of `depends_on` parameter to ensure proper order of editing related resources
+Use the `depends_on` parameter to ensure that related resources are applied in the proper order.
 
 ```hcl
 resource "incapsula_mtls_client_to_imperva_ca_certificate_site_settings" "demo_client_to_imperva_certificate_site_settings" {
@@ -72,16 +71,16 @@ The following arguments are supported:
 * `hosts` - (Optional) The hosts on which client certificate authentication is supported. If left empty, client certificates are supported on all hosts. Default - empty list.
 * `is_hosts_exception` - (Optional) When set to true, client certificates are not supported on the hosts listed in the Hosts field ('blacklisted'). Default - false.
 * `fingerprints` - (Optional) Permitted client certificate fingerprints. If left empty, all fingerprints are permitted. Default - empty list.
-* `forward_to_origin` - (Optional) When set to true, the contents specified in headerValue are sent to the origin server in the header specified by headerName. Default - false. If parameter is set to true, specify of `header_name`, `header_value` are required.
+* `forward_to_origin` - (Optional) When set to true, the contents specified in headerValue are sent to the origin server in the header specified by headerName. Default - false. If parameter is set to true, `header_name` and `header_value` are required.
 * `header_name` - (Optional) The name of the header to send header content in. By default, the header name is 'clientCertificateInfo'. Specifying this parameter is relevant only if `forward_to_origin` is set to true. Default - `clientCertificateInfo`.
-* `header_value` - (Optional) The content to send in the header specified by headerName. One of the following: `FULL_CERT` (for full certificate in Base64) `COMMON_NAME` (for certificate's common name (CN)) `FINGERPRINT` (for the certificate fingerprints in SHA1) `SERIAL_NUMBER` (for the certificate's serial number). Parameter is required if `forward_to_origin` is set to true. Default: `FULL_CERT`.
-* `is_disable_session_resumption` - (Optional) Disables SSL session resumption for site. Needed when Incapsula Client Certificate is needed only for specific hosts/ports and site have clients that reuse TLS session across different hosts/ports. Default - false.
+* `header_value` - (Optional) The content to send in the header specified by headerName. One of the following: `FULL_CERT` (for full certificate in Base64) `COMMON_NAME` (for certificate's common name (CN)) `FINGERPRINT` (for the certificate fingerprints in SHA1) `SERIAL_NUMBER` (for the certificate's serial number). This parameter is required if `forward_to_origin` is set to true. Default: `FULL_CERT`.
+* `is_disable_session_resumption` - (Optional) Disables SSL session resumption for site. Needed when Incapsula Client CA Certificate is needed only for specific hosts/ports and site have clients that reuse TLS session across different hosts/ports. Default - false.
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-* `id` - Value of Site ID in the Imperva Mutual TLS Client to Imperva CA Certificate Site Settings.
+* `id` - Value of Site ID in the Incapsula Mutual TLS Client to Imperva CA Certificate Site Settings.
 
 ## Import
 
