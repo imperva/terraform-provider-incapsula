@@ -8,8 +8,6 @@ import (
 	"strconv"
 )
 
-const ignoreSensitivaeVariableString = "Ignore differences in exported certificate"
-
 func resourceMtlsImpervaToOriginCertificate() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceMTLSImpervaToOriginCertificateCreate,
@@ -27,7 +25,7 @@ func resourceMtlsImpervaToOriginCertificate() *schema.Resource {
 				Required:    true,
 				Sensitive:   true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if new == ignoreSensitivaeVariableString {
+					if new == ignoreSensitiveVariableString {
 						return true
 					}
 					return false
@@ -40,7 +38,7 @@ func resourceMtlsImpervaToOriginCertificate() *schema.Resource {
 				Optional:    true,
 				Sensitive:   true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if new == ignoreSensitivaeVariableString {
+					if new == ignoreSensitiveVariableString {
 						return true
 					}
 					return false
@@ -52,7 +50,7 @@ func resourceMtlsImpervaToOriginCertificate() *schema.Resource {
 				Optional:    true,
 				Sensitive:   true,
 				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					if new == ignoreSensitivaeVariableString {
+					if new == ignoreSensitiveVariableString {
 						return true
 					}
 					return false
@@ -92,11 +90,11 @@ func resourceMTLSImpervaToOriginCertificateCreate(d *schema.ResourceData, m inte
 	encodedPKey := d.Get("private_key").(string)
 	passphrase := d.Get("passphrase").(string)
 
-	if (encodedCert == ignoreSensitivaeVariableString ||
-		encodedPKey == ignoreSensitivaeVariableString ||
-		passphrase == ignoreSensitivaeVariableString) &&
+	if (encodedCert == ignoreSensitiveVariableString ||
+		encodedPKey == ignoreSensitiveVariableString ||
+		passphrase == ignoreSensitiveVariableString) &&
 		(d.HasChange("certificate_name") && d.Get("certificate_name") != "") {
-		fmt.Errorf("Cannot create resource while one the parametes equals %s", ignoreSensitivaeVariableString)
+		fmt.Errorf("Cannot create resource while one the parametes equals %s", ignoreSensitiveVariableString)
 	} else {
 		// Standard Base64 Decoding
 		decodedCert, err := base64.StdEncoding.DecodeString(encodedCert)
@@ -153,8 +151,8 @@ func resourceMTLSImpervaToOriginCertificateUpdate(d *schema.ResourceData, m inte
 	encodedPKey := d.Get("private_key").(string)
 	passphrase := d.Get("passphrase").(string)
 
-	if encodedCert == ignoreSensitivaeVariableString || encodedPKey == ignoreSensitivaeVariableString || passphrase == ignoreSensitivaeVariableString {
-		fmt.Errorf("Cannot update resource while one the parametes equals %s")
+	if encodedCert == ignoreSensitiveVariableString || encodedPKey == ignoreSensitiveVariableString || passphrase == ignoreSensitiveVariableString {
+		fmt.Errorf("Cannot update resource while one the parametes equals %s", ignoreSensitiveVariableString)
 	} else {
 		// Standard Base64 Decoding
 		decodedCert, err := base64.StdEncoding.DecodeString(encodedCert)
