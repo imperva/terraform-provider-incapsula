@@ -15,7 +15,7 @@ API Security API Config include violation actions set for specific API.
 
 ```hcl
 resource "incapsula_api_security_api_config" "demo-terraform-api-security-api-config" {
-	site_id = incapsula_api_security_site_config.demo-terraform-api-security-site-config.id
+	site_id = incapsula_site.example-site.id
 	api_specification = "${file("path/to/your/swagger/file.yaml")}"
 	invalid_url_violation_action = "IGNORE"
 	invalid_method_violation_action = "BLOCK_USER"
