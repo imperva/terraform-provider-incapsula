@@ -62,6 +62,9 @@ The following arguments are supported:
 * `force_ssl` - (Optional) Force SSL. This option is only available for sites with manually configured IP/CNAME and for specific accounts.
 * `logs_account_id` - (Optional) Account where logs should be stored. Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `active` - (Optional) Whether the site is active or bypassed by the Imperva network. Options are `active` and `bypass`.
+ 
+  > **NOTE:** `restricted_cname_reuse` parameter is currently not supported. Please do not use/change value.
+
 * `restricted_cname_reuse` - (Optional) Use this option to allow Imperva to detect and add domains that are using the Imperva-provided CNAME (not recommended). One of: true | false.
 * `domain_validation` - (Optional) Sets the domain validation method that will be used to generate an SSL certificate. Options are `email`, `html`, `cname` and `dns`.
 * `approver` - (Optional) Sets the approver e-mail address that will be used to perform SSL domain validation.
