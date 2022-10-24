@@ -60,7 +60,7 @@ func testACCStateMtlsImpervaToOriginCertificateDestroy(s *terraform.State) error
 			fmt.Errorf("Parameter id was not found in resource %s", mtlsCrtificateResourceName)
 		}
 
-		_, err := client.GetMTLSCertificate(certificateID)
+		_, err := client.GetMTLSCertificate(certificateID, "")
 		if err == nil {
 			return fmt.Errorf("Resource %s with cerificate ID %s still exists", mtlsCrtificateResourceName, certificateID)
 		}
@@ -76,7 +76,7 @@ func testCheckMtlsImpervaToOriginCertificateExists() resource.TestCheckFunc {
 		}
 		certificateID := res.Primary.ID
 		client := testAccProvider.Meta().(*Client)
-		_, err := client.GetMTLSCertificate(certificateID)
+		_, err := client.GetMTLSCertificate(certificateID, "")
 		if err != nil {
 			return fmt.Errorf("Incapsula mTLS Imperva to Origin Certificate with ID %s does not exist", certificateID)
 		}
@@ -100,14 +100,16 @@ func testACCStateMtlsImpervaToOriginCertificateID(s *terraform.State) (string, e
 
 func testAccCheckMtlsImpervaToOriginCertificateBasic(t *testing.T) string {
 	cert, pkey, err := certsetup()
-	log.Printf("pkey mtls\n%v", pkey)
-	log.Printf("\n\ncertStr mtls\n%v", cert)
+
 	if err != nil {
 		panic(err)
 	}
-	//clientTLSConf := string(clientTLSConf.Certificates[0].Certificate)
 	return fmt.Sprintf(`
+data "incapsula_account_data" "account_data" {
+}
 	resource"%s""%s"{
+    account_id                       = data.incapsula_account_data.account_data.current_account
+
 		certificate_name = "acceptance test certificate"
   		certificate = %s
   		private_key = %s
