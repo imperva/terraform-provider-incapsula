@@ -79,7 +79,7 @@ func TestClientUpdateAccountSSlSettingsDataInBody(t *testing.T) {
 			t.Errorf("Should have hit /%s endpoint. Got: %s", accountSSLSettingsUrl, req.URL.String())
 		}
 		rw.WriteHeader(200)
-		rw.Write([]byte("{\n    \"data\": [\n        {\n            \"impervaCertificate\": {\n                \"delegation\": {\n                    \"valueForCNAMEValidation\": \"_f508e2d5de256715aee9ca0a68bccb93.rzhoumyrbmsgczpavmvbgubdqumsvqjq.validation.incaptest.co\",\n                    \"allowedDomainsForCNAMEValidation\": [],\n                    \"allowCNAMEValidation\": false\n                },\n                \"useWildCardSanInsteadOfFQDN\": true,\n                \"addNakedDomainSanForWWWSites\": true\n            }\n        }\n    ]\n}"))
+		rw.Write([]byte("{\n    \"data\": [\n        {\n            \"impervaCertificate\": {\n                \"delegation\": {\n                    \"valueForCNAMEValidation\": \"_f508e2d5de256715aee9ca0a68bccb93.rzhoumyrbmsgczpavmvbgubdqumsvqjq.validation.incaptest.co\",\n                    \"allowedDomainsForCNAMEValidation\": [{\"name\":\"example.com\"}],\n                    \"allowCNAMEValidation\": false\n                },\n                \"useWildCardSanInsteadOfFQDN\": true,\n                \"addNakedDomainSanForWWWSites\": true\n            }\n        }\n    ]\n}"))
 	}))
 	defer server.Close()
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
@@ -106,7 +106,7 @@ func TestClientGetAccountSSlSettingsDataInBody(t *testing.T) {
 			t.Errorf("Should have hit /%s endpoint. Got: %s", accountSSLSettingsUrl, req.URL.String())
 		}
 		rw.WriteHeader(200)
-		rw.Write([]byte("{\n    \"data\": [\n        {\n            \"impervaCertificate\": {\n                \"delegation\": {\n                    \"valueForCNAMEValidation\": \"_f508e2d5de256715aee9ca0a68bccb93.rzhoumyrbmsgczpavmvbgubdqumsvqjq.validation.incaptest.co\",\n                    \"allowedDomainsForCNAMEValidation\": [],\n                    \"allowCNAMEValidation\": false\n                },\n                \"useWildCardSanInsteadOfFQDN\": true,\n                \"addNakedDomainSanForWWWSites\": true\n            }\n        }\n    ]\n}"))
+		rw.Write([]byte("{\n    \"data\": [\n        {\n            \"impervaCertificate\": {\n                \"delegation\": {\n                    \"valueForCNAMEValidation\": \"_f508e2d5de256715aee9ca0a68bccb93.rzhoumyrbmsgczpavmvbgubdqumsvqjq.validation.incaptest.co\",\n                    \"allowedDomainsForCNAMEValidation\": [{\"name\":\"example.com\"}],\n                    \"allowCNAMEValidation\": false\n                },\n                \"useWildCardSanInsteadOfFQDN\": true,\n                \"addNakedDomainSanForWWWSites\": true\n            }\n        }\n    ]\n}"))
 	}))
 	defer server.Close()
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}

@@ -84,6 +84,7 @@ func resourceAccount() *schema.Resource {
 				Type:         schema.TypeString,
 				Default:      "true",
 				Optional:     true,
+				Deprecated:   "use add_naked_domain_san_for_www_sites in account_ssl_settings resource",
 				ValidateFunc: validation.StringInSlice([]string{"true", "false"}, false),
 			},
 			"wildcard_san_for_new_sites": {
@@ -91,6 +92,7 @@ func resourceAccount() *schema.Resource {
 				Type:         schema.TypeString,
 				Default:      "Default",
 				Optional:     true,
+				Deprecated:   "use use_wild_card_san_instead_of_fqdn in account_ssl_settings resource",
 				ValidateFunc: validation.StringInSlice([]string{"True", "False", "Default"}, true),
 			},
 			"data_storage_region": {
