@@ -36,12 +36,6 @@ func resourceAccountSSLSettings() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
-			"value_for_cname_validation": {
-				Description: "The value of the CNAME records that need to create for each domain under the allowed_domains_for_cname_validation list to allow delegation.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-			},
 			"allowed_domain_for_cname_validation": {
 				Description: "The list of domains that Imperva allow to prove ownership on, on behalf of the customer.",
 				Type:        schema.TypeSet,
@@ -257,9 +251,6 @@ func resourceAccountSSLSettingsRead(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 	if err := d.Set("allow_cname_validation", accountSSLSettingsDTO.ImpervaCertificate.Delegation.AllowCNAMEValidation); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("value_for_cname_validation", accountSSLSettingsDTO.ImpervaCertificate.Delegation.ValueForCNAMEValidation); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := d.Set("enable_hsts_for_new_sites", accountSSLSettingsDTO.EnableHSTSForNewSites); err != nil {

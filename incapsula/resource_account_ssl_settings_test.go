@@ -101,7 +101,6 @@ func testCheckAccAccountSSLSettingsAfterFullUpdate() resource.TestCheckFunc {
 			return fmt.Errorf("failed to get account ssl settings after full update resource %s", accountSSLSettingsResourceName)
 		}
 		if settings.Errors == nil && settings.Data != nil && !*settings.Data[0].ImpervaCertificate.UseWildCardSanInsteadOfFQDN && *settings.Data[0].ImpervaCertificate.AddNakedDomainSanForWWWSites &&
-			settings.Data[0].ImpervaCertificate.Delegation.ValueForCNAMEValidation != "" && len(settings.Data[0].ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation) == 1 &&
 			settings.Data[0].ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation[0].Name == "example.com" && *settings.Data[0].ImpervaCertificate.Delegation.AllowCNAMEValidation {
 			return nil
 		}
@@ -122,7 +121,6 @@ func testCheckAccAccountSSLSettingsAfterPartialUpdate1() resource.TestCheckFunc 
 			return fmt.Errorf("failed to get account ssl settings after partial update1 resource %s", accountSSLSettingsResourceName)
 		}
 		if settings.Errors == nil && settings.Data != nil && *settings.Data[0].ImpervaCertificate.UseWildCardSanInsteadOfFQDN && !*settings.Data[0].ImpervaCertificate.AddNakedDomainSanForWWWSites &&
-			settings.Data[0].ImpervaCertificate.Delegation.ValueForCNAMEValidation != "" && len(settings.Data[0].ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation) == 0 &&
 			!*settings.Data[0].ImpervaCertificate.Delegation.AllowCNAMEValidation {
 			return nil
 		}
@@ -143,7 +141,6 @@ func testCheckAccAccountSSLSettingsAfterPartialUpdate2() resource.TestCheckFunc 
 			return fmt.Errorf("failed to get account ssl settings after partia2 update1 resource %s", accountSSLSettingsResourceName)
 		}
 		if settings.Errors == nil && settings.Data != nil && *settings.Data[0].ImpervaCertificate.UseWildCardSanInsteadOfFQDN && *settings.Data[0].ImpervaCertificate.AddNakedDomainSanForWWWSites &&
-			settings.Data[0].ImpervaCertificate.Delegation.ValueForCNAMEValidation != "" && len(settings.Data[0].ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation) == 1 &&
 			settings.Data[0].ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation[0].Name == "example.com" && *settings.Data[0].ImpervaCertificate.Delegation.AllowCNAMEValidation {
 			return nil
 		}
@@ -164,7 +161,6 @@ func testCheckAccAccountSSLSettingsAfterPartialUpdate3() resource.TestCheckFunc 
 			return fmt.Errorf("failed to get account ssl settings after partia3 update1 resource %s", accountSSLSettingsResourceName)
 		}
 		if settings.Errors == nil && settings.Data != nil && !*settings.Data[0].ImpervaCertificate.UseWildCardSanInsteadOfFQDN && *settings.Data[0].ImpervaCertificate.AddNakedDomainSanForWWWSites &&
-			settings.Data[0].ImpervaCertificate.Delegation.ValueForCNAMEValidation != "" && len(settings.Data[0].ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation) == 1 &&
 			settings.Data[0].ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation[0].Name == "example2.com" && !*settings.Data[0].ImpervaCertificate.Delegation.AllowCNAMEValidation {
 			return nil
 		}

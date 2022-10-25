@@ -48,12 +48,11 @@ The following allowed_domain_for_cname_validation arguments are supported:
 The following attributes are exported:  
 
 * `id` - The resource id.
-* `value_for_cname_validation` - The CNAME record value to allow CA validation delegation .
 
 The following attributes are exported from allowed_domains_for_cname_validation sub resource:  
 
 * `id` - The domain id.
-* `status` - The domain status.
+* `status` - The domain status. Possible values: CONFIGURED, NOT_CONFIGURED.
 * `cname_record_value` - The CNAME record value to use to configure this domain for delegation.
 * `cname_record_host` - The CNAME record host to use.
 * `creation_date` - The domain creation date.

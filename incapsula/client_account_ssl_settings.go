@@ -24,7 +24,6 @@ type AllowDomainForCnameValidation struct {
 }
 
 type Delegation struct {
-	ValueForCNAMEValidation          string                          `json:"valueForCNAMEValidation,omitempty"`
 	AllowedDomainsForCNAMEValidation []AllowDomainForCnameValidation `json:"allowedDomainsForCNAMEValidation"`
 	AllowCNAMEValidation             *bool                           `json:"allowCNAMEValidation,omitempty"`
 }
