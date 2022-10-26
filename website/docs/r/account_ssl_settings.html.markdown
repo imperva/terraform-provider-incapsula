@@ -23,10 +23,10 @@ resource "incapsula_account_ssl_settings" "ssl-52546413" {
     use_wild_card_san_instead_of_fqdn = true
     add_naked_domain_san_for_www_sites = false
     allow_cname_validation = true
-    allowed_domain_for_cname_validation = {
+    allowed_domain_for_cname_validation {
        name = "example.com"
     }
-    allowed_domain_for_cname_validation = {
+    allowed_domain_for_cname_validation {
        name = "example2.com"
     }
 }
