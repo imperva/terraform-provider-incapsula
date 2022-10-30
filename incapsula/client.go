@@ -27,13 +27,14 @@ type Client struct {
 	config          *Config
 	httpClient      *http.Client
 	providerVersion string
+	accountStatus   *AccountStatusResponse
 }
 
 // NewClient creates a new client with the provided configuration
 func NewClient(config *Config) *Client {
 	client := &http.Client{}
 
-	return &Client{config: config, httpClient: client, providerVersion: "3.9.1"}
+	return &Client{config: config, httpClient: client, providerVersion: "3.10.0"}
 }
 
 func (c *Client) CreateFormDataBody(bodyMap map[string]interface{}) ([]byte, string) {

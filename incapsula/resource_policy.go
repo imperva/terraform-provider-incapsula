@@ -3,11 +3,10 @@ package incapsula
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
 	"strings"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourcePolicy() *schema.Resource {
@@ -70,6 +69,15 @@ func resourcePolicy() *schema.Resource {
 	}
 }
 
+func getCurrentAccountId(d *schema.ResourceData, accountStatus *AccountStatusResponse) *int {
+	caid := d.Get("account_id").(int)
+	if accountStatus.AccountType == "Sub Account" {
+		//in case of sub account we do not want to send the caid since the policy owner is the sub account's parent
+		return nil
+	}
+	return &caid
+}
+
 func resourcePolicyCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
@@ -104,7 +112,10 @@ func resourcePolicyRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	policyID := d.Id()
-	policyGetResponse, err := client.GetPolicy(policyID)
+
+	currentAccountId := getCurrentAccountId(d, client.accountStatus)
+
+	policyGetResponse, err := client.GetPolicy(policyID, currentAccountId)
 
 	if err != nil {
 		log.Printf("[ERROR] Could not get Incapsula policy: %s - %s\n", policyID, err)
@@ -141,7 +152,8 @@ func resourcePolicyUpdate(d *schema.ResourceData, m interface{}) error {
 	var policySettings []PolicySetting
 	err = json.Unmarshal([]byte(policySettingsString), &policySettings)
 
-	policyGetResponse, err := client.GetPolicy(d.Id())
+	currentAccountId := getCurrentAccountId(d, client.accountStatus)
+	policyGetResponse, err := client.GetPolicy(d.Id(), currentAccountId)
 	if err != nil {
 		log.Printf("[ERROR] Could not get Incapsula policy: %d - %s\n", id, err)
 		if strings.Contains(err.Error(), "404") {
@@ -162,7 +174,7 @@ func resourcePolicyUpdate(d *schema.ResourceData, m interface{}) error {
 		PolicySettings:      policySettings,
 	}
 
-	_, err = client.UpdatePolicy(id, &policySubmitted)
+	_, err = client.UpdatePolicy(id, &policySubmitted, currentAccountId)
 
 	if err != nil {
 		log.Printf("[ERROR] Could not update Incapsula policy: %s - %s\n", policySubmitted.Name, err)
@@ -174,7 +186,8 @@ func resourcePolicyUpdate(d *schema.ResourceData, m interface{}) error {
 
 func resourcePolicyDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	err := client.DeletePolicy(d.Id())
+	currentAccountId := getCurrentAccountId(d, client.accountStatus)
+	err := client.DeletePolicy(d.Id(), currentAccountId)
 
 	if err != nil {
 		return err

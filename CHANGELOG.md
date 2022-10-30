@@ -1,3 +1,16 @@
+## 3.10.0 (Oct 30, 2022)
+
+FEATURES:
+
+* **New Resource:** incapsula_account_ssl_settings
+
+Deprecations: wildcard_san_for_new_sites, naked_domain_san_for_new_www_sites and support_all_tls_versions in account resource are now deprecated, matched arguments in the account SSL settings resource should be used instead
+
+BUG FIXES:
+
+* Adding account status response to the client object. This allows to have the account context on any client request. ([#232](https://github.com/imperva/terraform-provider-incapsula/pull/232))
+* Adding account type to the account status response. ([#232](https://github.com/imperva/terraform-provider-incapsula/pull/232))
+* Adding current account to the policy actions. This allows a reseller to manage its accounts' policies ([#232](https://github.com/imperva/terraform-provider-incapsula/pull/232))
 
 ## 3.9.1 (Oct 20, 2022)
 
