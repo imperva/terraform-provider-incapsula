@@ -1,4 +1,4 @@
-_---
+---
 layout: "incapsula"
 page_title: "Incapsula: incap-account-ssl-settings"
 sidebar_current: "docs-incapsula-resource-account-ssl-settings"
