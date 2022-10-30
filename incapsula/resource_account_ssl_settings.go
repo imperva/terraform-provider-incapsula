@@ -1,6 +1,7 @@
 package incapsula
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -35,19 +36,55 @@ func resourceAccountSSLSettings() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
-			"value_for_cname_validation": {
-				Description: "The value of the CNAME records that need to create for each domain under the allowed_domains_for_cname_validation list to allow delegation.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-			},
-			"allowed_domains_for_cname_validation": {
+			"allowed_domain_for_cname_validation": {
 				Description: "The list of domains that Imperva allow to prove ownership on, on behalf of the customer.",
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Default:     nil,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
+				Set:         domainUniqueId,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeInt,
+							Description: "The domain id.",
+							Computed:    true,
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Description: "The domain name.",
+							Required:    true,
+						},
+						"status": {
+							Type:        schema.TypeString,
+							Description: "The domain status.",
+							Computed:    true,
+						},
+						"creation_date": {
+							Type:        schema.TypeInt,
+							Description: "The domain creation date.",
+							Computed:    true,
+						},
+						"status_since": {
+							Type:        schema.TypeInt,
+							Description: "The domain status since date.",
+							Computed:    true,
+						},
+						"last_status_check": {
+							Type:        schema.TypeInt,
+							Description: "The domain last status check date.",
+							Computed:    true,
+						},
+						"cname_record_host": {
+							Type:        schema.TypeString,
+							Description: "The CNAME record value to use to configure this domain for delegation.",
+							Computed:    true,
+						},
+						"cname_record_value": {
+							Type:        schema.TypeString,
+							Description: "The CNAME record host to use.",
+							Computed:    true,
+						},
+					},
 				},
 			},
 			"use_wild_card_san_instead_of_fqdn": {
@@ -101,11 +138,11 @@ func resourceAccountSSLSettingsUpdate(ctx context.Context, d *schema.ResourceDat
 		fieldVal := d.Get("allow_cname_validation").(bool)
 		delegationDto.AllowCNAMEValidation = &fieldVal
 	}
-	if d.Get("allowed_domains_for_cname_validation") != nil {
-		domains := d.Get("allowed_domains_for_cname_validation").(*schema.Set).List()
-		domainsList := make([]string, len(domains))
+	if d.Get("allowed_domain_for_cname_validation") != nil {
+		domains := d.Get("allowed_domain_for_cname_validation").(*schema.Set).List()
+		domainsList := make([]AllowDomainForCnameValidation, len(domains))
 		for i, k := range domains {
-			domainsList[i] = k.(string)
+			updateDomainList(domainsList, i, k, accountID)
 		}
 		delegationDto.AllowedDomainsForCNAMEValidation = domainsList
 	}
@@ -145,6 +182,23 @@ func resourceAccountSSLSettingsUpdate(ctx context.Context, d *schema.ResourceDat
 	return diags
 }
 
+func updateDomainList(domainList []AllowDomainForCnameValidation, counter int, k interface{}, accountID string) diag.Diagnostics {
+	al := k.(map[string]interface{})
+	allowDomainForCnameValidation := AllowDomainForCnameValidation{}
+	if attr, ok := al["name"]; ok && attr != "" {
+		allowDomainForCnameValidation.Name = attr.(string)
+	} else {
+		log.Printf("[ERROR] Failed to update Incapsula account SSL settings for Account ID: %s, failed to update domain name field for domain %d\n", accountID, allowDomainForCnameValidation.Id)
+		return []diag.Diagnostic{diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Failed to update account SSL settings",
+			Detail:   fmt.Sprintf("Failed to update account SSL settings for account%s, failed to update domain name field for domain %d", accountID, allowDomainForCnameValidation.Id),
+		}}
+	}
+	domainList[counter] = allowDomainForCnameValidation
+	return nil
+}
+
 func resourceAccountSSLSettingsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	var diags diag.Diagnostics
@@ -168,13 +222,35 @@ func resourceAccountSSLSettingsRead(ctx context.Context, d *schema.ResourceData,
 	if err := d.Set("add_naked_domain_san_for_www_sites", accountSSLSettingsDTO.ImpervaCertificate.AddNakedDomainSanForWWWSites); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("allowed_domains_for_cname_validation", accountSSLSettingsDTO.ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation); err != nil {
-		return diag.FromErr(err)
+	if accountSSLSettingsDTO.ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation != nil {
+		numberOfNotInheritedDomains := 0
+		for _, k := range accountSSLSettingsDTO.ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation {
+			if !k.Inherited {
+				numberOfNotInheritedDomains++
+			}
+		}
+		domainsList := make([]map[string]interface{}, numberOfNotInheritedDomains)
+		counter := 0
+		for _, k := range accountSSLSettingsDTO.ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation {
+			if !k.Inherited {
+				domain := map[string]interface{}{}
+				domain["id"] = k.Id
+				domain["name"] = k.Name
+				domain["status"] = k.Status
+				domain["creation_date"] = k.CreationDate
+				domain["status_since"] = k.StatusSince
+				domain["last_status_check"] = k.LastStatusCheck
+				domain["cname_record_value"] = k.CnameRecordValue
+				domain["cname_record_host"] = k.CnameRecordHost
+				domainsList[counter] = domain
+				counter++
+			}
+		}
+		if err := d.Set("allowed_domain_for_cname_validation", domainsList); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	if err := d.Set("allow_cname_validation", accountSSLSettingsDTO.ImpervaCertificate.Delegation.AllowCNAMEValidation); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("value_for_cname_validation", accountSSLSettingsDTO.ImpervaCertificate.Delegation.ValueForCNAMEValidation); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := d.Set("enable_hsts_for_new_sites", accountSSLSettingsDTO.EnableHSTSForNewSites); err != nil {
@@ -206,4 +282,13 @@ func resourceAccountSSLSettingsDelete(ctx context.Context, d *schema.ResourceDat
 
 	d.SetId("")
 	return diag
+}
+
+func domainUniqueId(v interface{}) int {
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+	if v, ok := m["name"]; ok {
+		buf.WriteString(fmt.Sprintf("%s-", v.(string)))
+	}
+	return PositiveHash(buf.String())
 }
