@@ -3,6 +3,7 @@
 FEATURES:
 
 * **New Resource:** incapsula_account_ssl_settings
+
 Deprecations: wildcard_san_for_new_sites, naked_domain_san_for_new_www_sites and support_all_tls_versions in account resource are now deprecated, matched arguments in the account SSL settings resource should be used instead
 
 BUG FIXES:
