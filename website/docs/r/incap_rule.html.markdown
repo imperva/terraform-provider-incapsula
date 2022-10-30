@@ -19,6 +19,7 @@ resource "incapsula_incap_rule" "example-incap-rule-alert" {
   site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_ALERT"
   filter = "Full-URL == \"/someurl\""
+  enabled = true
 }
 
 # Incap Rule: Require javascript support
@@ -27,6 +28,7 @@ resource "incapsula_incap_rule" "example-incap-rule-require-js-support" {
   site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_INTRUSIVE_HTML"
   filter = "Full-URL == \"/someurl\""
+  enabled = true  
 }
 
 # Incap Rule: Block IP
@@ -35,6 +37,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-ip" {
   site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_BLOCK_IP"
   filter = "Full-URL == \"/someurl\""
+  enabled = true  
 }
 
 # Incap Rule: Block Request
@@ -43,6 +46,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-request" {
   site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_BLOCK"
   filter = "Full-URL == \"/someurl\""
+  enabled = true
 }
 
 # Incap Rule: Block Session
@@ -51,6 +55,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-session" {
   site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_BLOCK_USER"
   filter = "Full-URL == \"/someurl\""
+  enabled = true
 }
 
 # Incap Rule: Delete Cookie (ADR)
@@ -60,6 +65,7 @@ resource "incapsula_incap_rule" "example-incap-rule-delete-cookie" {
   action = "RULE_ACTION_DELETE_COOKIE"
   filter = "Full-URL == \"/someurl\""
   rewrite_name = "my_test_header"
+  enabled = true
 }
 
 # Incap Rule: Delete Header (ADR)
@@ -69,6 +75,7 @@ resource "incapsula_incap_rule" "example-incap-rule-delete-header" {
   action = "RULE_ACTION_DELETE_HEADER"
   filter = "Full-URL == \"/someurl\""
   rewrite_name = "my_test_header"
+  enabled = true
 }
 
 # Incap Rule: Forward to Data Center (ADR)
@@ -79,6 +86,7 @@ resource "incapsula_incap_rule" "example-incap-rule-fwd-to-data-center" {
   action = "RULE_ACTION_FORWARD_TO_DC"
   filter = "Full-URL == \"/someurl\""
   dc_id = data.incapsula_data_center.example_content_dc.id
+  enabled = true  
 }
 
 # Incap Rule: Redirect (ADR)
@@ -90,6 +98,7 @@ resource "incapsula_incap_rule" "example-incap-rule-redirect" {
   response_code = "302"
   from = "https://site1.com/url1"
   to = "https://site2.com/url2"
+  enabled = true
 }
 
 # Incap Rule: Require Cookie Support (IncapRule)
@@ -98,6 +107,7 @@ resource "incapsula_incap_rule" "example-incap-rule-require-cookie-support" {
   site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_RETRY"
   filter = "Full-URL == \"/someurl\""
+  enabled = true
 }
 
 # Incap Rule: Rewrite Cookie (ADR)
@@ -110,6 +120,7 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-cookie" {
   from = "some_optional_value"
   to = "some_new_value"
   rewrite_name = "my_cookie_name"
+  enabled = true  
 }
 
 # Incap Rule: Rewrite Header (ADR)
@@ -122,6 +133,7 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-header" {
   from = "some_optional_value"
   to = "some_new_value"
   rewrite_name = "my_test_header"
+  enabled = true  
 }
 
 # Incap Rule: Rewrite URL (ADR)
@@ -132,6 +144,7 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-url" {
   filter = "Full-URL == \"/someurl\""
   from = "*"
   to = "/redirect"
+  enabled = true
 }
 ```
 
@@ -159,6 +172,7 @@ The following arguments are supported:
 * `multiple_deletions` - (Optional) Delete multiple header occurrences. Applies only to rules using `RULE_ACTION_DELETE_HEADER` and `RULE_ACTION_RESPONSE_DELETE_HEADER`.
 * `overrideWafAction` - (Optional) The response returned when the request matches the filter and is blocked. Applies only for `RULE_ACTION_CUSTOM_ERROR_RESPONSE`.
 * `overrideWafRule` - (Optional) The action for the override rule. Possible values: Alert Only, Block Request, Block User, Block IP, Ignore.
+* `enabled` - (Optional) Boolean that enables the rule. Possible values: true, false. Default value is true.
 
 ## Attributes Reference
 

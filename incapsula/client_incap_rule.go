@@ -29,6 +29,7 @@ type IncapRule struct {
 	MultipleDeletions     bool   `json:"multiple_deletions,omitempty"`
 	OverrideWafRule       string `json:"overrideWafRule,omitempty"`
 	OverrideWafAction     string `json:"overrideWafAction,omitempty"`
+	Enabled               bool   `json:"enabled"`
 }
 
 // IncapRuleWithID contains the IncapRule as well as the rule identifier
