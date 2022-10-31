@@ -1,4 +1,4 @@
-_---
+---
 layout: "incapsula"
 page_title: "Incapsula: incap-account-ssl-settings"
 sidebar_current: "docs-incapsula-resource-account-ssl-settings"
@@ -9,7 +9,7 @@ description: |- Provides an Incapsula Account SSL Settings resource.
 
 Provides an Incapsula Account SSL Settings resource.
 
-The SSL settings are currently in rollout. Running these APIs from an account in which it is not yet enabled will result in the following error response:
+The SSL settings are currently in rollout. Running this Terraform resource from an account in which it is not yet enabled will result in the following error response:
 status: 403 message: The feature is not yet enabled in this account.
 To enable this feature for your account now, contact Support.
 

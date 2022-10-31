@@ -1,3 +1,10 @@
+## 3.10.1 (Oct 31, 2022)
+
+BUG FIXES:
+
+* Fix account ssl settings resource documentation ([#238](https://github.com/imperva/terraform-provider-incapsula/pull/238))
+
+
 ## 3.10.0 (Oct 30, 2022)
 
 FEATURES:
