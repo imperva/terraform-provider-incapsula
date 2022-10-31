@@ -68,7 +68,7 @@ func resourceAccountPolicyAssociationUpdate(d *schema.ResourceData, m interface{
 		}
 
 		//to update WAF policy
-		policyGetResponse, err := client.GetPolicy(wafPolicyIDStr, &accountID)
+		policyGetResponse, err := client.GetPolicy(wafPolicyIDStr, nil)
 		if err != nil {
 			log.Printf("[ERROR] Could not get Incapsula policy: %s - %s\n", wafPolicyIDStr, err)
 			return err
@@ -110,7 +110,7 @@ func resourceAccountPolicyAssociationDelete(d *schema.ResourceData, m interface{
 	nonMandatoryPolicyIdList := (d.Get("default_non_mandatory_policy_ids").(*schema.Set).List())
 	for _, policy := range nonMandatoryPolicyIdList {
 		policyIdStr := fmt.Sprint(policy)
-		policyGetResponse, err := client.GetPolicy(policyIdStr, &accountID)
+		policyGetResponse, err := client.GetPolicy(policyIdStr, nil)
 		if err != nil {
 			log.Printf("[ERROR] Could not get Incapsula policy: %s - %s\n", policyIdStr, err)
 			return err
@@ -228,7 +228,7 @@ func removePolicy(policy Policy, accountId int, client Client) error {
 			updatedDefaultPolicyConfigList = append(updatedDefaultPolicyConfigList, defaultPolicyConfig)
 		}
 	}
-	return upsertPolicy(policy, updatedDefaultPolicyConfigList, client, accountId)
+	return upsertPolicy(policy, updatedDefaultPolicyConfigList, client)
 }
 
 func updatePolicy(policy Policy, accountId int, client Client) error {
@@ -244,10 +244,10 @@ func updatePolicy(policy Policy, accountId int, client Client) error {
 
 	newDefaultConfig := DefaultPolicyConfig{AccountID: accountId, AssetType: WEBSITE}
 	updatedDefaultPolicyConfigList := append(policy.DefaultPolicyConfig, newDefaultConfig)
-	return upsertPolicy(policy, updatedDefaultPolicyConfigList, client, accountId)
+	return upsertPolicy(policy, updatedDefaultPolicyConfigList, client)
 }
 
-func upsertPolicy(policy Policy, updatedDefaultPolicyConfigList []DefaultPolicyConfig, client Client, accountId int) error {
+func upsertPolicy(policy Policy, updatedDefaultPolicyConfigList []DefaultPolicyConfig, client Client) error {
 	policyUpserted := PolicySubmitted{
 		Name:                policy.Name,
 		Description:         policy.Description,
@@ -257,7 +257,7 @@ func upsertPolicy(policy Policy, updatedDefaultPolicyConfigList []DefaultPolicyC
 		PolicySettings:      policy.PolicySettings,
 		DefaultPolicyConfig: updatedDefaultPolicyConfigList,
 	}
-	_, err := client.UpdatePolicy(policy.ID, &policyUpserted, &accountId)
+	_, err := client.UpdatePolicy(policy.ID, &policyUpserted, nil)
 
 	if err != nil {
 		log.Printf("[ERROR] Could not update Incapsula policy: %s - %s\n", policyUpserted.Name, err)
