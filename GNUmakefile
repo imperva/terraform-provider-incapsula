@@ -6,7 +6,7 @@ NAMESPACE=terraform-providers
 PKG_NAME=incapsula
 BINARY=terraform-provider-${PKG_NAME}
 # Whenever bumping provider version, please update the version in incapsula/client.go (line 27) as well.
-VERSION=3.10.0
+VERSION=3.10.1
 
 # Mac Intel Chip
 OS_ARCH=darwin_amd64
