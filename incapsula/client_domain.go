@@ -35,11 +35,12 @@ type SiteDomainDetails struct {
 	CreationDate         int64  `json:"creationDate"`
 }
 
-type SiteDomainDetailsResponse struct {
-	Data []SiteDomainDetails `json:"data"`
+type SiteDomainDetailsDTO struct {
+	Errors []ApiError          `json:"errors"`
+	Data   []SiteDomainDetails `json:"data"`
 }
 
-func (c *Client) GetWebsiteDomains(siteID string) (*SiteDomainDetailsResponse, error) {
+func (c *Client) GetWebsiteDomains(siteID string) (*SiteDomainDetailsDTO, error) {
 	log.Printf("[INFO] list domains for given website")
 	reqURL := fmt.Sprintf("%s%s%s%s", c.config.BaseURLAPI, endpointDomainManagement, siteID, "/domains")
 	if siteID != "" {
@@ -61,7 +62,7 @@ func (c *Client) GetWebsiteDomains(siteID string) (*SiteDomainDetailsResponse, e
 	}
 
 	// Dump JSON
-	var siteDomainDetailsResponse SiteDomainDetailsResponse
+	var siteDomainDetailsResponse SiteDomainDetailsDTO
 	err = json.Unmarshal([]byte(responseBody), &siteDomainDetailsResponse)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error parsing get domain details JSON response for site ID %s: %s\nresponse: %s", siteID, err, string(responseBody))
@@ -103,27 +104,56 @@ func (c *Client) GetDomainDetails(siteID string, domainID string) (*SiteDomainDe
 	} else {
 		return &siteDomainDetails, nil
 	}
-	//if len(siteDomainDetailsResponse.Data) > 0 {
-	//	return &siteDomainDetailsResponse.Data[0], nil
-	//} else {
-	//	return nil, fmt.Errorf("Results for site ID %s not found 1", siteID)
-	//}
 }
 
-func (c *Client) AddDomainToSite(siteID string, domain string) (*SiteDomainDetails, error) {
+func (c *Client) BulkUpdateDomainsToSite(siteID string, siteDomainDetails []SiteDomainDetails) (*SiteDomainDetailsDTO, error) {
+	domainSlice := make([]string, len(siteDomainDetails))
+	var i = 0
+	for _, siteDomainDetailsItem := range siteDomainDetails {
+		domainSlice[i] = siteDomainDetailsItem.Domain
+		i++
+	}
+	json, err := json.Marshal(domainSlice)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to JSON marshal domainSlice: %s ", err)
+	}
+	reqURL := fmt.Sprintf("%s%s%s%s", c.config.BaseURLAPI, endpointDomainManagement, siteID, "/domains")
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, json, UpdateDomain)
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when adding bulk domains %s: %s", siteID, err)
+	}
+
+	defer resp.Body.Close()
+	responseBody, err := ioutil.ReadAll(resp.Body)
+	log.Printf("[DEBUG] Incapsula add domain management JSON response: %s\n", string(responseBody))
+
+	// Check the response code
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("[ERROR] Error status code %d from Incapsula bulk add domains to site %s\n: %s\n%s", resp.StatusCode, siteID, err, string(responseBody))
+	}
+
+	// Dump JSON
+	var siteDomainDto SiteDomainDetailsDTO
+	//err = json.Unmarshal([]byte(responseBody), &siteDomainDto)
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error parsing add domain to site JSON response for site ID %s: %s\nresponse: %s", siteID, err, string(responseBody))
+	}
+	return &siteDomainDto, nil
+}
+
+func (c *Client) AddDomainToSite(siteID string, domain string) (*SiteDomainDetailsDTO, error) {
+	//todo - this method should return
 	log.Printf("[INFO] Adding domain management")
 	reqURL := fmt.Sprintf("%s%s%s%s", c.config.BaseURLAPI, endpointDomainManagement, siteID, "/domains")
 	bodyMap := map[string]interface{}{}
 	bodyMap["domain"] = domain
 	bodyMap["strictMode"] = true //strictMode must be true for TF.
 
-	//bodyNew, contentTypeNew := c.CreateFormDataBody(bodyMap)
-
-	AddSiteDomainDetails, err := json.Marshal(bodyMap)
+	addSiteDomainDetails, err := json.Marshal(bodyMap)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to JSON marshal AddSiteDomainDetails: %s ", err)
 	}
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, AddSiteDomainDetails, CreateDomain)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, addSiteDomainDetails, UpdateDomain)
 
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when creating domnain management details %s: %s", siteID, err)
@@ -140,10 +170,10 @@ func (c *Client) AddDomainToSite(siteID string, domain string) (*SiteDomainDetai
 	}
 
 	// Dump JSON
-	var siteDomainDetails SiteDomainDetails
-	err = json.Unmarshal([]byte(responseBody), &siteDomainDetails)
+	var siteDomainDto SiteDomainDetailsDTO
+	err = json.Unmarshal([]byte(responseBody), &siteDomainDto)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error parsing add domain to site JSON response for site ID %s: %s\nresponse: %s", siteID, err, string(responseBody))
 	}
-	return &siteDomainDetails, nil
+	return &siteDomainDto, nil
 }
