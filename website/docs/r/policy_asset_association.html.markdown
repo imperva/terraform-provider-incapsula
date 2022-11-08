@@ -27,7 +27,7 @@ The following arguments are supported:
 * `policy_id` - (Required) The Policy ID for the asset association.
 * `asset_id` - (Required) The Asset ID for the asset association. Only type of asset supported at the moment is site.
 * `asset_type` - (Required) The Policy type for the asset association. Only value at the moment is `WEBSITE`.
-* `account_id` - (Optional) The Asset's Account ID. Set this field in case the asset's account is different from the account used in he credentials. e.g setting a sub account asset from the parent account
+* `account_id` - (Optional) The Asset's Account ID. Set this field in case the asset's account is different from the account used in the credentials. e.g setting a sub account asset association set from the parent account
 
 ## Attributes Reference
 
