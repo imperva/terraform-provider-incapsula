@@ -47,7 +47,7 @@ data "incapsula_client_apps_data" "client_apps_canceled_good_bots" {
   filter=["Googlebot","SiteUptime"]
 }
 
-data "incapsula_client_apps_data" "client_apps" {
+data "incapsula_client_apps_data" "client_apps_bad_bots" {
 }
 
 resource "incapsula_bots_configuration" "example-basic-bots-configuration" {
@@ -67,7 +67,7 @@ resource "incapsula_bots_configuration" "example-basic-bots-configuration" {
 We always can combine both usages; list and datasource in the same resource or map and list in the same block.
 
 ```hcl
-data "incapsula_client_apps_data" "client_apps" {
+data "incapsula_client_apps_data" "client_apps_bad_bots" {
 }
 
 resource "incapsula_bots_configuration" "example-basic-bots-configuration" {
