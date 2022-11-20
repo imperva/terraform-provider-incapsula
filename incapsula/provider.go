@@ -118,7 +118,7 @@ func Provider() *schema.Provider {
 			"incapsula_mtls_client_to_imperva_ca_certificate":                  resourceMtlsClientToImpervaCertificate(),
 			"incapsula_mtls_client_to_imperva_ca_certificate_site_association": resourceMtlsClientToImpervaCertificateSiteAssociation(),
 			"incapsula_mtls_client_to_imperva_ca_certificate_site_settings":    resourceMtlsClientToImpervaCertificateSetings(),
-			"incapsula_domain":                                                 resourceDomain(),
+			"incapsula_site_domains_configuration":                             resourceSiteDomainsConfiguration(),
 		},
 	}
 

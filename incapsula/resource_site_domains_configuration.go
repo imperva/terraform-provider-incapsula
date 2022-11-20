@@ -8,7 +8,7 @@ import (
 	"log"
 )
 
-func resourceDomain() *schema.Resource {
+func resourceSiteDomainsConfiguration() *schema.Resource {
 	return &schema.Resource{
 		Read:   resourceDomainRead,
 		Create: resourceDomainUpdate,
@@ -19,12 +19,12 @@ func resourceDomain() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"site_id": {
-				Description: "Numeric identifier of the account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.",
+				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
 			"domain": {
-				Description: "",
+				Description: "A set of domains.",
 				Required:    true,
 				Type:        schema.TypeSet,
 				Set:         getHashFromDomain,
@@ -32,17 +32,17 @@ func resourceDomain() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"domain_name": {
 							Type:        schema.TypeString,
-							Description: "domain",
+							Description: "Domain name",
 							Required:    true,
 						},
 						"id": {
 							Type:        schema.TypeInt,
-							Description: "domain id",
+							Description: "Domain id",
 							Computed:    true,
 						},
 						"status": {
 							Type:        schema.TypeString,
-							Description: "status",
+							Description: "Status of the domain. Indicates if domain DNS is pointed to Imperva's CNAME.",
 							Computed:    true,
 						},
 					}},
@@ -137,7 +137,7 @@ func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
 
 	domains := &schema.Set{F: getHashFromDomain}
 	for _, v := range siteDomainDetailsDto.Data {
-		if v.MainDomain == true { //we ignore the main domain
+		if v.MainDomain == true || v.AutoDiscovered == true { //we ignore the main and auto discovered domains
 			continue
 		}
 		domain := map[string]interface{}{}
