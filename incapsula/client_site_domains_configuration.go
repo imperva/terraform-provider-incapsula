@@ -40,6 +40,14 @@ type SiteDomainDetailsDTO struct {
 	Data   []SiteDomainDetails `json:"data"`
 }
 
+type BulkAddDomainsDto struct {
+	Data []DomainNameDto `json:"data"`
+}
+
+type DomainNameDto struct {
+	Name string `json:"name"`
+}
+
 func (c *Client) GetWebsiteDomains(siteID string) (*SiteDomainDetailsDTO, error) {
 	log.Printf("[INFO] list domains for given website")
 	reqURL := fmt.Sprintf("%s%s%s%s", c.config.BaseURLAPI, endpointDomainManagement, siteID, "/domains")
@@ -48,7 +56,7 @@ func (c *Client) GetWebsiteDomains(siteID string) (*SiteDomainDetailsDTO, error)
 	}
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadDomain)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when reading domnain management details %s: %s", siteID, err)
+		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when reading domain configuration details %s: %s", siteID, err)
 	}
 
 	// Read the body
@@ -83,7 +91,7 @@ func (c *Client) GetDomainDetails(siteID string, domainID string) (*SiteDomainDe
 	}
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadDomain)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when reading domnain management details %s: %s", siteID, err)
+		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when reading domain configuration details %s: %s", siteID, err)
 	}
 
 	// Read the body
@@ -107,20 +115,21 @@ func (c *Client) GetDomainDetails(siteID string, domainID string) (*SiteDomainDe
 }
 
 func (c *Client) BulkUpdateDomainsToSite(siteID string, siteDomainDetails []SiteDomainDetails) (*SiteDomainDetailsDTO, error) {
-	domainSlice := make([]string, len(siteDomainDetails))
+	domainNames := make([]DomainNameDto, len(siteDomainDetails))
 	var i = 0
 	for _, siteDomainDetailsItem := range siteDomainDetails {
-		domainSlice[i] = siteDomainDetailsItem.Domain
+		domainNames[i] = DomainNameDto{Name: siteDomainDetailsItem.Domain}
 		i++
 	}
-	json, err := json.Marshal(domainSlice)
+	addBulkDomainsDto := BulkAddDomainsDto{Data: domainNames}
+	json, err := json.Marshal(addBulkDomainsDto)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to JSON marshal domainSlice: %s ", err)
 	}
 	reqURL := fmt.Sprintf("%s%s%s%s", c.config.BaseURLAPI, endpointDomainManagement, siteID, "/domains")
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, json, UpdateDomain)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when adding bulk domains %s: %s", siteID, err)
+		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when bulk adding domains %s: %s", siteID, err)
 	}
 
 	defer resp.Body.Close()
@@ -136,7 +145,7 @@ func (c *Client) BulkUpdateDomainsToSite(siteID string, siteDomainDetails []Site
 	var siteDomainDto SiteDomainDetailsDTO
 	//err = json.Unmarshal([]byte(responseBody), &siteDomainDto)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error parsing add domain to site JSON response for site ID %s: %s\nresponse: %s", siteID, err, string(responseBody))
+		return nil, fmt.Errorf("[ERROR] Error parsing bulk add domain to site JSON response for site ID %s: %s\nresponse: %s", siteID, err, string(responseBody))
 	}
 	return &siteDomainDto, nil
 }
@@ -151,7 +160,7 @@ func (c *Client) AddDomainToSite(siteID string, domain string) (*SiteDomainDetai
 
 	addSiteDomainDetails, err := json.Marshal(bodyMap)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to JSON marshal AddSiteDomainDetails: %s ", err)
+		return nil, fmt.Errorf("Failed to JSON marshal addSiteDomainDetails: %s ", err)
 	}
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, addSiteDomainDetails, UpdateDomain)
 
