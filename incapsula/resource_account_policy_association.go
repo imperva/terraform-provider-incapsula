@@ -68,7 +68,7 @@ func resourceAccountPolicyAssociationUpdate(d *schema.ResourceData, m interface{
 		}
 
 		//to update WAF policy
-		policyGetResponse, err := client.GetPolicy(wafPolicyIDStr)
+		policyGetResponse, err := client.GetPolicy(wafPolicyIDStr, nil)
 		if err != nil {
 			log.Printf("[ERROR] Could not get Incapsula policy: %s - %s\n", wafPolicyIDStr, err)
 			return err
@@ -110,7 +110,7 @@ func resourceAccountPolicyAssociationDelete(d *schema.ResourceData, m interface{
 	nonMandatoryPolicyIdList := (d.Get("default_non_mandatory_policy_ids").(*schema.Set).List())
 	for _, policy := range nonMandatoryPolicyIdList {
 		policyIdStr := fmt.Sprint(policy)
-		policyGetResponse, err := client.GetPolicy(policyIdStr)
+		policyGetResponse, err := client.GetPolicy(policyIdStr, nil)
 		if err != nil {
 			log.Printf("[ERROR] Could not get Incapsula policy: %s - %s\n", policyIdStr, err)
 			return err
@@ -257,7 +257,7 @@ func upsertPolicy(policy Policy, updatedDefaultPolicyConfigList []DefaultPolicyC
 		PolicySettings:      policy.PolicySettings,
 		DefaultPolicyConfig: updatedDefaultPolicyConfigList,
 	}
-	_, err := client.UpdatePolicy(policy.ID, &policyUpserted)
+	_, err := client.UpdatePolicy(policy.ID, &policyUpserted, nil)
 
 	if err != nil {
 		log.Printf("[ERROR] Could not update Incapsula policy: %s - %s\n", policyUpserted.Name, err)

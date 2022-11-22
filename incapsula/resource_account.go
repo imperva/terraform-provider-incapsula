@@ -78,12 +78,14 @@ func resourceAccount() *schema.Resource {
 				Description: "Allow sites in the account to support all TLS versions for connectivity between clients (visitors) and the Imperva service.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Deprecated:  "use allow_support_old_tls_versions in account_ssl_settings resource",
 			},
 			"naked_domain_san_for_new_www_sites": {
 				Description:  "Add naked domain SAN to Incapsula SSL certificates for new www sites. Options are `true` and `false`. Defaults to `true`",
 				Type:         schema.TypeString,
 				Default:      "true",
 				Optional:     true,
+				Deprecated:   "use add_naked_domain_san_for_www_sites in account_ssl_settings resource",
 				ValidateFunc: validation.StringInSlice([]string{"true", "false"}, false),
 			},
 			"wildcard_san_for_new_sites": {
@@ -91,6 +93,7 @@ func resourceAccount() *schema.Resource {
 				Type:         schema.TypeString,
 				Default:      "Default",
 				Optional:     true,
+				Deprecated:   "use use_wild_card_san_instead_of_fqdn in account_ssl_settings resource",
 				ValidateFunc: validation.StringInSlice([]string{"True", "False", "Default"}, true),
 			},
 			"data_storage_region": {
