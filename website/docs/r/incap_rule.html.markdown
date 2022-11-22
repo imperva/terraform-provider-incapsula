@@ -107,6 +107,7 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-cookie" {
   action = "RULE_ACTION_REWRITE_COOKIE"
   filter = "Full-URL == \"/someurl\""
   add_missing = "true"
+  rewrite_existing = "true"
   from = "some_optional_value"
   to = "some_new_value"
   rewrite_name = "my_cookie_name"
@@ -119,6 +120,7 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-header" {
   action = "RULE_ACTION_REWRITE_HEADER"
   filter = "Full-URL == \"/someurl\""
   add_missing = "true"
+  rewrite_existing = "true"
   from = "some_optional_value"
   to = "some_new_value"
   rewrite_name = "my_test_header"
@@ -145,6 +147,7 @@ The following arguments are supported:
 * `filter` - (Required) The filter defines the conditions that trigger the rule action. For action `RULE_ACTION_SIMPLIFIED_REDIRECT` filter is not relevant. For other actions, if left empty, the rule is always run.
 * `response_code` - (Optional) For `RULE_ACTION_REDIRECT` or `RULE_ACTION_SIMPLIFIED_REDIRECT` rule's response code, valid values are `302`, `301`, `303`, `307`, `308`. For `RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE` rule's response code, valid values are all 3-digits numbers. For `RULE_ACTION_CUSTOM_ERROR_RESPONSE`, valid values are `400`, `401`, `402`, `403`, `404`, `405`, `406`, `407`, `408`, `409`, `410`, `411`, `412`, `413`, `414`, `415`, `416`, `417`, `419`, `420`, `422`, `423`, `424`, `500`, `501`, `502`, `503`, `504`, `505`, `507`.
 * `add_missing` - (Optional) Add cookie or header if it doesn't exist (Rewrite cookie rule only).
+* `rewrite_existing` - (Optional) Rewrite cookie or header if it exists.
 * `from` - (Optional) Pattern to rewrite. For `RULE_ACTION_REWRITE_URL` - Url to rewrite. For `RULE_ACTION_REWRITE_HEADER` and `RULE_ACTION_RESPONSE_REWRITE_HEADER` - Header value to rewrite. For `RULE_ACTION_REWRITE_COOKIE` - Cookie value to rewrite.
 * `to` - (Optional) Pattern to change to. `RULE_ACTION_REWRITE_URL` - Url to change to. `RULE_ACTION_REWRITE_HEADER` and `RULE_ACTION_RESPONSE_REWRITE_HEADER` - Header value to change to. `RULE_ACTION_REWRITE_COOKIE` - Cookie value to change to.
 * `rewrite_name` - (Optional) Name of cookie or header to rewrite. Applies only for `RULE_ACTION_REWRITE_COOKIE`, `RULE_ACTION_REWRITE_HEADER` and `RULE_ACTION_RESPONSE_REWRITE_HEADER`.

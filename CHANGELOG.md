@@ -1,3 +1,16 @@
+## 3.10.3 (Nov 20, 2022)
+
+BUG FIXES:
+
+* adding current account id support to incapsula_policy_asset_association ([#243](https://github.com/imperva/terraform-provider-incapsula/pull/243))
+
+
+## 3.10.2 (Oct 31, 2022)
+
+BUG FIXES:
+
+* policy resource fails to read when account_id param is not provided ([#240](https://github.com/imperva/terraform-provider-incapsula/pull/240))
+
 ## 3.10.1 (Oct 31, 2022)
 
 BUG FIXES:
