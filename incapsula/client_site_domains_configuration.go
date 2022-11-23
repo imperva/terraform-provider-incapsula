@@ -52,7 +52,7 @@ func (c *Client) GetWebsiteDomains(siteID string) (*SiteDomainDetailsDTO, error)
 	log.Printf("[INFO] list domains for given website")
 	reqURL := fmt.Sprintf("%s%s%s%s", c.config.BaseURLAPI, endpointDomainManagement, siteID, "/domains")
 	if siteID != "" {
-		//todo - print error
+		fmt.Errorf("[ERROR] site ID was not provided")
 	}
 	var params = map[string]string{}
 	params["pageSize"] = "-1"
@@ -90,7 +90,7 @@ func (c *Client) GetDomainDetails(siteID string, domainID string) (*SiteDomainDe
 	log.Printf("[INFO] get domain details")
 	reqURL := fmt.Sprintf("%s%s%s%s%s", c.config.BaseURLAPI, endpointDomainManagement, siteID, "/domains/", domainID)
 	if siteID != "" {
-		//todo - print error
+		fmt.Errorf("[ERROR] site ID was not provided")
 	}
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadDomain)
 	if err != nil {
@@ -154,7 +154,6 @@ func (c *Client) BulkUpdateDomainsToSite(siteID string, siteDomainDetails []Site
 }
 
 func (c *Client) AddDomainToSite(siteID string, domain string) (*SiteDomainDetailsDTO, error) {
-	//todo - this method should return
 	log.Printf("[INFO] Adding domain management")
 	reqURL := fmt.Sprintf("%s%s%s%s", c.config.BaseURLAPI, endpointDomainManagement, siteID, "/domains")
 	bodyMap := map[string]interface{}{}
