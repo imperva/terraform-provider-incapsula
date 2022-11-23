@@ -54,7 +54,10 @@ func (c *Client) GetWebsiteDomains(siteID string) (*SiteDomainDetailsDTO, error)
 	if siteID != "" {
 		//todo - print error
 	}
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadDomain)
+	var params = map[string]string{}
+	params["pageSize"] = "-1"
+	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, reqURL, nil, params, ReadDomain)
+	//resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadDomain)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when reading domain configuration details %s: %s", siteID, err)
 	}
@@ -122,12 +125,12 @@ func (c *Client) BulkUpdateDomainsToSite(siteID string, siteDomainDetails []Site
 		i++
 	}
 	addBulkDomainsDto := BulkAddDomainsDto{Data: domainNames}
-	json, err := json.Marshal(addBulkDomainsDto)
+	jsonResp, err := json.Marshal(addBulkDomainsDto)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to JSON marshal domainSlice: %s ", err)
 	}
 	reqURL := fmt.Sprintf("%s%s%s%s", c.config.BaseURLAPI, endpointDomainManagement, siteID, "/domains")
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, json, UpdateDomain)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, jsonResp, UpdateDomain)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when bulk adding domains %s: %s", siteID, err)
 	}
@@ -143,7 +146,7 @@ func (c *Client) BulkUpdateDomainsToSite(siteID string, siteDomainDetails []Site
 
 	// Dump JSON
 	var siteDomainDto SiteDomainDetailsDTO
-	//err = json.Unmarshal([]byte(responseBody), &siteDomainDto)
+	err = json.Unmarshal([]byte(responseBody), &siteDomainDto)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error parsing bulk add domain to site JSON response for site ID %s: %s\nresponse: %s", siteID, err, string(responseBody))
 	}
