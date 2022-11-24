@@ -124,18 +124,32 @@ func (c *Client) BulkUpdateDomainsToSite(siteID string, siteDomainDetails []Site
 		domainNames[i] = DomainNameDto{Name: siteDomainDetailsItem.Domain}
 		i++
 	}
-	addBulkDomainsDto := BulkAddDomainsDto{Data: domainNames}
-	jsonResp, err := json.Marshal(addBulkDomainsDto)
+	addBulkDomainsDtoA := BulkAddDomainsDto{Data: domainNames}
+	addBulkDomainsDtoB := BulkAddDomainsDto{}
+	var splitThreshold = 500
+	if len(addBulkDomainsDtoA.Data) > splitThreshold {
+		//du to BE 1 min connection limitation need to split into 2 requests
+		//todo -  run in a single request, after optimizing the BE
+		addBulkDomainsDtoB = BulkAddDomainsDto{Data: addBulkDomainsDtoA.Data[splitThreshold:len(addBulkDomainsDtoA.Data)]}
+		handleAddBulkRequest(c, addBulkDomainsDtoB, siteID)
+	}
+	return handleAddBulkRequest(c, addBulkDomainsDtoA, siteID)
+}
+
+func handleAddBulkRequest(c *Client, bulkAddDomainsDto BulkAddDomainsDto, siteID string) (*SiteDomainDetailsDTO, error) {
+	reqURL := fmt.Sprintf("%s%s%s%s", c.config.BaseURLAPI, endpointDomainManagement, siteID, "/domains")
+
+	body, err := json.Marshal(bulkAddDomainsDto)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to JSON marshal domainSlice: %s ", err)
 	}
-	reqURL := fmt.Sprintf("%s%s%s%s", c.config.BaseURLAPI, endpointDomainManagement, siteID, "/domains")
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, jsonResp, UpdateDomain)
+
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, body, UpdateDomain)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when bulk adding domains %s: %s", siteID, err)
 	}
-
 	defer resp.Body.Close()
+
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	log.Printf("[DEBUG] Incapsula add domain management JSON response: %s\n", string(responseBody))
 

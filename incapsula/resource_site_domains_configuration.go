@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
+	"time"
 )
 
 func resourceSiteDomainsConfiguration() *schema.Resource {
@@ -47,6 +48,10 @@ func resourceSiteDomainsConfiguration() *schema.Resource {
 						},
 					}},
 			},
+		},
+		Timeouts: &schema.ResourceTimeout{
+			Update: schema.DefaultTimeout(2 * time.Minute),
+			Read:   schema.DefaultTimeout(2 * time.Minute),
 		},
 	}
 }
