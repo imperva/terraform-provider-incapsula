@@ -613,26 +613,28 @@ resource "incapsula_incap_rule" "example-incap-rule-require-cookie-support" {
 
 # Incap Rule: Rewrite Cookie (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-rewrite-cookie" {
-  name         = "Example incap rule rewrite cookie"
-  site_id      = incapsula_site.example-site.id
-  action       = "RULE_ACTION_REWRITE_COOKIE"
-  filter       = "Full-URL == \"/someurl\""
-  add_missing  = "true"
-  from         = "some_optional_value"
-  to           = "some_new_value"
-  rewrite_name = "my_cookie_name"
+  name              = "Example incap rule rewrite cookie"
+  site_id           = incapsula_site.example-site.id
+  action            = "RULE_ACTION_REWRITE_COOKIE"
+  filter            = "Full-URL == \"/someurl\""
+  add_missing       = "true"
+  rewrite_existing  = "true"
+  from              = "some_optional_value"
+  to                = "some_new_value"
+  rewrite_name      = "my_cookie_name"
 }
 
 # Incap Rule: Rewrite Header (ADR)
 resource "incapsula_incap_rule" "example-incap-rule-rewrite-header" {
-  name         = "Example incap rule rewrite header"
-  site_id      = incapsula_site.example-site.id
-  action       = "RULE_ACTION_REWRITE_HEADER"
-  filter       = "Full-URL == \"/someurl\""
-  add_missing  = "true"
-  from         = "some_optional_value"
-  to           = "some_new_value"
-  rewrite_name = "my_test_header"
+  name             = "Example incap rule rewrite header"
+  site_id          = incapsula_site.example-site.id
+  action           = "RULE_ACTION_REWRITE_HEADER"
+  filter           = "Full-URL == \"/someurl\""
+  add_missing      = "true"
+  rewrite_existing = "true"
+  from             = "some_optional_value"
+  to               = "some_new_value"
+  rewrite_name     = "my_test_header"
 }
 
 # Incap Rule: Rewrite URL (ADR)

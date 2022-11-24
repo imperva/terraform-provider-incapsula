@@ -15,6 +15,7 @@ type IncapRule struct {
 	Filter                string `json:"filter,omitempty"`
 	ResponseCode          int    `json:"response_code,omitempty"`
 	AddMissing            bool   `json:"add_missing,omitempty"`
+	rewriteExisting       bool   `json:"rewrite_existing,omitempty"`
 	From                  string `json:"from,omitempty"`
 	To                    string `json:"to,omitempty"`
 	RewriteName           string `json:"rewrite_name,omitempty"`

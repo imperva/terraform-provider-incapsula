@@ -65,6 +65,11 @@ func resourceIncapRule() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
+			"rewrite_existing": {
+				Description: "Rewrite cookie or header if it exists.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+			},
 			"from": {
 				Description: "Pattern to rewrite. For `RULE_ACTION_REWRITE_URL` - Url to rewrite. For `RULE_ACTION_REWRITE_HEADER` and `RULE_ACTION_RESPONSE_REWRITE_HEADER` - Header value to rewrite. For `RULE_ACTION_REWRITE_COOKIE` - Cookie value to rewrite.",
 				Type:        schema.TypeString,
@@ -149,6 +154,7 @@ func resourceIncapRuleCreate(d *schema.ResourceData, m interface{}) error {
 		Filter:                d.Get("filter").(string),
 		ResponseCode:          d.Get("response_code").(int),
 		AddMissing:            d.Get("add_missing").(bool),
+		rewriteExisting:       d.Get("rewrite_existing").(bool),
 		From:                  d.Get("from").(string),
 		To:                    d.Get("to").(string),
 		RewriteName:           d.Get("rewrite_name").(string),
@@ -203,6 +209,7 @@ func resourceIncapRuleRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("filter", rule.Filter)
 	d.Set("response_code", rule.ResponseCode)
 	d.Set("add_missing", rule.AddMissing)
+	d.Set("rewrite_existing", rule.rewriteExisting)
 	d.Set("from", rule.From)
 	d.Set("to", rule.To)
 	d.Set("rewrite_name", rule.RewriteName)
@@ -230,6 +237,7 @@ func resourceIncapRuleUpdate(d *schema.ResourceData, m interface{}) error {
 		Filter:                d.Get("filter").(string),
 		ResponseCode:          d.Get("response_code").(int),
 		AddMissing:            d.Get("add_missing").(bool),
+		rewriteExisting:       d.Get("rewrite_existing").(bool),
 		From:                  d.Get("from").(string),
 		To:                    d.Get("to").(string),
 		RewriteName:           d.Get("rewrite_name").(string),
