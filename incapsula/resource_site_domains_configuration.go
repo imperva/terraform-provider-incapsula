@@ -87,6 +87,7 @@ func resourceDomainUpdate(d *schema.ResourceData, m interface{}) error {
 	siteDomainDetails := populateFromResourceToDTO(d)
 	siteDomainDetailsDto, err := client.BulkUpdateDomainsToSite(siteID, siteDomainDetails)
 	if err != nil {
+		resourceDomainRead(d, m)
 		return err
 	}
 
