@@ -2,18 +2,15 @@
 layout: "incapsula"
 page_title: "Incapsula: site-domains-configuration"
 sidebar_current: "docs-incapsula-resource-site-domains-configuration"
-description: |-
+description:
   Provides an Incapsula Site Domain Configuration resource.
 ---
 
 # incapsula_site_domain_configuration
 
 Provides an Incapsula Site Domain Configuration resource.
-<br />
 The provider will add/delete domains to/from an Imperva site, based on the resource.
-<br />
 Note: The provider is using a single update request, hence domains that exists on the account, but are missing from the TF file will be deleted.
-<br />
 Also, The provider ignores Auto-Discovered domains, hence it will not delete such domains, and it will not manage them on the TF state.
 
 
