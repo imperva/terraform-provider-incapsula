@@ -38,6 +38,8 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `domain` - a list of added domains.
+* `site_id` - the id of the site.
+* `validation_code` - CNAME validation code for traffic redirection.
 
 For Each domain the following data will be stored:
   * `id` - the id of the domain.
