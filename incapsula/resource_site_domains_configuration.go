@@ -24,6 +24,11 @@ func resourceSiteDomainsConfiguration() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"validation_code": {
+				Description: "Cname validation code for traffic redirection",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"domain": {
 				Description: "A set of domains.",
 				Required:    true,
@@ -154,6 +159,7 @@ func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
 	}
 	d.SetId(d.Get("site_id").(string))
 	d.Set("site_id", d.Get("site_id"))
+	d.Set("validation_code", siteDomainDetailsDto.Data[0].ValidationCode)
 	d.Set("domain", domains)
 	return nil
 }
