@@ -11,8 +11,6 @@ description:
 Provides an Incapsula Site Domains Configuration resource.
 The provider will add/delete domains to/from an Imperva site, based on the resource.
 Note: The provider is using a single update request, hence domains that exists on the account, but are missing from the TF file will be deleted.
-Also, The provider ignores Auto-Discovered domains, hence it will not delete such domains, and it will not manage them on the TF state.
-
 
 ## Example Usage
 
@@ -49,3 +47,14 @@ For Each domain the following data will be stored:
 ## Import
 
 Site Domains Configurations cannot be imported.
+
+## Limitations
+### Auto-discovered domains: 
+The provider ignores Auto-Discovered domains, hence it will not delete such domains, and it will not manage them on the TF state.
+
+### Maximum domains per Imperva site: 
+as per the official Website Domain Management, the amount of domains permitted to each website is up to 1,000.
+Please note: this includes auto-discovered domains. 
+
+The official docs for Website Domain Management API can be found here: https://docs.imperva.com/bundle/cloud-application-security/page/website-domain-api-definition.htm
+
