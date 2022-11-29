@@ -118,6 +118,13 @@ func (c *Client) GetDomainDetails(siteID string, domainID string) (*SiteDomainDe
 }
 
 func (c *Client) BulkUpdateDomainsToSite(siteID string, siteDomainDetails []SiteDomainDetails) (*SiteDomainDetailsDTO, error) {
+	var domainAmountLimit = 1000
+	var splitThreshold = 500
+
+	if len(siteDomainDetails) >= domainAmountLimit {
+		return nil, fmt.Errorf("amount of domains is above the limit ")
+	}
+
 	domainNames := make([]DomainNameDto, len(siteDomainDetails))
 	var i = 0
 	for _, siteDomainDetailsItem := range siteDomainDetails {
@@ -126,9 +133,8 @@ func (c *Client) BulkUpdateDomainsToSite(siteID string, siteDomainDetails []Site
 	}
 	addBulkDomainsDtoA := BulkAddDomainsDto{Data: domainNames}
 	addBulkDomainsDtoB := BulkAddDomainsDto{}
-	var splitThreshold = 500
 	if len(addBulkDomainsDtoA.Data) > splitThreshold {
-		//du to BE 1 min connection limitation need to split into 2 requests
+		//due to BE 1 min connection limitation need to split into 2 requests
 		//todo -  run in a single request, after optimizing the BE
 		addBulkDomainsDtoB = BulkAddDomainsDto{Data: addBulkDomainsDtoA.Data[splitThreshold:len(addBulkDomainsDtoA.Data)]}
 		handleAddBulkRequest(c, addBulkDomainsDtoB, siteID)
