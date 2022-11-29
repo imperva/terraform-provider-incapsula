@@ -145,3 +145,4 @@ const ReadSiteTlsSettings = "read_site_tls_settings"
 
 const UpdateDomain = "update_domain"
 const ReadDomain = "read_domain"
+const ReadDomainExtraDetails = "read_domain_extra_details"
