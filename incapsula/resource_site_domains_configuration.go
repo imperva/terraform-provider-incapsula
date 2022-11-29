@@ -55,8 +55,8 @@ func resourceSiteDomainsConfiguration() *schema.Resource {
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Update: schema.DefaultTimeout(2 * time.Minute),
-			Read:   schema.DefaultTimeout(2 * time.Minute),
+			Update: schema.DefaultTimeout(3 * time.Minute),
+			Read:   schema.DefaultTimeout(3 * time.Minute),
 		},
 	}
 }
