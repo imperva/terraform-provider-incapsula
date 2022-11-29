@@ -10,6 +10,15 @@ import (
 
 const endpointDomainManagement = "/site-domain-manager/v2/sites/"
 
+type SiteDomainsExtraDetailsDto struct {
+	NumberOfAutoDiscoveredDomains int `json:"numberOfAutoDiscoveredDomains"`
+	MaxAllowedDomains             int `json:"maxAllowedDomains"`
+}
+
+type SiteDomainsExtraDetailsResponse struct {
+	Data []SiteDomainsExtraDetailsDto `json:"data"`
+}
+
 type AddSiteDomainDetails struct {
 	Domain     string `json:"domain"`
 	StrictMode bool   `json:"strictMode"`
@@ -118,11 +127,18 @@ func (c *Client) GetDomainDetails(siteID string, domainID string) (*SiteDomainDe
 }
 
 func (c *Client) BulkUpdateDomainsToSite(siteID string, siteDomainDetails []SiteDomainDetails) (*SiteDomainDetailsDTO, error) {
-	var domainAmountLimit = 1000
-	var splitThreshold = 500
+	siteExtraDetails, err := GetSiteExtraDetails(c, siteID)
+	if err != nil {
+		return nil, fmt.Errorf("error %s", err)
+	}
 
-	if len(siteDomainDetails) >= domainAmountLimit {
-		return nil, fmt.Errorf("amount of domains is above the limit ")
+	var domainsAmountLimit = siteExtraDetails.MaxAllowedDomains
+	var autoDiscoveredAmount = siteExtraDetails.NumberOfAutoDiscoveredDomains
+
+	if (len(siteDomainDetails) + autoDiscoveredAmount) >= domainsAmountLimit {
+		log.Printf("[DEBUG] the site has currently %d auto-discovered domains", autoDiscoveredAmount)
+		log.Printf("[DEBUG] you are trying to add %d domains", len(siteDomainDetails))
+		return nil, fmt.Errorf("amount of domains is above the limit")
 	}
 
 	domainNames := make([]DomainNameDto, len(siteDomainDetails))
@@ -133,10 +149,11 @@ func (c *Client) BulkUpdateDomainsToSite(siteID string, siteDomainDetails []Site
 	}
 	addBulkDomainsDtoA := BulkAddDomainsDto{Data: domainNames}
 	addBulkDomainsDtoB := BulkAddDomainsDto{}
+	var splitThreshold = 500
 	if len(addBulkDomainsDtoA.Data) > splitThreshold {
 		//due to BE 1 min connection limitation need to split into 2 requests
 		//todo -  run in a single request, after optimizing the BE
-		addBulkDomainsDtoB = BulkAddDomainsDto{Data: addBulkDomainsDtoA.Data[splitThreshold:len(addBulkDomainsDtoA.Data)]}
+		addBulkDomainsDtoB = BulkAddDomainsDto{Data: addBulkDomainsDtoA.Data[0:splitThreshold]}
 		handleAddBulkRequest(c, addBulkDomainsDtoB, siteID)
 	}
 	return handleAddBulkRequest(c, addBulkDomainsDtoA, siteID)
@@ -207,4 +224,31 @@ func (c *Client) AddDomainToSite(siteID string, domain string) (*SiteDomainDetai
 		return nil, fmt.Errorf("[ERROR] Error parsing add domain to site JSON response for site ID %s: %s\nresponse: %s", siteID, err, string(responseBody))
 	}
 	return &siteDomainDto, nil
+}
+
+func GetSiteExtraDetails(c *Client, siteID string) (*SiteDomainsExtraDetailsDto, error) {
+	reqURL := fmt.Sprintf("%s%s%s%s", c.config.BaseURLAPI, endpointDomainManagement, siteID, "/domains/extraDetails")
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadDomainExtraDetails)
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when geting site domains extra details %s: %s", siteID, err)
+	}
+
+	// Read the body
+	defer resp.Body.Close()
+	responseBody, err := ioutil.ReadAll(resp.Body)
+	log.Printf("[DEBUG] Incapsula get site domains extra details JSON response: %s\n", string(responseBody))
+
+	// Check the response code
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("[ERROR] Error status code %d from Incapsula get site domains extra details for siteId %s\n: %s\n%s", resp.StatusCode, siteID, err, string(responseBody))
+	}
+
+	// Dump JSON
+	var siteExtraDetailsResponse SiteDomainsExtraDetailsResponse
+	err = json.Unmarshal([]byte(responseBody), &siteExtraDetailsResponse)
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Error parsing add domain to site JSON response for site ID %s: %s\nresponse: %s", siteID, err, string(responseBody))
+	}
+
+	return &siteExtraDetailsResponse.Data[0], nil
 }
