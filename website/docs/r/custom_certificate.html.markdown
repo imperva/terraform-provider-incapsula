@@ -1,6 +1,6 @@
 ---
 layout: "incapsula"
-page_title: "Incapsula: custom-certifcate"
+page_title: "Incapsula: custom-certificate"
 sidebar_current: "docs-incapsula-resource-custom-certificate"
 description: |-
   Provides a Incapsula Custom Certificate resource.

@@ -32,7 +32,7 @@ func TestUpdateApplicationDeliveryBadConnection(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), "[ERROR] Error from Incapsula service when updateing Application Delivery for Site ID") {
+	if !strings.HasPrefix(err.Error(), "[ERROR] Error from Incapsula service when trying to update Application Delivery for Site ID 42") {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 	if applicationDeliveryResponse != nil {
@@ -216,7 +216,7 @@ func TestReadApplicationDeliveryBadConnection(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), "[ERROR] Error from Incapsula service when reading Application Delivery for Site ID") {
+	if !strings.HasPrefix(err.Error(), "[ERROR] Error from Incapsula service when trying to read Application Delivery for Site ID 42") {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 	if applicationDeliveryResponse != nil {
@@ -381,7 +381,7 @@ func TestDeleteApplicationDeliveryBadConnection(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), "[ERROR] Error from Incapsula service when deleteing Application Delivery for Site ID") {
+	if !strings.HasPrefix(err.Error(), "[ERROR] Error from Incapsula service when trying to delete Application Delivery for Site ID 42:") {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 	if applicationDeliveryResponse != nil {

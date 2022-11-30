@@ -65,6 +65,7 @@ type AccountStatusResponse struct {
 	Email       string `json:"email"`
 	PlanID      string `json:"plan_id"`
 	PlanName    string `json:"plan_name"`
+	AccountType string `json:"account_type"`
 	AccountID   int    `json:"account_id"`
 	UserName    string `json:"user_name"`
 	AccountName string `json:"account_name"`
