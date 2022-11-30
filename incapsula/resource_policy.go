@@ -71,7 +71,7 @@ func resourcePolicy() *schema.Resource {
 
 func getCurrentAccountId(d *schema.ResourceData, accountStatus *AccountStatusResponse) *int {
 	caid := d.Get("account_id").(int)
-	if accountStatus.AccountType == "Sub Account" || caid == 0 {
+	if accountStatus.isSubAccount() || caid == 0 {
 		//in case of sub account we do not want to send the caid since the policy owner is the sub account's parent
 		return nil
 	}
