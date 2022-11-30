@@ -151,51 +151,67 @@ func TestClientAddDomainsForSiteValidCase(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "111"
-	endpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/%s", siteID, "domains")
+	bulkUpdateEndpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/domains", siteID)
+	siteExtraDetailsEndpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/domains/extraDetails", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
 
-		if req.URL.String() != endpoint {
-			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		if (req.URL.String() != bulkUpdateEndpoint) && (req.URL.String() != siteExtraDetailsEndpoint) {
+			t.Errorf("Should have have hit %s or %s endpoints. Got: %s", bulkUpdateEndpoint, siteExtraDetailsEndpoint, req.URL.String())
 		}
-		rw.Write([]byte(`{
-    "data": [
-        {
-            "id": 12,
-            "siteId": 111,
-            "domain": "a.co",
-            "mainDomain": true,
-            "managed": true,
-            "status": "BYPASSED",
-            "creationDate": 1665485465000
-        },
-        {
-            "id": 13,
-            "siteId": 111,
-            "domain": "b.a.co",
-            "managed": true,
-            "validationMethod": "CNAME",
-            "status": "BYPASSED",
-            "creationDate": 1668699134000
-        },
-        {
-            "id": 14,
-            "siteId": 111,
-            "domain": "c.a.co",
-            "managed": true,
-            "validationMethod": "CNAME",
-            "status": "BYPASSED",
-            "creationDate": 1668700703096
-        }
-    ],
-    "meta": {
-        "totalPages": 0
-    }
-}`))
+
+		if req.URL.String() == bulkUpdateEndpoint {
+			rw.Write([]byte(`{
+			"data": [
+				{
+					"id": 12,
+					"siteId": 111,
+					"domain": "a.co",
+					"mainDomain": true,
+					"managed": true,
+					"status": "BYPASSED",
+					"creationDate": 1665485465000
+				},
+				{
+					"id": 13,
+					"siteId": 111,
+					"domain": "b.a.co",
+					"managed": true,
+					"validationMethod": "CNAME",
+					"status": "BYPASSED",
+					"creationDate": 1668699134000
+				},
+				{
+					"id": 14,
+					"siteId": 111,
+					"domain": "c.a.co",
+					"managed": true,
+					"validationMethod": "CNAME",
+					"status": "BYPASSED",
+					"creationDate": 1668700703096
+				}
+			],
+			"meta": {
+				"totalPages": 0
+			}
+			}`))
+		}
+
+		if req.URL.String() == siteExtraDetailsEndpoint {
+			rw.Write([]byte(`{
+			"data": [
+				{
+					"numberOfAutoDiscoveredDomains": 1,
+					"maxAllowedDomains": 1000
+				}
+			]
+			}`))
+		}
 	}))
+
 	defer server.Close()
-	log.Printf("ENDPOINT: " + endpoint)
+	log.Printf("ENDPOINT: " + bulkUpdateEndpoint)
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
@@ -214,15 +230,17 @@ func TestClientAddDomainsForSiteErrorResponse(t *testing.T) {
 	log.Printf("[DEBUG] Running test client_site_domains_configuration_test.TestClientAddDomainsForSiteErrorResponse")
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := "111"
-	endpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/%s", siteID, "domains")
+	siteId := "111"
+	bulkUpdateEndpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/domains", siteId)
+	siteExtraDetailsEndpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/domains/extraDetails", siteId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(400)
 
-		if req.URL.String() != endpoint {
-			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		if (req.URL.String() != bulkUpdateEndpoint) && (req.URL.String() != siteExtraDetailsEndpoint) {
+			t.Errorf("Should have have hit %s or %s endpoints. Got: %s", bulkUpdateEndpoint, siteExtraDetailsEndpoint, req.URL.String())
 		}
+
 		rw.Write([]byte(`{
     "errors": [
         {
@@ -236,23 +254,36 @@ func TestClientAddDomainsForSiteErrorResponse(t *testing.T) {
         }
     ]
 }`))
+
+		if req.URL.String() == siteExtraDetailsEndpoint {
+			rw.Write([]byte(`{
+			"data": [
+				{
+					"numberOfAutoDiscoveredDomains": 1,
+					"maxAllowedDomains": 1000
+				}
+			]
+			}`))
+		}
 	}))
+
 	defer server.Close()
-	log.Printf("ENDPOINT: " + endpoint)
+	log.Printf("ENDPOINT: " + bulkUpdateEndpoint)
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	var domainA = "?a.com"
 	var domainB = "?b.com"
-	siteIdStr, err := strconv.Atoi(siteID)
-	addCertificateResponse, err := client.BulkUpdateDomainsToSite(siteID, getFakeSiteDomainDetailsArray(siteIdStr, domainA, domainB))
+	siteIdStr, err := strconv.Atoi(siteId)
+	addCertificateResponse, err := client.BulkUpdateDomainsToSite(siteId, getFakeSiteDomainDetailsArray(siteIdStr, domainA, domainB))
 
 	if err == nil {
 		t.Errorf("expected to get error")
 	}
 
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("[ERROR] Error status code 400 from Incapsula bulk add domains to site %s", siteID)) {
-		t.Errorf("Should have received an client error, got: %s", err)
+	errorString := err.Error()
+	if !strings.Contains(errorString, fmt.Sprintf("[ERROR] Error status code 400 from Incapsula get site domains extra details for siteId %s", siteId)) {
+		t.Errorf("Should have received a client error, got: %s", err)
 	}
 
 	if !strings.Contains(err.Error(), fmt.Sprintf("Invalid domain name:%s,%s", domainA, domainB)) {
