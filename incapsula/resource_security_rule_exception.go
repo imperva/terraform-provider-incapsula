@@ -190,7 +190,7 @@ func resourceSecurityRuleExceptionRead(d *schema.ResourceData, m interface{}) er
 
 	// Site object may have been deleted
 	if siteStatusResponse != nil && siteStatusResponse.Res.(float64) == 9413 {
-		log.Printf("[INFO] Incapsula Site ID %s has already been deleted: %s\n", d.Get("site_id"), err)
+		log.Printf("[INFO] Incapsula Site with ID %s has already been deleted: %s\n", d.Get("site_id"), err)
 		d.SetId("")
 		return nil
 	}
