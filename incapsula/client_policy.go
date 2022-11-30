@@ -8,13 +8,6 @@ import (
 	"net/http"
 )
 
-const policyAvailableForAllAccountsResponse = "{\"value\":\"Policy is available for all accounts\",\"isError\":false}"
-
-type PolicyAccountAssociation struct {
-	Value   []int `json:"value"`
-	IsError bool  `json:"isError"`
-}
-
 // PolicySubmitted is struct that encompasses all the properties of a policy object to submit
 type PolicySubmitted struct {
 	Name                string                `json:"name"`
@@ -228,85 +221,6 @@ func (c *Client) DeletePolicy(policyID string, currentAccountId *int) error {
 	}
 
 	return nil
-}
-
-// GetPolicyAccountAssociation gets policy account association list
-func (c *Client) GetPolicyAccountAssociation(policyID string) (*PolicyAccountAssociation, error) {
-	log.Printf("[INFO] Getting Incapsula Policy Account Association for policicy ID %s\n", policyID)
-
-	reqURL := fmt.Sprintf("%s/policies/v2/accounts/policies/%s", c.config.BaseURLAPI, policyID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadPolicyAccountAssociatiation)
-	if err != nil {
-		return nil, fmt.Errorf("Error from Incapsula service when reading Policy Account Association for ID %s: %s", policyID, err)
-	}
-
-	// Read the body
-	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
-
-	// Dump JSON
-	log.Printf("[DEBUG] Incapsula Read Policy Account Association JSON response: %s\n", string(responseBody))
-
-	// Check the response code
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Error status code %d from Incapsula service when reading Policy Account Association for ID %s: %s", resp.StatusCode, policyID, string(responseBody))
-	}
-
-	if string(responseBody) == policyAvailableForAllAccountsResponse {
-		response := PolicyAccountAssociation{Value: []int{}}
-		return &response, nil
-	}
-
-	// Parse the JSON
-	var policyAccountAssociation PolicyAccountAssociation
-	err = json.Unmarshal([]byte(responseBody), &policyAccountAssociation)
-	if err != nil {
-		return nil, fmt.Errorf("Error reading Policy Account Association ID %s: %s\nresponse: %s", policyID, err, string(responseBody))
-	}
-
-	return &policyAccountAssociation, nil
-}
-
-// UpdatePolicyAccountAssociation updates policy account association list
-func (c *Client) UpdatePolicyAccountAssociation(policyID string, accountList []int) (*PolicyAccountAssociation, error) {
-	log.Printf("[INFO] Updating Incapsula Policy Account Association for policicy ID %s\n", policyID)
-
-	log.Printf("[INFO] will send accountList  \n%v\n", accountList)
-	accountListJSON := []byte("[]")
-	if len(accountList) > 0 {
-		res, err := json.Marshal(accountList)
-		if err != nil {
-			return nil, fmt.Errorf("Failed to JSON marshal policy account association list: %s", err)
-		}
-		accountListJSON = res
-	}
-
-	reqURL := fmt.Sprintf("%s/policies/v2/accounts/policies/%s", c.config.BaseURLAPI, policyID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, accountListJSON, UpdatePolicyAccountAssociatiation)
-	if err != nil {
-		return nil, fmt.Errorf("Error from Incapsula service when updating Policy Account Association for ID %s: %s", policyID, err)
-	}
-
-	// Read the body
-	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
-
-	// Dump JSON
-	log.Printf("[DEBUG] Incapsula Update Policy Account Association JSON response: %s\n", string(responseBody))
-
-	// Check the response code
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Error status code %d from Incapsula service when updating Policy Account Association for ID %s: %s", resp.StatusCode, policyID, string(responseBody))
-	}
-
-	// Parse the JSON
-	var policyAccountAssociation PolicyAccountAssociation
-	err = json.Unmarshal([]byte(responseBody), &policyAccountAssociation)
-	if err != nil {
-		return nil, fmt.Errorf("Error updating Policy Account Association ID %s: %s\nresponse: %s", policyID, err, string(responseBody))
-	}
-
-	return &policyAccountAssociation, nil
 }
 
 // GetAllPoliciesForAccount gets all policies for specific account
