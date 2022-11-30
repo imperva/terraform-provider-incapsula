@@ -9,10 +9,29 @@ import (
 )
 
 const policyResourceType = "incapsula_policy"
-const policyResourceName = "testacc-terraform-acl-policy-"
+const policyResourceName = "testacc-terraform-policy-"
 const policyResourceTypeAndName = policyResourceType + "." + policyResourceName
 
 const aclPolicyName = "acl-policy-test"
+
+const wafPolicySettings = "[\n " +
+	"   {\n" +
+	"      \"settingsAction\": \"BLOCK\",\n" +
+	"      \"policySettingType\": \"REMOTE_FILE_INCLUSION\"\n" +
+	"    },\n" +
+	"    {\n" +
+	"      \"settingsAction\": \"BLOCK\",\n" +
+	"      \"policySettingType\": \"ILLEGAL_RESOURCE_ACCESS\"\n" +
+	"    },\n" +
+	"    {\n" +
+	"      \"settingsAction\": \"BLOCK\",\n" +
+	"      \"policySettingType\": \"CROSS_SITE_SCRIPTING\"\n" +
+	"    },\n" +
+	"    {\n" +
+	"      \"settingsAction\": \"BLOCK\",\n" +
+	"      \"policySettingType\": \"SQL_INJECTION\"\n" +
+	"    }\n" +
+	"]"
 
 const aclPolicySettingsUrlExceptions = "[\n" +
 	"    {\n" +
@@ -129,7 +148,11 @@ func testCheckIncapsulaPolicyExists(name string) resource.TestCheckFunc {
 }
 
 func testAccCheckIncapsulaPolicyConfigBasic(t *testing.T, policyName string, enabled bool, policyType string, policySettings string) string {
-	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + createPolicyResourceString(policyName, enabled, policyType, policySettings)
+}
+
+func createPolicyResourceString(policyName string, enabled bool, policyType string, policySettings string) string {
+	return fmt.Sprintf(`
 resource "%s" "%s" {
     name        = "%s"
     enabled     = %s
