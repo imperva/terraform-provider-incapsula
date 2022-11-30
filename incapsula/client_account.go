@@ -255,3 +255,10 @@ func (c *Client) DeleteAccount(accountID int) error {
 
 	return nil
 }
+
+func (accountStatus AccountStatusResponse) isSubAccount() bool {
+	if accountStatus.AccountType == "Sub Account" {
+		return true
+	}
+	return false
+}

@@ -5,13 +5,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
+	"sort"
 	"strconv"
+	"strings"
 )
 
-const WAF_RULES = "WAF_RULES"
-const WEBSITE = "WEBSITE"
+const noAvailablePoliciesConst = "NO_AVAILABLE_POLICIES"
 
 func resourceAccountPolicyAssociation() *schema.Resource {
+
 	return &schema.Resource{
 		Create: resourceAccountPolicyAssociationUpdate,
 		Read:   resourceAccountPolicyAssociationRead,
@@ -23,7 +25,7 @@ func resourceAccountPolicyAssociation() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Description: "The policy name.",
+				Description: "The account Id.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -36,12 +38,36 @@ func resourceAccountPolicyAssociation() *schema.Resource {
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"default_non_mandatory_policy_ids": {
-				Description: "This list is currently relevant to whitelist and acl policies. More than one policy can be set as default.",
-				Type:        schema.TypeSet,
-				Optional:    true,
+				Description: "This list is currently relevant to whitelist and acl policies. More than one policy can be set as default. " +
+					"providing an empty list or omitting this argument will clear all the non mandatory default policies.",
+				Type:     schema.TypeSet,
+				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+			},
+			"available_policy_ids": {
+				Description: "Comma separated list of The account’s available policies." +
+					" These policies can be applied to the websites in the account." +
+					" e.g. available_policy_ids = format(\"%d,%d\", incapsula_policy.acl1-policy.id, incapsula_policy.waf3-policy.id)" +
+					" Specify this argument only if you are a parent account trying to update your child account policies availability" +
+					" in order to remove availability for all policies please specify \"" + noAvailablePoliciesConst + "\".",
+				Type: schema.TypeString,
+				DiffSuppressFunc: func(k, oldValue string, newValue string, d *schema.ResourceData) bool {
+					if newValue == "" {
+						// means that the value was not set and doesn't need to be handled'
+						return true
+					}
+					if oldValue == "" && newValue == noAvailablePoliciesConst {
+						//means that we have no available policies
+						return true
+					}
+					if oldValue != "" && newValue != "" {
+						return suppressEquivalentStringDiffs(k, oldValue, newValue, d)
+					}
+					return false
+				},
+				Optional: true,
 			},
 		},
 	}
@@ -50,52 +76,90 @@ func resourceAccountPolicyAssociation() *schema.Resource {
 func resourceAccountPolicyAssociationUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	accountIDStr := d.Get("account_id").(string)
-	accountID, err := strconv.Atoi(accountIDStr)
+	accountID := d.Get("account_id").(string)
+	var err error
+
+	//init default waf policy
+	var wafPolicyIDStr string
+	if d.Get("default_waf_policy_id") != nil {
+		wafPolicyIDStr = d.Get("default_waf_policy_id").(string)
+	}
+
+	//init default non mandatory non distinct policies
+	defaultNonMandatoryPolicyIds := make([]int, 0)
+	defaultNonMandatoryPolicyIdsInter := d.Get("default_non_mandatory_policy_ids").(*schema.Set).List()
+	if !IsSetNil(d.Get("default_non_mandatory_policy_ids").(*schema.Set)) {
+		defaultNonMandatoryPolicyIds, err = ListToIntSlice(defaultNonMandatoryPolicyIdsInter)
+		if err != nil {
+			return fmt.Errorf("Cannot convert default_non_mandatory_policy_ids to integer")
+		}
+	}
+
+	//init available policies
+	var availablePolicyIds []int
+	availablePolicies := d.Get("available_policy_ids").(string)
+	if availablePolicies == noAvailablePoliciesConst {
+		availablePolicyIds = make([]int, 0)
+	} else if availablePolicies != "" {
+		if client.accountStatus.isSubAccount() {
+			return fmt.Errorf("sub accounts cannot change thier available_policy_ids")
+		}
+		splitPoliciesIds := strings.Split(availablePolicies, ",")
+		availablePolicyIds, err = ToIntSlice(splitPoliciesIds)
+		if err != nil {
+			return fmt.Errorf("Cannot convert available_policy_ids to integer")
+		}
+	}
+
+	_, err = client.PatchAccountPolicyAssociation(accountID, availablePolicyIds, defaultNonMandatoryPolicyIds, wafPolicyIDStr)
 	if err != nil {
-		log.Printf("[ERROR] Could not convert Account ID. Error: is not numeric: %s", accountIDStr)
 		return err
 	}
-
-	_, ok := d.GetOk("default_waf_policy_id")
-	if ok {
-		//add WAF
-		wafPolicyIDStr := d.Get("default_waf_policy_id").(string)
-
-		if err != nil {
-			log.Printf("[ERROR] Could not convert Waf Policy ID. Error: is not numeric: %s", accountIDStr)
-			return err
-		}
-
-		//to update WAF policy
-		policyGetResponse, err := client.GetPolicy(wafPolicyIDStr, nil)
-		if err != nil {
-			log.Printf("[ERROR] Could not get Incapsula policy: %s - %s\n", wafPolicyIDStr, err)
-			return err
-		}
-
-		if policyGetResponse.Value.PolicyType != WAF_RULES {
-			log.Printf("[ERROR] Cannot set a policy of type %s as a default WAF Policy. Policy ID: %d", policyGetResponse.Value.PolicyType, policyGetResponse.Value.ID)
-			return fmt.Errorf("Cannot set a policy of type %s as a default WAF Policy. Policy ID: %d", policyGetResponse.Value.PolicyType, policyGetResponse.Value.ID)
-		}
-
-		err = updatePolicy(policyGetResponse.Value, accountID, *client)
-		if err != nil {
-			log.Printf("[ERROR] Could not update Default WAF Policy ID %s for Account ID %d. Reason: %s", wafPolicyIDStr, accountID, err.Error())
-			resourceAccountPolicyAssociationRead(d, m)
-			return err
-		}
-
-	}
-
-	err = updateNonMandatoryPolicies(d.Get("default_non_mandatory_policy_ids").(*schema.Set).List(), accountID, *client)
-	if err != nil {
-		log.Printf("[ERROR] Could not update Default Non Mandatory Policies. Reason: %s", err.Error())
-		resourceAccountPolicyAssociationRead(d, m)
-		return err
-	}
-	d.SetId(accountIDStr)
+	d.SetId(accountID)
 	return resourceAccountPolicyAssociationRead(d, m)
+}
+
+func IsSetNil(setToCheck *schema.Set) bool {
+	emptyStringSet := make(map[string]interface{}, 0)
+	if setToCheck.Len() == 0 && !setToCheck.Equal(emptyStringSet) {
+		return true
+	}
+	return false
+}
+
+func ListToIntSlice(list []interface{}) ([]int, error) {
+	var intArray []int
+	for _, val := range list {
+		intVar, err := strconv.Atoi(val.(string))
+		if err != nil {
+			log.Printf("[ERROR] Cannot convert list args to integer. arg: %s\n", val)
+			return nil, fmt.Errorf("Cannot convert list args to integer")
+		}
+		intArray = append(intArray, intVar)
+	}
+	return intArray, nil
+}
+
+func ToIntSlice(list []string) ([]int, error) {
+	var intArray []int
+	for _, val := range list {
+		intVar, err := strconv.Atoi(val)
+		if err != nil {
+			log.Printf("[ERROR] Cannot convert list of strings to integer. arg: %s\n", val)
+			return nil, fmt.Errorf("Cannot convert list of strings to integer")
+		}
+		intArray = append(intArray, intVar)
+	}
+	return intArray, nil
+}
+
+func ToStringSlice(intArray []int) []string {
+	stringArray := make([]string, 0)
+	for _, val := range intArray {
+		strVar := strconv.Itoa(val)
+		stringArray = append(stringArray, strVar)
+	}
+	return stringArray
 }
 
 func resourceAccountPolicyAssociationDelete(d *schema.ResourceData, m interface{}) error {
@@ -106,20 +170,20 @@ func resourceAccountPolicyAssociationDelete(d *schema.ResourceData, m interface{
 		log.Printf("[ERROR] Could not convert Account ID. Error: is not numeric: %s", accountIDStr)
 		return err
 	}
-	//for policyId of non default
-	nonMandatoryPolicyIdList := (d.Get("default_non_mandatory_policy_ids").(*schema.Set).List())
-	for _, policy := range nonMandatoryPolicyIdList {
-		policyIdStr := fmt.Sprint(policy)
-		policyGetResponse, err := client.GetPolicy(policyIdStr, nil)
+	wafPolicyIdStr := d.Get("default_waf_policy_id").(string)
+	defaultNonMandatoryPolicyIds := make([]int, 0)
+	var availablePolicyIds []int
+	if wafPolicyIdStr != "" && !client.accountStatus.isSubAccount() && client.accountStatus.AccountID != accountID {
+		wafPolicyID, err := strconv.Atoi(wafPolicyIdStr)
 		if err != nil {
-			log.Printf("[ERROR] Could not get Incapsula policy: %s - %s\n", policyIdStr, err)
+			log.Printf("[ERROR] Could not convert WAF Rule Policy ID. Error: is not numeric: %s", wafPolicyIdStr)
 			return err
 		}
-		err = removePolicy(policyGetResponse.Value, accountID, *client)
-		if err != nil {
-			log.Printf("[ERROR] Could not remove Default Non Mandatory Policy ID %d for Account ID %d. Reason: %s", policyGetResponse.Value.ID, accountID, err.Error())
-			return err
-		}
+		availablePolicyIds = append(availablePolicyIds, wafPolicyID)
+	}
+	_, err = client.PatchAccountPolicyAssociation(accountIDStr, availablePolicyIds, defaultNonMandatoryPolicyIds, wafPolicyIdStr)
+	if err != nil {
+		return err
 	}
 	d.SetId("")
 	return nil
@@ -127,176 +191,42 @@ func resourceAccountPolicyAssociationDelete(d *schema.ResourceData, m interface{
 
 func resourceAccountPolicyAssociationRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	d.Set("account_id", d.Id())
+	err := d.Set("account_id", d.Id())
+	if err != nil {
+		return err
+	}
+
 	accountID := d.Id()
-	getAllPoliciesResponse, err := client.GetAllPoliciesForAccount(accountID)
+	getAccountPolicyAssociation, err := client.GetAccountPolicyAssociation(accountID)
 
 	if err != nil {
-		log.Printf("[ERROR] Could not get All Incapsula Policies for Account ID: %s - %s\n", accountID, err)
+		log.Printf("[ERROR] Could not get Incapsula Policies Association for Account ID: %s - %s\n", accountID, err)
 		return err
 	}
 
-	defaultWafPolicyId, nonMandatoryPolicies := filterPoliciesByTypeForAccount(accountID, getAllPoliciesResponse)
+	defaultWafPolicyId := getAccountPolicyAssociation.DefaultWafPolicyId
+	nonMandatoryPolicies := getAccountPolicyAssociation.DefaultNonMandatoryNonDistinctPolicyIds
+	availablePolicyIds := getAccountPolicyAssociation.AvailablePolicyIds
 
-	if defaultWafPolicyId != "0" {
-		d.Set("default_waf_policy_id", defaultWafPolicyId)
-	}
-	d.Set("default_non_mandatory_policy_ids", nonMandatoryPolicies)
-	return nil
-}
-
-func filterPoliciesByTypeForAccount(accountId string, getAllPoliciesResponse *[]Policy) (string, *schema.Set) {
-	var wafPolicy Policy
-	nonMandatoryPoliciesSet := &schema.Set{F: schema.HashString}
-	for _, policy := range *getAllPoliciesResponse {
-		if containsAccountIdInDefaultPolicyConfig(policy.DefaultPolicyConfig, accountId) {
-			if policy.PolicyType == WAF_RULES {
-				wafPolicy = policy
-			} else {
-				nonMandatoryPoliciesSet.Add(strconv.Itoa(policy.ID))
-			}
+	if d.Get("default_waf_policy_id").(string) != "" && defaultWafPolicyId != 0 {
+		err = d.Set("default_waf_policy_id", strconv.Itoa(defaultWafPolicyId))
+		if err != nil {
+			return err
 		}
 	}
-	return strconv.Itoa(wafPolicy.ID), nonMandatoryPoliciesSet
-}
-
-func updateNonMandatoryPolicies(policyIds []interface{}, accountID int, client Client) error {
-	var policyIdsCopy = make([]interface{}, len(policyIds))
-	copy(policyIdsCopy, policyIds)
-	log.Printf("%v", policyIdsCopy)
-
-	getAllPoliciesResponse, err := client.GetAllPoliciesForAccount(strconv.Itoa(accountID))
+	err = d.Set("default_non_mandatory_policy_ids", ToStringSlice(nonMandatoryPolicies))
 	if err != nil {
-		log.Printf("[ERROR] Could not get All Incapsula Policies for Account ID: %d - %s\n", accountID, err)
 		return err
 	}
 
-	// remove  default policies the are not present in default resource, but present in DB.
-	// It means that user wants to remove default status from Policy
-	for _, policyFromResponse := range *getAllPoliciesResponse {
-		if contains(policyIds, strconv.Itoa(policyFromResponse.ID)) {
-			policyIdsCopy = removeElement(policyIdsCopy, strconv.Itoa(policyFromResponse.ID))
-		}
+	sort.Slice(availablePolicyIds, func(i, j int) bool {
+		return availablePolicyIds[i] < availablePolicyIds[j]
+	})
 
-		if containsAccountIdInDefaultPolicyConfig(policyFromResponse.DefaultPolicyConfig, strconv.Itoa(accountID)) && policyFromResponse.PolicyType != WAF_RULES {
-			if !contains(policyIds, strconv.Itoa(policyFromResponse.ID)) {
-				//update policy
-				//then policy was ommitted and we need to update policy default list
-				//and remove this policy from list of defaults
-				err = removePolicy(policyFromResponse, accountID, client)
-				if err != nil {
-					log.Printf("[ERROR] Could not remove Default Non Mandatory Policy ID %d for Account ID %d. Reason: %s", policyFromResponse.ID, accountID, err.Error())
-					return err
-				}
-			}
-		} else {
-
-			if contains(policyIds, strconv.Itoa(policyFromResponse.ID)) {
-				if policyFromResponse.PolicyType == WAF_RULES {
-					log.Printf("[ERROR] Cannot set a policy of type %s as a default non mandatory Policy. Policy ID: %d", policyFromResponse.PolicyType, policyFromResponse.ID)
-					return fmt.Errorf("Cannot set a policy of type %s as a default non mandatory Policy. Policy ID: %d", policyFromResponse.PolicyType, policyFromResponse.ID)
-				}
-
-				//update policy, add status default, since for now in DB it is not default
-				//added associationns
-				policyIdStr := strconv.Itoa(policyFromResponse.ID)
-				if err != nil {
-					log.Printf("[ERROR] Could not convert Non Mandatory Policy ID. Error: is not numeric: %s", policyIdStr)
-					return err
-				}
-				err = updatePolicy(policyFromResponse, accountID, client)
-				if err != nil {
-					log.Printf("[ERROR] Could not update Default Non Mandatory Policy ID %s for Account ID %d. Reason: %s", policyIdStr, accountID, err.Error())
-					return err
-				}
-			}
-		}
-	}
-
-	if len(policyIdsCopy) > 0 {
-		log.Printf("[ERROR] Non mandatory default policies list contains policies that are not available for this account: %v", policyIdsCopy)
-		return fmt.Errorf("[ERROR] Non mandatory default policies list contains policies that are not available for this account: %v", policyIdsCopy)
-	}
-	return nil
-}
-
-func removePolicy(policy Policy, accountId int, client Client) error {
-	currentDefaultPolicyConfigList := policy.DefaultPolicyConfig
-	var updatedDefaultPolicyConfigList []DefaultPolicyConfig
-	for _, defaultPolicyConfig := range currentDefaultPolicyConfigList {
-		if defaultPolicyConfig.AccountID != accountId {
-			updatedDefaultPolicyConfigList = append(updatedDefaultPolicyConfigList, defaultPolicyConfig)
-		}
-	}
-	return upsertPolicy(policy, updatedDefaultPolicyConfigList, client)
-}
-
-func updatePolicy(policy Policy, accountId int, client Client) error {
-	currentDefaultPolicyConfigList := policy.DefaultPolicyConfig
-	log.Printf("[DEBUG] updatePolicy ID %v for accountID %v currentDefaultPolicyConfigList\n%v", policy.ID, accountId, currentDefaultPolicyConfigList)
-	for _, defaultPolicyConfig := range currentDefaultPolicyConfigList {
-		if defaultPolicyConfig.AccountID == accountId {
-			log.Print("don't need to update policy")
-			return nil
-		}
-
-	}
-
-	newDefaultConfig := DefaultPolicyConfig{AccountID: accountId, AssetType: WEBSITE}
-	updatedDefaultPolicyConfigList := append(policy.DefaultPolicyConfig, newDefaultConfig)
-	return upsertPolicy(policy, updatedDefaultPolicyConfigList, client)
-}
-
-func upsertPolicy(policy Policy, updatedDefaultPolicyConfigList []DefaultPolicyConfig, client Client) error {
-	policyUpserted := PolicySubmitted{
-		Name:                policy.Name,
-		Description:         policy.Description,
-		Enabled:             policy.Enabled,
-		AccountID:           policy.AccountID,
-		PolicyType:          policy.PolicyType,
-		PolicySettings:      policy.PolicySettings,
-		DefaultPolicyConfig: updatedDefaultPolicyConfigList,
-	}
-	_, err := client.UpdatePolicy(policy.ID, &policyUpserted, nil)
-
+	err = d.Set("available_policy_ids", strings.Join(ToStringSlice(availablePolicyIds), ","))
 	if err != nil {
-		log.Printf("[ERROR] Could not update Incapsula policy: %s - %s\n", policyUpserted.Name, err)
 		return err
 	}
+
 	return nil
-}
-
-func contains(s []interface{}, str string) bool {
-	for _, v := range s {
-		vToStr := fmt.Sprint(v)
-		if vToStr == str {
-			return true
-		}
-	}
-
-	return false
-}
-
-func findIndex(slice []interface{}, elementToRemove string) int {
-	for index, element := range slice {
-		elementString := fmt.Sprint(element)
-		if elementString == elementToRemove {
-			return index
-		}
-	}
-	return -1 // not found
-}
-
-func removeElement(slice []interface{}, elementStr string) []interface{} {
-	index := findIndex(slice, elementStr)
-	return append(slice[:index], slice[index+1:]...)
-}
-
-func containsAccountIdInDefaultPolicyConfig(defaultPolicyConfigs []DefaultPolicyConfig, accountID string) bool {
-	for _, defaultPolicy := range defaultPolicyConfigs {
-		if strconv.Itoa(defaultPolicy.AccountID) == accountID {
-			return true
-		}
-	}
-	return false
 }
