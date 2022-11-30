@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 // GetAllPoliciesForAccount Tests
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 func TestGetAllPoliciesForAccountBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
