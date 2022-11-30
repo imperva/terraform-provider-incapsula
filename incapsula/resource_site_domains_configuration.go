@@ -25,7 +25,7 @@ func resourceSiteDomainsConfiguration() *schema.Resource {
 				Required:    true,
 			},
 			"validation_code": {
-				Description: "Cname validation code for traffic redirection",
+				Description: "Cname record for traffic redirection",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -43,12 +43,12 @@ func resourceSiteDomainsConfiguration() *schema.Resource {
 						},
 						"id": {
 							Type:        schema.TypeInt,
-							Description: "Domain id",
+							Description: "Numeric identifier of the domain on Imperva service",
 							Computed:    true,
 						},
 						"status": {
 							Type:        schema.TypeString,
-							Description: "Status of the domain. Indicates if domain DNS is pointed to Imperva's CNAME.",
+							Description: "Status of the domain. Indicates if domain DNS is pointed to Imperva's CNAME. Options: BYPASSED, VERIFIED, PROTECTED, MISCONFIGURED",
 							Computed:    true,
 						},
 					}},
@@ -74,7 +74,7 @@ func getHashFromDomain(v interface{}) int {
 func populateFromResourceToDTO(d *schema.ResourceData) []SiteDomainDetails {
 	domainsConf := d.Get("domain").(*schema.Set)
 	var siteDomainDetails = make([]SiteDomainDetails, len(domainsConf.List()))
-	var domainInd int = 0
+	var domainInd = 0
 	for _, domain := range domainsConf.List() {
 		domainItem := domain.(map[string]interface{})
 		siteDomainDetails[domainInd] = SiteDomainDetails{}
@@ -113,7 +113,7 @@ func resourceDomainUpdate(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			panic(err)
 		}
-		return fmt.Errorf("Error updating domains for site (%s): %s", d.Get("site_id"), string(out))
+		return fmt.Errorf("error updating domains for site (%s): %s", d.Get("site_id"), string(out))
 	}
 
 	return resourceDomainRead(d, m)
@@ -143,7 +143,7 @@ func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			panic(err)
 		}
-		return fmt.Errorf("Error getting domains for site (%s): %s", d.Get("site_id"), string(out))
+		return fmt.Errorf("error getting domains for site (%s): %s", d.Get("site_id"), string(out))
 	}
 
 	domains := &schema.Set{F: getHashFromDomain}
@@ -189,7 +189,7 @@ func resourceDomainDelete(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			panic(err)
 		}
-		return fmt.Errorf("Error deleting domains for site (%s): %s", d.Get("site_id"), string(out))
+		return fmt.Errorf("error deleting domains for site (%s): %s", d.Get("site_id"), string(out))
 	}
 
 	return resourceDomainRead(d, m)
