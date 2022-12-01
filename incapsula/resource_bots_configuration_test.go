@@ -26,8 +26,11 @@ func TestAccIncapsulaBotsConfiguration_Basic(t *testing.T) {
 				Config: testAccCheckIncapsulaBotsConfigurationBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaBotsConfigurationExists(botsConfigurationResourceName),
-					resource.TestCheckResourceAttr(botsConfigurationResourceName, "canceledGoodBots", "[6, 2, 1]"),
-					resource.TestCheckResourceAttr(botsConfigurationResourceName, "badBots", "[530, 20, 537]"),
+					resource.TestCheckResourceAttr(botsConfigurationResourceName, canceledGoodBots+".0", "6"),
+					resource.TestCheckResourceAttr(botsConfigurationResourceName, canceledGoodBots+".1", "17"),
+					resource.TestCheckResourceAttr(botsConfigurationResourceName, badBots+".0", "20"),
+					resource.TestCheckResourceAttr(botsConfigurationResourceName, badBots+".1", "530"),
+					resource.TestCheckResourceAttr(botsConfigurationResourceName, badBots+".2", "537"),
 				),
 			},
 			{
@@ -146,10 +149,11 @@ func testCheckIncapsulaBotsConfigurationExists(name string) resource.TestCheckFu
 
 func testAccCheckIncapsulaBotsConfigurationBasic(t *testing.T) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
-resource "%s" "%s" {
-  site_id = %s.id
-  canceledGoodBots = [6, 2, 1]
-  badBots = [530, 20, 537]
-}`, botsConfigurationResource, botsConfigurationName, siteResourceName,
+	resource "%s" "%s" {
+		site_id = %s.id
+		%s = [6, 17]
+		%s = [530, 20, 537]
+	}`,
+		botsConfigurationResource, botsConfigurationName, siteResourceName, canceledGoodBots, badBots,
 	)
 }
