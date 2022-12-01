@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 // GetClientCaCertificate Tests
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 func TestGetClientCaCertificateBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
@@ -143,9 +143,9 @@ func TestGetClientCaCertificateValidApiConfig(t *testing.T) {
 	}
 }
 
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 // AddClientCaCertificate Tests
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 func TestAddClientCaCertificateBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
@@ -284,9 +284,9 @@ func TestAddClientCaCertificateValidApiConfig(t *testing.T) {
 	}
 }
 
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 // DeleteClientCaCertificate Tests
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 func TestDeleteClientCaCertificateBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}

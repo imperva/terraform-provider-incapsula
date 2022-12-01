@@ -16,7 +16,7 @@ const hsmCertificateResourceName = "incapsula_custom_hsm_certificate"
 const hsmCertificateName = "hsm-custom-certificate"
 const fullResourceNameHsmCustomCertificate = hsmCertificateResourceName + "." + hsmCertificateName
 
-//Since the data to create HSM certificate is sensitive (Fortanix api key & id) we can only do negative testing
+// Since the data to create HSM certificate is sensitive (Fortanix api key & id) we can only do negative testing
 func TestAccImpervaCustomHsmCertificateWithWrongFortanixApiKey_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
