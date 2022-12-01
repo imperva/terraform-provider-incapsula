@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 const endpointSiemConnection = "siem-config-service/v3/connections/"
@@ -46,12 +47,16 @@ func (c *Client) CreateSiemConnection(connection *SiemConnection) (*SiemConnecti
 		return nil, nil, fmt.Errorf("failed to produce JSON from SiemConnection: %s", err)
 	}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURLAPI, endpointSiemConnection)
-	return siemConnectionRequestWithResponse(c, CreateSiemConnection, http.MethodPost, reqURL, connectionJSON, 201)
+	accountId := 0
+	if len(connection.Data[0].AssetID) > 0 {
+		accountId, _ = strconv.Atoi(connection.Data[0].AssetID)
+	}
+	return siemConnectionRequestWithResponse(c, CreateSiemConnection, http.MethodPost, reqURL, connectionJSON, accountId, 201)
 }
 
 func (c *Client) ReadSiemConnection(ID string) (*SiemConnectionWithIdAndVersion, *int, error) {
 	reqURL := fmt.Sprintf("%s/%s/%s", c.config.BaseURLAPI, endpointSiemConnection, ID)
-	return siemConnectionRequestWithResponse(c, ReadSiemConnection, http.MethodGet, reqURL, nil, 200)
+	return siemConnectionRequestWithResponse(c, ReadSiemConnection, http.MethodGet, reqURL, nil, 0, 200)
 }
 
 func (c *Client) UpdateSiemConnection(siemConnectionWithIdAndVersion *SiemConnectionWithIdAndVersion) (*SiemConnectionWithIdAndVersion, *int, error) {
@@ -60,12 +65,16 @@ func (c *Client) UpdateSiemConnection(siemConnectionWithIdAndVersion *SiemConnec
 		return nil, nil, fmt.Errorf("failed to produce JSON from SiemConnectionWithID: %s", err)
 	}
 	reqURL := fmt.Sprintf("%s/%s/%s", c.config.BaseURLAPI, endpointSiemConnection, siemConnectionWithIdAndVersion.Data[0].ID)
-	return siemConnectionRequestWithResponse(c, UpdateSiemConnection, http.MethodPut, reqURL, siemConnectionWithIDJSON, 200)
+	accountId := 0
+	if len(siemConnectionWithIdAndVersion.Data[0].AssetID) > 0 {
+		accountId, _ = strconv.Atoi(siemConnectionWithIdAndVersion.Data[0].AssetID)
+	}
+	return siemConnectionRequestWithResponse(c, UpdateSiemConnection, http.MethodPut, reqURL, siemConnectionWithIDJSON, accountId, 200)
 }
 
 func (c *Client) DeleteSiemConnection(ID string) (*int, error) {
 	reqURL := fmt.Sprintf("%s/%s/%s", c.config.BaseURLAPI, endpointSiemConnection, ID)
-	_, _, responseStatusCode, err := siemConnectionRequest(c, DeleteSiemConnection, http.MethodDelete, reqURL, nil, 200)
+	_, _, responseStatusCode, err := siemConnectionRequest(c, DeleteSiemConnection, http.MethodDelete, reqURL, nil, 0, 200)
 	return responseStatusCode, err
 }
 
@@ -75,11 +84,12 @@ func dClose(c io.Closer) {
 	}
 }
 
-func siemConnectionRequest(c *Client, operation string, method string, reqURL string, data []byte, expectedSuccessStatusCode int) (*string, *[]byte, *int, error) {
+func siemConnectionRequest(c *Client, operation string, method string, reqURL string, data []byte, accountId int, expectedSuccessStatusCode int) (*string, *[]byte, *int, error) {
 
 	log.Printf("[INFO] Executing operation %s on SIEM connection", operation)
 
-	resp, err := c.DoJsonRequestWithHeaders(method, reqURL, data, operation)
+	params := GetRequestParamsWithCaid(accountId)
+	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(method, reqURL, data, params, operation)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error from Incapsula service when executing %s operation on SIEM connection: %s", operation, err)
 	}
@@ -101,9 +111,9 @@ func siemConnectionRequest(c *Client, operation string, method string, reqURL st
 	return &body, &responseBody, &resp.StatusCode, nil
 }
 
-func siemConnectionRequestWithResponse(c *Client, operation string, method string, reqURL string, data []byte, expectedSuccessStatusCode int) (*SiemConnectionWithIdAndVersion, *int, error) {
+func siemConnectionRequestWithResponse(c *Client, operation string, method string, reqURL string, data []byte, accountId int, expectedSuccessStatusCode int) (*SiemConnectionWithIdAndVersion, *int, error) {
 
-	body, responseBody, responseStatusCode, err := siemConnectionRequest(c, operation, method, reqURL, data, expectedSuccessStatusCode)
+	body, responseBody, responseStatusCode, err := siemConnectionRequest(c, operation, method, reqURL, data, accountId, expectedSuccessStatusCode)
 	if responseBody == nil {
 		return nil, responseStatusCode, err
 	}
