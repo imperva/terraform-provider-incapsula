@@ -1,4 +1,4 @@
-## 3.11.0 (Unreleased)
+## 3.11.0 (Dec 4, 2022)
 
 FEATURES:
 
