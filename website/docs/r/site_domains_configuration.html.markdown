@@ -39,7 +39,7 @@ The following attributes are exported:
 
 * `domain` - a list of added domains.
 * `site_id` - the id of the site.
-* `validation_code` - CNAME validation code for traffic redirection.
+* `cname_redirection_record` - CNAME validation code for traffic redirection.  Point your domain's DNS to this record in order to forward the traffic to Imperva
 
 For Each domain the following data will be stored:
   * `id` - the id of the domain.
