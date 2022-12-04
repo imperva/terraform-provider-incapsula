@@ -24,8 +24,8 @@ func resourceSiteDomainsConfiguration() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"validation_code": {
-				Description: "Cname record for traffic redirection",
+			"cname_redirection_record": {
+				Description: "Cname record for traffic redirection. Point your domain's DNS to this record in order to forward the traffic to Imperva",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -159,7 +159,7 @@ func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
 	}
 	d.SetId(d.Get("site_id").(string))
 	d.Set("site_id", d.Get("site_id"))
-	d.Set("validation_code", siteDomainDetailsDto.Data[0].ValidationCode)
+	d.Set("cname_redirection_record", siteDomainDetailsDto.Data[0].CnameRedirectionRecord)
 	d.Set("domain", domains)
 	return nil
 }
