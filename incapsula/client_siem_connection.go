@@ -78,7 +78,7 @@ func (c *Client) DeleteSiemConnection(ID string) (*int, error) {
 	return responseStatusCode, err
 }
 
-func dClose(c io.Closer) {
+func dSiemConnectionResponseClose(c io.Closer) {
 	if err := c.Close(); err != nil {
 		log.Println(err)
 	}
@@ -94,7 +94,7 @@ func siemConnectionRequest(c *Client, operation string, method string, reqURL st
 		return nil, nil, nil, fmt.Errorf("error from Incapsula service when executing %s operation on SIEM connection: %s", operation, err)
 	}
 
-	defer dClose(resp.Body)
+	defer dSiemConnectionResponseClose(resp.Body)
 	responseBody, err := io.ReadAll(resp.Body)
 	body := string(responseBody)
 

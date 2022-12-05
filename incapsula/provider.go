@@ -120,6 +120,7 @@ func Provider() *schema.Provider {
 			"incapsula_mtls_client_to_imperva_ca_certificate_site_settings":    resourceMtlsClientToImpervaCertificateSetings(),
 			"incapsula_s3_siem_connection":                                     resourceS3SiemConnection(),
 			"incapsula_s3arn_siem_connection":                                  resourceS3ArnSiemConnection(),
+			"incapsula_siem_log_configuration":                                 resourceSiemLogConfiguration(),
 		},
 	}
 
