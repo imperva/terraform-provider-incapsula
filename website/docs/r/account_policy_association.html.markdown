@@ -58,7 +58,7 @@ The following arguments are supported:
   The default policies can be set for the current account, or if used by users with credentials of the parent account can also be set for sub-accounts.
   Default setting – empty list. No default policy. Providing an empty list or omitting this argument will clear all the non mandatory default policies.
 * `available_policy_ids` - (Optional) Comma separated list of the account’s available policies. These policies can be applied to the websites in the account.
-  e.g. available_policy_ids = format(\"%d,%d\", incapsula_policy.acl1-policy.id, incapsula_policy.waf3-policy.id)
+  e.g. available_policy_ids = format(\"%s,%s\", incapsula_policy.acl1-policy.id, incapsula_policy.waf3-policy.id)
   Specify this argument only for a parent account trying to update policy availability for its subaccounts. To remove availability for all policies, specify “NO_AVAILABLE_POLICIES”.
   
 ## Destroy
