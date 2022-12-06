@@ -12,23 +12,23 @@ import (
 const endpointSiemLogConfiguration = "siem-config-service/v3/log-configurations/"
 
 type SiemLogConfigurationInfo struct {
-	AssetID           string   `json:"assetId"`
-	ConfigurationName string   `json:"configurationName"`
-	Provider          string   `json:"provider"`
-	Datasets          []string `json:"datasets"`
-	Enabled           bool     `json:"enabled"`
-	ConnectionId      string   `json:"connectionId"`
+	AssetID           string        `json:"assetId"`
+	ConfigurationName string        `json:"configurationName"`
+	Provider          string        `json:"provider"`
+	Datasets          []interface{} `json:"datasets"`
+	Enabled           bool          `json:"enabled"`
+	ConnectionId      string        `json:"connectionId"`
 }
 
 type SiemLogConfigurationWithIdAndVersionInfo struct {
-	ID                string   `json:"id"`
-	Version           string   `json:"version"`
-	AssetID           string   `json:"assetId"`
-	ConfigurationName string   `json:"configurationName"`
-	Provider          string   `json:"provider"`
-	Datasets          []string `json:"datasets"`
-	Enabled           bool     `json:"enabled"`
-	ConnectionId      string   `json:"connectionId"`
+	ID                string        `json:"id"`
+	Version           string        `json:"version,omitempty"`
+	AssetID           string        `json:"assetId,omitempty"`
+	ConfigurationName string        `json:"configurationName"`
+	Provider          string        `json:"provider"`
+	Datasets          []interface{} `json:"datasets"`
+	Enabled           bool          `json:"enabled"`
+	ConnectionId      string        `json:"connectionId"`
 }
 
 type SiemLogConfiguration struct {
@@ -41,6 +41,7 @@ type SiemLogConfigurationWithIdAndVersion struct {
 
 func (c *Client) CreateSiemLogConfiguration(siemLogConfiguration *SiemLogConfiguration) (*SiemLogConfigurationWithIdAndVersion, *int, error) {
 	logConfigurationJSON, err := json.Marshal(siemLogConfiguration)
+	fmt.Printf("[DEBUG] CreateSiemLogConfiguration: %s\n", logConfigurationJSON)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to produce JSON from SiemLogConfiguration: %s", err)
 	}
@@ -59,6 +60,7 @@ func (c *Client) ReadSiemLogConfiguration(ID string) (*SiemLogConfigurationWithI
 
 func (c *Client) UpdateSiemLogConfiguration(logConfigurationWithIdAndVersion *SiemLogConfigurationWithIdAndVersion) (*SiemLogConfigurationWithIdAndVersion, *int, error) {
 	siemLogConfigurationWithIDJSON, err := json.Marshal(logConfigurationWithIdAndVersion)
+	fmt.Printf("[DEBUG] UpdateSiemLogConfiguration: %s\n", siemLogConfigurationWithIDJSON)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to produce JSON from SiemLogConfigurationWithID: %s", err)
 	}
