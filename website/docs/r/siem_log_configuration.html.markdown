@@ -1,0 +1,61 @@
+---
+layout: "incapsula"
+page_title: "Incapsula: incapsula-siem-log-configuration"
+sidebar_current: "docs-incapsula-siem-log-configuration"
+description: |-
+Provides a Log Configuration resource.
+---
+
+# incapsula_siem_log_configuration
+
+Provides a Log configuration resource.
+This resource is used to manage Log Configuration that describe the destination of logs.
+Log configuration contain [connection details](TBD) of destination for delivered logs 
+[Link to documentation](https://docs.imperva.com/bundle/cloud-application-security/page/siem-log-configuration.htm)
+
+
+## Example Usage
+
+```hcl
+resource "incapsula_siem_connection_s3" "example_siem_connection"{
+	accountId = "1234567"
+	connectionName = "CWAF SIEM-LOGS CONNECTION"
+  	storageType = "CUSTOMER_S3_ARN"
+  	path = "myBucket/siem/logs"
+}
+
+resource "incapsula_siem_log_configuration" "example_siem_log_configuration"{
+    accountId = 1234567
+  	configurationName = "CWAF SIEM-LOGS configuration"
+  	provider = "ABP"
+	datasets = ["ABP_ACCESS"]
+  	enabled = true
+  	connectionId = incapsula_siem_connection_s3.example_siem_connection.id
+
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+* `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
+* `configurationName` - (Required) Unique configuration name.
+* `provider` - (Required) Provider type. Values: `ABP`, `NETSEC`
+* `datasets` - (Required) An array of strings representing the type of logs. Values:<br /> `ABP`, `ABP_ACCESS` for provider type `ABP`<br /> `CONNECTION`, `NETFLOW`, `IP`, `ATTACK` for provider type `NETSEC`
+* `enabled`  - (Required) Boolean. Values: `true`/ `false`
+* `connectionId` - (Required) Connection id associated with this log configuration
+
+
+## Attributes Reference
+
+The following attributes are exported:
+
+* `id` - Unique identifier of the Customer S3 connection.
+
+## Import
+
+Customer connection can be imported using `connectionId`:
+
+```
+$ terraform import incapsula_siem_connection_s3arn.example_siem_connection_arn connectionId
+```
