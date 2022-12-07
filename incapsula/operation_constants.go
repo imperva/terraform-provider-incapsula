@@ -146,3 +146,8 @@ const DeleteMtlsClientToImpervaCertifiateSiteAssociation = "delete_mtls_client_t
 
 const CreateSiteTlsSettings = "create_site_tls_settings"
 const ReadSiteTlsSettings = "read_site_tls_settings"
+
+const CreateWaitingRoom = "create_waiting_room"
+const ReadWaitingRoom = "read_waiting_room"
+const UpdateWaitingRoom = "update_waiting_room"
+const DeleteWaitingRoom = "delete_waiting_room"
