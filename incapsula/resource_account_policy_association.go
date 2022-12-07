@@ -49,7 +49,7 @@ func resourceAccountPolicyAssociation() *schema.Resource {
 			"available_policy_ids": {
 				Description: "Comma separated list of The account’s available policies." +
 					" These policies can be applied to the websites in the account." +
-					" e.g. available_policy_ids = format(\"%d,%d\", incapsula_policy.acl1-policy.id, incapsula_policy.waf3-policy.id)" +
+					" e.g. available_policy_ids = format(\"%s,%s\", incapsula_policy.acl1-policy.id, incapsula_policy.waf3-policy.id)" +
 					" Specify this argument only if you are a parent account trying to update your child account policies availability" +
 					" in order to remove availability for all policies please specify \"" + noAvailablePoliciesConst + "\".",
 				Type: schema.TypeString,
