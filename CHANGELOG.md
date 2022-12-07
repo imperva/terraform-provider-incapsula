@@ -1,3 +1,20 @@
+## 3.11.0 (Dec 4, 2022)
+
+FEATURES:
+
+* **New Resource:** incapsula_bots_configuration
+
+IMPROVEMENTS:
+
+* incapsula_incap_rule - Support overrideExisting Flag ([#244](https://github.com/imperva/terraform-provider-incapsula/pull/244))
+* incapsula_account_policy_association - added available_policy_ids optional argument + move to v3 apis to improve performance ([#250](https://github.com/imperva/terraform-provider-incapsula/pull/250))
+
+
+BUG FIXES:
+
+* Fix issue #234 - remove omitempty for boolean fields ([#247](https://github.com/imperva/terraform-provider-incapsula/pull/247))
+
+
 ## 3.10.3 (Nov 20, 2022)
 
 BUG FIXES:

@@ -91,6 +91,10 @@ const DeleteDataCenter = "delete_data_center"
 const CreateDataCenterConfiguration = "create_data_configuration"
 const ReadDataCenterConfiguration = "read_data_configuration"
 
+const CreateBotConfiguration = "create_bot_configuration"
+const ReadBotConfiguration = "read_bot_configuration"
+const ReadClientApplications = "read_client_applications"
+
 const ReadDataStorageRegion = "read_data_storage_region"
 const UpdateDataStorageRegion = "update_data_storage_region"
 

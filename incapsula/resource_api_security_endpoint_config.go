@@ -80,8 +80,8 @@ func resourceApiSecurityEndpointConfig() *schema.Resource {
 			"invalid_param_name_violation_action": {
 				Description:  "The action taken when an invalid parameter name Violation occurs. Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT. Assigning DEFAULT will inherit the action from parent object.",
 				Type:         schema.TypeString,
+				Computed:     true,
 				Optional:     true,
-				Default:      "DEFAULT",
 				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE", "DEFAULT"}, false),
 			},
 		},

@@ -19,36 +19,36 @@ type PerformanceSettings struct {
 		Time  int    `json:"time,omitempty"`
 	} `json:"mode"`
 	Key struct {
-		UniteNakedFullCache bool `json:"unite_naked_full_cache,omitempty"`
-		ComplyVary          bool `json:"comply_vary,omitempty"`
+		UniteNakedFullCache bool `json:"unite_naked_full_cache"`
+		ComplyVary          bool `json:"comply_vary"`
 	} `json:"key,omitempty"`
 	Response struct {
 		StaleContent struct {
 			Mode string `json:"mode,omitempty"`
 			Time int    `json:"time,omitempty"`
 		} `json:"stale_content,omitempty"`
-		CacheShield         bool `json:"cache_shield,omitempty"`
+		CacheShield         bool `json:"cache_shield"`
 		CacheResponseHeader struct {
 			Mode    string        `json:"mode,omitempty"`
 			Headers []interface{} `json:"headers,omitempty"`
 		} `json:"cache_response_header,omitempty"`
 		TagResponseHeader    string `json:"tag_response_header,omitempty"`
-		CacheEmptyResponses  bool   `json:"cache_empty_responses,omitempty"`
-		Cache300X            bool   `json:"cache_300x,omitempty"`
-		CacheHTTP10Responses bool   `json:"cache_http_10_responses,omitempty"`
+		CacheEmptyResponses  bool   `json:"cache_empty_responses"`
+		Cache300X            bool   `json:"cache_300x"`
+		CacheHTTP10Responses bool   `json:"cache_http_10_responses"`
 		Cache404             struct {
-			Enabled bool `json:"enabled,omitempty"`
+			Enabled bool `json:"enabled"`
 			Time    int  `json:"time,omitempty"`
 		} `json:"cache_404,omitempty"`
 	} `json:"response,omitempty"`
 	TTL struct {
-		UseShortestCaching bool `json:"use_shortest_caching,omitempty"`
-		PreferLastModified bool `json:"prefer_last_modified,omitempty"`
+		UseShortestCaching bool `json:"use_shortest_caching"`
+		PreferLastModified bool `json:"prefer_last_modified"`
 	} `json:"ttl,omitempty"`
 	ClientSide struct {
-		EnableClientSideCaching bool `json:"enable_client_side_caching,omitempty"`
-		ComplyNoCache           bool `json:"comply_no_cache,omitempty"`
-		SendAgeHeader           bool `json:"send_age_header,omitempty"`
+		EnableClientSideCaching bool `json:"enable_client_side_caching"`
+		ComplyNoCache           bool `json:"comply_no_cache"`
+		SendAgeHeader           bool `json:"send_age_header"`
 	} `json:"client_side,omitempty"`
 }
 

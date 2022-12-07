@@ -20,8 +20,8 @@ func TestClientPolicyAssetAssociatedPositive(t *testing.T) {
 
 func TestClientPolicyAssetAssociatedNegative(t *testing.T) {
 	isAssociated, err := ClientPolicyAssetAssociatedBase(t, false)
-	if err == nil {
-		t.Errorf("expected error but got none")
+	if err != nil {
+		t.Errorf("did not expected error but got one. error: %v", err)
 	}
 	if isAssociated {
 		t.Errorf("expected policy to NOT be assosiated")
