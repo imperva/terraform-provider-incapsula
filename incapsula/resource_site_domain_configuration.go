@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func resourceSiteDomainsConfiguration() *schema.Resource {
+func resourceSiteDomainConfiguration() *schema.Resource {
 	return &schema.Resource{
 		Read:   resourceDomainRead,
 		Create: resourceDomainUpdate,
