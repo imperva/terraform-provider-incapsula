@@ -12,7 +12,7 @@ import (
 
 func TestClientGetDomainsForSiteValidCase(t *testing.T) {
 	log.Printf("======================== BEGIN TEST ========================")
-	log.Printf("[DEBUG] Running test client_site_domains_configuration_test.TestClientGetDomainsForSiteValidCase")
+	log.Printf("[DEBUG] Running test client_site_domain_configuration_test.TestClientGetDomainsForSiteValidCase")
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "111"
@@ -75,7 +75,7 @@ func TestClientGetDomainsForSiteValidCase(t *testing.T) {
 
 func TestClientGetDomainsForSiteBadJsonResponse(t *testing.T) {
 	log.Printf("======================== BEGIN TEST ========================")
-	log.Printf("[DEBUG] Running test client_site_domains_configuration_test.TestClientGetDomainsForSiteBadJsonResponse")
+	log.Printf("[DEBUG] Running test client_site_domain_configuration_test.TestClientGetDomainsForSiteBadJsonResponse")
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "111"
@@ -111,7 +111,7 @@ func TestClientGetDomainsForSiteBadJsonResponse(t *testing.T) {
 
 func TestClientGetDomainsForSiteUnAuthorizedResponse(t *testing.T) {
 	log.Printf("======================== BEGIN TEST ========================")
-	log.Printf("[DEBUG] Running test client_site_domains_configuration_test.TestClientGetDomainsForSiteUnAuthorizedResponse")
+	log.Printf("[DEBUG] Running test client_site_domain_configuration_test.TestClientGetDomainsForSiteUnAuthorizedResponse")
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "111"
@@ -147,7 +147,7 @@ func TestClientGetDomainsForSiteUnAuthorizedResponse(t *testing.T) {
 
 func TestClientAddDomainsForSiteValidCase(t *testing.T) {
 	log.Printf("======================== BEGIN TEST ========================")
-	log.Printf("[DEBUG] Running test client_site_domains_configuration_test.TestClientAddDomainsForSiteValidCase")
+	log.Printf("[DEBUG] Running test client_site_domain_configuration_test.TestClientAddDomainsForSiteValidCase")
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "111"
@@ -227,7 +227,7 @@ func TestClientAddDomainsForSiteValidCase(t *testing.T) {
 
 func TestClientAddDomainsForSiteErrorResponse(t *testing.T) {
 	log.Printf("======================== BEGIN TEST ========================")
-	log.Printf("[DEBUG] Running test client_site_domains_configuration_test.TestClientAddDomainsForSiteErrorResponse")
+	log.Printf("[DEBUG] Running test client_site_domain_configuration_test.TestClientAddDomainsForSiteErrorResponse")
 	apiID := "foo"
 	apiKey := "bar"
 	siteId := "111"
