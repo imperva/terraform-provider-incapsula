@@ -51,7 +51,7 @@ The following arguments are supported:
 * `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `configurationName` - (Required) Unique configuration name.
 * `producer` - (Required) Provider type. Values: `ABP`, `NETSEC`
-* `datasets` - (Required) An array of strings representing the type of logs. Values:<br /> `ABP`, for provider type `ABP`<br /> `CONNECTION`, `NETFLOW`, `IP`, `ATTACK` for provider type `NETSEC`
+* `datasets` - (Required) An array of strings representing the type of logs. Values:<br /> `ABP` for provider type `ABP`<br /> `CONNECTION`, `NETFLOW`, `IP`, `ATTACK` for provider type `NETSEC`
 * `enabled`  - (Required) Boolean. Values: `true`/ `false`
 * `connectionId` - (Required) Connection id associated with this log configuration
 
