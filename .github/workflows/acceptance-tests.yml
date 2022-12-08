@@ -45,5 +45,5 @@ jobs:
     #- name: Run unit tests
      # run: go test ./incapsula
 
-    - name: Run acceptance tests with api id + ${{ IMPERVA_API_ID }}
+    - name: Run acceptance tests with api id + ${{ env.IMPERVA_API_ID }}
       run: make testacc
