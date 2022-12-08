@@ -14,7 +14,7 @@ const mtlsClientToImervaCertificateName = "testacc-terraform-client_to_imperva_c
 
 var calculatedHashForClientCACert = ""
 
-//todo KATRIn - do I want to add import test??   do I have import? Probably not
+// todo KATRIn - do I want to add import test??   do I have import? Probably not
 func TestAccIncapsulaMtlsClientToImervaCertificate_Basic(t *testing.T) {
 	log.Printf("========================BEGIN TEST========================")
 	log.Printf("[DEBUG]Running test resource_mtls_imperva_to_origin_certificate.TestAccIncapsulaMtlsImpervaToOriginCertificate_Basic")

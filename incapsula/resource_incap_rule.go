@@ -141,6 +141,12 @@ func resourceIncapRule() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"enabled": {
+				Description: "Enable or disable rule.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+			},
 		},
 	}
 }
@@ -169,6 +175,7 @@ func resourceIncapRuleCreate(d *schema.ResourceData, m interface{}) error {
 		MultipleDeletions:     d.Get("multiple_deletions").(bool),
 		OverrideWafRule:       d.Get("override_waf_rule").(string),
 		OverrideWafAction:     d.Get("override_waf_action").(string),
+		Enabled:               d.Get("enabled").(bool),
 	}
 
 	ruleWithID, err := client.AddIncapRule(d.Get("site_id").(string), &rule)
@@ -224,6 +231,7 @@ func resourceIncapRuleRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("multiple_deletions", rule.MultipleDeletions)
 	d.Set("override_waf_rule", rule.OverrideWafRule)
 	d.Set("override_waf_action", rule.OverrideWafAction)
+	d.Set("enabled", rule.Enabled)
 
 	return nil
 }
@@ -252,6 +260,7 @@ func resourceIncapRuleUpdate(d *schema.ResourceData, m interface{}) error {
 		MultipleDeletions:     d.Get("multiple_deletions").(bool),
 		OverrideWafRule:       d.Get("override_waf_rule").(string),
 		OverrideWafAction:     d.Get("override_waf_action").(string),
+		Enabled:               d.Get("enabled").(bool),
 	}
 
 	ruleID, err := strconv.Atoi(d.Id())
