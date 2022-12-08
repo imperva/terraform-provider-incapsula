@@ -1,7 +1,6 @@
 package incapsula
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -23,7 +22,7 @@ func TestClientCreateSiemConnectionBadConfig(t *testing.T) {
 	}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 
-	siemConnectionInfo := SiemConnectionInfo{
+	siemConnectionWithIdAndVersion, _, err := client.CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
 		AssetID:        RandomNumbersExcludingZeroString(10),
 		ConnectionName: RandomLetterAndNumberString(20),
 		StorageType:    RandomCapitalLetterString(10),
@@ -32,12 +31,7 @@ func TestClientCreateSiemConnectionBadConfig(t *testing.T) {
 			SecretKey: RandomLetterAndNumberString(40),
 			Path:      RandomLowLetterString(20) + "/" + RandomLowLetterString(10),
 		},
-	}
-
-	siemConnection := SiemConnection{}
-	siemConnection.Data = []SiemConnectionInfo{siemConnectionInfo}
-
-	siemConnectionWithIdAndVersion, _, err := client.CreateSiemConnection(&siemConnection)
+	}}})
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -53,8 +47,9 @@ func TestClientCreateSiemConnectionBadJSON(t *testing.T) {
 	log.Printf("======================== BEGIN TEST ========================")
 	apiID := RandomCapitalLetterAndNumberString(20)
 	apiKey := RandomLetterAndNumberString(40)
+	assetId := RandomNumbersExcludingZeroString(10)
 
-	endpoint := fmt.Sprintf("/%s", endpointSiemConnection)
+	endpoint := fmt.Sprintf("/%s/?caid=%s", endpointSiemConnection, assetId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -69,8 +64,8 @@ func TestClientCreateSiemConnectionBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	siemConnectionInfo := SiemConnectionInfo{
-		AssetID:        RandomNumbersExcludingZeroString(10),
+	siemConnectionWithIdAndVersion, _, err := client.CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
+		AssetID:        assetId,
 		ConnectionName: RandomLetterAndNumberString(20),
 		StorageType:    RandomCapitalLetterString(10),
 		ConnectionInfo: ConnectionInfo{
@@ -78,12 +73,7 @@ func TestClientCreateSiemConnectionBadJSON(t *testing.T) {
 			SecretKey: RandomLetterAndNumberString(40),
 			Path:      RandomLowLetterString(20) + "/" + RandomLowLetterString(10),
 		},
-	}
-
-	siemConnection := SiemConnection{}
-	siemConnection.Data = []SiemConnectionInfo{siemConnectionInfo}
-
-	siemConnectionWithIdAndVersion, _, err := client.CreateSiemConnection(&siemConnection)
+	}}})
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -131,8 +121,8 @@ func TestClientCreateSiemConnectionBadRequest(t *testing.T) {
 
 		apiID := RandomCapitalLetterAndNumberString(20)
 		apiKey := RandomLetterAndNumberString(40)
-
-		endpoint := fmt.Sprintf("/%s", endpointSiemConnection)
+		assetId := RandomNumbersExcludingZeroString(10)
+		endpoint := fmt.Sprintf("/%s/?caid=%s", endpointSiemConnection, assetId)
 
 		server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			if req.URL.String() != endpoint {
@@ -157,8 +147,8 @@ func TestClientCreateSiemConnectionBadRequest(t *testing.T) {
 			storageType = "CUSTOMER_S3_" + RandomLetterAndNumberString(1)
 		}
 
-		siemConnectionInfo := SiemConnectionInfo{
-			AssetID:        RandomNumbersExcludingZeroString(10),
+		siemConnectionWithIdAndVersion, _, err := client.CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
+			AssetID:        assetId,
 			ConnectionName: RandomLetterAndNumberString(20),
 			StorageType:    storageType,
 			ConnectionInfo: ConnectionInfo{
@@ -166,12 +156,7 @@ func TestClientCreateSiemConnectionBadRequest(t *testing.T) {
 				SecretKey: RandomLetterAndNumberString(40),
 				Path:      RandomLowLetterString(20) + "/" + RandomLowLetterString(10),
 			},
-		}
-
-		siemConnection := SiemConnection{}
-		siemConnection.Data = []SiemConnectionInfo{siemConnectionInfo}
-
-		siemConnectionWithIdAndVersion, _, err := client.CreateSiemConnection(&siemConnection)
+		}}})
 
 		if err == nil {
 			t.Errorf("Should have received an error")
@@ -190,8 +175,8 @@ func TestClientCreateValidSiemConnection(t *testing.T) {
 	log.Printf("======================== BEGIN TEST ========================")
 	apiID := RandomCapitalLetterAndNumberString(20)
 	apiKey := RandomLetterAndNumberString(40)
-
-	endpoint := fmt.Sprintf("/%s", endpointSiemConnection)
+	assetId := RandomNumbersExcludingZeroString(10)
+	endpoint := fmt.Sprintf("/%s/?caid=%s", endpointSiemConnection, assetId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -228,8 +213,8 @@ func TestClientCreateValidSiemConnection(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	siemConnectionInfo := SiemConnectionInfo{
-		AssetID:        RandomNumbersExcludingZeroString(10),
+	response, _, err := client.CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
+		AssetID:        assetId,
 		ConnectionName: RandomLetterAndNumberString(20),
 		StorageType:    RandomCapitalLetterString(10),
 		ConnectionInfo: ConnectionInfo{
@@ -237,22 +222,12 @@ func TestClientCreateValidSiemConnection(t *testing.T) {
 			SecretKey: RandomLetterAndNumberString(40),
 			Path:      RandomLowLetterString(20) + "/" + RandomLowLetterString(10),
 		},
-	}
-
-	siemConnection := SiemConnection{}
-	siemConnection.Data = []SiemConnectionInfo{siemConnectionInfo}
-
-	connectionJSON, err := json.Marshal(siemConnection)
-
-	var siemConnectionWithIdAndVersion1 SiemConnectionWithIdAndVersion
-	err = json.Unmarshal(connectionJSON, &siemConnectionWithIdAndVersion1)
-
-	siemConnectionWithIdAndVersion, _, err := client.CreateSiemConnection(&siemConnection)
+	}}})
 
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
-	if siemConnectionWithIdAndVersion == nil {
+	if response == nil {
 		t.Errorf("Should not have received a nil siemConnectionWithIdAndVersion instance")
 	}
 }
@@ -374,7 +349,7 @@ func TestClientUpdateExistingSiemConnection(t *testing.T) {
 	responsePath2 := RandomLowLetterString(10)
 	responseVersion := RandomNumbersExcludingZeroString(1) + "." + RandomNumbersExcludingZeroString(1)
 
-	endpoint := fmt.Sprintf("/%s", endpointSiemConnection)
+	endpoint := fmt.Sprintf("/%s/%s?caid=%s", endpointSiemConnection, responseID, responseAssetId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -413,7 +388,7 @@ func TestClientUpdateExistingSiemConnection(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	sent := SiemConnectionWithIdAndVersionInfo{
+	sent := SiemConnectionData{
 		ID:             responseID,
 		AssetID:        responseAssetId,
 		ConnectionName: responseConnectionName,
@@ -426,10 +401,7 @@ func TestClientUpdateExistingSiemConnection(t *testing.T) {
 		},
 	}
 
-	siemConnectionWithIdAndVersion := SiemConnectionWithIdAndVersion{}
-	siemConnectionWithIdAndVersion.Data = []SiemConnectionWithIdAndVersionInfo{sent}
-
-	sc, _, err := client.UpdateSiemConnection(&siemConnectionWithIdAndVersion)
+	sc, _, err := client.UpdateSiemConnection(&SiemConnection{Data: []SiemConnectionData{sent}})
 
 	if err != nil {
 		t.Errorf("Should not have received an error")

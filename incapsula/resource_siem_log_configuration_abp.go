@@ -40,7 +40,7 @@ func resourceSiemLogConfigurationAbp() *schema.Resource {
 				Type:        schema.TypeList,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice([]string{"ABP", "ABP_ACCESS"}, false),
+					ValidateFunc: validation.StringInSlice([]string{"ABP"}, false),
 				},
 				Required: true,
 			},

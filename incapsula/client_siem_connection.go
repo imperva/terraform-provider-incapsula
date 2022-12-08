@@ -9,73 +9,54 @@ import (
 	"strconv"
 )
 
-const endpointSiemConnection = "siem-config-service/v3/connections/"
+const endpointSiemConnection = "siem-config-service/v3/connections"
 
 type ConnectionInfo struct {
-	AccessKey string `json:"accessKey"`
-	SecretKey string `json:"secretKey"`
+	AccessKey string `json:"accessKey,omitempty"`
+	SecretKey string `json:"secretKey,omitempty"`
 	Path      string `json:"path"`
 }
 
-type SiemConnectionInfo struct {
-	AssetID        string         `json:"assetId"`
-	ConnectionName string         `json:"connectionName"`
-	StorageType    string         `json:"storageType"`
-	ConnectionInfo ConnectionInfo `json:"connectionInfo"`
-}
-
-type SiemConnectionWithIdAndVersionInfo struct {
-	ID             string         `json:"id"`
-	Version        string         `json:"version"`
-	AssetID        string         `json:"assetId"`
+type SiemConnectionData struct {
+	ID             string         `json:"id,omitempty"`
+	Version        string         `json:"version,omitempty"`
+	AssetID        string         `json:"assetId,omitempty"`
 	ConnectionName string         `json:"connectionName"`
 	StorageType    string         `json:"storageType"`
 	ConnectionInfo ConnectionInfo `json:"connectionInfo"`
 }
 
 type SiemConnection struct {
-	Data []SiemConnectionInfo `json:"data"`
+	Data []SiemConnectionData `json:"data"`
 }
 
-type SiemConnectionWithIdAndVersion struct {
-	Data []SiemConnectionWithIdAndVersionInfo `json:"data"`
-}
-
-func (c *Client) CreateSiemConnection(connection *SiemConnection) (*SiemConnectionWithIdAndVersion, *int, error) {
+func (c *Client) CreateSiemConnection(connection *SiemConnection) (*SiemConnection, *int, error) {
 	connectionJSON, err := json.Marshal(connection)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to produce JSON from SiemConnection: %s", err)
 	}
-	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURLAPI, endpointSiemConnection)
-	accountId := 0
-	if len(connection.Data[0].AssetID) > 0 {
-		accountId, _ = strconv.Atoi(connection.Data[0].AssetID)
-	}
-	return siemConnectionRequestWithResponse(c, CreateSiemConnection, http.MethodPost, reqURL, connectionJSON, accountId, 201)
+	reqURL := fmt.Sprintf("%s/%s/", c.config.BaseURLAPI, endpointSiemConnection)
+	return siemConnectionRequestWithResponse(c, CreateSiemConnection, http.MethodPost, reqURL, connectionJSON, connection.Data[0].AssetID, 201)
 }
 
-func (c *Client) ReadSiemConnection(ID string) (*SiemConnectionWithIdAndVersion, *int, error) {
+func (c *Client) ReadSiemConnection(ID string) (*SiemConnection, *int, error) {
 	reqURL := fmt.Sprintf("%s/%s/%s", c.config.BaseURLAPI, endpointSiemConnection, ID)
-	return siemConnectionRequestWithResponse(c, ReadSiemConnection, http.MethodGet, reqURL, nil, 0, 200)
+	return siemConnectionRequestWithResponse(c, ReadSiemConnection, http.MethodGet, reqURL, nil, "", 200)
 }
 
-func (c *Client) UpdateSiemConnection(siemConnectionWithIdAndVersion *SiemConnectionWithIdAndVersion) (*SiemConnectionWithIdAndVersion, *int, error) {
-	siemConnectionWithIDJSON, err := json.Marshal(siemConnectionWithIdAndVersion)
+func (c *Client) UpdateSiemConnection(siemConnection *SiemConnection) (*SiemConnection, *int, error) {
+	siemConnectionJSON, err := json.Marshal(siemConnection)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to produce JSON from SiemConnectionWithID: %s", err)
 	}
-	reqURL := fmt.Sprintf("%s/%s/%s", c.config.BaseURLAPI, endpointSiemConnection, siemConnectionWithIdAndVersion.Data[0].ID)
-	accountId := 0
-	if len(siemConnectionWithIdAndVersion.Data[0].AssetID) > 0 {
-		accountId, _ = strconv.Atoi(siemConnectionWithIdAndVersion.Data[0].AssetID)
-	}
-	return siemConnectionRequestWithResponse(c, UpdateSiemConnection, http.MethodPut, reqURL, siemConnectionWithIDJSON, accountId, 200)
+	reqURL := fmt.Sprintf("%s/%s/%s", c.config.BaseURLAPI, endpointSiemConnection, siemConnection.Data[0].ID)
+	return siemConnectionRequestWithResponse(c, UpdateSiemConnection, http.MethodPut, reqURL, siemConnectionJSON, siemConnection.Data[0].AssetID, 200)
 }
 
 func (c *Client) DeleteSiemConnection(ID string) (*int, error) {
 	reqURL := fmt.Sprintf("%s/%s/%s", c.config.BaseURLAPI, endpointSiemConnection, ID)
-	_, _, responseStatusCode, err := siemConnectionRequest(c, DeleteSiemConnection, http.MethodDelete, reqURL, nil, 0, 200)
-	return responseStatusCode, err
+	_, _, statusCode, err := siemConnectionRequest(c, DeleteSiemConnection, http.MethodDelete, reqURL, nil, "", 200)
+	return statusCode, err
 }
 
 func dSiemConnectionResponseClose(c io.Closer) {
@@ -84,11 +65,16 @@ func dSiemConnectionResponseClose(c io.Closer) {
 	}
 }
 
-func siemConnectionRequest(c *Client, operation string, method string, reqURL string, data []byte, accountId int, expectedSuccessStatusCode int) (*string, *[]byte, *int, error) {
+func siemConnectionRequest(c *Client, operation string, method string, reqURL string, data []byte, accountIdStr string, expectedSuccessStatusCode int) (*string, *[]byte, *int, error) {
 
 	log.Printf("[INFO] Executing operation %s on SIEM connection", operation)
 
-	params := GetRequestParamsWithCaid(accountId)
+	var params = map[string]string{}
+	accountId, err := strconv.Atoi(accountIdStr)
+	if err == nil && accountId > 0 {
+		params["caid"] = accountIdStr
+	}
+
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(method, reqURL, data, params, operation)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error from Incapsula service when executing %s operation on SIEM connection: %s", operation, err)
@@ -111,14 +97,14 @@ func siemConnectionRequest(c *Client, operation string, method string, reqURL st
 	return &body, &responseBody, &resp.StatusCode, nil
 }
 
-func siemConnectionRequestWithResponse(c *Client, operation string, method string, reqURL string, data []byte, accountId int, expectedSuccessStatusCode int) (*SiemConnectionWithIdAndVersion, *int, error) {
+func siemConnectionRequestWithResponse(c *Client, operation string, method string, reqURL string, data []byte, accountIdStr string, expectedSuccessStatusCode int) (*SiemConnection, *int, error) {
 
-	body, responseBody, responseStatusCode, err := siemConnectionRequest(c, operation, method, reqURL, data, accountId, expectedSuccessStatusCode)
+	body, responseBody, responseStatusCode, err := siemConnectionRequest(c, operation, method, reqURL, data, accountIdStr, expectedSuccessStatusCode)
 	if responseBody == nil {
 		return nil, responseStatusCode, err
 	}
 
-	var response SiemConnectionWithIdAndVersion
+	var response SiemConnection
 	err = json.Unmarshal(*responseBody, &response)
 	if err != nil {
 		return nil, responseStatusCode, fmt.Errorf("error obtained %s\n when constructing response for %s operation on SIEM connection from: %p",

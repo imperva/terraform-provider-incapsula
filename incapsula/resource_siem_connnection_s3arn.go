@@ -52,43 +52,38 @@ func resourceSiemConnectionS3Arn() *schema.Resource {
 
 func resourceSiemConnectionS3ArnCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siemConnectionInfo := SiemConnectionInfo{
+	response, statusCode, err := client.CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
 		AssetID:        d.Get("account_id").(string),
 		ConnectionName: d.Get("connection_name").(string),
 		StorageType:    d.Get("storage_type").(string),
 		ConnectionInfo: ConnectionInfo{
 			Path: d.Get("path").(string),
 		},
-	}
-
-	siemConnection := SiemConnection{}
-	siemConnection.Data = []SiemConnectionInfo{siemConnectionInfo}
-
-	siemConnectionWithIdAndVersion, responseStatusCode, err := client.CreateSiemConnection(&siemConnection)
+	}}})
 	if err != nil {
 		return err
 	}
 
-	if (*responseStatusCode == 201) && (siemConnectionWithIdAndVersion != nil) && (len(siemConnectionWithIdAndVersion.Data) == 1) {
-		d.SetId(siemConnectionWithIdAndVersion.Data[0].ID)
+	if (*statusCode == 201) && (response != nil) && (len(response.Data) == 1) {
+		d.SetId(response.Data[0].ID)
 		return resourceSiemConnectionS3ArnRead(d, m)
 	} else {
-		return fmt.Errorf("[ERROR] Unsupported operation. Response status code: %d", *responseStatusCode)
+		return fmt.Errorf("[ERROR] Unsupported operation. Response status code: %d", *statusCode)
 	}
 }
 
 func resourceSiemConnectionS3ArnRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siemConnectionWithIdAndVersion, responseStatusCode, err := client.ReadSiemConnection(d.Id())
+	response, statusCode, err := client.ReadSiemConnection(d.Id())
 	if err != nil {
 		return err
 	}
 	// If the connection is deleted on the server, blow it out locally and run through the normal TF cycle
-	if *responseStatusCode == 404 {
+	if *statusCode == 404 {
 		d.SetId("")
 		return nil
-	} else if (*responseStatusCode == 200) && (siemConnectionWithIdAndVersion != nil) && (len(siemConnectionWithIdAndVersion.Data) == 1) {
-		var connection = siemConnectionWithIdAndVersion.Data[0]
+	} else if (*statusCode == 200) && (response != nil) && (len(response.Data) == 1) {
+		var connection = response.Data[0]
 		d.Set("account_id", connection.AssetID)
 		d.Set("connection_name", connection.ConnectionName)
 		d.Set("storage_type", connection.StorageType)
@@ -96,13 +91,13 @@ func resourceSiemConnectionS3ArnRead(d *schema.ResourceData, m interface{}) erro
 		d.Set("version", connection.Version)
 		return nil
 	} else {
-		return fmt.Errorf("[ERROR] Unsupported operation. Response status code: %d", *responseStatusCode)
+		return fmt.Errorf("[ERROR] Unsupported operation. Response status code: %d", *statusCode)
 	}
 }
 
 func resourceSiemConnectionS3ArnUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siemConnectionWithIdAndVersionInfo := SiemConnectionWithIdAndVersionInfo{
+	_, _, err := client.UpdateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
 		ID:             d.Id(),
 		AssetID:        d.Get("account_id").(string),
 		ConnectionName: d.Get("connection_name").(string),
@@ -111,17 +106,11 @@ func resourceSiemConnectionS3ArnUpdate(d *schema.ResourceData, m interface{}) er
 		ConnectionInfo: ConnectionInfo{
 			Path: d.Get("path").(string),
 		},
-	}
-
-	siemConnectionWithIdAndVersionUpdate := SiemConnectionWithIdAndVersion{}
-	siemConnectionWithIdAndVersionUpdate.Data = []SiemConnectionWithIdAndVersionInfo{siemConnectionWithIdAndVersionInfo}
-
-	_, _, err := client.UpdateSiemConnection(&siemConnectionWithIdAndVersionUpdate)
+	}}})
 
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 

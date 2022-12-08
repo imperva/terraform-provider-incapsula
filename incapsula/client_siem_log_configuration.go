@@ -9,19 +9,10 @@ import (
 	"strconv"
 )
 
-const endpointSiemLogConfiguration = "siem-config-service/v3/log-configurations/"
+const endpointSiemLogConfiguration = "siem-config-service/v3/log-configurations"
 
-type SiemLogConfigurationInfo struct {
-	AssetID           string        `json:"assetId"`
-	ConfigurationName string        `json:"configurationName"`
-	Provider          string        `json:"provider"`
-	Datasets          []interface{} `json:"datasets"`
-	Enabled           bool          `json:"enabled"`
-	ConnectionId      string        `json:"connectionId"`
-}
-
-type SiemLogConfigurationWithIdAndVersionInfo struct {
-	ID                string        `json:"id"`
+type SiemLogConfigurationData struct {
+	ID                string        `json:"id,omitempty"`
 	Version           string        `json:"version,omitempty"`
 	AssetID           string        `json:"assetId,omitempty"`
 	ConfigurationName string        `json:"configurationName"`
@@ -32,49 +23,37 @@ type SiemLogConfigurationWithIdAndVersionInfo struct {
 }
 
 type SiemLogConfiguration struct {
-	Data []SiemLogConfigurationInfo `json:"data"`
+	Data []SiemLogConfigurationData `json:"data"`
 }
 
-type SiemLogConfigurationWithIdAndVersion struct {
-	Data []SiemLogConfigurationWithIdAndVersionInfo `json:"data"`
-}
-
-func (c *Client) CreateSiemLogConfiguration(siemLogConfiguration *SiemLogConfiguration) (*SiemLogConfigurationWithIdAndVersion, *int, error) {
+func (c *Client) CreateSiemLogConfiguration(siemLogConfiguration *SiemLogConfiguration) (*SiemLogConfiguration, *int, error) {
 	logConfigurationJSON, err := json.Marshal(siemLogConfiguration)
 	fmt.Printf("[DEBUG] CreateSiemLogConfiguration: %s\n", logConfigurationJSON)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to produce JSON from SiemLogConfiguration: %s", err)
 	}
-	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURLAPI, endpointSiemLogConfiguration)
-	accountId := 0
-	if len(siemLogConfiguration.Data[0].AssetID) > 0 {
-		accountId, _ = strconv.Atoi(siemLogConfiguration.Data[0].AssetID)
-	}
-	return siemLogConfigurationRequestWithResponse(c, CreateSiemLogConfiguration, http.MethodPost, reqURL, logConfigurationJSON, accountId, 201)
+	reqURL := fmt.Sprintf("%s/%s/", c.config.BaseURLAPI, endpointSiemLogConfiguration)
+	return siemLogConfigurationRequestWithResponse(c, CreateSiemLogConfiguration, http.MethodPost, reqURL, logConfigurationJSON, siemLogConfiguration.Data[0].AssetID, 201)
 }
 
-func (c *Client) ReadSiemLogConfiguration(ID string) (*SiemLogConfigurationWithIdAndVersion, *int, error) {
+func (c *Client) ReadSiemLogConfiguration(ID string) (*SiemLogConfiguration, *int, error) {
 	reqURL := fmt.Sprintf("%s/%s/%s", c.config.BaseURLAPI, endpointSiemLogConfiguration, ID)
-	return siemLogConfigurationRequestWithResponse(c, ReadSiemLogConfiguration, http.MethodGet, reqURL, nil, 0, 200)
+	return siemLogConfigurationRequestWithResponse(c, ReadSiemLogConfiguration, http.MethodGet, reqURL, nil, "", 200)
 }
 
-func (c *Client) UpdateSiemLogConfiguration(logConfigurationWithIdAndVersion *SiemLogConfigurationWithIdAndVersion) (*SiemLogConfigurationWithIdAndVersion, *int, error) {
-	siemLogConfigurationWithIDJSON, err := json.Marshal(logConfigurationWithIdAndVersion)
-	fmt.Printf("[DEBUG] UpdateSiemLogConfiguration: %s\n", siemLogConfigurationWithIDJSON)
+func (c *Client) UpdateSiemLogConfiguration(siemLogConfiguration *SiemLogConfiguration) (*SiemLogConfiguration, *int, error) {
+	siemLogConfigurationJSON, err := json.Marshal(siemLogConfiguration)
+	fmt.Printf("[DEBUG] UpdateSiemLogConfiguration: %s\n", siemLogConfigurationJSON)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to produce JSON from SiemLogConfigurationWithID: %s", err)
 	}
-	reqURL := fmt.Sprintf("%s/%s/%s", c.config.BaseURLAPI, endpointSiemLogConfiguration, logConfigurationWithIdAndVersion.Data[0].ID)
-	accountId := 0
-	if len(logConfigurationWithIdAndVersion.Data[0].AssetID) > 0 {
-		accountId, _ = strconv.Atoi(logConfigurationWithIdAndVersion.Data[0].AssetID)
-	}
-	return siemLogConfigurationRequestWithResponse(c, UpdateSiemLogConfiguration, http.MethodPut, reqURL, siemLogConfigurationWithIDJSON, accountId, 200)
+	reqURL := fmt.Sprintf("%s/%s/%s", c.config.BaseURLAPI, endpointSiemLogConfiguration, siemLogConfiguration.Data[0].ID)
+	return siemLogConfigurationRequestWithResponse(c, UpdateSiemLogConfiguration, http.MethodPut, reqURL, siemLogConfigurationJSON, siemLogConfiguration.Data[0].AssetID, 200)
 }
 
 func (c *Client) DeleteSiemLogConfiguration(ID string) (*int, error) {
 	reqURL := fmt.Sprintf("%s/%s/%s", c.config.BaseURLAPI, endpointSiemLogConfiguration, ID)
-	_, _, responseStatusCode, err := siemLogConfigurationRequest(c, DeleteSiemLogConfiguration, http.MethodDelete, reqURL, nil, 0, 200)
+	_, _, responseStatusCode, err := siemLogConfigurationRequest(c, DeleteSiemLogConfiguration, http.MethodDelete, reqURL, nil, "", 200)
 	return responseStatusCode, err
 }
 
@@ -84,11 +63,15 @@ func dSiemLogConfigurationResponseClose(c io.Closer) {
 	}
 }
 
-func siemLogConfigurationRequest(c *Client, operation string, method string, reqURL string, data []byte, accountId int, expectedSuccessStatusCode int) (*string, *[]byte, *int, error) {
-
+func siemLogConfigurationRequest(c *Client, operation string, method string, reqURL string, data []byte, accountIdStr string, expectedSuccessStatusCode int) (*string, *[]byte, *int, error) {
 	log.Printf("[INFO] Executing operation %s on SIEM log configuration", operation)
 
-	params := GetRequestParamsWithCaid(accountId)
+	var params = map[string]string{}
+	accountId, err := strconv.Atoi(accountIdStr)
+	if err == nil && accountId > 0 {
+		params["caid"] = accountIdStr
+	}
+
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(method, reqURL, data, params, operation)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("error from Incapsula service when executing %s operation on SIEM log configuration: %s", operation, err)
@@ -111,14 +94,14 @@ func siemLogConfigurationRequest(c *Client, operation string, method string, req
 	return &body, &responseBody, &resp.StatusCode, nil
 }
 
-func siemLogConfigurationRequestWithResponse(c *Client, operation string, method string, reqURL string, data []byte, accountId int, expectedSuccessStatusCode int) (*SiemLogConfigurationWithIdAndVersion, *int, error) {
+func siemLogConfigurationRequestWithResponse(c *Client, operation string, method string, reqURL string, data []byte, accountIdStr string, expectedSuccessStatusCode int) (*SiemLogConfiguration, *int, error) {
 
-	body, responseBody, responseStatusCode, err := siemLogConfigurationRequest(c, operation, method, reqURL, data, accountId, expectedSuccessStatusCode)
+	body, responseBody, responseStatusCode, err := siemLogConfigurationRequest(c, operation, method, reqURL, data, accountIdStr, expectedSuccessStatusCode)
 	if responseBody == nil {
 		return nil, responseStatusCode, err
 	}
 
-	var response SiemLogConfigurationWithIdAndVersion
+	var response SiemLogConfiguration
 	err = json.Unmarshal(*responseBody, &response)
 	if err != nil {
 		return nil, responseStatusCode, fmt.Errorf("error obtained %s\n when constructing response for %s operation on SIEM log configuration from: %p",
