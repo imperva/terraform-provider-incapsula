@@ -42,8 +42,8 @@ jobs:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-go${{ env.GO_VERSION }}-${{ hashFiles('**/go.sum') }}
 
-    - name: Run unit tests
-      run: go test ./incapsula
+    #- name: Run unit tests
+     # run: go test ./incapsula
 
     - name: Run acceptance tests
       run: make testacc
