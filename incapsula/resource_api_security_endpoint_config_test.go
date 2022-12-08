@@ -24,7 +24,6 @@ func TestAccIncapsulaApiSecurityEndpointConfig_Basic(t *testing.T) {
 				Config: testAccCheckIncapsulaApiSecurityEndpointConfigBasic(t), //toda ad path + method
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaApiSecurityEndpointExists(apiSecEndpointConfigResource),
-					resource.TestCheckResourceAttr(apiSecEndpointConfigResource, "invalid_param_name_violation_action", "IGNORE"),
 					resource.TestCheckResourceAttr(apiSecEndpointConfigResource, "invalid_param_value_violation_action", "DEFAULT"),
 					resource.TestCheckResourceAttr(apiSecEndpointConfigResource, "path", "/users"),
 					resource.TestCheckResourceAttr(apiSecEndpointConfigResource, "method", "GET"),
@@ -102,7 +101,6 @@ resource"%s""%s"{
 api_id=%s.id
 path = "/users"
 method = "GET"
-invalid_param_name_violation_action="IGNORE"
 invalid_param_value_violation_action="DEFAULT"
 missing_param_violation_action="BLOCK_IP"
 depends_on=[%s]
