@@ -25,6 +25,7 @@ jobs:
     env:
       IMPERVA_API_KEY: ${{ secrets.IMPERVA_API_KEY }}
       IMPERVA_API_ID: ${{ secrets.IMPERVA_API_ID }}
+      TESTING_PROFILE: true
       
     steps:
     - name: Set up Go
