@@ -1,3 +1,10 @@
+## 3.12.0 (Dec 11, 2022)
+
+IMPROVEMENTS:
+
+* incapsula_incap_rule - Incap rules enable flag ([#259](https://github.com/imperva/terraform-provider-incapsula/pull/259))
+
+
 ## 3.11.0 (Dec 4, 2022)
 
 FEATURES:
