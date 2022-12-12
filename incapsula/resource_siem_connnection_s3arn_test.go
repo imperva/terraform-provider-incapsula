@@ -7,10 +7,11 @@ import (
 	"testing"
 )
 
-const s3ArnSiemConnectionResourceType = "incapsula_s3arn_siem_connection"
-const s3ArnSiemConnectionResourceName = "terraform-siem-connection-config-testacc"
+const s3ArnSiemConnectionResourceType = "incapsula_siem_connection_s3arn"
+const s3ArnSiemConnectionResourceName = "test_acc"
 const s3ArnSiemConnectionResource = s3ArnSiemConnectionResourceType + "." + s3ArnSiemConnectionResourceName
-const s3ArnSiemConnectionName = "SIEM CONNECTION S3 ARN TESTACC"
+
+var s3ArnSiemConnectionName = "SIEMCONNECTIONS3ARN" + RandomLetterAndNumberString(10)
 
 func TestAccS3ArnSiemConnection_Basic(t *testing.T) {
 	log.Printf("========================BEGIN TEST========================")
@@ -22,7 +23,7 @@ func TestAccS3ArnSiemConnection_Basic(t *testing.T) {
 		CheckDestroy: testAccIncapsulaSiemConnectionDestroy(s3ArnSiemConnectionResourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: getAccIncapsulaS3SiemConnectionConfigBasic(),
+				Config: getAccIncapsulaS3ArnSiemConnectionConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemConnectionExists(s3ArnSiemConnectionResource),
 					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "connection_name", s3ArnSiemConnectionName),
@@ -44,6 +45,7 @@ func getAccIncapsulaS3ArnSiemConnectionConfigBasic() string {
 			account_id = "52291885"
 			connection_name = "%s"
   			storage_type = "CUSTOMER_S3_ARN"
+			version = "1.0"
   			path = "data-platform-access-logs-dev/testacc"
 		}`,
 		s3ArnSiemConnectionResourceType, s3ArnSiemConnectionResourceName, s3ArnSiemConnectionName,

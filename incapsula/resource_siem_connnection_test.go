@@ -9,13 +9,13 @@ import (
 
 func testAccReadSiemConnection(client *Client, ID string) error {
 	log.Printf("[INFO] SiemConnection ID: %s", ID)
-	siemConnectionWithIdAndVersion, statusCode, err := client.ReadSiemConnection(ID)
+	siemConnection, statusCode, err := client.ReadSiemConnection(ID)
 	if err != nil {
 		return err
 	}
 
-	if (*statusCode == 200) && (siemConnectionWithIdAndVersion != nil) && (len(siemConnectionWithIdAndVersion.Data) == 1) && (siemConnectionWithIdAndVersion.Data[0].ID == ID) {
-		log.Printf("[INFO] SiemConnection : %v\n", siemConnectionWithIdAndVersion)
+	if (*statusCode == 200) && (siemConnection != nil) && (len(siemConnection.Data) == 1) && (siemConnection.Data[0].ID == ID) {
+		log.Printf("[INFO] SiemConnection : %v\n", siemConnection)
 		return nil
 	} else if *statusCode == 400 {
 		return fmt.Errorf("[ERROR] SiemConnection with id %s not found", ID)
@@ -33,7 +33,13 @@ func testAccIncapsulaSiemConnectionDestroy(resourceType string) resource.TestChe
 				continue
 			}
 
-			return testAccReadSiemConnection(client, res.Primary.ID)
+			err := testAccReadSiemConnection(client, res.Primary.ID)
+			if err != nil {
+				return nil
+			} else {
+				return fmt.Errorf("[ERROR] Resource with ID=%s was not destroyed", res.Primary.ID)
+			}
+
 		}
 
 		return nil
@@ -64,9 +70,7 @@ func testACCStateSiemConnectionID(resourceType string) resource.ImportStateIdFun
 				continue
 			}
 
-			siemConnectionID := rs.Primary.ID
-
-			return fmt.Sprintf("%s", siemConnectionID), nil
+			return fmt.Sprintf("%s", rs.Primary.ID), nil
 		}
 
 		return "", fmt.Errorf("[ERROR] Cannot find SiemConnection ID")

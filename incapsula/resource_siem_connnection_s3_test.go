@@ -7,10 +7,11 @@ import (
 	"testing"
 )
 
-const s3SiemConnectionResourceType = "incapsula_s3_siem_connection"
-const s3SiemConnectionResourceName = "terraform-siem-connection-config-testacc"
+const s3SiemConnectionResourceType = "incapsula_siem_connection_s3"
+const s3SiemConnectionResourceName = "test_acc"
 const s3SiemConnectionResource = s3SiemConnectionResourceType + "." + s3SiemConnectionResourceName
-const s3SiemConnectionName = "SIEM CONNECTION S3 TESTACC"
+
+var s3SiemConnectionName = "SIEMCONNECTIONS3" + RandomLetterAndNumberString(10)
 
 func TestAccS3SiemConnection_Basic(t *testing.T) {
 	log.Printf("========================BEGIN TEST========================")
@@ -31,7 +32,7 @@ func TestAccS3SiemConnection_Basic(t *testing.T) {
 			{
 				ResourceName:      s3SiemConnectionResource,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 				ImportStateIdFunc: testACCStateSiemConnectionID(s3SiemConnectionResourceType),
 			},
 		},
@@ -44,6 +45,7 @@ func getAccIncapsulaS3SiemConnectionConfigBasic() string {
 			account_id = "52291885"
 			connection_name = "%s"
   			storage_type = "CUSTOMER_S3"
+			version = "1.0"
   			access_key = "AKIA3TS2JGVQ3VGHMXVG"
   			secret_key = "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"
   			path = "data-platform-access-logs-dev/testacc"
