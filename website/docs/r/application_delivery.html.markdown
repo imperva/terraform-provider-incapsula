@@ -15,7 +15,7 @@ Note that destroy action will return the configuration to the default values.
 ### Basic Usage - Application Delivery
 
 ```hcl
-resource "resource_application_delivery" "example_application_delivery" {
+resource "incapsula_application_delivery" "example_application_delivery" {
 	site_id = incapsula_site.testacc-terraform-site.id
 	file_compression            = true
 	minify_css                  = true

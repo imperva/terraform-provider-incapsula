@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 // GetApiSecurityApiConfig Tests
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 func TestGetApiSecurityApiConfigBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
@@ -151,9 +151,9 @@ func TestGetApiSecurityApiConfigValidApiConfig(t *testing.T) {
 	}
 }
 
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 // CreateApiSecurityApiConfig Tests
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 func TestCreateApiSecurityApiConfigBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}

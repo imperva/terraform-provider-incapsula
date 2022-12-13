@@ -70,7 +70,7 @@ func TestAccAccountSSLSettings_Basic(t *testing.T) {
 			{
 				ResourceName:      accountSSLSettingsResource,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 				ImportStateIdFunc: testACCStateAccountSSLSettingsID,
 			},
 		},

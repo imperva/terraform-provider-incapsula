@@ -19,9 +19,10 @@ func TestClientAddIncapRuleBadConnection(t *testing.T) {
 	siteID := "42"
 
 	rule := IncapRule{
-		Name:   "myfirstcoolrule",
-		Action: "RULE_ACTION_ALERT",
-		Filter: "Full-URL == \"/someurl\"",
+		Name:    "myfirstcoolrule",
+		Action:  "RULE_ACTION_ALERT",
+		Filter:  "Full-URL == \"/someurl\"",
+		Enabled: true,
 	}
 
 	addIncapRuleResponse, err := client.AddIncapRule(siteID, &rule)
@@ -55,9 +56,10 @@ func TestClientAddIncapRuleBadJSON(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	rule := IncapRule{
-		Name:   "myfirstcoolrule",
-		Action: "RULE_ACTION_ALERT",
-		Filter: "Full-URL == \"/someurl\"",
+		Name:    "myfirstcoolrule",
+		Action:  "RULE_ACTION_ALERT",
+		Filter:  "Full-URL == \"/someurl\"",
+		Enabled: true,
 	}
 
 	addIncapRuleResponse, err := client.AddIncapRule(siteID, &rule)
@@ -127,9 +129,10 @@ func TestClientAddIncapRuleValidRule(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	rule := IncapRule{
-		Name:   "myfirstcoolrule",
-		Action: "RULE_ACTION_ALERT",
-		Filter: "Full-URL == \"/someurl\"",
+		Name:    "myfirstcoolrule",
+		Action:  "RULE_ACTION_ALERT",
+		Filter:  "Full-URL == \"/someurl\"",
+		Enabled: true,
 	}
 
 	addIncapRuleResponse, err := client.AddIncapRule(siteID, &rule)
@@ -141,6 +144,9 @@ func TestClientAddIncapRuleValidRule(t *testing.T) {
 	}
 	if addIncapRuleResponse.RuleID == 0 {
 		t.Errorf("Should not have received an empty rule ID")
+	}
+	if addIncapRuleResponse.Enabled != true {
+		t.Errorf("Should not have received enabled flag different from true")
 	}
 }
 
@@ -265,6 +271,47 @@ func TestClientReadIncapRuleValidRule(t *testing.T) {
 	if readIncapRuleResponse.RuleID == 0 {
 		t.Errorf("Should not have received an empty rule ID")
 	}
+	if readIncapRuleResponse.Enabled != true {
+		t.Errorf("Should not have received disabled rule")
+	}
+}
+
+func TestClientReadIncapRuleValidDisabledRule(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := "42"
+	ruleID := 290109
+
+	endpoint := fmt.Sprintf("/sites/%s/rules/%d", siteID, ruleID)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(200)
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		}
+		rw.Write([]byte(`{"filter":"Full-URL == \"/someurl\"","rule_id":290109,"name":"myfirstcoolrule","action":"RULE_ACTION_ALERT","enabled":false}`))
+	}))
+	defer server.Close()
+
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+	readIncapRuleResponse, statusCode, err := client.ReadIncapRule(siteID, ruleID)
+	if err != nil {
+		t.Errorf("Should not have received an error")
+	}
+	if readIncapRuleResponse == nil {
+		t.Errorf("Should not have received a nil readIncapRuleResponse instance")
+	}
+	if statusCode != 200 {
+		t.Errorf("Should not have received a 200 status code")
+	}
+	if readIncapRuleResponse.RuleID == 0 {
+		t.Errorf("Should not have received an empty rule ID")
+	}
+	if readIncapRuleResponse.Enabled != false {
+		t.Errorf("Should not have received enabled rule")
+	}
 }
 
 ////////////////////////////////////////////////////////////////
@@ -278,9 +325,10 @@ func TestClientUpdateIncapRuleBadConnection(t *testing.T) {
 	ruleID := 62
 
 	rule := IncapRule{
-		Name:   "myfirstcoolrule",
-		Action: "RULE_ACTION_ALERT",
-		Filter: "Full-URL == \"/someurl\"",
+		Name:    "myfirstcoolrule",
+		Action:  "RULE_ACTION_ALERT",
+		Filter:  "Full-URL == \"/someurl\"",
+		Enabled: true,
 	}
 
 	updateIncapRuleResponse, err := client.UpdateIncapRule(siteID, ruleID, &rule)
@@ -302,9 +350,10 @@ func TestClientUpdateIncapRuleBadJSON(t *testing.T) {
 	ruleID := 62
 
 	rule := IncapRule{
-		Name:   "myfirstcoolrule",
-		Action: "RULE_ACTION_ALERT",
-		Filter: "Full-URL == \"/someurl\"",
+		Name:    "myfirstcoolrule",
+		Action:  "RULE_ACTION_ALERT",
+		Filter:  "Full-URL == \"/someurl\"",
+		Enabled: true,
 	}
 
 	endpoint := fmt.Sprintf("/sites/%s/rules/%d", siteID, ruleID)
@@ -339,9 +388,10 @@ func TestClientUpdateIncapRuleInvalidRule(t *testing.T) {
 	ruleID := 11111
 
 	rule := IncapRule{
-		Name:   "myfirstcoolrule",
-		Action: "RULE_ACTION_ALERT",
-		Filter: "Full-URL == \"/someurl\"",
+		Name:    "myfirstcoolrule",
+		Action:  "RULE_ACTION_ALERT",
+		Filter:  "Full-URL == \"/someurl\"",
+		Enabled: true,
 	}
 
 	endpoint := fmt.Sprintf("/sites/%s/rules/%d", siteID, ruleID)
@@ -377,9 +427,10 @@ func TestClientUpdateIncapRuleValidRule(t *testing.T) {
 	ruleID := 290109
 
 	rule := IncapRule{
-		Name:   "myfirstcoolrule",
-		Action: "RULE_ACTION_ALERT",
-		Filter: "Full-URL == \"/someurl\"",
+		Name:    "myfirstcoolrule",
+		Action:  "RULE_ACTION_ALERT",
+		Filter:  "Full-URL == \"/someurl\"",
+		Enabled: true,
 	}
 
 	endpoint := fmt.Sprintf("/sites/%s/rules/%d", siteID, ruleID)
@@ -405,6 +456,9 @@ func TestClientUpdateIncapRuleValidRule(t *testing.T) {
 	}
 	if updateIncapRuleResponse.RuleID == 0 {
 		t.Errorf("Should not have received an empty rule ID")
+	}
+	if updateIncapRuleResponse.Enabled != true {
+		t.Errorf("Should not have received disabled rule")
 	}
 }
 

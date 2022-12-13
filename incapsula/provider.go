@@ -80,9 +80,10 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"incapsula_role_abilities": dataSourceRoleAbilities(),
-			"incapsula_data_center":    dataSourceDataCenter(),
-			"incapsula_account_data":   dataSourceAccount(),
+			"incapsula_role_abilities":   dataSourceRoleAbilities(),
+			"incapsula_data_center":      dataSourceDataCenter(),
+			"incapsula_account_data":     dataSourceAccount(),
+			"incapsula_client_apps_data": dataSourceClientApps(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -118,6 +119,7 @@ func Provider() *schema.Provider {
 			"incapsula_mtls_client_to_imperva_ca_certificate":                  resourceMtlsClientToImpervaCertificate(),
 			"incapsula_mtls_client_to_imperva_ca_certificate_site_association": resourceMtlsClientToImpervaCertificateSiteAssociation(),
 			"incapsula_mtls_client_to_imperva_ca_certificate_site_settings":    resourceMtlsClientToImpervaCertificateSetings(),
+			"incapsula_bots_configuration":                                     resourceBotsConfiguration(),
 		},
 	}
 

@@ -32,7 +32,6 @@ func TestAccIncapsulaApiSecurityApiConfig_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(apiSecApiConfigResource, "invalid_method_violation_action", "BLOCK_IP"),
 					resource.TestCheckResourceAttr(apiSecApiConfigResource, "missing_param_violation_action", "IGNORE"),
 					resource.TestCheckResourceAttr(apiSecApiConfigResource, "invalid_param_value_violation_action", "DEFAULT"),
-					resource.TestCheckResourceAttr(apiSecApiConfigResource, "invalid_param_name_violation_action", "DEFAULT"),
 				),
 			},
 			{
