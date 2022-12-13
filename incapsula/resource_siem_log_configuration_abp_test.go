@@ -11,6 +11,10 @@ const siemLogConfigurationAbpResourceType = "incapsula_siem_log_configuration_ab
 const siemLogConfigurationAbpResourceName = "test_acc"
 const siemLogConfigurationAbpResource = siemLogConfigurationAbpResourceType + "." + siemLogConfigurationAbpResourceName
 
+const siemLogConfigurationAbpValue = "ABP"
+
+const siemLogConfigurationAbpAccountIdValue = "52291885"
+
 var siemLogConfigurationAbpName = "SIEMLOGCONFIGURATIONABP" + RandomLetterAndNumberString(10)
 
 func TestAccAbpSiemLogConfiguration_Basic(t *testing.T) {
@@ -23,33 +27,37 @@ func TestAccAbpSiemLogConfiguration_Basic(t *testing.T) {
 		CheckDestroy: testAccIncapsulaSiemLogConfigurationDestroy(siemLogConfigurationAbpResourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: getAccIncapsulaAbpSiemLogConfigurationConfigBasic(),
+				Config: getAccIncapsulaAbpSiemLogConfigurationConfigBasic(siemLogConfigurationAbpAccountIdValue),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationAbpResource),
-					resource.TestCheckResourceAttr(siemLogConfigurationAbpResource, "connection_name", siemLogConfigurationAbpName),
+					resource.TestCheckResourceAttr(siemLogConfigurationAbpResource, "configuration_name", siemLogConfigurationAbpName),
+					resource.TestCheckResourceAttr(siemLogConfigurationAbpResource, "producer", siemLogConfigurationAbpValue),
+					resource.TestCheckResourceAttr(siemLogConfigurationAbpResource, "account_id", siemLogConfigurationAbpAccountIdValue),
 				),
 			},
 			{
 				ResourceName:      siemLogConfigurationAbpResource,
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
 				ImportStateIdFunc: testACCStateSiemLogConfigurationID(siemLogConfigurationAbpResourceType),
 			},
 		},
 	})
 }
 
-func getAccIncapsulaAbpSiemLogConfigurationConfigBasic() string {
-	return getAccIncapsulaS3SiemConnectionConfigBasic() + fmt.Sprintf(`
+func getAccIncapsulaAbpSiemLogConfigurationConfigBasic(accountId string) string {
+	return getAccIncapsulaS3SiemConnectionConfigBasic(accountId) + fmt.Sprintf(`
 		resource "%s" "%s" {
-			account_id = "52291885"
+			account_id = "%s"
 			configuration_name = "%s"
-  			producer = "ABP"
-			datasets = ["ABP"]
+  			producer = "%s"
+			datasets = ["%s"]
 			enabled = true
+			version = "1.0"
 			connection_id = %s.%s.id
 		}`,
-		siemLogConfigurationAbpResourceType, siemLogConfigurationAbpResourceName, siemLogConfigurationAbpName,
+		siemLogConfigurationAbpResourceType, siemLogConfigurationAbpResourceName, accountId, siemLogConfigurationAbpName,
+		siemLogConfigurationAbpValue, siemLogConfigurationAbpValue,
 		s3SiemConnectionResourceType, s3SiemConnectionResourceName,
 	)
 }
