@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 // GetAllPoliciesForAccount Tests
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 func TestGetAllPoliciesForAccountBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
@@ -34,7 +34,7 @@ func TestGetAllPoliciesForAccountBadJSON(t *testing.T) {
 	apiKey := "bar"
 	accountId := "92"
 
-	endpoint := fmt.Sprintf("/policies/v2/policies?extended=true")
+	endpoint := fmt.Sprintf("/policies/v2/policies?caid=92&extended=true")
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -65,7 +65,7 @@ func TestGetAllPoliciesForAccountInvalidApiConfig(t *testing.T) {
 	apiKey := "bar"
 	accountId := "92"
 
-	endpoint := fmt.Sprintf("/policies/v2/policies?extended=true")
+	endpoint := fmt.Sprintf("/policies/v2/policies?caid=92&extended=true")
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(500)
@@ -99,7 +99,7 @@ func TestGetAllPoliciesForAccountValidApiConfig(t *testing.T) {
 	apiKey := "bar"
 	accountId := "92"
 
-	endpoint := fmt.Sprintf("/policies/v2/policies?extended=true")
+	endpoint := fmt.Sprintf("/policies/v2/policies?caid=92&extended=true")
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)

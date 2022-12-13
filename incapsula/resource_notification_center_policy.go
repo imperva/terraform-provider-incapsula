@@ -202,8 +202,8 @@ func resourceNotificationCenterPolicyCreate(data *schema.ResourceData, i interfa
 	return resourceNotificationCenterPolicyRead(data, client)
 }
 
-//This function get all the properties of NotificationCenterPolicy from the resource,
-//so we can share it with create & update function
+// This function get all the properties of NotificationCenterPolicy from the resource,
+// so we can share it with create & update function
 func getNotificationCenterPolicyFromResource(data *schema.ResourceData) NotificationPolicyFullDto {
 	policyId, _ := getPolicyId(data)
 	log.Printf(

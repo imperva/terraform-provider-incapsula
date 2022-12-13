@@ -725,7 +725,6 @@ resource "incapsula_api_security_site_configuration" "example-api-security-site-
     invalid_method_violation_action = "BLOCK_IP"
     missing_param_violation_action = "IGNORE"
     invalid_param_value_violation_action = "IGNORE"
-    invalid_param_name_violation_action = "ALERT_ONLY"
 }
 
 ###################################################################
@@ -740,7 +739,6 @@ resource "incapsula_api_security_api_configuration" "example-api-security-api-co
     invalid_method_violation_action = "BLOCK_IP"
     missing_param_violation_action = "IGNORE"
     invalid_param_value_violation_action = "IGNORE"
-    invalid_param_name_violation_action = "ALERT_ONLY"
 	description = "your site API description"
 	base_path = "/base/path"
 	host_name = "host.name.com"
@@ -754,7 +752,6 @@ resource "incapsula_api_security_endpoint_config" "example-api-security-endpoint
     api_id = 123
     path = "/res/{id}"
     method = "GET"
-	invalid_param_name_violation_action = "IGNORE"
 	invalid_param_value_violation_action = "BLOCK_IP"
     missing_param_violation_action = "BLOCK_IP"
 }
