@@ -137,3 +137,9 @@ const UpdateAccountRole = "update_account_role"
 const DeleteAccountRole = "delete_account_role"
 
 const ReadAccountAbilities = "read_account_abilities"
+const ReadAccountRoles = "read_account_abilities"
+
+const CreateAccountUser = "create_account_user"
+const ReadAccountUser = "read_account_user"
+const UpdateAccountUser = "update_account_user"
+const DeleteAccountUser = "delete_account_user"

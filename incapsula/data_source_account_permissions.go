@@ -20,7 +20,7 @@ func dataSourceAccountPermissions() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceClientAppsRead,
 
-		Description: "Provides the properties of all the client applications.",
+		Description: "Provides the account permission of a given account.",
 
 		// Computed Attributes
 		Schema: map[string]*schema.Schema{

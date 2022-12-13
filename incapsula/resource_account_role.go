@@ -71,15 +71,7 @@ func populateRoleDetailsDTO(d *schema.ResourceData) RoleDetailsBasicDTO {
 	requestDTO := RoleDetailsBasicDTO{}
 	requestDTO.RoleName = d.Get("name").(string)
 	requestDTO.RoleAbilities = populateRolePermissions(d)
-
-	// TODO - Check how roleDescription is optional in UI but not in API
-	// https://gitlab/engineering/services/user-management/-/blob/master/src/main/java/com/imperva/microservice/services/apis/RolesApiServiceImpl.java#L346-352
-	// https: //gitlab/engineering/services/user-management/-/blob/master/src/main/java/com/imperva/microservice/utils/ApiUtils.java#L119-125
-	roleDescription := d.Get("description").(string)
-	if len(roleDescription) == 0 {
-		roleDescription = " " // WA since we are failing on 1034 (missing) and 1036 (missing or invalid)
-	}
-	requestDTO.RoleDescription = roleDescription
+	requestDTO.RoleDescription = d.Get("description").(string)
 
 	log.Printf("[DEBUG] populateRoleDetailsDTO - RoleDetailsDTO: %+v\n", requestDTO)
 	return requestDTO

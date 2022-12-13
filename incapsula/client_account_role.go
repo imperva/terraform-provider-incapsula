@@ -15,6 +15,7 @@ const endpointRoleGet = endpointRole
 const endpointRoleUpdate = endpointRole
 const endpointRoleDelete = endpointRole
 const endpointAbilitiesGet = "user-management/v1/abilities/accounts"
+const endpointAccountRolesGet = endpointRole
 
 type RoleAbility struct {
 	AbilityKey              string `json:"abilityKey"`
@@ -44,6 +45,7 @@ type RoleDetailsDTO struct {
 	RoleName        string           `json:"roleName"`
 	RoleDescription string           `json:"roleDescription"`
 	AccountId       int              `json:"accountId"`
+	AccountName     string           `json:"accountName"`
 	RoleAbilities   []RoleAbility    `json:"roleAbilities"`
 	UserAssignment  []UserAssignment `json:"userAssignment"`
 	UpdateDate      string           `json:"updateDate"`
@@ -212,4 +214,32 @@ func (c *Client) GetAccountAbilities(accountId int) (*[]RoleAbility, error) {
 	}
 
 	return &roleAbility, nil
+}
+
+// GetAccountRoles - Retrieve all the Roles for a given Account ID
+func (c *Client) GetAccountRoles(accountId int) (*[]RoleDetailsDTO, error) {
+	log.Printf("[INFO] Getting Account Roles (Account Id: %d)\n", accountId)
+
+	// Get request to Incapsula
+	reqURL := fmt.Sprintf("%s/%s?accountId=%d", c.config.BaseURLAPI, endpointAccountRolesGet, accountId)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadAccountRoles)
+	if err != nil {
+		return nil, fmt.Errorf("Error executing get Account Roles request for account with id %d: %s", accountId, err)
+	}
+
+	// Read the body
+	defer resp.Body.Close()
+	responseBody, err := ioutil.ReadAll(resp.Body)
+
+	// Dump JSON
+	log.Printf("[DEBUG] Incapsula Account Roles JSON response: %s\n", string(responseBody))
+
+	// Parse the JSON
+	var responseDTO []RoleDetailsDTO
+	err = json.Unmarshal(responseBody, &responseDTO)
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing Account Roles JSON response for account with Id: %d %s\nresponse: %s", accountId, err, string(responseBody))
+	}
+
+	return &responseDTO, nil
 }
