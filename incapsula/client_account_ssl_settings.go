@@ -11,10 +11,21 @@ import (
 
 const accountSSLSettingsUrl = "/certificates-ui/v3/account/ssl-settings"
 
+type AllowDomainForCnameValidation struct {
+	Id               int    `json:"id,omitempty"`
+	Name             string `json:"name,omitempty"`
+	CreationDate     int64  `json:"creationDate,omitempty"`
+	Status           string `json:"status,omitempty"`
+	StatusSince      int64  `json:"statusSince,omitempty"`
+	LastStatusCheck  int64  `json:"lastStatusCheck,omitempty"`
+	Inherited        bool   `json:"inherited,omitempty"`
+	CnameRecordValue string `json:"cnameRecordValue,omitempty"`
+	CnameRecordHost  string `json:"cnameRecordHost,omitempty"`
+}
+
 type Delegation struct {
-	ValueForCNAMEValidation          string   `json:"valueForCNAMEValidation,omitempty"`
-	AllowedDomainsForCNAMEValidation []string `json:"allowedDomainsForCNAMEValidation"`
-	AllowCNAMEValidation             *bool    `json:"allowCNAMEValidation,omitempty"`
+	AllowedDomainsForCNAMEValidation []AllowDomainForCnameValidation `json:"allowedDomainsForCNAMEValidation"`
+	AllowCNAMEValidation             *bool                           `json:"allowCNAMEValidation,omitempty"`
 }
 
 type ImpervaCertificate struct {

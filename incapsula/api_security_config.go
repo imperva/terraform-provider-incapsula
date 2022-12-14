@@ -4,13 +4,13 @@ type ViolationActions struct {
 	InvalidUrlViolationAction        string `json:"invalidUrlViolationAction"`
 	InvalidMethodViolationAction     string `json:"invalidMethodViolationAction"`
 	MissingParamViolationAction      string `json:"missingParamViolationAction"`
-	InvalidParamNameViolationAction  string `json:"invalidParamNameViolationAction"`
+	InvalidParamNameViolationAction  string `json:"invalidParamNameViolationAction,omitempty"`
 	InvalidParamValueViolationAction string `json:"invalidParamValueViolationAction"`
 }
 
 type UserViolationActions struct {
 	MissingParamViolationAction      string `json:"missingParamViolationAction"`
-	InvalidParamNameViolationAction  string `json:"invalidParamNameViolationAction"`
+	InvalidParamNameViolationAction  string `json:"invalidParamNameViolationAction,omitempty"`
 	InvalidParamValueViolationAction string `json:"invalidParamValueViolationAction"`
 }
 

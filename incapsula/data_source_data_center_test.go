@@ -39,12 +39,6 @@ func TestAccIncapsulaDataSourceDataCenter_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dataSourceDcResourceName4, "name", "Americas DC"),
 				),
 			},
-			{
-				ResourceName:      multipleDataCentersConfigurationResourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateIdFunc: testAccStateDataCentersConfigurationID,
-			},
 		},
 	})
 }

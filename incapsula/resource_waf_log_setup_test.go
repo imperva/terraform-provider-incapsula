@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"log"
-	"math/rand"
 	"os"
 	"testing"
 )
+
+//for tests without connectivity check put env variable: TESTING_PROFILE=true
 
 const wafSetupLogResourceType = "incapsula_waf_log_setup"
 const wafSetupLogResourceName = "example_waf_log_setup"
@@ -16,7 +17,7 @@ const s3AccessKey = "AKIAIOSFODNN7EXAMPLE"
 const sftpUserName = "sampleuser"
 const sftpHost = "dummyhost"
 const sftpDestinationFolder = "/home/user_name/log_folder"
-const accountID = 52065879
+const accountID = 1995692
 
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
@@ -25,7 +26,7 @@ func TestAccIncapsulaWAFLogSetupS3_Basic(t *testing.T) {
 	log.Printf("[DEBUG]Running test resource_waf_log_setup_test.go.TestAccIncapsulaWAFLogSetupS3_Basic")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccSecCheck(t) },
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -34,7 +35,7 @@ func TestAccIncapsulaWAFLogSetupS3_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "enabled", "true"),
 					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "s3_bucket_name", s3BucketName),
 					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "s3_access_key", s3AccessKey),
-					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "s3_secret_key", os.Getenv("S3_SECRET_KEY")),
+					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "s3_secret_key", gets3SecretKey()),
 				),
 			},
 		},
@@ -46,7 +47,7 @@ func TestAccIncapsulaWAFLogSetupSFTP_Basic(t *testing.T) {
 	log.Printf("[DEBUG]Running test resource_waf_log_setup_test.go.TestAccIncapsulaWAFLogSetupSFTP_Basic")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccSecCheck(t) },
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -55,7 +56,7 @@ func TestAccIncapsulaWAFLogSetupSFTP_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "enabled", "true"),
 					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "sftp_host", sftpHost),
 					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "sftp_user_name", sftpUserName),
-					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "sftp_password", os.Getenv("SFTP_PASSWORD")),
+					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "sftp_password", getSFTPPassword()),
 					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "sftp_destination_folder", sftpDestinationFolder),
 				),
 			},
@@ -68,16 +69,16 @@ func TestAccIncapsulaWAFLogSetupSFTP_Disabled(t *testing.T) {
 	log.Printf("[DEBUG]Running test resource_waf_log_setup_test.go.TestAccIncapsulaWAFLogSetupSFTP_Disabled")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccSecCheck(t) },
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: getAccIncapsulaWAFSetupLogSFTPConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "enabled", "false"),
+					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "enabled", "true"),
 					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "sftp_host", sftpHost),
 					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "sftp_user_name", sftpUserName),
-					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "sftp_password", os.Getenv("SFTP_PASSWORD")),
+					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "sftp_password", getSFTPPassword()),
 					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "sftp_destination_folder", sftpDestinationFolder),
 				),
 			},
@@ -90,7 +91,7 @@ func TestAccIncapsulaWAFLogSetupS3_Disabled(t *testing.T) {
 	log.Printf("[DEBUG]Running test resource_waf_log_setup_test.go.TestAccIncapsulaWAFLogSetupS3_Basic")
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccSecCheck(t) },
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -99,28 +100,31 @@ func TestAccIncapsulaWAFLogSetupS3_Disabled(t *testing.T) {
 					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "enabled", "false"),
 					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "s3_bucket_name", s3BucketName),
 					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "s3_access_key", s3AccessKey),
-					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "s3_secret_key", os.Getenv("S3_SECRET_KEY")),
+					resource.TestCheckResourceAttr(wafSetupLogResourceType+"."+wafSetupLogResourceName, "s3_secret_key", gets3SecretKey()),
 				),
 			},
 		},
 	})
 }
 
-func testAccSecCheck(t *testing.T) {
-	testAccProviderConfigure.Do(func() {
-		if v := os.Getenv("S3_SECRET_KEY"); v == "" {
-			os.Setenv("S3_SECRET_KEY", fmt.Sprint(rand.Intn(len(letterRunes))))
-		}
+func gets3SecretKey() string {
+	s3SecretKey := os.Getenv("S3_SECRET_KEY")
+	if s3SecretKey == "" {
+		s3SecretKey = "123456"
+	}
+	return s3SecretKey
+}
 
-		if v := os.Getenv("SFTP_PASSWORD"); v == "" {
-			os.Setenv("SFTP_PASSWORD", fmt.Sprint(rand.Intn(len(letterRunes))))
-		}
-	})
-	testAccPreCheck(t)
+func getSFTPPassword() string {
+	SFTPPassword := os.Getenv("SFTP_PASSWORD")
+	if SFTPPassword == "" {
+		SFTPPassword = "123456"
+	}
+	return SFTPPassword
 }
 
 func getAccIncapsulaWAFSetupLogS3ConfigBasic() string {
-	s3SecretKey := os.Getenv("S3_SECRET_KEY")
+	s3SecretKey := gets3SecretKey()
 	return fmt.Sprintf(`
 		resource "%s" "%s" {
 			account_id = "%d"
@@ -133,7 +137,7 @@ func getAccIncapsulaWAFSetupLogS3ConfigBasic() string {
 }
 
 func getAccIncapsulaWAFSetupLogS3ConfigDisabled() string {
-	s3SecretKey := os.Getenv("S3_SECRET_KEY")
+	s3SecretKey := gets3SecretKey()
 	return fmt.Sprintf(`
 		resource "%s" "%s" {
 			account_id = "%d"
@@ -147,7 +151,7 @@ func getAccIncapsulaWAFSetupLogS3ConfigDisabled() string {
 }
 
 func getAccIncapsulaWAFSetupLogSFTPConfigBasic() string {
-	sftpPassword := os.Getenv("SFTP_PASSWORD")
+	sftpPassword := getSFTPPassword()
 	return fmt.Sprintf(`
 		resource "%s" "%s" {
 			account_id = "%d"
@@ -161,7 +165,7 @@ func getAccIncapsulaWAFSetupLogSFTPConfigBasic() string {
 }
 
 func getAccIncapsulaWAFSetupLogSFTPConfigDisabled() string {
-	sftpPassword := os.Getenv("SFTP_PASSWORD")
+	sftpPassword := getSFTPPassword()
 	return fmt.Sprintf(`
 		resource "%s" "%s" {
 			account_id = "%d"

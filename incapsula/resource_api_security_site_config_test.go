@@ -30,7 +30,6 @@ func TestAccIncapsulaApiSecuritySiteConfig_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(apiSiteConfigResource, "invalid_method_violation_action", "BLOCK_IP"),
 					resource.TestCheckResourceAttr(apiSiteConfigResource, "missing_param_violation_action", "ALERT_ONLY"),
 					resource.TestCheckResourceAttr(apiSiteConfigResource, "invalid_param_value_violation_action", "IGNORE"),
-					resource.TestCheckResourceAttr(apiSiteConfigResource, "invalid_param_name_violation_action", "BLOCK_IP"),
 				),
 			},
 			{
@@ -99,7 +98,6 @@ func testAccCheckApiSiteConfigBasic(t *testing.T) string {
 		invalid_url_violation_action = "BLOCK_REQUEST"
 		invalid_method_violation_action = "BLOCK_IP"
 		invalid_param_value_violation_action = "IGNORE"
-		invalid_param_name_violation_action = "BLOCK_IP"
   		depends_on = ["%s"]
 	}`,
 		apiSiteConfigName, siteResourceName,

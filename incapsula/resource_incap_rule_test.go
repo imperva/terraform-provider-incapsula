@@ -23,6 +23,23 @@ func TestAccIncapsulaIncapRule_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaIncapRuleExists(incapRuleResourceName),
 					resource.TestCheckResourceAttr(incapRuleResourceName, "name", incapRuleName),
+					resource.TestCheckResourceAttr(incapRuleResourceName, "enabled", "true"),
+				),
+			},
+			{
+				Config: testAccCheckIncapsulaIncapRuleConfigEnabledFlagNotProvided(t),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaIncapRuleExists(incapRuleResourceName),
+					resource.TestCheckResourceAttr(incapRuleResourceName, "name", incapRuleName),
+					resource.TestCheckResourceAttr(incapRuleResourceName, "enabled", "true"),
+				),
+			},
+			{
+				Config: testAccCheckIncapsulaIncapRuleConfigDisabled(t),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaIncapRuleExists(incapRuleResourceName),
+					resource.TestCheckResourceAttr(incapRuleResourceName, "name", incapRuleName),
+					resource.TestCheckResourceAttr(incapRuleResourceName, "enabled", "false"),
 				),
 			},
 			{
@@ -122,6 +139,32 @@ resource "incapsula_incap_rule" "testacc-terraform-incap-rule" {
   action = "RULE_ACTION_ALERT"
   filter = "Full-URL == \"/someurl\""
   depends_on = ["%s"]
+  enabled = true
+}`, incapRuleName, siteResourceName,
+	)
+}
+
+func testAccCheckIncapsulaIncapRuleConfigEnabledFlagNotProvided(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+resource "incapsula_incap_rule" "testacc-terraform-incap-rule" {
+  name = "%s"
+  site_id = "${incapsula_site.testacc-terraform-site.id}"
+  action = "RULE_ACTION_ALERT"
+  filter = "Full-URL == \"/someurl\""
+  depends_on = ["%s"]
+}`, incapRuleName, siteResourceName,
+	)
+}
+
+func testAccCheckIncapsulaIncapRuleConfigDisabled(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+resource "incapsula_incap_rule" "testacc-terraform-incap-rule" {
+  name = "%s"
+  site_id = "${incapsula_site.testacc-terraform-site.id}"
+  action = "RULE_ACTION_ALERT"
+  filter = "Full-URL == \"/someurl\""
+  depends_on = ["%s"]
+  enabled = false
 }`, incapRuleName, siteResourceName,
 	)
 }

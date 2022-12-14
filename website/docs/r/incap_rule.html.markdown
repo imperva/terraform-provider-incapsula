@@ -19,6 +19,7 @@ resource "incapsula_incap_rule" "example-incap-rule-alert" {
   site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_ALERT"
   filter = "Full-URL == \"/someurl\""
+  enabled = true
 }
 
 # Incap Rule: Require javascript support
@@ -27,6 +28,7 @@ resource "incapsula_incap_rule" "example-incap-rule-require-js-support" {
   site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_INTRUSIVE_HTML"
   filter = "Full-URL == \"/someurl\""
+  enabled = true  
 }
 
 # Incap Rule: Block IP
@@ -35,6 +37,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-ip" {
   site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_BLOCK_IP"
   filter = "Full-URL == \"/someurl\""
+  enabled = true  
 }
 
 # Incap Rule: Block Request
@@ -43,6 +46,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-request" {
   site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_BLOCK"
   filter = "Full-URL == \"/someurl\""
+  enabled = true
 }
 
 # Incap Rule: Block Session
@@ -51,6 +55,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-session" {
   site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_BLOCK_USER"
   filter = "Full-URL == \"/someurl\""
+  enabled = true
 }
 
 # Incap Rule: Delete Cookie (ADR)
@@ -60,6 +65,7 @@ resource "incapsula_incap_rule" "example-incap-rule-delete-cookie" {
   action = "RULE_ACTION_DELETE_COOKIE"
   filter = "Full-URL == \"/someurl\""
   rewrite_name = "my_test_header"
+  enabled = true
 }
 
 # Incap Rule: Delete Header (ADR)
@@ -69,6 +75,7 @@ resource "incapsula_incap_rule" "example-incap-rule-delete-header" {
   action = "RULE_ACTION_DELETE_HEADER"
   filter = "Full-URL == \"/someurl\""
   rewrite_name = "my_test_header"
+  enabled = true
 }
 
 # Incap Rule: Forward to Data Center (ADR)
@@ -79,6 +86,7 @@ resource "incapsula_incap_rule" "example-incap-rule-fwd-to-data-center" {
   action = "RULE_ACTION_FORWARD_TO_DC"
   filter = "Full-URL == \"/someurl\""
   dc_id = data.incapsula_data_center.example_content_dc.id
+  enabled = true  
 }
 
 # Incap Rule: Redirect (ADR)
@@ -90,6 +98,7 @@ resource "incapsula_incap_rule" "example-incap-rule-redirect" {
   response_code = "302"
   from = "https://site1.com/url1"
   to = "https://site2.com/url2"
+  enabled = true
 }
 
 # Incap Rule: Require Cookie Support (IncapRule)
@@ -98,6 +107,7 @@ resource "incapsula_incap_rule" "example-incap-rule-require-cookie-support" {
   site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_RETRY"
   filter = "Full-URL == \"/someurl\""
+  enabled = true
 }
 
 # Incap Rule: Rewrite Cookie (ADR)
@@ -107,9 +117,11 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-cookie" {
   action = "RULE_ACTION_REWRITE_COOKIE"
   filter = "Full-URL == \"/someurl\""
   add_missing = "true"
+  rewrite_existing = "true"
   from = "some_optional_value"
   to = "some_new_value"
   rewrite_name = "my_cookie_name"
+  enabled = true  
 }
 
 # Incap Rule: Rewrite Header (ADR)
@@ -119,9 +131,11 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-header" {
   action = "RULE_ACTION_REWRITE_HEADER"
   filter = "Full-URL == \"/someurl\""
   add_missing = "true"
+  rewrite_existing = "true"
   from = "some_optional_value"
   to = "some_new_value"
   rewrite_name = "my_test_header"
+  enabled = true  
 }
 
 # Incap Rule: Rewrite URL (ADR)
@@ -132,6 +146,7 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-url" {
   filter = "Full-URL == \"/someurl\""
   from = "*"
   to = "/redirect"
+  enabled = true
 }
 ```
 
@@ -145,6 +160,7 @@ The following arguments are supported:
 * `filter` - (Required) The filter defines the conditions that trigger the rule action. For action `RULE_ACTION_SIMPLIFIED_REDIRECT` filter is not relevant. For other actions, if left empty, the rule is always run.
 * `response_code` - (Optional) For `RULE_ACTION_REDIRECT` or `RULE_ACTION_SIMPLIFIED_REDIRECT` rule's response code, valid values are `302`, `301`, `303`, `307`, `308`. For `RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE` rule's response code, valid values are all 3-digits numbers. For `RULE_ACTION_CUSTOM_ERROR_RESPONSE`, valid values are `400`, `401`, `402`, `403`, `404`, `405`, `406`, `407`, `408`, `409`, `410`, `411`, `412`, `413`, `414`, `415`, `416`, `417`, `419`, `420`, `422`, `423`, `424`, `500`, `501`, `502`, `503`, `504`, `505`, `507`.
 * `add_missing` - (Optional) Add cookie or header if it doesn't exist (Rewrite cookie rule only).
+* `rewrite_existing` - (Optional) Rewrite cookie or header if it exists.
 * `from` - (Optional) Pattern to rewrite. For `RULE_ACTION_REWRITE_URL` - Url to rewrite. For `RULE_ACTION_REWRITE_HEADER` and `RULE_ACTION_RESPONSE_REWRITE_HEADER` - Header value to rewrite. For `RULE_ACTION_REWRITE_COOKIE` - Cookie value to rewrite.
 * `to` - (Optional) Pattern to change to. `RULE_ACTION_REWRITE_URL` - Url to change to. `RULE_ACTION_REWRITE_HEADER` and `RULE_ACTION_RESPONSE_REWRITE_HEADER` - Header value to change to. `RULE_ACTION_REWRITE_COOKIE` - Cookie value to change to.
 * `rewrite_name` - (Optional) Name of cookie or header to rewrite. Applies only for `RULE_ACTION_REWRITE_COOKIE`, `RULE_ACTION_REWRITE_HEADER` and `RULE_ACTION_RESPONSE_REWRITE_HEADER`.
@@ -159,6 +175,7 @@ The following arguments are supported:
 * `multiple_deletions` - (Optional) Delete multiple header occurrences. Applies only to rules using `RULE_ACTION_DELETE_HEADER` and `RULE_ACTION_RESPONSE_DELETE_HEADER`.
 * `overrideWafAction` - (Optional) The response returned when the request matches the filter and is blocked. Applies only for `RULE_ACTION_CUSTOM_ERROR_RESPONSE`.
 * `overrideWafRule` - (Optional) The action for the override rule. Possible values: Alert Only, Block Request, Block User, Block IP, Ignore.
+* `enabled` - (Optional) Boolean that enables the rule. Possible values: true, false. Default value is true.
 
 ## Attributes Reference
 

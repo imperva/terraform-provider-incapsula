@@ -44,7 +44,7 @@ func TestAccIncapsulaSubAccount_Basic(t *testing.T) {
 func getAccIncapsulaSubAccountConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "%s" "%s" {
-			sub_account_name = "%s",
+			sub_account_name = "%s"
 			data_storage_region = "%s"
 		}`,
 		subAccountResourceType, subAccountResourceName, subAccountName, dataStorageRegionName,
@@ -54,22 +54,20 @@ func getAccIncapsulaSubAccountConfigBasic() string {
 func testAccIncapsulaSubAccountDestroy(state *terraform.State) error {
 	client := testAccProvider.Meta().(*Client)
 
+	var subAccountIDStr string
 	for _, res := range state.RootModule().Resources {
 		if res.Type != subAccountResourceType {
 			continue
 		}
 
-		subAccountIDStr := res.Primary.ID
+		subAccountIDStr = res.Primary.ID
 		subAccountID, _ := strconv.Atoi(subAccountIDStr)
 
+		found := true
 		subAccount, err := client.AccountStatus(subAccountID, ReadSubAccount)
 		if err != nil {
-			return err
-		}
-
-		found := false
-
-		if subAccount != nil && subAccount.AccountID == subAccountID {
+			found = false
+		} else if subAccount != nil && subAccount.AccountID == subAccountID {
 			log.Printf("[INFO] subaccount : %v\n", subAccount)
 			found = true
 		}
@@ -79,6 +77,19 @@ func testAccIncapsulaSubAccountDestroy(state *terraform.State) error {
 		}
 	}
 
+	//clear subAccount defualt waf policy
+	policies, err := client.GetAllPoliciesForAccount(strconv.Itoa(client.accountStatus.AccountID))
+	if err != nil {
+		return fmt.Errorf("Received an error : %s", err.Error())
+	}
+	defaultPolicyName := fmt.Sprintf("%s %s", "Generated WAF default Policy For new Account", subAccountIDStr)
+	for i := range *policies {
+		policy := (*policies)[i]
+		if policy.PolicyType == "WAF_RULES" && policy.Name == defaultPolicyName {
+			client.DeletePolicy(strconv.Itoa(policy.ID), nil)
+		}
+
+	}
 	return nil
 }
 

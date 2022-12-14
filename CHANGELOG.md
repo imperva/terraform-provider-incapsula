@@ -1,3 +1,60 @@
+## 3.12.0 (Dec 11, 2022)
+
+IMPROVEMENTS:
+
+* incapsula_incap_rule - Incap rules enable flag ([#259](https://github.com/imperva/terraform-provider-incapsula/pull/259))
+
+
+## 3.11.0 (Dec 4, 2022)
+
+FEATURES:
+
+* **New Resource:** incapsula_bots_configuration
+
+IMPROVEMENTS:
+
+* incapsula_incap_rule - Support overrideExisting Flag ([#244](https://github.com/imperva/terraform-provider-incapsula/pull/244))
+* incapsula_account_policy_association - added available_policy_ids optional argument + move to v3 apis to improve performance ([#250](https://github.com/imperva/terraform-provider-incapsula/pull/250))
+
+
+BUG FIXES:
+
+* Fix issue #234 - remove omitempty for boolean fields ([#247](https://github.com/imperva/terraform-provider-incapsula/pull/247))
+
+
+## 3.10.3 (Nov 20, 2022)
+
+BUG FIXES:
+
+* adding current account id support to incapsula_policy_asset_association ([#243](https://github.com/imperva/terraform-provider-incapsula/pull/243))
+
+
+## 3.10.2 (Oct 31, 2022)
+
+BUG FIXES:
+
+* policy resource fails to read when account_id param is not provided ([#240](https://github.com/imperva/terraform-provider-incapsula/pull/240))
+
+## 3.10.1 (Oct 31, 2022)
+
+BUG FIXES:
+
+* Fix account ssl settings resource documentation ([#238](https://github.com/imperva/terraform-provider-incapsula/pull/238))
+
+
+## 3.10.0 (Oct 30, 2022)
+
+FEATURES:
+
+* **New Resource:** incapsula_account_ssl_settings
+
+Deprecations: wildcard_san_for_new_sites, naked_domain_san_for_new_www_sites and support_all_tls_versions in account resource are now deprecated, matched arguments in the account SSL settings resource should be used instead
+
+BUG FIXES:
+
+* Adding account status response to the client object. This allows to have the account context on any client request. ([#232](https://github.com/imperva/terraform-provider-incapsula/pull/232))
+* Adding account type to the account status response. ([#232](https://github.com/imperva/terraform-provider-incapsula/pull/232))
+* Adding current account to the policy actions. This allows a reseller to manage its accounts' policies ([#232](https://github.com/imperva/terraform-provider-incapsula/pull/232))
 
 ## 3.9.1 (Oct 20, 2022)
 

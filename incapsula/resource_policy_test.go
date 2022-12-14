@@ -9,12 +9,29 @@ import (
 )
 
 const policyResourceType = "incapsula_policy"
-const policyResourceName = "testacc-terraform-acl-policy"
+const policyResourceName = "testacc-terraform-policy-"
 const policyResourceTypeAndName = policyResourceType + "." + policyResourceName
 
 const aclPolicyName = "acl-policy-test"
 
-var createdPoliciesNames = []string{aclPolicyName}
+const wafPolicySettings = "[\n " +
+	"   {\n" +
+	"      \"settingsAction\": \"BLOCK\",\n" +
+	"      \"policySettingType\": \"REMOTE_FILE_INCLUSION\"\n" +
+	"    },\n" +
+	"    {\n" +
+	"      \"settingsAction\": \"BLOCK\",\n" +
+	"      \"policySettingType\": \"ILLEGAL_RESOURCE_ACCESS\"\n" +
+	"    },\n" +
+	"    {\n" +
+	"      \"settingsAction\": \"BLOCK\",\n" +
+	"      \"policySettingType\": \"CROSS_SITE_SCRIPTING\"\n" +
+	"    },\n" +
+	"    {\n" +
+	"      \"settingsAction\": \"BLOCK\",\n" +
+	"      \"policySettingType\": \"SQL_INJECTION\"\n" +
+	"    }\n" +
+	"]"
 
 const aclPolicySettingsUrlExceptions = "[\n" +
 	"    {\n" +
@@ -74,14 +91,14 @@ func TestAccIncapsulaPolicy_basic(t *testing.T) {
 			{
 				Config: testAccCheckIncapsulaPolicyConfigBasic(t, aclPolicyName, true, "ACL", aclPolicySettingsUrlExceptions),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckIncapsulaPolicyExists(policyResourceTypeAndName),
-					resource.TestCheckResourceAttr(policyResourceTypeAndName, "name", aclPolicyName),
-					resource.TestCheckResourceAttr(policyResourceTypeAndName, "enabled", strconv.FormatBool(true)),
-					resource.TestCheckResourceAttr(policyResourceTypeAndName, "policy_settings", aclPolicySettingsUrlExceptions),
+					testCheckIncapsulaPolicyExists(policyResourceTypeAndName+aclPolicyName),
+					resource.TestCheckResourceAttr(policyResourceTypeAndName+aclPolicyName, "name", aclPolicyName),
+					resource.TestCheckResourceAttr(policyResourceTypeAndName+aclPolicyName, "enabled", strconv.FormatBool(true)),
+					resource.TestCheckResourceAttr(policyResourceTypeAndName+aclPolicyName, "policy_settings", aclPolicySettingsUrlExceptions),
 				),
 			},
 			{
-				ResourceName:      policyResourceTypeAndName,
+				ResourceName:      policyResourceTypeAndName + aclPolicyName,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: testAccStatePolicyID,
@@ -122,7 +139,7 @@ func testCheckIncapsulaPolicyExists(name string) resource.TestCheckFunc {
 			return fmt.Errorf("Policy ID conversion error for %s: %s", policyIDStr, err)
 		}
 		client := testAccProvider.Meta().(*Client)
-		_, err = client.GetPolicy(policyIDStr)
+		_, err = client.GetPolicy(policyIDStr, nil)
 		if err != nil {
 			return fmt.Errorf("Get Incapsula Policy return error %s", err)
 		}
@@ -131,7 +148,11 @@ func testCheckIncapsulaPolicyExists(name string) resource.TestCheckFunc {
 }
 
 func testAccCheckIncapsulaPolicyConfigBasic(t *testing.T, policyName string, enabled bool, policyType string, policySettings string) string {
-	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + createPolicyResourceString(policyName, enabled, policyType, policySettings)
+}
+
+func createPolicyResourceString(policyName string, enabled bool, policyType string, policySettings string) string {
+	return fmt.Sprintf(`
 resource "%s" "%s" {
     name        = "%s"
     enabled     = %s
@@ -139,7 +160,7 @@ resource "%s" "%s" {
     policy_settings = <<POLICY
 %s 
 POLICY
-}`, policyResourceType, policyResourceName, policyName, strconv.FormatBool(enabled), policyType, policySettings,
+}`, policyResourceType, policyResourceName+policyName, policyName, strconv.FormatBool(enabled), policyType, policySettings,
 	)
 }
 
@@ -147,31 +168,26 @@ func testAccCheckIncapsulaPolicyDestroy(state *terraform.State) error {
 	client := testAccProvider.Meta().(*Client)
 
 	for _, res := range state.RootModule().Resources {
-		if res.Type != "incapsula_account" {
+		if res.Type != "incapsula_policy" {
 			continue
 		}
 
-		accountID := res.Primary.ID
-		if accountID == "" {
+		policyId := res.Primary.ID
+		if policyId == "" {
 			// There is a bug in Terraform: https://github.com/hashicorp/terraform/issues/23635
 			// Specifically, upgrades/destroys are happening simultaneously and not honoring
 			// dependencies. In this case, it's possible that the site has already been deleted,
 			// which means that all the sub resources will have been cleared out.
 			// Ordinarily, this should return an error, but until this gets addressed, we're
 			// going to simply return nil.
-			// return fmt.Errorf("Incapsula site ID does not exist")
+			// return fmt.Errorf("Incapsula Policy ID does not exist")
 			return nil
 		}
 
-		getAllPoliciesResponse, _ := client.GetAllPoliciesForAccount(accountID)
+		getPolicyResponse, _ := client.GetPolicy(policyId, nil)
 
-		for _, policyFromResponse := range *getAllPoliciesResponse {
-
-			for _, val := range createdPoliciesNames {
-				if val == policyFromResponse.Name {
-					return fmt.Errorf("Incapsula Policy with name: %s (id: %d) still exists", policyFromResponse.Name, policyFromResponse.ID)
-				}
-			}
+		if getPolicyResponse != nil {
+			return fmt.Errorf("Incapsula Policy with name: %s (id: %d) still exists", getPolicyResponse.Value.Name, getPolicyResponse.Value.ID)
 		}
 	}
 	return nil

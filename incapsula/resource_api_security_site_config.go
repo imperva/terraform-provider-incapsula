@@ -71,9 +71,9 @@ func resourceApiSecuritySiteConfig() *schema.Resource {
 			"invalid_param_name_violation_action": {
 				Description:  "The action taken when an invalid parameter value Violation occurs. Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT.",
 				Type:         schema.TypeString,
+				Computed:     true,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE"}, false),
-				Default:      "ALERT_ONLY",
 			},
 			"is_api_only_site": {
 				Description: "Apply positive security model for all traffic on the site. Applying the positive security model for all traffic on the site may lead to undesired request blocking.",

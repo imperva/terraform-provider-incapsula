@@ -20,8 +20,8 @@ func TestClientPolicyAssetAssociatedPositive(t *testing.T) {
 
 func TestClientPolicyAssetAssociatedNegative(t *testing.T) {
 	isAssociated, err := ClientPolicyAssetAssociatedBase(t, false)
-	if err == nil {
-		t.Errorf("epected error but got none")
+	if err != nil {
+		t.Errorf("did not expected error but got one. error: %v", err)
 	}
 	if isAssociated {
 		t.Errorf("expected policy to NOT be assosiated")
@@ -55,6 +55,6 @@ func ClientPolicyAssetAssociatedBase(t *testing.T, shouldBeAssociated bool) (boo
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	return client.isPolicyAssetAssociated(policyID, assetID, assetType)
+	return client.isPolicyAssetAssociated(policyID, assetID, assetType, nil)
 
 }
