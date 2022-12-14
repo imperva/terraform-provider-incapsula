@@ -53,12 +53,11 @@ func testCheckIncapsulaSiemLogConfigurationExists(resource string) resource.Test
 			return fmt.Errorf("[ERROR] Incapsula SiemLogConfiguration resource not found : %s", resource)
 		}
 
-		siemLogConfiguration := res.Primary.ID
-		if siemLogConfiguration == "" {
+		if res.Primary.ID == "" {
 			return fmt.Errorf("[ERROR] Incapsula SiemLogConfiguration does not exist")
 		} else {
 			client := testAccProvider.Meta().(*Client)
-			return testAccReadSiemLogConfiguration(client, siemLogConfiguration)
+			return testAccReadSiemLogConfiguration(client, res.Primary.ID)
 		}
 	}
 }

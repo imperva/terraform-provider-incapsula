@@ -53,12 +53,11 @@ func testCheckIncapsulaSiemConnectionExists(resource string) resource.TestCheckF
 			return fmt.Errorf("[ERROR] Incapsula SiemConnection resource not found : %s", resource)
 		}
 
-		siemConnectionID := res.Primary.ID
-		if siemConnectionID == "" {
+		if res.Primary.ID == "" {
 			return fmt.Errorf("[ERROR] Incapsula SiemConnection does not exist")
 		} else {
 			client := testAccProvider.Meta().(*Client)
-			return testAccReadSiemConnection(client, siemConnectionID)
+			return testAccReadSiemConnection(client, res.Primary.ID)
 		}
 	}
 }

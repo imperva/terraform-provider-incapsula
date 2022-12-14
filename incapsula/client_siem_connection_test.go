@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -22,7 +23,7 @@ func TestClientCreateSiemConnectionBadConfig(t *testing.T) {
 	}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 
-	siemConnectionWithIdAndVersion, _, err := client.CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
+	siemConnection, _, err := client.CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
 		AssetID:        RandomNumbersExcludingZeroString(10),
 		ConnectionName: RandomLetterAndNumberString(20),
 		StorageType:    RandomCapitalLetterString(10),
@@ -38,8 +39,8 @@ func TestClientCreateSiemConnectionBadConfig(t *testing.T) {
 	if !strings.HasPrefix(err.Error(), fmt.Sprintf("error from Incapsula service when executing %s operation on SIEM connection:", CreateSiemConnection)) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
-	if siemConnectionWithIdAndVersion != nil {
-		t.Errorf("Should have received a nil SiemConnectionWithID instance")
+	if siemConnection != nil {
+		t.Errorf("Should have received a nil SiemConnection instance")
 	}
 }
 
@@ -56,7 +57,10 @@ func TestClientCreateSiemConnectionBadJSON(t *testing.T) {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.WriteHeader(201)
-		rw.Write([]byte(`{` + RandomLetterAndNumberString(20)))
+		_, err := rw.Write([]byte(`{` + RandomLetterAndNumberString(20)))
+		if err != nil {
+			return
+		}
 	}))
 
 	defer server.Close()
@@ -64,7 +68,7 @@ func TestClientCreateSiemConnectionBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	siemConnectionWithIdAndVersion, _, err := client.CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
+	siemConnection, _, err := client.CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
 		AssetID:        assetId,
 		ConnectionName: RandomLetterAndNumberString(20),
 		StorageType:    RandomCapitalLetterString(10),
@@ -81,8 +85,8 @@ func TestClientCreateSiemConnectionBadJSON(t *testing.T) {
 	if !strings.HasPrefix(err.Error(), fmt.Sprintf("error obtained")) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
-	if siemConnectionWithIdAndVersion != nil {
-		t.Errorf("Should have received a nil siemConnectionWithIDResponse instance")
+	if siemConnection != nil {
+		t.Errorf("Should have received a nil SiemConnection instance")
 	}
 }
 
@@ -129,7 +133,10 @@ func TestClientCreateSiemConnectionBadRequest(t *testing.T) {
 				t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 			}
 			rw.WriteHeader(responseStatusCode)
-			rw.Write([]byte(v))
+			_, err := rw.Write([]byte(v))
+			if err != nil {
+				return
+			}
 		}))
 
 		defer server.Close()
@@ -147,7 +154,7 @@ func TestClientCreateSiemConnectionBadRequest(t *testing.T) {
 			storageType = "CUSTOMER_S3_" + RandomLetterAndNumberString(1)
 		}
 
-		siemConnectionWithIdAndVersion, _, err := client.CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
+		siemConnection, _, err := client.CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
 			AssetID:        assetId,
 			ConnectionName: RandomLetterAndNumberString(20),
 			StorageType:    storageType,
@@ -165,8 +172,8 @@ func TestClientCreateSiemConnectionBadRequest(t *testing.T) {
 			CreateSiemConnection, responseStatusCode, v)) != 0 {
 			t.Errorf("Should have received a response body for all responses different from %d, but received %s", 200, err)
 		}
-		if siemConnectionWithIdAndVersion != nil {
-			t.Errorf("Should have received a nil SiemConnectionWithID instance")
+		if siemConnection != nil {
+			t.Errorf("Should have received a nil SiemConnection instance")
 		}
 	}
 }
@@ -183,7 +190,7 @@ func TestClientCreateValidSiemConnection(t *testing.T) {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.WriteHeader(201)
-		rw.Write([]byte(fmt.Sprintf(`{
+		_, err := rw.Write([]byte(fmt.Sprintf(`{
 												"data": [
 													{
 														"id": "%s",
@@ -206,6 +213,9 @@ func TestClientCreateValidSiemConnection(t *testing.T) {
 			RandomLetterAndNumberString(40),
 			RandomLowLetterString(20),
 			RandomLowLetterString(10))))
+		if err != nil {
+			return
+		}
 	}))
 
 	defer server.Close()
@@ -213,7 +223,7 @@ func TestClientCreateValidSiemConnection(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	response, _, err := client.CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
+	siemConnection, _, err := client.CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
 		AssetID:        assetId,
 		ConnectionName: RandomLetterAndNumberString(20),
 		StorageType:    RandomCapitalLetterString(10),
@@ -227,8 +237,8 @@ func TestClientCreateValidSiemConnection(t *testing.T) {
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
-	if response == nil {
-		t.Errorf("Should not have received a nil siemConnectionWithIdAndVersion instance")
+	if siemConnection == nil {
+		t.Errorf("Should not have received a nil SiemConnection instance")
 	}
 }
 
@@ -245,7 +255,7 @@ func TestClientReadExistingSiemConnection(t *testing.T) {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.WriteHeader(200)
-		rw.Write([]byte(fmt.Sprintf(`{
+		_, err := rw.Write([]byte(fmt.Sprintf(`{
 												"data": [
 													{
 														"id": "%s",
@@ -268,6 +278,9 @@ func TestClientReadExistingSiemConnection(t *testing.T) {
 			RandomLetterAndNumberString(40),
 			RandomLowLetterString(20),
 			RandomLowLetterString(10))))
+		if err != nil {
+			return
+		}
 	}))
 
 	defer server.Close()
@@ -275,13 +288,13 @@ func TestClientReadExistingSiemConnection(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	sc, _, err := client.ReadSiemConnection(ID)
+	siemConnection, _, err := client.ReadSiemConnection(ID)
 
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
-	if (sc == nil) || (sc != nil && len(sc.Data) != 1) {
-		t.Errorf("Should have received a one connection")
+	if (siemConnection == nil) || (siemConnection != nil && len(siemConnection.Data) != 1) {
+		t.Errorf("Should have received only one SiemConnection")
 	}
 }
 
@@ -290,7 +303,7 @@ func TestClientReadNonExistingSiemConnection(t *testing.T) {
 	apiID := RandomCapitalLetterAndNumberString(20)
 	apiKey := RandomLetterAndNumberString(40)
 	ID := RandomLowLetterAndNumberString(25)
-	responseStatusCode := 400
+	responseStatusCode := 404
 
 	endpoint := fmt.Sprintf("/%s/%s", endpointSiemConnection, ID)
 
@@ -302,7 +315,7 @@ func TestClientReadNonExistingSiemConnection(t *testing.T) {
 													"source": {
 														"pointer": "/%s/%s"
 													},
-													"title": "Bad Request"
+													"title": "Not Found"
 												}
 											]
 										}`, responseStatusCode, RandomLowLetterAndNumberString(24), endpointSiemConnection, ID)
@@ -312,7 +325,10 @@ func TestClientReadNonExistingSiemConnection(t *testing.T) {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.WriteHeader(responseStatusCode)
-		rw.Write([]byte(responseBody))
+		_, err := rw.Write([]byte(responseBody))
+		if err != nil {
+			return
+		}
 	}))
 
 	defer server.Close()
@@ -320,7 +336,7 @@ func TestClientReadNonExistingSiemConnection(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	siemConnectionWithIdAndVersion, _, err := client.ReadSiemConnection(ID)
+	siemConnection, _, err := client.ReadSiemConnection(ID)
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -329,12 +345,12 @@ func TestClientReadNonExistingSiemConnection(t *testing.T) {
 		ReadSiemConnection, responseStatusCode, responseBody)) != 0 {
 		t.Errorf("Should have received a response body for all responses different from %d, but received %s", 200, err)
 	}
-	if siemConnectionWithIdAndVersion != nil {
-		t.Errorf("Should have received a nil SiemConnectionWithID instance")
+	if siemConnection != nil {
+		t.Errorf("Should not have received a SiemConnection instance")
 	}
 }
 
-func TestClientUpdateExistingSiemConnection(t *testing.T) {
+func TestClientUpdateExistingS3SiemConnection(t *testing.T) {
 	log.Printf("======================== BEGIN TEST ========================")
 	apiID := RandomCapitalLetterAndNumberString(20)
 	apiKey := RandomLetterAndNumberString(40)
@@ -356,7 +372,7 @@ func TestClientUpdateExistingSiemConnection(t *testing.T) {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.WriteHeader(200)
-		rw.Write([]byte(fmt.Sprintf(`{
+		_, err := rw.Write([]byte(fmt.Sprintf(`{
 												"data": [
 													{
 														"id": "%s",
@@ -381,6 +397,9 @@ func TestClientUpdateExistingSiemConnection(t *testing.T) {
 			responseSecretKey,
 			responsePath1,
 			responsePath2)))
+		if err != nil {
+			return
+		}
 	}))
 
 	defer server.Close()
@@ -401,18 +420,95 @@ func TestClientUpdateExistingSiemConnection(t *testing.T) {
 		},
 	}
 
-	sc, _, err := client.UpdateSiemConnection(&SiemConnection{Data: []SiemConnectionData{sent}})
+	siemConnection, _, err := client.UpdateSiemConnection(&SiemConnection{Data: []SiemConnectionData{sent}})
 
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
-	if (sc == nil) || (sc != nil && len(sc.Data) != 1) {
-		t.Errorf("Should have received a one connection")
+	if (siemConnection == nil) || (siemConnection != nil && len(siemConnection.Data) != 1) {
+		t.Errorf("Should have received only one SiemConnection")
 	}
 
-	var received = sc.Data[0]
+	var received = siemConnection.Data[0]
 	if (&received.Version == nil) || (received.ID != sent.ID) || (received.AssetID != sent.AssetID) || (received.StorageType != sent.StorageType) || (received.ConnectionName != sent.ConnectionName) || (received.ConnectionInfo.Path != sent.ConnectionInfo.Path) || (received.ConnectionInfo.AccessKey == sent.ConnectionInfo.AccessKey) || (received.ConnectionInfo.SecretKey == sent.ConnectionInfo.SecretKey) {
 		t.Errorf("Returned data should be same as sent data with version added and different accessKey and secretKey")
+	}
+}
+
+func TestClientUpdateExistingS3ArnSiemConnection(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	apiID := RandomCapitalLetterAndNumberString(20)
+	apiKey := RandomLetterAndNumberString(40)
+
+	responseID := RandomLowLetterAndNumberString(24)
+	responseConnectionName := RandomLetterAndNumberString(20)
+	responseStorageType := "CUSTOMER_S3_ARN"
+	responseAssetId := RandomNumbersExcludingZeroString(10)
+	responsePath1 := RandomLowLetterString(20)
+	responsePath2 := RandomLowLetterString(10)
+	responseVersion := RandomNumbersExcludingZeroString(1) + "." + RandomNumbersExcludingZeroString(1)
+
+	endpoint := fmt.Sprintf("/%s/%s?caid=%s", endpointSiemConnection, responseID, responseAssetId)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		}
+		rw.WriteHeader(200)
+		_, err := rw.Write([]byte(fmt.Sprintf(`{
+												"data": [
+													{
+														"id": "%s",
+														"version": "%s",
+														"connectionName": "%s",
+														"assetId": "%s",
+														"storageType": "%s",
+														"connectionInfo": {
+															"path": "%s/%s"
+														}
+													}
+												]
+											}`,
+			responseID,
+			responseVersion,
+			responseConnectionName,
+			responseAssetId,
+			responseStorageType,
+			responsePath1,
+			responsePath2)))
+		if err != nil {
+			return
+		}
+	}))
+
+	defer server.Close()
+
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+	sent := SiemConnectionData{
+		ID:             responseID,
+		AssetID:        responseAssetId,
+		ConnectionName: responseConnectionName,
+		Version:        responseVersion,
+		StorageType:    responseStorageType,
+		ConnectionInfo: ConnectionInfo{
+			Path: responsePath1 + "/" + responsePath2,
+		},
+	}
+
+	siemConnection, _, err := client.UpdateSiemConnection(&SiemConnection{Data: []SiemConnectionData{sent}})
+
+	if err != nil {
+		t.Errorf("Should not have received an error")
+	}
+	if (siemConnection == nil) || (siemConnection != nil && len(siemConnection.Data) != 1) {
+		t.Errorf("Should have received only one SiemConnection")
+	}
+
+	var received = siemConnection.Data[0]
+	if !reflect.DeepEqual(sent, received) {
+		t.Errorf("Returned data should be same as sent data")
 	}
 }
 
@@ -463,7 +559,7 @@ func ClientDeleteSiemConnectionBase(t *testing.T, responseStatusCode int) error 
 
 		switch responseStatusCode {
 		case 400:
-			rw.Write([]byte(fmt.Sprintf(`{
+			_, err := rw.Write([]byte(fmt.Sprintf(`{
 					"errors": [
 						{
 							"status": %d,
@@ -475,13 +571,19 @@ func ClientDeleteSiemConnectionBase(t *testing.T, responseStatusCode int) error 
 						}
 					]
 				}`, responseStatusCode, responseID, endpointSiemConnection, ID)))
+			if err != nil {
+				return
+			}
 		case 401:
-			rw.Write([]byte(`{
+			_, err := rw.Write([]byte(`{
 				"errMsg": "Invalid Bearer token",
 				"errCode": 10001
 			}`))
+			if err != nil {
+				return
+			}
 		case 404:
-			rw.Write([]byte(fmt.Sprintf(`{
+			_, err := rw.Write([]byte(fmt.Sprintf(`{
 				"errors": [
 					{
 						"status": %d,
@@ -493,6 +595,9 @@ func ClientDeleteSiemConnectionBase(t *testing.T, responseStatusCode int) error 
 				}
 				]
 			}`, responseStatusCode, responseID, endpointSiemConnection, ID)))
+			if err != nil {
+				return
+			}
 
 		}
 	}))

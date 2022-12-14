@@ -28,7 +28,6 @@ type SiemLogConfiguration struct {
 
 func (c *Client) CreateSiemLogConfiguration(siemLogConfiguration *SiemLogConfiguration) (*SiemLogConfiguration, *int, error) {
 	logConfigurationJSON, err := json.Marshal(siemLogConfiguration)
-	fmt.Printf("[DEBUG] CreateSiemLogConfiguration: %s\n", logConfigurationJSON)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to produce JSON from SiemLogConfiguration: %s", err)
 	}
@@ -43,7 +42,6 @@ func (c *Client) ReadSiemLogConfiguration(ID string) (*SiemLogConfiguration, *in
 
 func (c *Client) UpdateSiemLogConfiguration(siemLogConfiguration *SiemLogConfiguration) (*SiemLogConfiguration, *int, error) {
 	siemLogConfigurationJSON, err := json.Marshal(siemLogConfiguration)
-	fmt.Printf("[DEBUG] UpdateSiemLogConfiguration: %s\n", siemLogConfigurationJSON)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to produce JSON from SiemLogConfigurationWithID: %s", err)
 	}
@@ -64,7 +62,7 @@ func dSiemLogConfigurationResponseClose(c io.Closer) {
 }
 
 func siemLogConfigurationRequest(c *Client, operation string, method string, reqURL string, data []byte, accountIdStr string, expectedSuccessStatusCode int) (*string, *[]byte, *int, error) {
-	log.Printf("[INFO] Executing operation %s on SIEM log configuration", operation)
+	log.Printf("[INFO] Executing operation %s on SIEM log configuration with data: %s", operation, data)
 
 	var params = map[string]string{}
 	accountId, err := strconv.Atoi(accountIdStr)
@@ -95,7 +93,6 @@ func siemLogConfigurationRequest(c *Client, operation string, method string, req
 }
 
 func siemLogConfigurationRequestWithResponse(c *Client, operation string, method string, reqURL string, data []byte, accountIdStr string, expectedSuccessStatusCode int) (*SiemLogConfiguration, *int, error) {
-
 	body, responseBody, responseStatusCode, err := siemLogConfigurationRequest(c, operation, method, reqURL, data, accountIdStr, expectedSuccessStatusCode)
 	if responseBody == nil {
 		return nil, responseStatusCode, err

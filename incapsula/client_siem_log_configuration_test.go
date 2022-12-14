@@ -55,7 +55,10 @@ func TestClientCreateSiemLogConfigurationBadJSON(t *testing.T) {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.WriteHeader(201)
-		rw.Write([]byte(`{` + RandomLetterAndNumberString(20)))
+		_, err := rw.Write([]byte(`{` + RandomLetterAndNumberString(20)))
+		if err != nil {
+			return
+		}
 	}))
 
 	defer server.Close()
@@ -114,7 +117,10 @@ func TestClientCreateSiemLogConfigurationBadRequest(t *testing.T) {
 				t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 			}
 			rw.WriteHeader(responseStatusCode)
-			rw.Write([]byte(v))
+			_, err := rw.Write([]byte(v))
+			if err != nil {
+				return
+			}
 		}))
 
 		defer server.Close()
@@ -162,7 +168,7 @@ func TestClientCreateValidSiemLogConfiguration(t *testing.T) {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.WriteHeader(201)
-		rw.Write([]byte(fmt.Sprintf(`{
+		_, err := rw.Write([]byte(fmt.Sprintf(`{
 												"data": [
 													{
 														"id": "%s",
@@ -185,6 +191,9 @@ func TestClientCreateValidSiemLogConfiguration(t *testing.T) {
 			dataset,
 			connectionId,
 		)))
+		if err != nil {
+			return
+		}
 	}))
 
 	defer server.Close()
@@ -205,7 +214,7 @@ func TestClientCreateValidSiemLogConfiguration(t *testing.T) {
 		t.Errorf("Should not have received an error")
 	}
 	if siemLogConfiguration == nil {
-		t.Errorf("Should not have received a nil siemConnectionLogConfiguration instance")
+		t.Errorf("Should not have received a nil SiemLogConfiguration instance")
 	}
 }
 
@@ -228,7 +237,7 @@ func TestClientReadExistingSiemLogConfiguration(t *testing.T) {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.WriteHeader(200)
-		rw.Write([]byte(fmt.Sprintf(`{
+		_, err := rw.Write([]byte(fmt.Sprintf(`{
 												"data": [
 													{
 														"id": "%s",
@@ -251,6 +260,9 @@ func TestClientReadExistingSiemLogConfiguration(t *testing.T) {
 			dataset,
 			connectionId,
 		)))
+		if err != nil {
+			return
+		}
 	}))
 
 	defer server.Close()
@@ -258,13 +270,13 @@ func TestClientReadExistingSiemLogConfiguration(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	sc, _, err := client.ReadSiemLogConfiguration(ID)
+	siemLogConfiguration, _, err := client.ReadSiemLogConfiguration(ID)
 
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
-	if (sc == nil) || (sc != nil && len(sc.Data) != 1) {
-		t.Errorf("Should have received one connection")
+	if (siemLogConfiguration == nil) || (siemLogConfiguration != nil && len(siemLogConfiguration.Data) != 1) {
+		t.Errorf("Should have received only one SiemLogConfiguration")
 	}
 }
 
@@ -295,7 +307,10 @@ func TestClientReadNonExistingSiemLogConfiguration(t *testing.T) {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.WriteHeader(responseStatusCode)
-		rw.Write([]byte(responseBody))
+		_, err := rw.Write([]byte(responseBody))
+		if err != nil {
+			return
+		}
 	}))
 
 	defer server.Close()
@@ -303,7 +318,7 @@ func TestClientReadNonExistingSiemLogConfiguration(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	siemConnectionWithIdAndVersion, _, err := client.ReadSiemLogConfiguration(ID)
+	siemLogConfiguration, _, err := client.ReadSiemLogConfiguration(ID)
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -312,8 +327,8 @@ func TestClientReadNonExistingSiemLogConfiguration(t *testing.T) {
 		ReadSiemLogConfiguration, responseStatusCode, responseBody)) != 0 {
 		t.Errorf("Should have received a response body for all responses different from %d, but received %s", 200, err)
 	}
-	if siemConnectionWithIdAndVersion != nil {
-		t.Errorf("Should have received a nil SiemLogConnection instance")
+	if siemLogConfiguration != nil {
+		t.Errorf("Should not have received a SiemLogConfiguration instance")
 	}
 }
 
@@ -337,8 +352,7 @@ func TestClientUpdateExistingSiemLogConfiguration(t *testing.T) {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		rw.WriteHeader(200)
-
-		rw.Write([]byte(fmt.Sprintf(`{
+		_, err := rw.Write([]byte(fmt.Sprintf(`{
 												"data": [
 													{
 														"id": "%s",
@@ -362,6 +376,9 @@ func TestClientUpdateExistingSiemLogConfiguration(t *testing.T) {
 			version,
 			connectionId,
 		)))
+		if err != nil {
+			return
+		}
 	}))
 
 	defer server.Close()
@@ -380,16 +397,16 @@ func TestClientUpdateExistingSiemLogConfiguration(t *testing.T) {
 		ConnectionId:      connectionId,
 	}
 
-	response, _, err := client.UpdateSiemLogConfiguration(&SiemLogConfiguration{Data: []SiemLogConfigurationData{sent}})
+	siemLogConfiguration, _, err := client.UpdateSiemLogConfiguration(&SiemLogConfiguration{Data: []SiemLogConfigurationData{sent}})
 
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
-	if (response == nil) || (response != nil && len(response.Data) != 1) {
-		t.Errorf("Should have received a one connection")
+	if (siemLogConfiguration == nil) || (siemLogConfiguration != nil && len(siemLogConfiguration.Data) != 1) {
+		t.Errorf("Should have received only one SiemLogConfiguration")
 	}
 
-	var received = response.Data[0]
+	var received = siemLogConfiguration.Data[0]
 	if !reflect.DeepEqual(sent, received) {
 		t.Errorf("Returned data should be same as sent data")
 	}
@@ -399,7 +416,7 @@ func TestClientDeleteSiemLogConfigurationSuccess(t *testing.T) {
 	log.Printf("======================== BEGIN TEST ========================")
 	responseStatusCode := 200
 	log.Printf("[DEBUG] Executing success scenario with response code: %d and no message", responseStatusCode)
-	err := ClientDeleteSiemLogConfigurationBase(t, responseStatusCode)
+	err := ClientDeleteSiemLogConfigurationBase(t, RandomLowLetterAndNumberString(25), responseStatusCode)
 	if err != nil {
 		t.Errorf("Error is not expected for status %d", responseStatusCode)
 	}
@@ -407,12 +424,21 @@ func TestClientDeleteSiemLogConfigurationSuccess(t *testing.T) {
 
 func TestClientDeleteSiemLogConfigurationFailure(t *testing.T) {
 	m := make(map[int]string)
+	m[400] = "Bad Request"
 	m[404] = "Not Found"
 
 	for k, v := range m {
 		log.Printf("======================== BEGIN TEST ========================")
 		log.Printf("[DEBUG] Executing failure scenario with response code: %d and message: %s", k, v)
-		err := ClientDeleteSiemConnectionBase(t, k)
+
+		ID := ""
+		if k == 400 {
+			ID = RandomLowLetterAndNumberString(26)
+		} else {
+			ID = RandomLowLetterAndNumberString(25)
+		}
+
+		err := ClientDeleteSiemLogConfigurationBase(t, ID, k)
 		if err == nil {
 			t.Errorf("Error is expected for status %d", k)
 		}
@@ -422,12 +448,12 @@ func TestClientDeleteSiemLogConfigurationFailure(t *testing.T) {
 		}
 	}
 }
-func ClientDeleteSiemLogConfigurationBase(t *testing.T, responseStatusCode int) error {
+
+func ClientDeleteSiemLogConfigurationBase(t *testing.T, ID string, responseStatusCode int) error {
 	log.Printf("[DEBUG] Running test client_siem_connection.TestDeleteSiemLogConfiguration with response status code: %d", responseStatusCode)
 	apiID := RandomCapitalLetterAndNumberString(20)
 	apiKey := RandomLetterAndNumberString(40)
 	responseID := RandomLowLetterAndNumberString(24)
-	ID := RandomLowLetterAndNumberString(25)
 
 	endpoint := fmt.Sprintf("/%s/%s", endpointSiemLogConfiguration, ID)
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -438,8 +464,24 @@ func ClientDeleteSiemLogConfigurationBase(t *testing.T, responseStatusCode int) 
 		rw.WriteHeader(responseStatusCode)
 
 		switch responseStatusCode {
+		case 400:
+			_, err := rw.Write([]byte(fmt.Sprintf(`{
+				"errors": [
+					{
+						"status": %d,
+						"id": "%s",
+						"source": {
+							"pointer": "/%s/id/%s"
+						},
+						"title": "Bad Request"
+				}
+				]
+			}`, responseStatusCode, responseID, endpointSiemLogConfiguration, ID)))
+			if err != nil {
+				return
+			}
 		case 404:
-			rw.Write([]byte(fmt.Sprintf(`{
+			_, err := rw.Write([]byte(fmt.Sprintf(`{
 				"errors": [
 					{
 						"status": %d,
@@ -451,7 +493,9 @@ func ClientDeleteSiemLogConfigurationBase(t *testing.T, responseStatusCode int) 
 				}
 				]
 			}`, responseStatusCode, responseID, endpointSiemLogConfiguration, ID)))
-
+			if err != nil {
+				return
+			}
 		}
 	}))
 	defer server.Close()

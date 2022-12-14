@@ -66,8 +66,7 @@ func dSiemConnectionResponseClose(c io.Closer) {
 }
 
 func siemConnectionRequest(c *Client, operation string, method string, reqURL string, data []byte, accountIdStr string, expectedSuccessStatusCode int) (*string, *[]byte, *int, error) {
-
-	log.Printf("[INFO] Executing operation %s on SIEM connection", operation)
+	log.Printf("[INFO] Executing operation %s on SIEM connection with data: %s", operation, data)
 
 	var params = map[string]string{}
 	accountId, err := strconv.Atoi(accountIdStr)
@@ -98,7 +97,6 @@ func siemConnectionRequest(c *Client, operation string, method string, reqURL st
 }
 
 func siemConnectionRequestWithResponse(c *Client, operation string, method string, reqURL string, data []byte, accountIdStr string, expectedSuccessStatusCode int) (*SiemConnection, *int, error) {
-
 	body, responseBody, responseStatusCode, err := siemConnectionRequest(c, operation, method, reqURL, data, accountIdStr, expectedSuccessStatusCode)
 	if responseBody == nil {
 		return nil, responseStatusCode, err
