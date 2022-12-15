@@ -19,10 +19,10 @@ are missing from the TF file will be deleted.
 resource "incapsula_site_domain_configuration" "site-domain-configuration" {
     site_id = incapsula_site.example-site.id
     domain {
-      domain_name="example-a.my-web-site.com"
+      name="example-a.my-web-site.com"
     }
     domain {
-      domain_name="example-b.my-web-site.com"
+      name="example-b.my-web-site.com"
     }
 }
 ```
@@ -44,7 +44,7 @@ The following attributes are exported:
 
 For Each domain the following data will be stored:
   * `id` - The id of the domain.
-  * `domain_name` - The address of the domain.
+  * `name` - The address of the domain.
   * `status` - PROTECTED, VERIFIED, BYPASSED, MISCONFIGURED.
 
 ## Import

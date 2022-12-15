@@ -36,7 +36,7 @@ func resourceSiteDomainConfiguration() *schema.Resource {
 				Set:         getHashFromDomain,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"domain_name": {
+						"name": {
 							Type:        schema.TypeString,
 							Description: "Domain name",
 							Required:    true,
@@ -65,7 +65,7 @@ func getHashFromDomain(v interface{}) int {
 	var buf bytes.Buffer
 	m := v.(map[string]interface{})
 
-	if v, ok := m["domain_name"]; ok {
+	if v, ok := m["name"]; ok {
 		buf.WriteString(fmt.Sprintf("%s-", v.(string)))
 	}
 	return PositiveHash(buf.String())
@@ -78,7 +78,7 @@ func populateFromResourceToDTO(d *schema.ResourceData) []SiteDomainDetails {
 	for _, domain := range domainsConf.List() {
 		domainItem := domain.(map[string]interface{})
 		siteDomainDetails[domainInd] = SiteDomainDetails{}
-		if attr, ok := domainItem["domain_name"]; ok && attr != "" {
+		if attr, ok := domainItem["name"]; ok && attr != "" {
 			siteDomainDetails[domainInd].Domain = attr.(string)
 		}
 		domainInd++
@@ -90,30 +90,9 @@ func resourceDomainUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteID := d.Get("site_id").(string)
 	siteDomainDetails := populateFromResourceToDTO(d)
-	siteDomainDetailsDto, err := client.BulkUpdateDomainsToSite(siteID, siteDomainDetails)
+	err := client.BulkUpdateDomainsToSite(siteID, siteDomainDetails)
 	if err != nil {
-		resourceDomainRead(d, m)
 		return err
-	}
-
-	if siteDomainDetailsDto.Errors != nil && len(siteDomainDetailsDto.Errors) > 0 {
-		if siteDomainDetailsDto.Errors[0].Status == "404" || siteDomainDetailsDto.Errors[0].Status == "400" {
-			log.Printf("[INFO] Operation not allowed: %s\n", siteDomainDetailsDto.Errors)
-			d.SetId("")
-			return nil
-		}
-
-		if siteDomainDetailsDto.Errors[0].Status == "500" {
-			log.Printf("[INFO] Internal Server Error: %s\n", siteDomainDetailsDto.Errors)
-			d.SetId("")
-			return nil
-		}
-
-		out, err := json.Marshal(siteDomainDetailsDto.Errors)
-		if err != nil {
-			panic(err)
-		}
-		return fmt.Errorf("error updating domains for site (%s): %s", d.Get("site_id"), string(out))
 	}
 
 	return resourceDomainRead(d, m)
@@ -141,7 +120,7 @@ func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
 
 		out, err := json.Marshal(siteDomainDetailsDto.Errors)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		return fmt.Errorf("error getting domains for site (%s): %s", d.Get("site_id"), string(out))
 	}
@@ -152,7 +131,7 @@ func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
 			continue
 		}
 		domain := map[string]interface{}{}
-		domain["domain_name"] = v.Domain
+		domain["name"] = v.Domain
 		domain["id"] = v.Id
 		domain["status"] = v.Status
 		domains.Add(domain)
@@ -167,29 +146,9 @@ func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
 func resourceDomainDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteID := d.Get("site_id").(string)
-	siteDomainDetailsDto, err := client.BulkUpdateDomainsToSite(siteID, []SiteDomainDetails{})
+	err := client.BulkUpdateDomainsToSite(siteID, []SiteDomainDetails{})
 	if err != nil {
 		return err
-	}
-
-	if siteDomainDetailsDto.Errors != nil && len(siteDomainDetailsDto.Errors) > 0 {
-		if siteDomainDetailsDto.Errors[0].Status == "404" || siteDomainDetailsDto.Errors[0].Status == "400" {
-			log.Printf("[INFO] Operation not allowed: %s\n", siteDomainDetailsDto.Errors)
-			d.SetId("")
-			return nil
-		}
-
-		if siteDomainDetailsDto.Errors[0].Status == "500" {
-			log.Printf("[INFO] Internal Server Error: %s\n", siteDomainDetailsDto.Errors)
-			d.SetId("")
-			return nil
-		}
-
-		out, err := json.Marshal(siteDomainDetailsDto.Errors)
-		if err != nil {
-			panic(err)
-		}
-		return fmt.Errorf("error deleting domains for site (%s): %s", d.Get("site_id"), string(out))
 	}
 
 	return resourceDomainRead(d, m)
