@@ -117,7 +117,7 @@ func resourceUserCreate(d *schema.ResourceData, m interface{}) error {
 
 	// Set the User ID
 	d.SetId(fmt.Sprintf("%s/%s", strconv.Itoa(accountId), email))
-	log.Printf("[INFO] Created Incapsula user for email: %s userid: %d\n", email, UserAddResponse.UserID)
+	log.Printf("[INFO] Created Incapsula user for email: %s userid: %s\n", email, UserAddResponse.Data.UserID)
 
 	// There may be a timing/race condition here
 	// Set an arbitrary period to sleep
@@ -132,31 +132,33 @@ func resourceUserRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	userID := d.Id()
 	stringSlice := strings.Split(userID, "/")
+	if len(stringSlice) != 2 {
+		return fmt.Errorf("Error parsing ID, actual value: %s, expected numeric id and string seperated by '/'\n", stringSlice)
+	}
 	accountID, _ := strconv.Atoi(stringSlice[0])
 	email := stringSlice[1]
 	log.Printf("[INFO] Reading Incapsula user : %s\n", userID)
 
-	UserStatusResponse, err := client.GetAccountUser(accountID, email)
+	userStatusResponse, err := client.GetAccountUser(accountID, email)
 
 	if err != nil {
 		log.Printf("[ERROR] Could not read Incapsula user: %s, %s\n", email, err)
 		return err
 	}
 
-	log.Printf("[INFO]listRoles : %v\n", UserStatusResponse.Roles)
+	log.Printf("[INFO]listRoles : %v\n", userStatusResponse.Data.Roles)
 
-	listRolesIds := make([]int, len(UserStatusResponse.Roles))
-	listRolesNames := make([]string, len(UserStatusResponse.Roles))
-	for i, v := range UserStatusResponse.Roles {
-		log.Printf("[INFO]listRoles : %v\n", UserStatusResponse.Roles)
+	listRolesIds := make([]int, len(userStatusResponse.Data.Roles))
+	listRolesNames := make([]string, len(userStatusResponse.Data.Roles))
+	for i, v := range userStatusResponse.Data.Roles {
 		listRolesIds[i] = v.RoleID
 		listRolesNames[i] = v.RoleName
 	}
 
-	d.Set("email", UserStatusResponse.Email)
-	d.Set("account_id", UserStatusResponse.AccountID)
-	d.Set("first_name", UserStatusResponse.FirstName)
-	d.Set("last_name", UserStatusResponse.LastName)
+	d.Set("email", userStatusResponse.Data.Email)
+	d.Set("account_id", userStatusResponse.Data.AccountID)
+	d.Set("first_name", userStatusResponse.Data.FirstName)
+	d.Set("last_name", userStatusResponse.Data.LastName)
 	d.Set("role_ids", listRolesIds)
 	d.Set("role_names", listRolesNames)
 
@@ -173,7 +175,7 @@ func resourceUserUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Creating Incapsula user for email: %s\n", email)
 
 	roleIds := d.Get("role_ids").(*schema.Set)
-	UserUpdateResponse, err := client.UpdateAccountUser(
+	userUpdateResponse, err := client.UpdateAccountUser(
 		accountId,
 		email,
 		roleIds.List(),
@@ -183,7 +185,7 @@ func resourceUserUpdate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	log.Printf("[Info] New Roles for user %s : %+v\n", email, UserUpdateResponse.Roles)
+	log.Printf("[Info] New Roles for user %s : %+v\n", email, userUpdateResponse.Data[0].Roles)
 
 	// There may be a timing/race condition here
 	// Set an arbitrary period to sleep

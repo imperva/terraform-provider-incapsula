@@ -9,35 +9,50 @@ import (
 )
 
 // Endpoints (unexported consts)
-const endpointUser = "user-management/v1/users"
-const endpointUserAdd = endpointUser
-const endpointUserStatus = endpointUser
-const endpointUserDelete = endpointUser
-const endpointUserUpdate = "user-management/v1/assignments"
+const endpointAccountUserAdd = "identity-management/v3/users"
+const endpointSubAccountUserAdd = "identity-management/v3/users/sub-account"
+const endpointUserStatus = "identity-management/v3/users"
+const endpointUserDelete = "identity-management/v3/users"
+const endpointUserUpdate = "identity-management/v3/roles/assignments"
 
 // UserApisResponse contains the relevant user information when adding, getting or updating a user
 type UserApisResponse struct {
-	UserID    int    `json:"userId"`
-	AccountID int    `json:"accountId"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	Email     string `json:"userEmail"`
-	Roles     []struct {
-		RoleID   int    `json:"roleId"`
-		RoleName string `json:"roleName"`
-	} `json:"rolesDetails"`
+	Data struct {
+		UserID    string `json:"id"`
+		AccountID int    `json:"accountId"`
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+		Email     string `json:"email"`
+		Roles     []struct {
+			RoleID   int    `json:"id"`
+			RoleName string `json:"name"`
+		} `json:"roles"`
+	} `json:"data"`
 }
 
-type UserReq struct {
-	AccountId int    `json:"accountId"`
-	UserEmail string `json:"userEmail"`
+type UserApisUpdateResponse struct {
+	Data []struct {
+		UserID    string `json:"id"`
+		AccountID int    `json:"accountId"`
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+		Email     string `json:"email"`
+		Roles     []struct {
+			RoleID   int    `json:"id"`
+			RoleName string `json:"name"`
+		} `json:"roles"`
+	} `json:"data"`
+}
+
+type UserAddReq struct {
+	UserEmail string `json:"email"`
 	RoleIds   []int  `json:"roleIds"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 }
 
 type UserUpdateReq struct {
-	UserEmail string `json:"userEmail"`
+	UserEmail string `json:"email"`
 	AccountId int    `json:"accountId"`
 	RoleIds   []int  `json:"roleIds"`
 }
@@ -51,19 +66,26 @@ func (c *Client) AddAccountUser(accountID int, email, firstName, lastName string
 		listRoles[i] = v.(int)
 	}
 
-	userReq := UserReq{AccountId: accountID, UserEmail: email, RoleIds: listRoles, FirstName: firstName, LastName: lastName}
+	userAddReq := UserAddReq{UserEmail: email, RoleIds: listRoles, FirstName: firstName, LastName: lastName}
 
-	userJSON, err := json.Marshal(userReq)
+	userJSON, err := json.Marshal(userAddReq)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to JSON marshal IncapRule: %s", err)
 	}
 
-	log.Printf("[INFO] Values: %s\n", userJSON)
-	log.Printf("[INFO] Req: %s\n", fmt.Sprintf("%s/%s", c.config.BaseURLAPI, endpointUserAdd))
-	log.Printf("[INFO] json: %s\n", userJSON)
+	endpointUserAdd := endpointAccountUserAdd
+	operation := CreateAccountUser
+	accountStatusResponse, err := c.AccountStatus(accountID, ReadAccount)
+	if accountStatusResponse != nil && accountStatusResponse.AccountType == "Sub Account" {
+		endpointUserAdd = endpointSubAccountUserAdd
+		operation = CreateSubAccountUser
+	}
 
-	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURLAPI, endpointUserAdd)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, userJSON, CreateAccountUser)
+	reqURL := fmt.Sprintf("%s/%s?caid=%d", c.config.BaseURLAPI, endpointUserAdd, accountID)
+	log.Printf("[INFO] Values: %s\n", userJSON)
+	log.Printf("[INFO] Req: %s\n", reqURL)
+	log.Printf("[INFO] json: %s\n", userJSON)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, userJSON, operation)
 
 	if err != nil {
 		return nil, fmt.Errorf("Error adding user email %s: %s", email, err)
@@ -83,7 +105,7 @@ func (c *Client) AddAccountUser(accountID int, email, firstName, lastName string
 
 	// Parse the JSON
 	var userAddResponse UserApisResponse
-	err = json.Unmarshal([]byte(responseBody), &userAddResponse)
+	err = json.Unmarshal(responseBody, &userAddResponse)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing add user JSON response for email %s: %s", email, err)
 	}
@@ -97,7 +119,7 @@ func (c *Client) GetAccountUser(accountID int, email string) (*UserApisResponse,
 	log.Printf("[INFO] Getting Incapsula user status for email id: %s\n", email)
 
 	// Get to Incapsula
-	reqURL := fmt.Sprintf("%s/%s?accountId=%d&userEmail=%s", c.config.BaseURLAPI, endpointUserStatus, accountID, email)
+	reqURL := fmt.Sprintf("%s/%s?caid=%d&email=%s", c.config.BaseURLAPI, endpointUserStatus, accountID, email)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadAccountUser)
 
 	if err != nil {
@@ -110,7 +132,6 @@ func (c *Client) GetAccountUser(accountID int, email string) (*UserApisResponse,
 
 	// Dump JSON
 	log.Printf("[DEBUG] Incapsula user status JSON response: %s\n", string(responseBody))
-	log.Printf("[INFO] Incapsula user status JSON response: %s\n", string(responseBody))
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("Error status code %d from Incapsula service when getting User %s: %s", resp.StatusCode, email, string(responseBody))
@@ -118,7 +139,7 @@ func (c *Client) GetAccountUser(accountID int, email string) (*UserApisResponse,
 
 	// Parse the JSON
 	var userStatusResponse UserApisResponse
-	err = json.Unmarshal([]byte(responseBody), &userStatusResponse)
+	err = json.Unmarshal(responseBody, &userStatusResponse)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing user status JSON response for user id %s: %s", email, err)
 	}
@@ -128,7 +149,7 @@ func (c *Client) GetAccountUser(accountID int, email string) (*UserApisResponse,
 }
 
 // UpdateAccountUser User Roles
-func (c *Client) UpdateAccountUser(accountID int, email string, roleIds []interface{}) (*UserApisResponse, error) {
+func (c *Client) UpdateAccountUser(accountID int, email string, roleIds []interface{}) (*UserApisUpdateResponse, error) {
 	log.Printf("[INFO] Update Incapsula User for email: %s (account ID %d)\n", email, accountID)
 
 	listRoles := make([]int, len(roleIds))
@@ -136,18 +157,18 @@ func (c *Client) UpdateAccountUser(accountID int, email string, roleIds []interf
 		listRoles[i] = v.(int)
 	}
 
-	UserUpdateReq := []UserUpdateReq{{AccountId: accountID, UserEmail: email, RoleIds: listRoles}}
+	userUpdateReq := []UserUpdateReq{{AccountId: accountID, UserEmail: email, RoleIds: listRoles}}
 
-	userJSON, err := json.Marshal(UserUpdateReq)
+	userJSON, err := json.Marshal(userUpdateReq)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to JSON marshal IncapRule: %s", err)
 	}
 
-	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURLAPI, endpointUserUpdate)
+	reqURL := fmt.Sprintf("%s/%s?caid=%d", c.config.BaseURLAPI, endpointUserUpdate, accountID)
 
 	log.Printf("[INFO] Req: %s\n", reqURL)
 	log.Printf("[INFO] json: %s\n", userJSON)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, userJSON, UpdateAccountUser)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, userJSON, UpdateAccountUser)
 
 	if err != nil {
 		return nil, fmt.Errorf("Error updating user email %s: %s", email, err)
@@ -166,14 +187,14 @@ func (c *Client) UpdateAccountUser(accountID int, email string, roleIds []interf
 	}
 
 	// Parse the JSON
-	var userUpdateResponse []UserApisResponse
-	err = json.Unmarshal([]byte(responseBody), &userUpdateResponse)
+	var userUpdateResponse UserApisUpdateResponse
+	err = json.Unmarshal(responseBody, &userUpdateResponse)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing update user JSON response for email %s: %s", email, err)
 	}
 
 	log.Printf("[INFO] ResponseStruct : %+v\n", userUpdateResponse)
-	return &userUpdateResponse[0], nil
+	return &userUpdateResponse, nil
 }
 
 // DeleteAccountUser deletes a user from Incapsula
@@ -189,7 +210,7 @@ func (c *Client) DeleteAccountUser(accountID int, email string) error {
 
 	// Delete form to Incapsula
 
-	reqURL := fmt.Sprintf("%s/%s?accountId=%d&userEmail=%s", c.config.BaseURLAPI, endpointUserDelete, accountID, email)
+	reqURL := fmt.Sprintf("%s/%s?caid=%d&email=%s", c.config.BaseURLAPI, endpointUserDelete, accountID, email)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteAccountUser)
 
 	if err != nil {
@@ -209,7 +230,7 @@ func (c *Client) DeleteAccountUser(accountID int, email string) error {
 
 	// Parse the JSON
 	var userDeleteResponse UserDeleteResponse
-	err = json.Unmarshal([]byte(responseBody), &userDeleteResponse)
+	err = json.Unmarshal(responseBody, &userDeleteResponse)
 	if err != nil {
 		return fmt.Errorf("Error parsing delete user JSON response for user %s : %s", email, err)
 	}

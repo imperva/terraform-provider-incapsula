@@ -33,9 +33,10 @@ func TestClientAddUserBadConnection(t *testing.T) {
 }
 
 func TestClientAddUserBadJSON(t *testing.T) {
+	accountID := 123
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointUserAdd) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointUserAdd, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s?caid=%d", endpointAccountUserAdd, accountID) {
+			t.Errorf("Should have have hit /%s?caid=%d endpoint. Got: %s", endpointAccountUserAdd, accountId, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
@@ -43,7 +44,6 @@ func TestClientAddUserBadJSON(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	accountID := 123
 	email := "example@example.com"
 	roleIds := make([]interface{}, 1)
 	roleIds[0] = 10
@@ -84,8 +84,8 @@ func TestClientUserStatusBadJSON(t *testing.T) {
 	accountID := 123
 	email := "example@example.com"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s?accountId=%d&userEmail=%s", endpointUserStatus, accountID, email) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointUserStatus, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s?caid=%d&email=%s", endpointUserStatus, accountID, email) {
+			t.Errorf("Should have have hit /%s?caid=%d&email=%s endpoint. Got: %s", endpointUserStatus, accountID, email, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
@@ -127,8 +127,8 @@ func TestClientDeleteUserBadJSON(t *testing.T) {
 	accountID := 123
 	email := "example@example.com"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s?accountId=%d&userEmail=%s", endpointUserDelete, accountID, email) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointUserDelete, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s?caid=%d&email=%s", endpointUserDelete, accountID, email) {
+			t.Errorf("Should have have hit /%s?caid=%d&email=%s endpoint. Got: %s", endpointUserDelete, accountID, email, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
@@ -142,5 +142,55 @@ func TestClientDeleteUserBadJSON(t *testing.T) {
 	}
 	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing delete user JSON response for user %s", email)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
+	}
+}
+
+////////////////////////////////////////////////////////////////
+// UpdateUser Tests
+////////////////////////////////////////////////////////////////
+
+func TestClientUpdateUserBadConnection(t *testing.T) {
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
+	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
+	accountID := 123
+	email := "example@example.com"
+	roleIds := make([]interface{}, 1)
+	roleIds[0] = 10
+	updateUserResponse, err := client.UpdateAccountUser(accountID, email, roleIds)
+	if err == nil {
+		t.Errorf("Should have received an error")
+	}
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error updating user email %s", email)) {
+		t.Errorf("Should have received an client error, got: %s", err)
+	}
+	if updateUserResponse != nil {
+		t.Errorf("Should have received a nil updateAccountResponse instance")
+	}
+}
+
+func TestClientUpdateUserBadJSON(t *testing.T) {
+	accountID := 123
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != fmt.Sprintf("/%s?caid=%d", endpointUserUpdate, accountID) {
+			t.Errorf("Should have have hit /%s?caid=%d endpoint. Got: %s", endpointAccountUpdate, accountID, req.URL.String())
+		}
+		rw.Write([]byte(`{`))
+	}))
+	defer server.Close()
+
+	email := "example@example.com"
+	roleIds := make([]interface{}, 1)
+	roleIds[0] = 10
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+	updateUserResponse, err := client.UpdateAccountUser(accountID, email, roleIds)
+	if err == nil {
+		t.Errorf("Should have received an error")
+	}
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing update user JSON response for email %s", email)) {
+		t.Errorf("Should have received a JSON parse error, got: %s", err)
+	}
+	if updateUserResponse != nil {
+		t.Errorf("Should have received a nil updateUserResponse instance")
 	}
 }
