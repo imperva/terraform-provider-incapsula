@@ -8,10 +8,10 @@ Provides a Log Configuration resource.
 
 # incapsula_siem_log_configuration
 
-Provides a Log configuration resource.
-This resource is used to manage Log Configuration that describe the destination of logs.
-Log configuration contain [connection id](TBD) of destination for delivered logs 
-[Link to documentation](https://docs.imperva.com/bundle/cloud-application-security/page/siem-log-configuration.htm)
+Provides a log configuration resource.
+This resource is used to manage log configurations which describe the desired log types
+and the destination for the log files. The destination is defined by the <connection ID>.
+[Learn more](https://docs.imperva.com/bundle/cloud-application-security/page/siem-log-configuration.htm)
 
 
 ## Example Usage
@@ -67,7 +67,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - Unique identifier of the log Configuration.
+* `id` - Unique identifier of the log configuration.
 
 ## Import
 
