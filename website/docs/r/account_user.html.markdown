@@ -15,6 +15,10 @@ The user roles should be added as ids and may be taken from `incapsula_account_r
 In addition, the default account roles may be taken from `incapsula_account_default_roles` datasource.
 This data source contains the Administrator and Reader default role ids.
 
+This resource give also the option to assign users to SubAccounts, the usage is the same but the behavior differ a bit.
+Please look at the 'SubAccount User Assignment Usage' example for more details
+
+
 ## Example Usage
 
 ### Basic Usage
@@ -83,6 +87,35 @@ resource "incapsula_account_user" "example_basic_user_3" {
     incapsula_account_role.example_basic_role_1.id,
     incapsula_account_role.example_basic_role_2.id,
     data.incapsula_account_default_roles.default_roles.reader_role_id,
+  ]
+}
+```
+
+### SubAccount User Assignment Usage
+
+For SubAccounts we are talking about assignments so the user should exist in the parent account.</p>
+In terms of resource, it means the email attribute must be taken from an existing user, hardcoded or by reference (preferred option).
+The first and last name are redundant and then, ignored and taken from the existing chosen account.
+The roles have to be chosen independently, they are not coming from the existing user.
+
+```hcl
+resource "incapsula_account_role" "example_basic_role_1" {
+  account_id = data.incapsula_account_data.account_data.current_account
+  name = "Sample Role 1"
+}
+
+resource "incapsula_account_user" "example_account_user_1" {
+  account_id = data.incapsula_account_data.account_data.current_account
+  email = "example@terraform.com"
+  first_name = "First"
+  last_name = "Last"
+}
+
+resource "incapsula_account_user" "example_sub_account_user_2" {
+  account_id = incapsula_subaccount.example-subaccount.id
+  email = incapsula_account_user.example_account_user_1.email
+  role_ids = [
+    incapsula_account_role.example_basic_role_1.id,
   ]
 }
 ```
