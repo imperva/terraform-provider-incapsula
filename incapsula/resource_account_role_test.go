@@ -14,6 +14,7 @@ const accountResourceRoleName = "test-terraform-account-role"
 const accountResourceRoleTypeName = accountResourceRoleType + "." + accountResourceRoleName
 const accountRoleName = "role-test"
 const accountRoleDescription = "role-description-test"
+const accountRoleDescriptionUpdated = "role-description-test Updated"
 
 func TestIncapsulaAccountRole_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -22,11 +23,37 @@ func TestIncapsulaAccountRole_Basic(t *testing.T) {
 		CheckDestroy: testCheckIncapsulaAccountRoleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCheckIncapsulaAccountRoleConfigBasic(t),
+				Config: testCheckIncapsulaAccountRoleConfigBasic(t, accountRoleDescription),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaAccountRoleExists(accountResourceRoleTypeName),
 					resource.TestCheckResourceAttr(accountResourceRoleTypeName, "name", accountRoleName),
 					resource.TestCheckResourceAttr(accountResourceRoleTypeName, "description", accountRoleDescription),
+				),
+			},
+		},
+	})
+}
+
+func TestIncapsulaAccountRole_Update(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testCheckIncapsulaAccountRoleDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testCheckIncapsulaAccountRoleConfigBasic(t, accountRoleDescription),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaAccountRoleExists(accountResourceRoleTypeName),
+					resource.TestCheckResourceAttr(accountResourceRoleTypeName, "name", accountRoleName),
+					resource.TestCheckResourceAttr(accountResourceRoleTypeName, "description", accountRoleDescription),
+				),
+			},
+			{
+				Config: testCheckIncapsulaAccountRoleConfigBasic(t, accountRoleDescriptionUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaAccountRoleExists(accountResourceRoleTypeName),
+					resource.TestCheckResourceAttr(accountResourceRoleTypeName, "name", accountRoleName),
+					resource.TestCheckResourceAttr(accountResourceRoleTypeName, "description", accountRoleDescriptionUpdated),
 				),
 			},
 		},
@@ -40,7 +67,7 @@ func TestIncapsulaAccountRole_ImportBasic(t *testing.T) {
 		CheckDestroy: testCheckIncapsulaAccountRoleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCheckIncapsulaAccountRoleConfigBasic(t),
+				Config: testCheckIncapsulaAccountRoleConfigBasic(t, accountRoleDescription),
 			},
 			{
 				ResourceName: accountResourceRoleTypeName,
@@ -108,7 +135,7 @@ func testCheckIncapsulaAccountRoleExists(name string) resource.TestCheckFunc {
 	}
 }
 
-func testCheckIncapsulaAccountRoleConfigBasic(t *testing.T) string {
+func testCheckIncapsulaAccountRoleConfigBasic(t *testing.T, roleDescription string) string {
 	return fmt.Sprintf(`
 		data "incapsula_account_data" "account_data" {}
 
@@ -117,6 +144,6 @@ func testCheckIncapsulaAccountRoleConfigBasic(t *testing.T) string {
 			name = "%s"
 			description = "%s"
 		}`,
-		accountResourceRoleType, accountResourceRoleName, accountRoleName, accountRoleDescription,
+		accountResourceRoleType, accountResourceRoleName, accountRoleName, roleDescription,
 	)
 }

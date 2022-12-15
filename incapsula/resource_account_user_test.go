@@ -36,6 +36,32 @@ func TestIncapsulaAccountUser_Basic(t *testing.T) {
 	})
 }
 
+func TestIncapsulaAccountUser_Update(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testCheckIncapsulaAccountUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testCheckIncapsulaAccountUserConfigBasic(t),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaAccountUserExists(accountResourceUserTypeName),
+					resource.TestCheckResourceAttr(accountResourceUserTypeName, "email", accountUserEmail),
+					resource.TestCheckResourceAttr(accountResourceUserTypeName, "role_ids.#", "0"),
+				),
+			},
+			{
+				Config: testCheckIncapsulaAccountUserConfigUpdate(t),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaAccountUserExists(accountResourceUserTypeName),
+					resource.TestCheckResourceAttr(accountResourceUserTypeName, "email", accountUserEmail),
+					resource.TestCheckResourceAttr(accountResourceUserTypeName, "role_ids.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func TestIncapsulaAccountUser_ImportBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -170,6 +196,27 @@ func testCheckIncapsulaAccountUserConfigBasic(t *testing.T) string {
 			email = "%s"
 			first_name = "%s"
 			last_name = "%s"
+		}`,
+		accountResourceUserType, accountResourceUserName, accountUserEmail, accountUserFirstName, accountUserLastName,
+	)
+}
+
+func testCheckIncapsulaAccountUserConfigUpdate(t *testing.T) string {
+	return fmt.Sprintf(`
+		data "incapsula_account_data" "account_data" {}
+
+		data "incapsula_account_default_roles" "default_roles" {
+		  account_id = data.incapsula_account_data.account_data.current_account
+		}
+
+		resource "%s" "%s" {
+			account_id = data.incapsula_account_data.account_data.current_account
+			email = "%s"
+			first_name = "%s"
+			last_name = "%s"
+			role_ids = [
+				data.incapsula_account_default_roles.default_roles.reader_role_id
+			]
 		}`,
 		accountResourceUserType, accountResourceUserName, accountUserEmail, accountUserFirstName, accountUserLastName,
 	)
