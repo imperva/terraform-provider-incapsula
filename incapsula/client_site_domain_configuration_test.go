@@ -152,53 +152,24 @@ func TestClientAddDomainsForSiteValidCase(t *testing.T) {
 	apiKey := "bar"
 	siteID := "111"
 	bulkUpdateEndpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/domains", siteID)
+	checkStatusEndpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/domains/status/cf0c2380-21e7-4e52-b6e9-57c746af3b83", siteID)
 	siteExtraDetailsEndpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/domains/extraDetails", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.WriteHeader(200)
-
-		if (req.URL.String() != bulkUpdateEndpoint) && (req.URL.String() != siteExtraDetailsEndpoint) {
-			t.Errorf("Should have have hit %s or %s endpoints. Got: %s", bulkUpdateEndpoint, siteExtraDetailsEndpoint, req.URL.String())
-		}
-
 		if req.URL.String() == bulkUpdateEndpoint {
+			rw.WriteHeader(http.StatusAccepted)
 			rw.Write([]byte(`{
 			"data": [
-				{
-					"id": 12,
-					"siteId": 111,
-					"domain": "a.co",
-					"mainDomain": true,
-					"managed": true,
-					"status": "BYPASSED",
-					"creationDate": 1665485465000
-				},
-				{
-					"id": 13,
-					"siteId": 111,
-					"domain": "b.a.co",
-					"managed": true,
-					"validationMethod": "CNAME",
-					"status": "BYPASSED",
-					"creationDate": 1668699134000
-				},
-				{
-					"id": 14,
-					"siteId": 111,
-					"domain": "c.a.co",
-					"managed": true,
-					"validationMethod": "CNAME",
-					"status": "BYPASSED",
-					"creationDate": 1668700703096
-				}
-			],
-			"meta": {
-				"totalPages": 0
-			}
-			}`))
+					{
+						"handler": "cf0c2380-21e7-4e52-b6e9-57c746af3b83",
+						"status": "IN_PROGRESS"
+					}
+				]
+				}`))
 		}
 
 		if req.URL.String() == siteExtraDetailsEndpoint {
+			rw.WriteHeader(http.StatusOK)
 			rw.Write([]byte(`{
 			"data": [
 				{
@@ -206,6 +177,18 @@ func TestClientAddDomainsForSiteValidCase(t *testing.T) {
 					"maxAllowedDomains": 1000
 				}
 			]
+			}`))
+		}
+
+		if req.URL.String() == checkStatusEndpoint {
+			rw.WriteHeader(http.StatusOK)
+			rw.Write([]byte(`{
+			"data": [
+					{
+						"handler": "cf0c2380-21e7-4e52-b6e9-57c746af3b83",
+						"status": "COMPLETED_SUCCESSFULLY"
+					}
+				]
 			}`))
 		}
 	}))
@@ -216,46 +199,41 @@ func TestClientAddDomainsForSiteValidCase(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	siteIdStr, err := strconv.Atoi(siteID)
-	addCertificateResponse, err := client.BulkUpdateDomainsToSite(siteID, getFakeSiteDomainDetailsArray(siteIdStr, "a.com", "b.com"))
 	if err != nil {
-		t.Errorf("Should not have received an error")
+		t.Errorf("error")
 	}
-	if addCertificateResponse == nil {
-		t.Errorf("Should not have received a nil addCertificateResponse instance")
+	err = client.BulkUpdateDomainsToSite(siteID, getFakeSiteDomainDetailsArray(siteIdStr, "a.com", "b.com"))
+	if err != nil {
+		t.Errorf("Should not receive error")
 	}
+
 }
 
 func TestClientAddDomainsForSiteErrorResponse(t *testing.T) {
 	log.Printf("======================== BEGIN TEST ========================")
-	log.Printf("[DEBUG] Running test client_site_domain_configuration_test.TestClientAddDomainsForSiteErrorResponse")
+	log.Printf("[DEBUG] Running test client_site_domain_configuration_test.TestClientAddDomainsForSiteValidCase")
 	apiID := "foo"
 	apiKey := "bar"
-	siteId := "111"
-	bulkUpdateEndpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/domains", siteId)
-	siteExtraDetailsEndpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/domains/extraDetails", siteId)
+	siteID := "111"
+	bulkUpdateEndpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/domains", siteID)
+	checkStatusEndpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/domains/status/cf0c2380-21e7-4e52-b6e9-57c746af3b83", siteID)
+	siteExtraDetailsEndpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/domains/extraDetails", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.WriteHeader(400)
-
-		if (req.URL.String() != bulkUpdateEndpoint) && (req.URL.String() != siteExtraDetailsEndpoint) {
-			t.Errorf("Should have have hit %s or %s endpoints. Got: %s", bulkUpdateEndpoint, siteExtraDetailsEndpoint, req.URL.String())
+		if req.URL.String() == bulkUpdateEndpoint {
+			rw.WriteHeader(http.StatusAccepted)
+			rw.Write([]byte(`{
+			"data": [
+					{
+						"handler": "cf0c2380-21e7-4e52-b6e9-57c746af3b83",
+						"status": "IN_PROGRESS"
+					}
+				]
+				}`))
 		}
 
-		rw.Write([]byte(`{
-    "errors": [
-        {
-            "status": 400,
-            "id": "f83b824fc6d9505e",
-            "source": {
-                "pointer": "/v2/sites/65887086/domains"
-            },
-            "title": "BAD_REQUEST",
-            "detail": "upload failed due to the following errors: Invalid domain name:?a.com,?b.com"
-        }
-    ]
-}`))
-
 		if req.URL.String() == siteExtraDetailsEndpoint {
+			rw.WriteHeader(http.StatusOK)
 			rw.Write([]byte(`{
 			"data": [
 				{
@@ -265,6 +243,18 @@ func TestClientAddDomainsForSiteErrorResponse(t *testing.T) {
 			]
 			}`))
 		}
+
+		if req.URL.String() == checkStatusEndpoint {
+			rw.WriteHeader(http.StatusOK)
+			rw.Write([]byte(`{
+			"data": [
+					{
+						"handler": "cf0c2380-21e7-4e52-b6e9-57c746af3b83",
+						"status": "FAILED"
+					}
+				]
+			}`))
+		}
 	}))
 
 	defer server.Close()
@@ -272,28 +262,21 @@ func TestClientAddDomainsForSiteErrorResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	var domainA = "?a.com"
-	var domainB = "?b.com"
-	siteIdStr, err := strconv.Atoi(siteId)
-	addCertificateResponse, err := client.BulkUpdateDomainsToSite(siteId, getFakeSiteDomainDetailsArray(siteIdStr, domainA, domainB))
-
+	siteIdStr, err := strconv.Atoi(siteID)
+	if err != nil {
+		t.Errorf("error")
+	}
+	err = client.BulkUpdateDomainsToSite(siteID, getFakeSiteDomainDetailsArray(siteIdStr, "a.com", "b.com"))
 	if err == nil {
-		t.Errorf("expected to get error")
+		t.Errorf("Should receive error")
 	}
 
-	errorString := err.Error()
-	if !strings.Contains(errorString, fmt.Sprintf("[ERROR] Error status code 400 from Incapsula get site domains extra details for siteId %s", siteId)) {
+	log.Printf("expectin to get error. recieved: %s", err.Error())
+	if !strings.Contains(err.Error(), fmt.Sprintf("async update domains for site returned FAILED status")) {
 		t.Errorf("Should have received a client error, got: %s", err)
-	}
-
-	if !strings.Contains(err.Error(), fmt.Sprintf("Invalid domain name:%s,%s", domainA, domainB)) {
-		t.Errorf("Should have received a client error, got: %s", err)
-	}
-
-	if addCertificateResponse != nil {
-		t.Errorf("expexcted to get nil on addCertificateResponse instance")
 	}
 }
+
 func getFakeSiteDomainDetailsArray(siteId int, domainA string, domainB string) []SiteDomainDetails {
 	siteDomainDetails := make([]SiteDomainDetails, 2)
 	siteDomainDetails[0] = SiteDomainDetails{SiteId: siteId, Domain: domainA}
