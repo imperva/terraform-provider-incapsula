@@ -12,7 +12,6 @@ const s3ArnSiemConnectionResourceName = "test_acc"
 const s3ArnSiemConnectionResource = s3ArnSiemConnectionResourceType + "." + s3ArnSiemConnectionResourceName
 
 const siemConnectionS3ArnStorageTypeValue = "CUSTOMER_S3_ARN"
-const siemConnectionS3ArnAccountIdValue = "52291885"
 
 var s3ArnSiemConnectionName = "SIEMCONNECTIONS3ARN" + RandomLetterAndNumberString(10)
 
@@ -26,12 +25,11 @@ func TestAccS3ArnSiemConnection_Basic(t *testing.T) {
 		CheckDestroy: testAccIncapsulaSiemConnectionDestroy(s3ArnSiemConnectionResourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: getAccIncapsulaS3ArnSiemConnectionConfigBasic(siemConnectionS3ArnAccountIdValue),
+				Config: getAccIncapsulaS3ArnSiemConnectionConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemConnectionExists(s3ArnSiemConnectionResource),
 					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "connection_name", s3ArnSiemConnectionName),
 					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "storage_type", siemConnectionS3ArnStorageTypeValue),
-					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "account_id", siemConnectionS3ArnAccountIdValue),
 				),
 			},
 			{
@@ -44,16 +42,14 @@ func TestAccS3ArnSiemConnection_Basic(t *testing.T) {
 	})
 }
 
-func getAccIncapsulaS3ArnSiemConnectionConfigBasic(accountId string) string {
+func getAccIncapsulaS3ArnSiemConnectionConfigBasic() string {
 	return fmt.Sprintf(`
-		resource "%s" "%s" {
-			account_id = "%s"
+		resource "%s" "%s" {	
 			connection_name = "%s"
-  			storage_type = "%s"
-			version = "1.0"
+  			storage_type = "%s"	
   			path = "data-platform-access-logs-dev/testacc"
 		}`,
 		s3ArnSiemConnectionResourceType, s3ArnSiemConnectionResourceName,
-		accountId, s3ArnSiemConnectionName, siemConnectionS3ArnStorageTypeValue,
+		s3ArnSiemConnectionName, siemConnectionS3ArnStorageTypeValue,
 	)
 }

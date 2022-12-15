@@ -19,7 +19,6 @@ type ConnectionInfo struct {
 
 type SiemConnectionData struct {
 	ID             string         `json:"id,omitempty"`
-	Version        string         `json:"version,omitempty"`
 	AssetID        string         `json:"assetId,omitempty"`
 	ConnectionName string         `json:"connectionName"`
 	StorageType    string         `json:"storageType"`

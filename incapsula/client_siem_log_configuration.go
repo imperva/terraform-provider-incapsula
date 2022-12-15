@@ -13,7 +13,6 @@ const endpointSiemLogConfiguration = "siem-config-service/v3/log-configurations"
 
 type SiemLogConfigurationData struct {
 	ID                string        `json:"id,omitempty"`
-	Version           string        `json:"version,omitempty"`
 	AssetID           string        `json:"assetId,omitempty"`
 	ConfigurationName string        `json:"configurationName"`
 	Provider          string        `json:"provider"`

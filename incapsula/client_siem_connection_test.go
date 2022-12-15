@@ -194,7 +194,6 @@ func TestClientCreateValidSiemConnection(t *testing.T) {
 												"data": [
 													{
 														"id": "%s",
-														"version": "1.0",
 														"connectionName": "%s",
 														"assetId": "%s",
 														"storageType": "CUSTOMER_S3",
@@ -259,7 +258,6 @@ func TestClientReadExistingSiemConnection(t *testing.T) {
 												"data": [
 													{
 														"id": "%s",
-														"version": "1.0",
 														"connectionName": "%s",
 														"assetId": "%s",
 														"storageType": "CUSTOMER_S3",
@@ -363,7 +361,6 @@ func TestClientUpdateExistingS3SiemConnection(t *testing.T) {
 	responseSecretKey := RandomLetterAndNumberString(40)
 	responsePath1 := RandomLowLetterString(20)
 	responsePath2 := RandomLowLetterString(10)
-	responseVersion := RandomNumbersExcludingZeroString(1) + "." + RandomNumbersExcludingZeroString(1)
 
 	endpoint := fmt.Sprintf("/%s/%s?caid=%s", endpointSiemConnection, responseID, responseAssetId)
 
@@ -375,8 +372,7 @@ func TestClientUpdateExistingS3SiemConnection(t *testing.T) {
 		_, err := rw.Write([]byte(fmt.Sprintf(`{
 												"data": [
 													{
-														"id": "%s",
-														"version": "%s",
+														"id": "%s",	
 														"connectionName": "%s",
 														"assetId": "%s",
 														"storageType": "%s",
@@ -389,7 +385,6 @@ func TestClientUpdateExistingS3SiemConnection(t *testing.T) {
 												]
 											}`,
 			responseID,
-			responseVersion,
 			responseConnectionName,
 			responseAssetId,
 			responseStorageType,
@@ -411,7 +406,6 @@ func TestClientUpdateExistingS3SiemConnection(t *testing.T) {
 		ID:             responseID,
 		AssetID:        responseAssetId,
 		ConnectionName: responseConnectionName,
-		Version:        responseVersion,
 		StorageType:    responseStorageType,
 		ConnectionInfo: ConnectionInfo{
 			AccessKey: RandomCapitalLetterAndNumberString(20),
@@ -430,8 +424,8 @@ func TestClientUpdateExistingS3SiemConnection(t *testing.T) {
 	}
 
 	var received = siemConnection.Data[0]
-	if (&received.Version == nil) || (received.ID != sent.ID) || (received.AssetID != sent.AssetID) || (received.StorageType != sent.StorageType) || (received.ConnectionName != sent.ConnectionName) || (received.ConnectionInfo.Path != sent.ConnectionInfo.Path) || (received.ConnectionInfo.AccessKey == sent.ConnectionInfo.AccessKey) || (received.ConnectionInfo.SecretKey == sent.ConnectionInfo.SecretKey) {
-		t.Errorf("Returned data should be same as sent data with version added and different accessKey and secretKey")
+	if (received.ID != sent.ID) || (received.AssetID != sent.AssetID) || (received.StorageType != sent.StorageType) || (received.ConnectionName != sent.ConnectionName) || (received.ConnectionInfo.Path != sent.ConnectionInfo.Path) || (received.ConnectionInfo.AccessKey == sent.ConnectionInfo.AccessKey) || (received.ConnectionInfo.SecretKey == sent.ConnectionInfo.SecretKey) {
+		t.Errorf("Returned data should be same as sent data with different accessKey and secretKey")
 	}
 }
 
@@ -446,7 +440,6 @@ func TestClientUpdateExistingS3ArnSiemConnection(t *testing.T) {
 	responseAssetId := RandomNumbersExcludingZeroString(10)
 	responsePath1 := RandomLowLetterString(20)
 	responsePath2 := RandomLowLetterString(10)
-	responseVersion := RandomNumbersExcludingZeroString(1) + "." + RandomNumbersExcludingZeroString(1)
 
 	endpoint := fmt.Sprintf("/%s/%s?caid=%s", endpointSiemConnection, responseID, responseAssetId)
 
@@ -459,7 +452,6 @@ func TestClientUpdateExistingS3ArnSiemConnection(t *testing.T) {
 												"data": [
 													{
 														"id": "%s",
-														"version": "%s",
 														"connectionName": "%s",
 														"assetId": "%s",
 														"storageType": "%s",
@@ -470,7 +462,6 @@ func TestClientUpdateExistingS3ArnSiemConnection(t *testing.T) {
 												]
 											}`,
 			responseID,
-			responseVersion,
 			responseConnectionName,
 			responseAssetId,
 			responseStorageType,
@@ -490,7 +481,6 @@ func TestClientUpdateExistingS3ArnSiemConnection(t *testing.T) {
 		ID:             responseID,
 		AssetID:        responseAssetId,
 		ConnectionName: responseConnectionName,
-		Version:        responseVersion,
 		StorageType:    responseStorageType,
 		ConnectionInfo: ConnectionInfo{
 			Path: responsePath1 + "/" + responsePath2,

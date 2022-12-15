@@ -3,7 +3,6 @@ package incapsula
 import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceSiemConnectionS3Arn() *schema.Resource {
@@ -31,20 +30,23 @@ func resourceSiemConnectionS3Arn() *schema.Resource {
 				Required:    true,
 			},
 			"storage_type": {
-				Description:  "Type of the storage.",
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{"CUSTOMER_S3_ARN"}, false),
+				Description: "Type of the storage.",
+				Type:        schema.TypeString,
+				Required:    true,
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					if val.(string) != "CUSTOMER_S3_ARN" {
+						errs = append(errs, fmt.Errorf("expected %s value for %s, got %s", "CUSTOMER_S3_ARN", "storage_type", val.(string)))
+					}
+					return
+				},
+				DefaultFunc: func() (interface{}, error) {
+					return "CUSTOMER_S3_ARN", nil
+				},
 			},
 			"path": {
 				Description: "Store data from the specified connection under this path.",
 				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"version": {
-				Description: "Version of the connection.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 			},
 		},
 	}
@@ -84,10 +86,8 @@ func resourceSiemConnectionS3ArnRead(d *schema.ResourceData, m interface{}) erro
 		return nil
 	} else if (*statusCode == 200) && (response != nil) && (len(response.Data) == 1) {
 		var connection = response.Data[0]
-		d.Set("account_id", connection.AssetID)
 		d.Set("connection_name", connection.ConnectionName)
 		d.Set("storage_type", connection.StorageType)
-		d.Set("version", connection.Version)
 		d.Set("path", connection.ConnectionInfo.Path)
 		return nil
 	} else {
@@ -102,7 +102,6 @@ func resourceSiemConnectionS3ArnUpdate(d *schema.ResourceData, m interface{}) er
 		AssetID:        d.Get("account_id").(string),
 		ConnectionName: d.Get("connection_name").(string),
 		StorageType:    d.Get("storage_type").(string),
-		Version:        d.Get("version").(string),
 		ConnectionInfo: ConnectionInfo{
 			Path: d.Get("path").(string),
 		},

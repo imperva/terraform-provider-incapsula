@@ -179,7 +179,6 @@ func TestClientCreateValidSiemLogConfiguration(t *testing.T) {
 															"%s"
 														],
 														"enabled": true,
-														"version": "1.0",
 														"connectionId": "%s"
 													}
 												]
@@ -248,7 +247,6 @@ func TestClientReadExistingSiemLogConfiguration(t *testing.T) {
 															"%s"
 														],
 														"enabled": true,
-														"version": "1.0",
 														"connectionId": "%s"
 													}
 												]
@@ -343,7 +341,6 @@ func TestClientUpdateExistingSiemLogConfiguration(t *testing.T) {
 	provider := RandomCapitalLetterString(6)
 	dataset := RandomCapitalLetterString(6)
 	connectionId := RandomLowLetterAndNumberString(24)
-	version := RandomNumbersExcludingZeroString(1) + "." + RandomNumbersExcludingZeroString(1)
 
 	endpoint := fmt.Sprintf("/%s/%s?caid=%s", endpointSiemLogConfiguration, ID, assetId)
 
@@ -363,7 +360,6 @@ func TestClientUpdateExistingSiemLogConfiguration(t *testing.T) {
 															"%s"
 														],
 														"enabled": true,
-														"version": "%s",
 														"connectionId": "%s"
 													}
 												]
@@ -373,7 +369,6 @@ func TestClientUpdateExistingSiemLogConfiguration(t *testing.T) {
 			configurationName,
 			provider,
 			dataset,
-			version,
 			connectionId,
 		)))
 		if err != nil {
@@ -393,7 +388,6 @@ func TestClientUpdateExistingSiemLogConfiguration(t *testing.T) {
 		Provider:          provider,
 		Datasets:          append(make([]interface{}, 0), dataset),
 		Enabled:           true,
-		Version:           version,
 		ConnectionId:      connectionId,
 	}
 

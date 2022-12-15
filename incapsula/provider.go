@@ -122,8 +122,7 @@ func Provider() *schema.Provider {
 			"incapsula_bots_configuration":                                     resourceBotsConfiguration(),
 			"incapsula_siem_connection_s3":                                     resourceSiemConnectionS3(),
 			"incapsula_siem_connection_s3arn":                                  resourceSiemConnectionS3Arn(),
-			"incapsula_siem_log_configuration_abp":                             resourceSiemLogConfigurationAbp(),
-			"incapsula_siem_log_configuration_netsec":                          resourceSiemLogConfigurationNetsec(),
+			"incapsula_siem_log_configuration":                                 resourceSiemLogConfiguration(),
 		},
 	}
 

@@ -5,7 +5,74 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"log"
+	"testing"
 )
+
+const siemLogConfigurationResourceType = "incapsula_siem_log_configuration"
+const siemLogConfigurationResourceName = "test_acc"
+const siemLogConfigurationResource = siemLogConfigurationResourceType + "." + siemLogConfigurationResourceName
+
+var siemLogConfigurationName = "SIEMLOGCONFIGURATION" + RandomLetterAndNumberString(10)
+
+func TestSiemLogConfiguration_Basic(t *testing.T) {
+	log.Printf("========================BEGIN TEST========================")
+	log.Printf("[DEBUG]Running test resource_siem_log_configuration.go.TestAccSiemLogConfiguration_Basic")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIncapsulaSiemLogConfigurationDestroy(siemLogConfigurationResourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_abp"),
+					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
+					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "configuration_name", siemLogConfigurationName+"abp"),
+					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "producer", "ABP"),
+					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "configuration_name", siemLogConfigurationName+"netsec"),
+					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "producer", "NETSEC"),
+				),
+			},
+			{
+				ResourceName:      siemLogConfigurationResource + "_abp",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testACCStateSiemLogConfigurationID(siemLogConfigurationResourceType),
+			},
+			{
+				ResourceName:      siemLogConfigurationResource + "_netsec",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testACCStateSiemLogConfigurationID(siemLogConfigurationResourceType),
+			},
+		},
+	})
+}
+
+func getAccIncapsulaSiemLogConfigurationConfigBasic() string {
+	return getAccIncapsulaS3ArnSiemConnectionConfigBasic() + fmt.Sprintf(`
+		resource "%s" "%s" {
+			configuration_name = "%s"
+  			producer = "ABP"
+			datasets = ["ABP"]
+			enabled = true
+			connection_id = %s.%s.id
+		}`,
+		siemLogConfigurationResourceType, siemLogConfigurationResourceName+"_abp", siemLogConfigurationName+"abp",
+		s3ArnSiemConnectionResourceType, s3ArnSiemConnectionResourceName,
+	) + fmt.Sprintf(`
+		resource "%s" "%s" {	
+			configuration_name = "%s"
+			producer = "NETSEC"
+			datasets = ["CONNECTION", "NETFLOW", "IP", "ATTACK"]
+			enabled = true
+			connection_id = %s.%s.id
+		}`,
+		siemLogConfigurationResourceType, siemLogConfigurationResourceName+"_netsec", siemLogConfigurationName+"netsec",
+		s3ArnSiemConnectionResourceType, s3ArnSiemConnectionResourceName,
+	)
+}
 
 func testAccReadSiemLogConfiguration(client *Client, ID string) error {
 	log.Printf("[INFO] SiemLogConfiguration ID: %s", ID)

@@ -4,15 +4,17 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"log"
+	"os"
 	"testing"
 )
+
+//for tests without connectivity check put env variable: TESTING_PROFILE=true
 
 const s3SiemConnectionResourceType = "incapsula_siem_connection_s3"
 const s3SiemConnectionResourceName = "test_acc"
 const s3SiemConnectionResource = s3SiemConnectionResourceType + "." + s3SiemConnectionResourceName
 
 const siemConnectionS3StorageTypeValue = "CUSTOMER_S3"
-const siemConnectionS3AccountIdValue = "52291885"
 
 var s3SiemConnectionName = "SIEMCONNECTIONS3" + RandomLetterAndNumberString(10)
 
@@ -20,8 +22,8 @@ func TestAccS3SiemConnection_Basic(t *testing.T) {
 	log.Printf("========================BEGIN TEST========================")
 	log.Printf("[DEBUG]Running test resource_s3_siem_connection.go.TestAccS3SiemConnection_Basic")
 
-	skipS3Test := true
-	if skipS3Test {
+	if v := os.Getenv("TESTING_PROFILE"); v != "" {
+		log.Printf("[DEBUG]TESTING_PROFILE environment variable is provided, test is skipped")
 		return
 	}
 
@@ -31,12 +33,11 @@ func TestAccS3SiemConnection_Basic(t *testing.T) {
 		CheckDestroy: testAccIncapsulaSiemConnectionDestroy(s3SiemConnectionResourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: getAccIncapsulaS3SiemConnectionConfigBasic(siemConnectionS3AccountIdValue),
+				Config: getAccIncapsulaS3SiemConnectionConfigBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemConnectionExists(s3SiemConnectionResource),
 					resource.TestCheckResourceAttr(s3SiemConnectionResource, "connection_name", s3SiemConnectionName),
 					resource.TestCheckResourceAttr(s3SiemConnectionResource, "storage_type", siemConnectionS3StorageTypeValue),
-					resource.TestCheckResourceAttr(s3SiemConnectionResource, "account_id", siemConnectionS3AccountIdValue),
 				),
 			},
 			{
@@ -49,17 +50,32 @@ func TestAccS3SiemConnection_Basic(t *testing.T) {
 	})
 }
 
-func getAccIncapsulaS3SiemConnectionConfigBasic(accountId string) string {
+func getAccIncapsulaS3SiemConnectionConfigBasic() string {
 	return fmt.Sprintf(`
-		resource "%s" "%s" {
-			account_id = "%s"
+		resource "%s" "%s" {	
 			connection_name = "%s"
   			storage_type = "%s"
-			version = "1.0"
-  			access_key = "AKIA3TS2JGVQ3VGHMXVG"
-  			secret_key = "AKIA3TS2JGVQ3VGHMXVG_SECRET_KEY"
+  			access_key = "%s"
+  			secret_key = "%s"
   			path = "data-platform-access-logs-dev/testacc"
 		}`,
-		s3SiemConnectionResourceType, s3SiemConnectionResourceName, accountId, s3SiemConnectionName, siemConnectionS3StorageTypeValue,
+		s3SiemConnectionResourceType, s3SiemConnectionResourceName, s3SiemConnectionName,
+		siemConnectionS3StorageTypeValue, getSiemConnectionS3AccessKey(), getSiemConnectionS3SecretKey(),
 	)
+}
+
+func getSiemConnectionS3AccessKey() string {
+	k := os.Getenv("SIEM_CONNECTION_S3_ACCESS_KEY")
+	if k == "" {
+		return RandomCapitalLetterAndNumberString(20)
+	}
+	return k
+}
+
+func getSiemConnectionS3SecretKey() string {
+	k := os.Getenv("SIEM_CONNECTION_S3_SECRET_KEY")
+	if k == "" {
+		return RandomLetterAndNumberString(40)
+	}
+	return k
 }
