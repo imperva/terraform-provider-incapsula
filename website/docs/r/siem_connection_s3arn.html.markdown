@@ -9,9 +9,10 @@ Provides a customer S3 ARN connection configuration resource.
 # incapsula_siem_connection_s3arn
 
 Provides a customer S3 ARN connection configuration resource.
-This resource is used to manage connection to customer AWS S3 bucket that used ARN role for access.
-The connection doesn't contain connection credentials, but instead you should grant putObject permission of Imperva Logs AWS role :
-[Link to documentation](https://docs.imperva.com/bundle/cloud-application-security/page/siem-log-configuration.htm)
+This resource is used to manage the connection to customer’s AWS S3 bucket when using 
+an ARN role for access. The connection does not contain access credentials; 
+instead grant putObject permissions to a role to enable Imperva to upload log files.
+[Learn more](https://docs.imperva.com/bundle/cloud-application-security/page/siem-log-configuration.htm)
 
 
 ## Example Usage
@@ -20,7 +21,6 @@ The connection doesn't contain connection credentials, but instead you should gr
 resource "incapsula_siem_connection_s3arn" "example_siem_connection_arn"{
 	accountId = "1234567"
 	connectionName = "CWAF SIEM-LOGS CONNECTION"
-  	storageType = "CUSTOMER_S3_ARN"
   	path = "myBucket/siem/logs"
 }
 ```
@@ -30,7 +30,6 @@ resource "incapsula_siem_connection_s3arn" "example_siem_connection_arn"{
 The following arguments are supported:
 
 * `connectionName` - (Required) Unique connection name.
-* `storageType` - (Required) Storage type CUSTOMER_S3_ARN.
 * `path` - (Required) Path to the files inside bucket including bucket name: `bucketName/folder/subfolder`.
 * `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
 
@@ -38,7 +37,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - Unique identifier of the Customer S3 connection.
+* `id` - Unique identifier of the customer’s S3 connection.
 
 ## Import
 
