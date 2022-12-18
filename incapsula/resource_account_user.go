@@ -157,8 +157,16 @@ func resourceUserRead(d *schema.ResourceData, m interface{}) error {
 
 	d.Set("email", userStatusResponse.Data.Email)
 	d.Set("account_id", userStatusResponse.Data.AccountID)
-	d.Set("first_name", userStatusResponse.Data.FirstName)
-	d.Set("last_name", userStatusResponse.Data.LastName)
+
+	accountStatusResponse, err := client.AccountStatus(accountID, ReadAccount)
+	if accountStatusResponse != nil && accountStatusResponse.AccountType == "Sub Account" {
+		log.Printf("[DEBUG] User creation on Sub Account, setting null value to avoid forces replacement\n")
+		d.Set("first_name", nil)
+		d.Set("last_name", nil)
+	} else {
+		d.Set("first_name", userStatusResponse.Data.FirstName)
+		d.Set("last_name", userStatusResponse.Data.LastName)
+	}
 	d.Set("role_ids", listRolesIds)
 	d.Set("role_names", listRolesNames)
 

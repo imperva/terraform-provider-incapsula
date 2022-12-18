@@ -80,11 +80,11 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"incapsula_role_abilities":        dataSourceRoleAbilities(),
-			"incapsula_data_center":           dataSourceDataCenter(),
-			"incapsula_account_data":          dataSourceAccount(),
-			"incapsula_account_permissions":   dataSourceAccountPermissions(),
-			"incapsula_account_default_roles": dataSourceAccountRoles(),
+			"incapsula_role_abilities":      dataSourceRoleAbilities(),
+			"incapsula_data_center":         dataSourceDataCenter(),
+			"incapsula_account_data":        dataSourceAccount(),
+			"incapsula_account_permissions": dataSourceAccountPermissions(),
+			"incapsula_account_roles":       dataSourceAccountRoles(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{

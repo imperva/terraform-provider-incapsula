@@ -205,7 +205,7 @@ func testCheckIncapsulaAccountUserConfigUpdate(t *testing.T) string {
 	return fmt.Sprintf(`
 		data "incapsula_account_data" "account_data" {}
 
-		data "incapsula_account_default_roles" "default_roles" {
+		data "incapsula_account_roles" "roles" {
 		  account_id = data.incapsula_account_data.account_data.current_account
 		}
 
@@ -215,7 +215,7 @@ func testCheckIncapsulaAccountUserConfigUpdate(t *testing.T) string {
 			first_name = "%s"
 			last_name = "%s"
 			role_ids = [
-				data.incapsula_account_default_roles.default_roles.reader_role_id
+				data.incapsula_account_roles.roles.reader_role_id
 			]
 		}`,
 		accountResourceUserType, accountResourceUserName, accountUserEmail, accountUserFirstName, accountUserLastName,

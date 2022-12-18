@@ -12,7 +12,7 @@ import (
 const accountResourceRoleType = "incapsula_account_role"
 const accountResourceRoleName = "test-terraform-account-role"
 const accountResourceRoleTypeName = accountResourceRoleType + "." + accountResourceRoleName
-const accountRoleName = "role-test"
+const accountRoleName = "role-test-terraform"
 const accountRoleDescription = "role-description-test"
 const accountRoleDescriptionUpdated = "role-description-test Updated"
 
@@ -28,6 +28,9 @@ func TestIncapsulaAccountRole_Basic(t *testing.T) {
 					testCheckIncapsulaAccountRoleExists(accountResourceRoleTypeName),
 					resource.TestCheckResourceAttr(accountResourceRoleTypeName, "name", accountRoleName),
 					resource.TestCheckResourceAttr(accountResourceRoleTypeName, "description", accountRoleDescription),
+					resource.TestCheckResourceAttr(accountResourceRoleTypeName, "permissions.#", "2"),
+					resource.TestCheckResourceAttr(accountResourceRoleTypeName, "permissions.0", "canAddSite"),
+					resource.TestCheckResourceAttr(accountResourceRoleTypeName, "permissions.1", "canViewInfraProtectSetting"),
 				),
 			},
 		},
@@ -139,10 +142,18 @@ func testCheckIncapsulaAccountRoleConfigBasic(t *testing.T, roleDescription stri
 	return fmt.Sprintf(`
 		data "incapsula_account_data" "account_data" {}
 
+		data "incapsula_account_permissions" "incapsula_account_permissions" {
+		  account_id = data.incapsula_account_data.account_data.current_account
+		}
+
 		resource "%s" "%s" {
 			account_id = data.incapsula_account_data.account_data.current_account
 			name = "%s"
 			description = "%s"
+			permissions = [
+				data.incapsula_account_permissions.incapsula_account_permissions.map["View Infra Protect settings"],
+				"canAddSite",
+			]
 		}`,
 		accountResourceRoleType, accountResourceRoleName, accountRoleName, roleDescription,
 	)

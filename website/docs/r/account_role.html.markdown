@@ -24,7 +24,7 @@ In order to get the latest list, use the <b>/v1/abilities/accounts/{accountId}</
 The basic usage is to use lists of account permissions keys.
 
 ```hcl
-resource "incapsula_account_role" "incapsula_account_role_sample_1" {
+resource "incapsula_account_role" "role_1" {
   account_id = data.incapsula_account_data.account_data.current_account
   name = "Sample Role 1"
   description = "Sample Role Description 1"
@@ -37,26 +37,26 @@ resource "incapsula_account_role" "incapsula_account_role_sample_1" {
 Using `incapsula_account_permissions` data sources we can use Account Permissions display names that is more "human-readable".
 
 ```hcl
-data "incapsula_account_permissions" "incapsula_account_permissions_sample" {
+data "incapsula_account_permissions" "account_permissions" {
   account_id = data.incapsula_account_data.account_data.current_account
   filter_by_text="site"
 }
 
-resource "incapsula_account_role" "incapsula_account_role_sample_1" {
+resource "incapsula_account_role" "role_1" {
   account_id = data.incapsula_account_data.account_data.current_account
   name = "Sample Role 1"
   description = "Sample Role Description 1"
   permissions = ["canAddSite", "canEditSite",
-    data.incapsula_account_permissions.incapsula_account_permissions_sample.map["View Infra Protect settings"],
-    data.incapsula_account_permissions.incapsula_account_permissions_sample.map["Delete exception from policy"],
+    data.incapsula_account_permissions.account_permissions.map["View Infra Protect settings"],
+    data.incapsula_account_permissions.account_permissions.map["Delete exception from policy"],
   ]
 }
 
-resource "incapsula_account_role" "incapsula_account_role_sample_2" {
+resource "incapsula_account_role" "role_2" {
   account_id = data.incapsula_account_data.account_data.current_account
   name = "Sample Role 2"
   description = "Sample Role Description 2"
-  permissions = data.incapsula_account_permissions.incapsula_account_permissions_sample.keys
+  permissions = data.incapsula_account_permissions.account_permissions.keys
 }
 ```
 
