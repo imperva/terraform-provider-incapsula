@@ -30,7 +30,7 @@ resource "incapsula_account_user" "user_1" {
   role_ids = [
     data.incapsula_account_roles.roles.admin_role_id,
     data.incapsula_account_roles.roles.reader_role_id,
-    data.incapsula_account_roles.roles.map["Sample Role 1"],
+    incapsula_account_role.role_1.id,
   ]
 }
 

@@ -93,8 +93,8 @@ resource "incapsula_account_user" "user_3" {
 
 ### SubAccount User Assignment Usage Manage by Account
 
-For SubAccounts we are talking about assignments so the user should exist in the parent account.</p>
-In terms of resource, it means the email attribute must be taken from an existing user, hardcoded or by reference (preferred option).
+For SubAccount we are not creating a new user but assigning an existing user from the parent Account.
+In terms of the TF resource, it means the email attribute must be taken from an existing user, hardcoded or by reference (preferred option).
 The first and last name are redundant and then, ignored and taken from the existing chosen account.
 The roles have to be chosen independently, they are not coming from the existing user.
 
