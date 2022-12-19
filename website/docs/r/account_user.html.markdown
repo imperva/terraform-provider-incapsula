@@ -2,8 +2,7 @@
 layout: "incapsula"
 page_title: "Incapsula: account-user"
 sidebar_current: "docs-incapsula-resource-account-user"
-description: |-
-Provides a Incapsula Account User resource.
+description: |- Provides a Incapsula Account User resource.
 ---
 
 # incapsula_account_user

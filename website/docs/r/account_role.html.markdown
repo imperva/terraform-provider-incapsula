@@ -2,8 +2,7 @@
 layout: "incapsula"
 page_title: "Incapsula: account-role"
 sidebar_current: "docs-incapsula-resource-account-role"
-description: |-
-Provides a Incapsula Account Role resource.
+description: |- Provides a Incapsula Account Role resource.
 ---
 
 # incapsula_account_role
