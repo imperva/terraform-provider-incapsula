@@ -161,7 +161,7 @@ The following attributes are exported:
 
 ## Import
 
-Account User can be imported using the `id`
+Account User can be imported using the `account_id` and `email` separated by `/`, e.g.:
 ```
-$ terraform import incapsula_account_user.demo 1234
+$ terraform import incapsula_account_user.demo 1234/example@terraform.com
 ```
