@@ -27,7 +27,7 @@ resource "incapsula_siem_connection_s3" "example_siem_connection"{
 resource "incapsula_siem_log_configuration" "example_siem_log_configuration_abp"{
     accountId = 1234567
   	configurationName = "ABP SIEM-LOGS configuration"
-  	provider = "ABP"
+  	producer = "ABP"
 	datasets = ["ABP"]
   	enabled = true
   	connectionId = incapsula_siem_connection_s3.example_siem_connection_abp.id
@@ -37,7 +37,7 @@ resource "incapsula_siem_log_configuration" "example_siem_log_configuration_abp"
 resource "incapsula_siem_log_configuration" "example_siem_log_configuration_netsec"{
     accountId = 1234567
   	configurationName = "NETSEC SIEM-LOGS configuration"
-  	provider = "NETSEC"
+  	producer = "NETSEC"
 	datasets = ["CONNECTION", "IP"]
   	enabled = true
   	connectionId = incapsula_siem_connection_s3.example_siem_connection_netsec.id
