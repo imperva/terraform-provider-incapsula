@@ -63,10 +63,11 @@ func TestAccSiemConnection_Basic(t *testing.T) {
 				),
 			},
 			resource.TestStep{
-				ResourceName:      s3SiemConnectionResource,
-				ImportState:       true,
-				ImportStateVerify: false,
-				ImportStateIdFunc: testACCStateSiemConnectionID(siemConnectionResourceType),
+				ResourceName:            s3SiemConnectionResource,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"secret_key"},
+				ImportStateIdFunc:       testACCStateSiemConnectionID(siemConnectionResourceType),
 			})
 	}
 	resource.Test(t, r)
