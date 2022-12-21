@@ -14,6 +14,8 @@ const siemLogConfigurationResource = siemLogConfigurationResourceType + "." + si
 
 var siemLogConfigurationName = "SIEMLOGCONFIGURATION" + RandomLetterAndNumberString(10)
 
+var siemLogConfigurationNameUpdated = "UPDATE" + siemLogConfigurationName
+
 func TestSiemLogConfiguration_Basic(t *testing.T) {
 	log.Printf("========================BEGIN TEST========================")
 	log.Printf("[DEBUG]Running test resource_siem_log_configuration.go.TestAccSiemLogConfiguration_Basic")
@@ -24,7 +26,7 @@ func TestSiemLogConfiguration_Basic(t *testing.T) {
 		CheckDestroy: testAccIncapsulaSiemLogConfigurationDestroy(siemLogConfigurationResourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(),
+				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\""),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_abp"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
@@ -50,27 +52,60 @@ func TestSiemLogConfiguration_Basic(t *testing.T) {
 	})
 }
 
-func getAccIncapsulaSiemLogConfigurationConfigBasic() string {
-	return getAccIncapsulaS3ArnSiemConnectionConfigBasic() + fmt.Sprintf(`
+func TestSiemLogConfiguration_Update(t *testing.T) {
+	log.Printf("========================BEGIN TEST========================")
+	log.Printf("[DEBUG]Running test resource_siem_log_configuration.go.TestAccSiemLogConfiguration_Update")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIncapsulaSiemLogConfigurationDestroy(siemLogConfigurationResourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\""),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_abp"),
+					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
+					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "configuration_name", siemLogConfigurationName+"abp"),
+					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "configuration_name", siemLogConfigurationName+"netsec"),
+					//resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "datasets", "[\"CONNECTION\", \"NETFLOW\"]"),
+				),
+			},
+			{
+				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationNameUpdated, "\"ABP\"", "\"IP\", \"ATTACK\""),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_abp"),
+					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
+					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "configuration_name", siemLogConfigurationNameUpdated+"abp"),
+					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "configuration_name", siemLogConfigurationNameUpdated+"netsec"),
+					//resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "datasets", "[\"IP\", \"ATTACK\"]"),
+				),
+			},
+		},
+	})
+}
+
+func getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName string, abpDatasets string, netsecDatasets string) string {
+	return getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName) + fmt.Sprintf(`
 		resource "%s" "%s" {
 			configuration_name = "%s"
   			producer = "ABP"
-			datasets = ["ABP"]
+			datasets = [%s]
 			enabled = true
 			connection_id = %s.%s.id
 		}`,
 		siemLogConfigurationResourceType, siemLogConfigurationResourceName+"_abp", siemLogConfigurationName+"abp",
-		s3ArnSiemConnectionResourceType, s3ArnSiemConnectionResourceName,
+		abpDatasets, siemConnectionResourceType, s3ArnSiemConnectionResourceName,
 	) + fmt.Sprintf(`
 		resource "%s" "%s" {	
 			configuration_name = "%s"
 			producer = "NETSEC"
-			datasets = ["CONNECTION", "NETFLOW", "IP", "ATTACK"]
+			datasets = [%s]
 			enabled = true
 			connection_id = %s.%s.id
 		}`,
 		siemLogConfigurationResourceType, siemLogConfigurationResourceName+"_netsec", siemLogConfigurationName+"netsec",
-		s3ArnSiemConnectionResourceType, s3ArnSiemConnectionResourceName,
+		netsecDatasets, siemConnectionResourceType, s3ArnSiemConnectionResourceName,
 	)
 }
 

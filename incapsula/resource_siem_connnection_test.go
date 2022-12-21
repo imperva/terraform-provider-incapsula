@@ -5,7 +5,149 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"log"
+	"os"
+	"testing"
 )
+
+// for tests without connectivity check put env variable: TESTING_PROFILE=true
+
+const siemConnectionResourceType = "incapsula_siem_connection"
+const s3ArnSiemConnectionResourceName = "test_acc_s3arn"
+const s3ArnSiemConnectionResource = siemConnectionResourceType + "." + s3ArnSiemConnectionResourceName
+
+var s3ArnSiemConnectionName = "SIEMCONNECTIONS3ARN" + RandomLetterAndNumberString(10)
+
+var s3ArnSiemConnectionNameUpdated = "UPDATED" + s3ArnSiemConnectionName
+
+const s3SiemConnectionResourceName = "test_acc_s3"
+const s3SiemConnectionResource = siemConnectionResourceType + "." + s3SiemConnectionResourceName
+
+var s3SiemConnectionName = "SIEMCONNECTIONS3" + RandomLetterAndNumberString(10)
+
+var s3SiemConnectionNameUpdated = "UPDATED" + s3SiemConnectionName
+
+func TestAccSiemConnection_Basic(t *testing.T) {
+	log.Printf("========================BEGIN TEST========================")
+	log.Printf("[DEBUG]Running test resource_siem_connection.go.TestAccSiemConnection_Basic")
+
+	r := resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIncapsulaSiemConnectionDestroy(siemConnectionResourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiemConnectionExists(s3ArnSiemConnectionResource),
+					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "connection_name", s3ArnSiemConnectionName),
+					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "storage_type", StorageTypeCustomerS3Arn),
+				),
+			},
+			{
+				ResourceName:      s3ArnSiemConnectionResource,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testACCStateSiemConnectionID(siemConnectionResourceType),
+			},
+		},
+	}
+
+	if v := os.Getenv("TESTING_PROFILE"); v == "" {
+		r.Steps = append(r.Steps,
+			resource.TestStep{
+				Config: getAccIncapsulaS3SiemConnectionConfigBasic(s3SiemConnectionName),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiemConnectionExists(s3SiemConnectionResource),
+					resource.TestCheckResourceAttr(s3SiemConnectionResource, "connection_name", s3SiemConnectionName),
+					resource.TestCheckResourceAttr(s3SiemConnectionResource, "storage_type", StorageTypeCustomerS3),
+				),
+			},
+			resource.TestStep{
+				ResourceName:      s3SiemConnectionResource,
+				ImportState:       true,
+				ImportStateVerify: false,
+				ImportStateIdFunc: testACCStateSiemConnectionID(siemConnectionResourceType),
+			})
+	}
+	resource.Test(t, r)
+}
+
+func TestAccSiemConnection_Update(t *testing.T) {
+	log.Printf("========================BEGIN TEST========================")
+	log.Printf("[DEBUG]Running test resource_siem_connection.go.TestAccSiemConnection_Update")
+
+	r := resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIncapsulaSiemConnectionDestroy(siemConnectionResourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiemConnectionExists(s3ArnSiemConnectionResource),
+					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "connection_name", s3ArnSiemConnectionName),
+					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "storage_type", StorageTypeCustomerS3Arn),
+				),
+			},
+			{
+				Config: getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionNameUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiemConnectionExists(s3ArnSiemConnectionResource),
+					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "connection_name", s3ArnSiemConnectionNameUpdated),
+					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "storage_type", StorageTypeCustomerS3Arn),
+				),
+			},
+		},
+	}
+
+	if v := os.Getenv("TESTING_PROFILE"); v == "" {
+		r.Steps = append(r.Steps,
+			resource.TestStep{
+				Config: getAccIncapsulaS3SiemConnectionConfigBasic(s3SiemConnectionName),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiemConnectionExists(s3SiemConnectionResource),
+					resource.TestCheckResourceAttr(s3SiemConnectionResource, "connection_name", s3SiemConnectionName),
+					resource.TestCheckResourceAttr(s3SiemConnectionResource, "storage_type", StorageTypeCustomerS3),
+				),
+			},
+			resource.TestStep{
+				Config: getAccIncapsulaS3SiemConnectionConfigBasic(s3SiemConnectionNameUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiemConnectionExists(s3SiemConnectionResource),
+					resource.TestCheckResourceAttr(s3SiemConnectionResource, "connection_name", s3SiemConnectionNameUpdated),
+					resource.TestCheckResourceAttr(s3SiemConnectionResource, "storage_type", StorageTypeCustomerS3),
+				),
+			})
+	}
+
+	resource.Test(t, r)
+}
+
+func getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName string) string {
+	return fmt.Sprintf(`
+		resource "%s" "%s" {	
+			connection_name = "%s"
+  			storage_type = "%s"	
+  			path = "data-platform-access-logs-dev/testacc"
+		}`,
+		siemConnectionResourceType, s3ArnSiemConnectionResourceName,
+		s3ArnSiemConnectionName, StorageTypeCustomerS3Arn,
+	)
+}
+
+func getAccIncapsulaS3SiemConnectionConfigBasic(s3SiemConnectionName string) string {
+	return fmt.Sprintf(`
+		resource "%s" "%s" {	
+			connection_name = "%s"
+  			storage_type = "%s"
+  			access_key = "%s"
+  			secret_key = "%s"
+  			path = "data-platform-access-logs-dev/testacc"
+		}`,
+		siemConnectionResourceType, s3SiemConnectionResourceName, s3SiemConnectionName,
+		StorageTypeCustomerS3, os.Getenv("SIEM_CONNECTION_S3_ACCESS_KEY"), os.Getenv("SIEM_CONNECTION_S3_SECRET_KEY"),
+	)
+}
 
 func testAccReadSiemConnection(client *Client, ID string) error {
 	log.Printf("[INFO] SiemConnection ID: %s", ID)

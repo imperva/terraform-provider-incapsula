@@ -5,14 +5,18 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func resourceSiemConnectionS3() *schema.Resource {
+const StorageTypeCustomerS3 = "CUSTOMER_S3"
+const StorageTypeCustomerS3Arn = "CUSTOMER_S3_ARN"
+
+func resourceSiemConnection() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceSiemConnectionS3Create,
-		Read:   resourceSiemConnectionS3Read,
-		Update: resourceSiemConnectionS3Update,
-		Delete: resourceSiemConnectionS3Delete,
+		Create: resourceSiemConnectionCreate,
+		Read:   resourceSiemConnectionRead,
+		Update: resourceSiemConnectionUpdate,
+		Delete: resourceSiemConnectionDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				d.SetId(d.Id())
@@ -32,18 +36,10 @@ func resourceSiemConnectionS3() *schema.Resource {
 				Required:    true,
 			},
 			"storage_type": {
-				Description: "Type of the storage.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-					if val.(string) != "CUSTOMER_S3" {
-						errs = append(errs, fmt.Errorf("expected %s value for %s, got %s", "CUSTOMER_S3", "storage_type", val.(string)))
-					}
-					return
-				},
-				DefaultFunc: func() (interface{}, error) {
-					return "CUSTOMER_S3", nil
-				},
+				Description:  "Type of the storage.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringInSlice([]string{StorageTypeCustomerS3, StorageTypeCustomerS3Arn}, false),
 			},
 			"access_key": {
 				Description: "Access key in AWS.",
@@ -58,6 +54,7 @@ func resourceSiemConnectionS3() *schema.Resource {
 					}
 					return
 				},
+				RequiredWith: []string{"secret_key"},
 			},
 			"secret_key": {
 				Description: "Secret key in AWS.",
@@ -72,6 +69,7 @@ func resourceSiemConnectionS3() *schema.Resource {
 					}
 					return
 				},
+				RequiredWith: []string{"access_key"},
 			},
 			"path": {
 				Description: "Store data from the specified connection under this path.",
@@ -96,7 +94,23 @@ func resourceSiemConnectionS3() *schema.Resource {
 	}
 }
 
-func resourceSiemConnectionS3Create(d *schema.ResourceData, m interface{}) error {
+func siemConnectionResourceValidation(d *schema.ResourceData) error {
+	storageType := d.Get("storage_type").(string)
+	accessKey := d.Get("access_key").(string)
+	secretKey := d.Get("secret_key").(string)
+	if storageType == StorageTypeCustomerS3 && (accessKey == "" || secretKey == "") {
+		return fmt.Errorf("[ERROR] access_key and secret_key should be provided for storage_type=%s", storageType)
+	} else if storageType == StorageTypeCustomerS3Arn && (accessKey != "" || secretKey != "") {
+		return fmt.Errorf("[ERROR] access_key and secret_key should not be provided for storage_type=%s", storageType)
+	}
+	return nil
+}
+func resourceSiemConnectionCreate(d *schema.ResourceData, m interface{}) error {
+	resErr := siemConnectionResourceValidation(d)
+	if resErr != nil {
+		return resErr
+	}
+
 	client := m.(*Client)
 	response, statusCode, err := client.CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
 		AssetID:        d.Get("account_id").(string),
@@ -114,13 +128,13 @@ func resourceSiemConnectionS3Create(d *schema.ResourceData, m interface{}) error
 
 	if (*statusCode == 201) && (response != nil) && (len(response.Data) == 1) {
 		d.SetId(response.Data[0].ID)
-		return resourceSiemConnectionS3Read(d, m)
+		return resourceSiemConnectionRead(d, m)
 	} else {
 		return fmt.Errorf("[ERROR] Unsupported operation. Response status code: %d", *statusCode)
 	}
 }
 
-func resourceSiemConnectionS3Read(d *schema.ResourceData, m interface{}) error {
+func resourceSiemConnectionRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	response, statusCode, err := client.ReadSiemConnection(d.Id())
 	if err != nil {
@@ -134,8 +148,10 @@ func resourceSiemConnectionS3Read(d *schema.ResourceData, m interface{}) error {
 		var connection = response.Data[0]
 		d.Set("connection_name", connection.ConnectionName)
 		d.Set("storage_type", connection.StorageType)
-		d.Set("access_key", connection.ConnectionInfo.AccessKey)
-		d.Set("input_hash", connection.ConnectionInfo.SecretKey)
+		if connection.StorageType == StorageTypeCustomerS3 {
+			d.Set("access_key", connection.ConnectionInfo.AccessKey)
+			d.Set("input_hash", connection.ConnectionInfo.SecretKey)
+		}
 		d.Set("path", connection.ConnectionInfo.Path)
 		return nil
 	} else {
@@ -143,7 +159,12 @@ func resourceSiemConnectionS3Read(d *schema.ResourceData, m interface{}) error {
 	}
 }
 
-func resourceSiemConnectionS3Update(d *schema.ResourceData, m interface{}) error {
+func resourceSiemConnectionUpdate(d *schema.ResourceData, m interface{}) error {
+	resErr := siemConnectionResourceValidation(d)
+	if resErr != nil {
+		return resErr
+	}
+
 	client := m.(*Client)
 	_, _, err := client.UpdateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
 		ID:             d.Id(),
@@ -163,7 +184,7 @@ func resourceSiemConnectionS3Update(d *schema.ResourceData, m interface{}) error
 	return nil
 }
 
-func resourceSiemConnectionS3Delete(d *schema.ResourceData, m interface{}) error {
+func resourceSiemConnectionDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	ID := d.Id()
 
