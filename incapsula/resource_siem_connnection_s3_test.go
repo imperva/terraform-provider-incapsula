@@ -18,6 +18,8 @@ const siemConnectionS3StorageTypeValue = "CUSTOMER_S3"
 
 var s3SiemConnectionName = "SIEMCONNECTIONS3" + RandomLetterAndNumberString(10)
 
+var s3SiemConnectionNameUpdated = "UPDATED" + s3SiemConnectionName
+
 func TestAccS3SiemConnection_Basic(t *testing.T) {
 	log.Printf("========================BEGIN TEST========================")
 	log.Printf("[DEBUG]Running test resource_s3_siem_connection.go.TestAccS3SiemConnection_Basic")
@@ -33,7 +35,7 @@ func TestAccS3SiemConnection_Basic(t *testing.T) {
 		CheckDestroy: testAccIncapsulaSiemConnectionDestroy(s3SiemConnectionResourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: getAccIncapsulaS3SiemConnectionConfigBasic(),
+				Config: getAccIncapsulaS3SiemConnectionConfigBasic(s3SiemConnectionName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemConnectionExists(s3SiemConnectionResource),
 					resource.TestCheckResourceAttr(s3SiemConnectionResource, "connection_name", s3SiemConnectionName),
@@ -50,7 +52,41 @@ func TestAccS3SiemConnection_Basic(t *testing.T) {
 	})
 }
 
-func getAccIncapsulaS3SiemConnectionConfigBasic() string {
+func TestAccS3SiemConnection_Update(t *testing.T) {
+	log.Printf("========================BEGIN TEST========================")
+	log.Printf("[DEBUG]Running test resource_s3_siem_connection.go.TestAccS3SiemConnection_Update")
+
+	if v := os.Getenv("TESTING_PROFILE"); v != "" {
+		log.Printf("[DEBUG]TESTING_PROFILE environment variable is provided, test is skipped")
+		return
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIncapsulaSiemConnectionDestroy(s3SiemConnectionResourceType),
+		Steps: []resource.TestStep{
+			{
+				Config: getAccIncapsulaS3SiemConnectionConfigBasic(s3SiemConnectionName),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiemConnectionExists(s3SiemConnectionResource),
+					resource.TestCheckResourceAttr(s3SiemConnectionResource, "connection_name", s3SiemConnectionName),
+					resource.TestCheckResourceAttr(s3SiemConnectionResource, "storage_type", siemConnectionS3StorageTypeValue),
+				),
+			},
+			{
+				Config: getAccIncapsulaS3SiemConnectionConfigBasic(s3SiemConnectionNameUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiemConnectionExists(s3SiemConnectionResource),
+					resource.TestCheckResourceAttr(s3SiemConnectionResource, "connection_name", s3SiemConnectionNameUpdated),
+					resource.TestCheckResourceAttr(s3SiemConnectionResource, "storage_type", siemConnectionS3StorageTypeValue),
+				),
+			},
+		},
+	})
+}
+
+func getAccIncapsulaS3SiemConnectionConfigBasic(s3SiemConnectionName string) string {
 	return fmt.Sprintf(`
 		resource "%s" "%s" {	
 			connection_name = "%s"
