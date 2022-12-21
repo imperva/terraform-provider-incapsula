@@ -1,6 +1,7 @@
 package incapsula
 
 import (
+	"context"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
@@ -28,7 +29,6 @@ func resourceAccountUser() *schema.Resource {
 				Description: "Email address. For example: joe@example.com. example: userEmail@imperva.com",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					email := val.(string)
 					if _, err := mail.ParseAddress(email); err != nil {
@@ -49,7 +49,6 @@ func resourceAccountUser() *schema.Resource {
 				Description: "The first name of the user that was acted on. example: John",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					v := val.(string)
 					if len(v) < 2 {
@@ -62,7 +61,6 @@ func resourceAccountUser() *schema.Resource {
 				Description: "The last name of the user that was acted on. example: Snow",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					v := val.(string)
 					if len(v) < 2 {
@@ -89,6 +87,13 @@ func resourceAccountUser() *schema.Resource {
 				},
 				Computed: true,
 			},
+		},
+
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+			if diff.HasChanges("email", "first_name", "last_name") {
+				return fmt.Errorf("[ERROR] Cannot update email, first name or last name on a user")
+			}
+			return nil
 		},
 	}
 }
