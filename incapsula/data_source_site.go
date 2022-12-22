@@ -14,7 +14,6 @@ func dataSourceSite() *schema.Resource {
 		Description: "Provides data about user Account",
 
 		Schema: map[string]*schema.Schema{
-			// Computed Attributes
 			"account_id": {
 				Type:        schema.TypeString,
 				Description: "Account ID",
@@ -25,11 +24,6 @@ func dataSourceSite() *schema.Resource {
 				Description: "site url to find ID of",
 				Required:    true,
 			},
-			// "site_id": {
-			// 	Type:        schema.TypeString,
-			// 	Description: "site ID",
-			// 	Computed:    true,
-			// },
 		},
 	}
 }

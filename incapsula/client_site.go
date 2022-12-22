@@ -387,14 +387,13 @@ func (c *Client) DeleteSite(domain string, siteID int) error {
 }
 
 func (c *Client) ListAllSites() (*SiteListResponse, error) {
-	log.Printf("[INFO] Getting Incapsula sites for account %s", "")
+	log.Print("[INFO] Getting Incapsula sites for all accounts")
 
 	// Post form to Incapsula
-	// values := url.Values{"account_id": {strconv.Itoa(AccountID)}}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteList)
 	resp, err := c.PostFormWithHeaders(reqURL, nil, ReadSite)
 	if err != nil {
-		return nil, fmt.Errorf("Error getting site list for for account %s", "AccountID", err)
+		return nil, fmt.Errorf("Error getting site list for all accounts %s", err)
 	}
 
 	// Read the body
@@ -408,7 +407,7 @@ func (c *Client) ListAllSites() (*SiteListResponse, error) {
 	var siteListsResponse SiteListResponse
 	err = json.Unmarshal([]byte(responseBody), &siteListsResponse)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing site list JSON response for account %s  %s", "AccountID", err)
+		return nil, fmt.Errorf("Error parsing site list JSON response for all accounts %s", err)
 	}
 
 	var resString string
@@ -421,7 +420,7 @@ func (c *Client) ListAllSites() (*SiteListResponse, error) {
 
 	// Look at the response status code from Incapsula
 	if resString != "0" {
-		return &siteListsResponse, fmt.Errorf("Error from Incapsula service when getting site list for account %s %s", "AccountID", string(responseBody))
+		return &siteListsResponse, fmt.Errorf("Error from Incapsula service when getting site list for all accounts %s", string(responseBody))
 	}
 
 	return &siteListsResponse, nil
@@ -435,7 +434,7 @@ func (c *Client) ListAllSitesInAccount(AccountID string) (*SiteListResponse, err
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteList)
 	resp, err := c.PostFormWithHeaders(reqURL, values, ReadSite)
 	if err != nil {
-		return nil, fmt.Errorf("Error getting site list for for account %s, %v", AccountID, err)
+		return nil, fmt.Errorf("Error getting site list for account %s, %v", AccountID, err)
 	}
 
 	// Read the body
