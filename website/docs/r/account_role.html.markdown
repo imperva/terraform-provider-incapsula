@@ -1,5 +1,6 @@
 ---
 layout: "incapsula"
+subcategory: Roles & User Management
 page_title: "Incapsula: account-role"
 sidebar_current: "docs-incapsula-resource-account-role"
 description: |-
@@ -39,7 +40,6 @@ Using `incapsula_account_permissions` data sources we can use Account Permission
 ```hcl
 data "incapsula_account_permissions" "account_permissions" {
   account_id = data.incapsula_account_data.account_data.current_account
-  filter_by_text="site"
 }
 
 resource "incapsula_account_role" "role_1" {
@@ -50,6 +50,15 @@ resource "incapsula_account_role" "role_1" {
     data.incapsula_account_permissions.account_permissions.map["View Infra Protect settings"],
     data.incapsula_account_permissions.account_permissions.map["Delete exception from policy"],
   ]
+}
+```
+
+In this example, we are using the generated `keys` attribute filtered by `filter_by_text` argument.
+
+```hcl
+data "incapsula_account_permissions" "account_permissions" {
+  account_id = data.incapsula_account_data.account_data.current_account
+  filter_by_text="site"
 }
 
 resource "incapsula_account_role" "role_2" {

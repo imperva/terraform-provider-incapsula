@@ -1,5 +1,6 @@
 ---
 layout: "incapsula"
+subcategory: Roles & User Management
 page_title: "Incapsula: account-roles"
 sidebar_current: "docs-incapsula-data-account-roles"
 description: |-
@@ -12,7 +13,7 @@ Provides the account roles configured in every account.<p>
 There are no filters needed for this data source.
 
 The attribute `map` is generated and contain all the Account Roles (Role Name to Id map).
-The map should be use for user creation managed by SubAccount (API_KEY and API_ID associated to a SubAccount).
+The map should be used for user creation managed by SubAccount (API_KEY and API_ID associated to a SubAccount).
 In case of account management (API_KEY and API_ID associated to an Account), it's recommended to use role references.
 
 ## Example Usage

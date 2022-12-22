@@ -1,5 +1,6 @@
 ---
 layout: "incapsula"
+subcategory: Roles & User Management
 page_title: "Incapsula: account-user"
 sidebar_current: "docs-incapsula-resource-account-user"
 description: |-
@@ -37,7 +38,7 @@ resource "incapsula_account_user" "user_1" {
 
 ### Role References Usage
 
-The usage is with role reference.
+Usage with role reference.
 
 ```hcl
 resource "incapsula_account_role" "role_1" {
@@ -94,9 +95,9 @@ resource "incapsula_account_user" "user_3" {
 ### SubAccount User Assignment Usage Manage by Account
 
 For SubAccount we are not creating a new user but assigning an existing user from the parent Account.
-In terms of the TF resource, it means the email attribute must be taken from an existing user, hardcoded or by reference (preferred option).
-The first and last name are redundant and then, ignored and taken from the existing chosen account.
-The roles have to be chosen independently, they are not coming from the existing user.
+In terms of the TF resource, it means the email attribute must be taken from an existing user, by reference (preferred option) or hardcoded.
+The first and last name are redundant and then, ignored and taken from the existing selected account.
+The roles have to be selected independently, they are not taken from the existing user.
 
 ```hcl
 resource "incapsula_account_role" "role_1" {
@@ -146,9 +147,9 @@ The following arguments are supported:
 
 * `account_id` - (Required) Numeric identifier of the account to operate on. <p/>
   Using reference to account datasource
-* `email` - (Required) The user email
-* `first_name` - (Optional) The user first name
-* `last_name` - (Optional) The user last name
+* `email` - (Required) The user email. This attribute cannot be updated.
+* `first_name` - (Optional) The user first name. This attribute cannot be updated.
+* `last_name` - (Optional) The user last name. This attribute cannot be updated.
 * `role_ids` - (Optional) List of role ids to be associated to the user. <p/>
   Default value is an empty list (user with no roles).
 
