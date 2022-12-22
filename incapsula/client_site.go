@@ -11,6 +11,7 @@ import (
 
 const endpointSiteAdd = "sites/add"
 const endpointSiteStatus = "sites/status"
+const endpointSiteList = "sites/list"
 const endpointSiteUpdate = "sites/configure"
 const endpointSiteDelete = "sites/delete"
 
@@ -31,6 +32,15 @@ type SiteStatusDNSValidationData struct {
 	DNSRecordName string   `json:"dns_record_name"`
 	SetTypeTo     string   `json:"set_type_to"`
 	SetDataTo     []string `json:"set_data_to"`
+}
+
+type SiteListResponse struct {
+	Sites      []SiteStatusResponse `json:"sites"`
+	Res        interface{}          `json:"res"`
+	ResMessage string               `json:"res_message"`
+	DebugInfo  struct {
+		IDInfo string `json:"id-info"`
+	} `json:"debug_info"`
 }
 
 // SiteStatusResponse contains managed site information
@@ -374,4 +384,86 @@ func (c *Client) DeleteSite(domain string, siteID int) error {
 	}
 
 	return nil
+}
+
+func (c *Client) ListAllSites() (*SiteListResponse, error) {
+	log.Printf("[INFO] Getting Incapsula sites for account %s", "")
+
+	// Post form to Incapsula
+	// values := url.Values{"account_id": {strconv.Itoa(AccountID)}}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteList)
+	resp, err := c.PostFormWithHeaders(reqURL, nil, ReadSite)
+	if err != nil {
+		return nil, fmt.Errorf("Error getting site list for for account %s", "AccountID", err)
+	}
+
+	// Read the body
+	defer resp.Body.Close()
+	responseBody, err := ioutil.ReadAll(resp.Body)
+
+	// Dump JSON
+	log.Printf("[DEBUG] Incapsula site status JSON response: %s\n", string(responseBody))
+
+	// Parse the JSON
+	var siteListsResponse SiteListResponse
+	err = json.Unmarshal([]byte(responseBody), &siteListsResponse)
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing site list JSON response for account %s  %s", "AccountID", err)
+	}
+
+	var resString string
+
+	if resNumber, ok := siteListsResponse.Res.(float64); ok {
+		resString = fmt.Sprintf("%d", int(resNumber))
+	} else {
+		resString = siteListsResponse.Res.(string)
+	}
+
+	// Look at the response status code from Incapsula
+	if resString != "0" {
+		return &siteListsResponse, fmt.Errorf("Error from Incapsula service when getting site list for account %s %s", "AccountID", string(responseBody))
+	}
+
+	return &siteListsResponse, nil
+}
+
+func (c *Client) ListAllSitesInAccount(AccountID string) (*SiteListResponse, error) {
+	log.Printf("[INFO] Getting Incapsula sites for account %s", "")
+
+	// Post form to Incapsula
+	values := url.Values{"account_id": {AccountID}}
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteList)
+	resp, err := c.PostFormWithHeaders(reqURL, values, ReadSite)
+	if err != nil {
+		return nil, fmt.Errorf("Error getting site list for for account %s, %v", AccountID, err)
+	}
+
+	// Read the body
+	defer resp.Body.Close()
+	responseBody, err := ioutil.ReadAll(resp.Body)
+
+	// Dump JSON
+	log.Printf("[DEBUG] Incapsula site status JSON response: %s\n", string(responseBody))
+
+	// Parse the JSON
+	var siteListsResponse SiteListResponse
+	err = json.Unmarshal([]byte(responseBody), &siteListsResponse)
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing site list JSON response for account %s  %s", AccountID, err)
+	}
+
+	var resString string
+
+	if resNumber, ok := siteListsResponse.Res.(float64); ok {
+		resString = fmt.Sprintf("%d", int(resNumber))
+	} else {
+		resString = siteListsResponse.Res.(string)
+	}
+
+	// Look at the response status code from Incapsula
+	if resString != "0" {
+		return &siteListsResponse, fmt.Errorf("Error from Incapsula service when getting site list for account %s %s", AccountID, string(responseBody))
+	}
+
+	return &siteListsResponse, nil
 }

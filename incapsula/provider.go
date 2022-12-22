@@ -84,6 +84,7 @@ func Provider() *schema.Provider {
 			"incapsula_data_center":      dataSourceDataCenter(),
 			"incapsula_account_data":     dataSourceAccount(),
 			"incapsula_client_apps_data": dataSourceClientApps(),
+			"incapsula_site":             dataSourceSite(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
