@@ -129,10 +129,11 @@ func getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName strin
 		resource "%s" "%s" {	
 			connection_name = "%s"
   			storage_type = "%s"	
-  			path = "data-platform-access-logs-dev/testacc"
+  			path = "%s"
 		}`,
 		siemConnectionResourceType, s3ArnSiemConnectionResourceName,
 		s3ArnSiemConnectionName, StorageTypeCustomerS3Arn,
+		os.Getenv("SIEM_CONNECTION_S3_PATH"),
 	)
 }
 
@@ -143,10 +144,12 @@ func getAccIncapsulaS3SiemConnectionConfigBasic(s3SiemConnectionName string) str
   			storage_type = "%s"
   			access_key = "%s"
   			secret_key = "%s"
-  			path = "data-platform-access-logs-dev/testacc"
+  			path = "%s"
 		}`,
 		siemConnectionResourceType, s3SiemConnectionResourceName, s3SiemConnectionName,
-		StorageTypeCustomerS3, os.Getenv("SIEM_CONNECTION_S3_ACCESS_KEY"), os.Getenv("SIEM_CONNECTION_S3_SECRET_KEY"),
+		StorageTypeCustomerS3, os.Getenv("SIEM_CONNECTION_S3_ACCESS_KEY"),
+		os.Getenv("SIEM_CONNECTION_S3_SECRET_KEY"),
+		os.Getenv("SIEM_CONNECTION_S3_PATH"),
 	)
 }
 

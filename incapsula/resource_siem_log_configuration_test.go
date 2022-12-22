@@ -68,7 +68,6 @@ func TestSiemLogConfiguration_Update(t *testing.T) {
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "configuration_name", siemLogConfigurationName+"abp"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "configuration_name", siemLogConfigurationName+"netsec"),
-					//resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "datasets", "[\"CONNECTION\", \"NETFLOW\"]"),
 				),
 			},
 			{
@@ -78,7 +77,6 @@ func TestSiemLogConfiguration_Update(t *testing.T) {
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "configuration_name", siemLogConfigurationNameUpdated+"abp"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "configuration_name", siemLogConfigurationNameUpdated+"netsec"),
-					//resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "datasets", "[\"IP\", \"ATTACK\"]"),
 				),
 			},
 		},
