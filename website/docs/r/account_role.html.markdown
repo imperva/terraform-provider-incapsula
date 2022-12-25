@@ -1,6 +1,5 @@
 ---
 layout: "incapsula"
-subcategory: "Roles & User Management"
 page_title: "Incapsula: account-role"
 sidebar_current: "docs-incapsula-resource-account-role"
 description: |-
@@ -9,12 +8,12 @@ description: |-
 
 # incapsula_account_role
 
-Provides an Account Role resource.
-Each Account has the option to create roles to be assigned to users. This resource allows you to add them.
+Provides an account role resource.
+Each account has the option to create roles, to grant a fixed set of permissions to users. This resource enables you to create roles.
 
-The role permissions should be added as keys (string) and may be taken from `incapsula_account_permissions` data source.
-This data source contains the Account Permissions list.
-In order to get the latest list, use the <b>/v1/abilities/accounts/{accountId}</b> API found in the <b>v1</b> section of the
+The role permissions should be added as keys (strings) and may be taken from the `incapsula_account_permissions` data source.
+The `incapsula_account_permissions` data source contains the account permissions list.
+To get the current list of permission in the account, use the <b>/v1/abilities/accounts/{accountId}</b> API found in the <b>v1</b> section of the
 [Role Management API Definition page.](https://docs.imperva.com/bundle/cloud-application-security/page/roles-api-definition.htm)
 
 
@@ -82,10 +81,10 @@ The following arguments are supported:
 
 * `description` - (Optional) The role description
 
-* `permissions` - (Optional) List of Account Permissions keys
+* `permissions` - (Optional) List of account permission keys
 
   Default value is an empty list (role with no permissions).
-  `incapsula_account_permissions` data source can be use in different ways (see above examples)
+  `incapsula_account_permissions` data source can be used in different ways (see examples above)
 
 
 ## Attributes Reference

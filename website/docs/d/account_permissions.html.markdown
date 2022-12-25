@@ -1,6 +1,5 @@
 ---
 layout: "incapsula"
-subcategory: "Roles & User Management"
 page_title: "Incapsula: account-permissions"
 sidebar_current: "docs-incapsula-data-account-permissions"
 description: |-
@@ -9,15 +8,17 @@ description: |-
 
 # incapsula_account_permissions
 
-Provides the ability to use "human-readable" strings identifying the account permissions for roles.<p>
-In order to get the latest list, use the <b>/v1/abilities/accounts/{accountId}</b> API found in the <b>v1</b> section of the
+A mapping between permission identifiers and "human-readable" permission names.
+Provides the ability to use the permission display names when creating and modifying user roles.<p>
+To get the current list of permission display names in the account,
+use the <b>/v1/abilities/accounts/{accountId}</b> API found in the <b>v1</b> section of the
 [Role Management API Definition page.](https://docs.imperva.com/bundle/cloud-application-security/page/roles-api-definition.htm)
 
-Filtering is optional. When used, it will generate the `keys` attribute.
-`filter_by_text` argument is case-insensitive.
+To access a subset of the permissions from the data source, use the optional filtering.
+The `filter_by_text` argument is case-insensitive. When used, it generates the `keys` attribute.
 
-The attribute `map` is always generated and contain all the Account Permissions (DisplayName to Key map).
-Using map access with a wrong Account Permissions display name, it will fail during plan process.
+The attribute `map` is always generated and contains all the account permissions (permission DisplayName to permission Key map).
+Using the `map` attribute with an incorrect permission display name will cause the plan step to fail.
 
 ## Example Usage
 
@@ -55,15 +56,15 @@ resource "incapsula_account_role" "role_2" {
 
 ## Argument Reference
 
-* `filter_by_text` - (Optional) string value - Filter by Account Permissions display names.
+* `filter_by_text` - (Optional) string value - Filter by account permission display names.
 
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-* `map` - Map of all the Account Permissions where the key is the display names and value is the key.
+* `map` - Map of all the account permissions where the key is the permission display name and the value is the permission key.
 
-  This attribute is always generated, even if you are using `filter_by_text` argument.
+  This attribute is always generated, even if you are using the `filter_by_text` argument
 
-* `keys` - List of Account Permissions keys filtered by `filter_by_text` argument.
+* `keys` - List of account permission keys filtered by `filter_by_text` argument.

@@ -1,6 +1,5 @@
 ---
 layout: "incapsula"
-subcategory: "Roles & User Management"
 page_title: "Incapsula: account-user"
 sidebar_current: "docs-incapsula-resource-account-user"
 description: |-
@@ -9,15 +8,15 @@ description: |-
 
 # incapsula_account_user
 
-Provides an Account User resource.
-Each Account has the option to create users with roles assigned to it. This resource allows you to add them.
+Provides an account user resource.
+This resource enables you to create users in an account and assign roles to them.
 
-The user roles should be added as ids and may be taken from `incapsula_account_role` resources as reference.
-In addition, the default account roles may be taken from `incapsula_account_roles` datasource.
-This data source contains the Administrator and Reader default role ids.
+The user roles should be added as ids which can be taken from `incapsula_account_role` resources as reference.
+In addition, the default account roles may be taken from the `incapsula_account_roles` data source.
 
-This resource give also the option to assign users to SubAccounts, the usage is the same but the behavior differ a bit.
-Please look at the 'SubAccount User Assignment Usage' example for more details
+This resource also provides the option to assign users to subaccounts.
+The usage is the same but the behavior differs slightly.
+See the 'SubAccount User Assignment Usage' example below for more details.
 
 
 ## Example Usage
@@ -92,12 +91,12 @@ resource "incapsula_account_user" "user_3" {
 }
 ```
 
-### SubAccount User Assignment Usage Manage by Account
+### SubAccount User Assignment Usage - Manage by Account
 
-For SubAccount we are not creating a new user but assigning an existing user from the parent Account.
+For subaccounts we are not creating a new user but assigning an existing user from the parent account.
 In terms of the TF resource, it means the email attribute must be taken from an existing user, by reference (preferred option) or hardcoded.
 The first and last name are redundant and then, ignored and taken from the existing selected account.
-The roles have to be selected independently, they are not taken from the existing user.
+The roles are not taken from the existing user and must be assigned independently.
 
 ```hcl
 resource "incapsula_account_role" "role_1" {
@@ -121,10 +120,10 @@ resource "incapsula_account_user" "user_2" {
 }
 ```
 
-### SubAccount User Assignment Usage Manage by SubAccount
+### SubAccount User Assignment Usage - Manage by SubAccount
 
-if the API_KEY and API_ID are associated to a SubAccount, we won't have the option to manage roles, so we should use `incapsula_account_roles` datasource.
-This datasource have a `map` attribute generated that contains all the Account Roles (Role Name to Id map).
+If the API_KEY and API_ID are associated with a subaccount, we don't have the option to manage roles and need to use the `incapsula_account_roles` data source.
+Using the `map` attribute, this data source generates a mapping for all the account roles (Role Name to Id map).
 
 ```hcl
 data "incapsula_account_roles" "roles" {
@@ -148,8 +147,8 @@ The following arguments are supported:
 * `account_id` - (Required) Numeric identifier of the account to operate on. <p/>
   Using reference to account datasource
 * `email` - (Required) The user email. This attribute cannot be updated.
-* `first_name` - (Optional) The user first name. This attribute cannot be updated.
-* `last_name` - (Optional) The user last name. This attribute cannot be updated.
+* `first_name` - (Optional) The user's first name. This attribute cannot be updated.
+* `last_name` - (Optional) The user's last name. This attribute cannot be updated.
 * `role_ids` - (Optional) List of role ids to be associated to the user. <p/>
   Default value is an empty list (user with no roles).
 
