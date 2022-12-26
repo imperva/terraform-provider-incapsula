@@ -54,7 +54,7 @@ func (c *Client) CreateWaitingRoom(siteID string, waitingRoom *WaitingRoomDTO) (
 	log.Printf("[DEBUG] Waiting Room payload: %s\n", string(waitingRoomJSON))
 
 	// Post form to Incapsula
-	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms", c.config.BaseURLRev2, siteID)
+	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms", c.config.BaseURLAPI, siteID)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, waitingRoomJSON, CreateWaitingRoom)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -158,7 +158,7 @@ func (c *Client) UpdateWaitingRoom(siteID string, waitingRoomID int64, waitingRo
 	}
 
 	// Put request to Incapsula
-	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", c.config.BaseURLRev2, siteID, waitingRoomID)
+	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", c.config.BaseURLAPI, siteID, waitingRoomID)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, waitingRoomJSON, UpdateWaitingRoom)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -200,12 +200,12 @@ func (c *Client) UpdateWaitingRoom(siteID string, waitingRoomID int64, waitingRo
 	return &updatedWaitingRoom, diags
 }
 
-func (c *Client) DeleteWaitingRoom(siteID string, waitingRoomID int64)  (*WaitingRoomDTOResponse,  diag.Diagnostics) {
+func (c *Client) DeleteWaitingRoom(siteID string, waitingRoomID int64)  (diag.Diagnostics) {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] Deleting Incapsula Waiting Room %d for Site ID %s\n", waitingRoomID, siteID)
 
 	// Delete request to Incapsula
-	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", c.config.BaseURLRev2, siteID, waitingRoomID)
+	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", c.config.BaseURLAPI, siteID, waitingRoomID)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteWaitingRoom)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -213,7 +213,7 @@ func (c *Client) DeleteWaitingRoom(siteID string, waitingRoomID int64)  (*Waitin
 			Summary:  "Failure sending Waiting Room delete request",
 			Detail:   fmt.Sprintf("Error from Incapsula service when deleting Waiting Room %d for Site ID %s: %s", waitingRoomID, siteID, err.Error()),
 		})
-		return nil, diags
+		return diags
 	}
 
 	// Read the body
@@ -224,7 +224,7 @@ func (c *Client) DeleteWaitingRoom(siteID string, waitingRoomID int64)  (*Waitin
 	log.Printf("[DEBUG] Incapsula Delete Waiting Room JSON response: %s\n", string(responseBody))
 
 	// Check the response code
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != 204 {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Failure Deleting Waiting Room",
@@ -232,17 +232,5 @@ func (c *Client) DeleteWaitingRoom(siteID string, waitingRoomID int64)  (*Waitin
 		})
 	}
 
-	// Parse the JSON
-	var waitingRoom WaitingRoomDTOResponse
-	err = json.Unmarshal([]byte(responseBody), &waitingRoom)
-	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  "Failure parsing Waiting Room delete response",
-			Detail:   fmt.Sprintf("Error parsing Waiting Room %d JSON response for Site ID %s: %s\nresponse: %s", waitingRoomID, siteID, err.Error(), string(responseBody)),
-		})
-		return nil, diags
-	}
-
-	return &waitingRoom, diags
+	return diags
 }

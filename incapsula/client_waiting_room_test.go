@@ -280,7 +280,7 @@ func TestClientReadWaitingRoomBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
-	waitingRoomID := 1
+	waitingRoomID := int64(1)
 
 	readWaitingRoomResponse, diags := client.ReadWaitingRoom(siteID, waitingRoomID)
 	if diags == nil || len(diags) == 0 {
@@ -298,7 +298,7 @@ func TestClientReadWaitingRoomBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
-	waitingRoomID := 1
+	waitingRoomID := int64(1)
 
 	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
 
@@ -329,7 +329,7 @@ func TestClientReadWaitingRoomBadStatusCodeWithEmptyBody(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
-	waitingRoomID := 1
+	waitingRoomID := int64(1)
 
 	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
 
@@ -360,7 +360,7 @@ func TestClientReadWaitingRoomBadStatusCode(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
-	waitingRoomID := 1
+	waitingRoomID := int64(1)
 
 	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
 
@@ -392,7 +392,7 @@ func TestClientReadWaitingRoomEmptyBody(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
-	waitingRoomID := 1
+	waitingRoomID := int64(1)
 
 	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
 
@@ -423,7 +423,7 @@ func TestClientReadWaitingRoomValidResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
-	waitingRoomID := 1
+	waitingRoomID := int64(1)
 
 	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
 
@@ -469,7 +469,7 @@ func TestClientUpdateWaitingRoomBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
-	waitingRoomID := 1
+	waitingRoomID := int64(1)
 
 	waitingRoom := WaitingRoomDTO{
 		Name:    "waiting room 1",
@@ -494,7 +494,7 @@ func TestClientUpdateWaitingRoomBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
-	waitingRoomID := 1
+	waitingRoomID := int64(1)
 
 	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
 
@@ -532,7 +532,7 @@ func TestClientUpdateWaitingRoomBadStatusCodeWithEmptyBody(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
-	waitingRoomID := 1
+	waitingRoomID := int64(1)
 
 	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
 
@@ -570,7 +570,7 @@ func TestClientUpdateWaitingRoomBadStatusCode(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
-	waitingRoomID := 1
+	waitingRoomID := int64(1)
 
 	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
 
@@ -609,7 +609,7 @@ func TestClientUpdateWaitingRoomEmptyBody(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
-	waitingRoomID := 1
+	waitingRoomID := int64(1)
 
 	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
 
@@ -647,7 +647,7 @@ func TestClientUpdateWaitingRoomValidResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
-	waitingRoomID := 1
+	waitingRoomID := int64(1)
 
 	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
 
@@ -700,17 +700,14 @@ func TestClientDeleteWaitingRoomBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
-	waitingRoomID := 1
+	waitingRoomID := int64(1)
 
-	deleteWaitingRoomResponse, diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
+	diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received a error")
 	}
 	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error from Incapsula service when deleting Waiting Room %d for Site ID %s", waitingRoomID, siteID)) {
 		t.Errorf("Should have received a client error, got: %s", diags[0].Detail)
-	}
-	if deleteWaitingRoomResponse != nil {
-		t.Errorf("Should have received a nil deleteWaitingRoomResponse instance")
 	}
 }
 
@@ -718,7 +715,7 @@ func TestClientDeleteWaitingRoomBadStatusCodeWithEmptyBody(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
-	waitingRoomID := 1
+	waitingRoomID := int64(1)
 
 	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
 
@@ -726,22 +723,19 @@ func TestClientDeleteWaitingRoomBadStatusCodeWithEmptyBody(t *testing.T) {
 		if req.URL.String() != endpoint || req.Method != "DELETE" {
 			t.Errorf("Should have have hit %s %s endpoint. Got: %s %s", "DELETE", endpoint, req.Method, req.URL.String())
 		}
-		rw.WriteHeader(http.StatusNotFound)
+		rw.WriteHeader(http.StatusOK)
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	deleteWaitingRoomResponse, diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
+	diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error status code %d from Incapsula service when deleting Waiting Room %d for Site ID %s", 404, waitingRoomID, siteID)) {
+	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error status code %d from Incapsula service when deleting Waiting Room %d for Site ID %s", 200, waitingRoomID, siteID)) {
 		t.Errorf("Should have received a Status Code error, got: %s", diags[0].Detail)
-	}
-	if deleteWaitingRoomResponse != nil {
-		t.Errorf("Should have received a nil deleteWaitingRoomResponse instance")
 	}
 }
 
@@ -749,7 +743,7 @@ func TestClientDeleteWaitingRoomBadStatusCode(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
-	waitingRoomID := 1
+	waitingRoomID := int64(1)
 
 	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
 
@@ -765,15 +759,12 @@ func TestClientDeleteWaitingRoomBadStatusCode(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	deleteWaitingRoomResponse, diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
+	diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
 	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error status code %d from Incapsula service when deleting Waiting Room %d for Site ID %s", 404, waitingRoomID, siteID)) {
 		t.Errorf("Should have received a Status Code error, got: %s", diags[0].Detail)
-	}
-	if deleteWaitingRoomResponse == nil || deleteWaitingRoomResponse.Errors[0].Status != 404 {
-		t.Errorf("Should have received an error DTO")
 	}
 }
 
@@ -781,7 +772,7 @@ func TestClientDeleteWaitingRoomValidWaitingRoom(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
-	waitingRoomID := 1
+	waitingRoomID := int64(1)
 
 	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
 
@@ -789,7 +780,7 @@ func TestClientDeleteWaitingRoomValidWaitingRoom(t *testing.T) {
 		if req.URL.String() != endpoint || req.Method != "DELETE" {
 			t.Errorf("Should have have hit %s %s endpoint. Got: %s %s", "DELETE", endpoint, req.Method, req.URL.String())
 		}
-		rw.WriteHeader(http.StatusOK)
+		rw.WriteHeader(http.StatusNoContent)
 		rw.Write([]byte(`{"data": [{"id": 1, "accountId":1234, "name":"waiting room 1","description":"","enabled":true,"htmlTemplateBase64":"","filter":"","botsActionInQueuingMode":"WAIT_IN_LINE","queueInactivityTimeout":5,"isEntranceRateEnabled":true,"entranceRateThreshold":500,"concurrentSessionsThreshold":0,"inactivityTimeout":5}]}`))
 	}))
 	defer server.Close()
@@ -797,11 +788,8 @@ func TestClientDeleteWaitingRoomValidWaitingRoom(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	deleteWaitingRoomResponse, diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
+	diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
 	if diags != nil {
 		t.Errorf("Should not have received an error")
-	}
-	if deleteWaitingRoomResponse == nil || len(deleteWaitingRoomResponse.Data) == 0 {
-		t.Errorf("Should have recived a response")
 	}
 }

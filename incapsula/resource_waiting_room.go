@@ -53,41 +53,53 @@ func resourceWaitingRoom() *schema.Resource {
 			"enabled": {
 				Description: "whether this waiting room is enabled or not.",
 				Type:        schema.TypeBool,
-				Default:     true,
+				Optional:    true,
+				Computed:    true,
 			},
 			"html_template_base64": {
 				Description: "The HTML template file path.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 			},
 			"filter": {
 				Description: "The rule conditions that determine on which sessions this waiting room applies. (no filter means the waiting room applies for the whole site)",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 			},
 			"bots_action_in_queuing_mode": {
 				Description: "The waiting room bot handling action. Determines the waiting room behavior for legitimate bots trying to access your website during peak time",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 			},
 			"entrance_rate_threshold": {
 				Description:      "The entrance rate activation threshold of the waiting room. The waiting room is activated when sessions per minute exceed the specified value.",
 				Type:             schema.TypeInt,
+				Optional:         true,
+				Computed:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 			},
 			"concurrent_sessions_threshold": {
 				Description:      "The active users activation threshold of the waiting room. The waiting room is activated when number of active users reached specified value.",
 				Type:             schema.TypeInt,
+				Optional:         true,
+				Computed:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 			},
 			"inactivity_timeout": {
 				Description:      "If waiting room conditions that limit the scope of the waiting room to a subset of the website have been defined, the user is considered active only when navigating the pages in scope of the conditions. A user who is inactive for a longer period of time is considered as having left the site.",
 				Type:             schema.TypeInt,
+				Optional:         true,
+				Computed:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 			},
 			"queue_inactivity_timeout": {
 				Description:      "Queue inactivity timeout. A user in the waiting room who is inactive for a longer period of time is considered as having left the queue. On returning to the site, the user moves to the end of the queue and needs to wait in line again if the waiting room is active.",
 				Type:             schema.TypeInt,
+				Optional:         true,
+				Computed:         true,
 				ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 			},
 
@@ -140,22 +152,22 @@ func resourceWaitingRoomCreate(ctx context.Context, data *schema.ResourceData, m
 		waitingRoom.EntranceRateEnabled = false
 	} else {
 		waitingRoom.EntranceRateEnabled = true
-		waitingRoom.EntranceRateThreshold = data.Get("entrance_rate_threshold").(int64)
+		waitingRoom.EntranceRateThreshold = int64(data.Get("entrance_rate_threshold").(int))
 	}
 
 	if data.Get("concurrent_sessions_threshold") == nil || data.Get("concurrent_sessions_threshold") == 0 {
 		waitingRoom.ConcurrentSessionsEnabled = false
 	} else {
 		waitingRoom.ConcurrentSessionsEnabled = true
-		waitingRoom.ConcurrentSessionsThreshold = data.Get("concurrent_sessions_threshold").(int64)
+		waitingRoom.ConcurrentSessionsThreshold = int64(data.Get("concurrent_sessions_threshold").(int))
 	}
 
-	if data.Get("queue_inactivity_timeout").(int64) > 0 {
-		waitingRoom.QueueInactivityTimeout = data.Get("queue_inactivity_timeout").(int64)
+	if data.Get("queue_inactivity_timeout") != nil && int64(data.Get("queue_inactivity_timeout").(int)) != 0 {
+		waitingRoom.QueueInactivityTimeout = int64(data.Get("queue_inactivity_timeout").(int))
 	}
 
-	if data.Get("inactivity_timeout").(int64) > 0 {
-		waitingRoom.InactivityTimeout = data.Get("inactivity_timeout").(int64)
+	if data.Get("inactivity_timeout") != nil && int64(data.Get("inactivity_timeout").(int)) != 0 {
+		waitingRoom.InactivityTimeout = int64(data.Get("inactivity_timeout").(int))
 	}
 
 	waitingRoomDTOResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
@@ -169,7 +181,18 @@ func resourceWaitingRoomCreate(ctx context.Context, data *schema.ResourceData, m
 			Summary:  waitingRoomDTOResponse.Errors[0].Title,
 			Detail:   fmt.Sprintf("Failed to create Waiting Room for Site ID %s: %s", siteID, waitingRoomDTOResponse.Errors[0].Detail),
 		}}
+	} else if len(waitingRoomDTOResponse.Data) < 1 {
+		log.Printf("[ERROR] Empty response received while creating Waiting Room for Site ID %s", siteID)
+		return []diag.Diagnostic{diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Empty response",
+			Detail:   fmt.Sprintf("[ERROR] Empty response received while creating Waiting Room for Site ID %s", siteID),
+		}}
 	}
+
+	data.SetId(strconv.FormatInt(waitingRoomDTOResponse.Data[0].Id, 10))
+	log.Printf("[INFO] Created Incapsula Waiting Room %d for Site: %s", waitingRoomDTOResponse.Data[0].Id, siteID)
+
 	diags = append(diags, resourceWaitingRoomRead(ctx, data, m)[:]...)
 
 	return diags
@@ -262,22 +285,22 @@ func resourceWaitingRoomUpdate(ctx context.Context, data *schema.ResourceData, m
 		waitingRoom.EntranceRateEnabled = false
 	} else {
 		waitingRoom.EntranceRateEnabled = true
-		waitingRoom.EntranceRateThreshold = data.Get("entrance_rate_threshold").(int64)
+		waitingRoom.EntranceRateThreshold = int64(data.Get("entrance_rate_threshold").(int))
 	}
 
 	if data.Get("concurrent_sessions_threshold") == nil || data.Get("concurrent_sessions_threshold") == 0 {
 		waitingRoom.ConcurrentSessionsEnabled = false
 	} else {
 		waitingRoom.ConcurrentSessionsEnabled = true
-		waitingRoom.ConcurrentSessionsThreshold = data.Get("concurrent_sessions_threshold").(int64)
+		waitingRoom.ConcurrentSessionsThreshold = int64(data.Get("concurrent_sessions_threshold").(int))
 	}
 
-	if data.Get("queue_inactivity_timeout").(int64) > 0 {
-		waitingRoom.QueueInactivityTimeout = data.Get("queue_inactivity_timeout").(int64)
+	if data.Get("queue_inactivity_timeout") != nil && int64(data.Get("queue_inactivity_timeout").(int)) != 0 {
+		waitingRoom.QueueInactivityTimeout = int64(data.Get("queue_inactivity_timeout").(int))
 	}
 
-	if data.Get("inactivity_timeout").(int64) > 0 {
-		waitingRoom.InactivityTimeout = data.Get("inactivity_timeout").(int64)
+	if data.Get("inactivity_timeout") != nil && int64(data.Get("inactivity_timeout").(int)) != 0 {
+		waitingRoom.InactivityTimeout = int64(data.Get("inactivity_timeout").(int))
 	}
 
 	waitingRoomDTOResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
@@ -309,10 +332,7 @@ func resourceWaitingRoomDelete(ctx context.Context, data *schema.ResourceData, m
 		}}
 	}
 
-	waitingRoomDTOResponse, diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
-	if waitingRoomDTOResponse.Errors != nil && waitingRoomDTOResponse.Errors[0].Status == 404 {
-		data.SetId("")
-	}
+	diags = client.DeleteWaitingRoom(siteID, waitingRoomID)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] Failed to update Waiting Room %d for Site ID %s", waitingRoomID, siteID)
 		return diags
