@@ -38,9 +38,9 @@ func (c *Client) CreateSiemConnection(connection *SiemConnection) (*SiemConnecti
 	return siemConnectionRequestWithResponse(c, CreateSiemConnection, http.MethodPost, reqURL, connectionJSON, connection.Data[0].AssetID, 201)
 }
 
-func (c *Client) ReadSiemConnection(ID string) (*SiemConnection, *int, error) {
+func (c *Client) ReadSiemConnection(ID string, accountId string) (*SiemConnection, *int, error) {
 	reqURL := fmt.Sprintf("%s/%s/%s", c.config.BaseURLAPI, endpointSiemConnection, ID)
-	return siemConnectionRequestWithResponse(c, ReadSiemConnection, http.MethodGet, reqURL, nil, "", 200)
+	return siemConnectionRequestWithResponse(c, ReadSiemConnection, http.MethodGet, reqURL, nil, accountId, 200)
 }
 
 func (c *Client) UpdateSiemConnection(siemConnection *SiemConnection) (*SiemConnection, *int, error) {

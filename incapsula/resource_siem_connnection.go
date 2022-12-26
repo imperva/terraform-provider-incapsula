@@ -136,7 +136,7 @@ func resourceSiemConnectionCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceSiemConnectionRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	response, statusCode, err := client.ReadSiemConnection(d.Id())
+	response, statusCode, err := client.ReadSiemConnection(d.Id(), d.Get("account_id").(string))
 	if err != nil {
 		return err
 	}

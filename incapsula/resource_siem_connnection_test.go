@@ -155,7 +155,7 @@ func getAccIncapsulaS3SiemConnectionConfigBasic(s3SiemConnectionName string) str
 
 func testAccReadSiemConnection(client *Client, ID string) error {
 	log.Printf("[INFO] SiemConnection ID: %s", ID)
-	siemConnection, statusCode, err := client.ReadSiemConnection(ID)
+	siemConnection, statusCode, err := client.ReadSiemConnection(ID, "")
 	if err != nil {
 		return err
 	}
