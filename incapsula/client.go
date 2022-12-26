@@ -196,8 +196,6 @@ func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
 	//if "read" action then we want to allow retries in case of timeout from incapsula service
 	operation := req.Header.Get("x-tf-operation")
 	if req.Method == http.MethodGet || (req.Method == http.MethodPost && strings.HasPrefix(strings.ToLower(operation), "read")) {
-		log.Printf("888888 Req " + req.RequestURI)
-		log.Printf("888888 Query  " + req.URL.RawQuery)
 		var responseOnRequest *http.Response
 		var errorOnRequest error
 		resource.Retry(durationOfRetriesInSeconds*time.Second, func() *resource.RetryError {
