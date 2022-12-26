@@ -123,7 +123,7 @@ func resourceSiemLogConfigurationCreate(d *schema.ResourceData, m interface{}) e
 
 func resourceSiemLogConfigurationRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	reponse, statusCode, err := client.ReadSiemLogConfiguration(d.Id())
+	reponse, statusCode, err := client.ReadSiemLogConfiguration(d.Id(), d.Get("account_id").(string))
 	if err != nil {
 		return err
 	}

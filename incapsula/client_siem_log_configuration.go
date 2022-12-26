@@ -34,9 +34,9 @@ func (c *Client) CreateSiemLogConfiguration(siemLogConfiguration *SiemLogConfigu
 	return siemLogConfigurationRequestWithResponse(c, CreateSiemLogConfiguration, http.MethodPost, reqURL, logConfigurationJSON, siemLogConfiguration.Data[0].AssetID, 201)
 }
 
-func (c *Client) ReadSiemLogConfiguration(ID string) (*SiemLogConfiguration, *int, error) {
+func (c *Client) ReadSiemLogConfiguration(ID string, accountId string) (*SiemLogConfiguration, *int, error) {
 	reqURL := fmt.Sprintf("%s/%s/%s", c.config.BaseURLAPI, endpointSiemLogConfiguration, ID)
-	return siemLogConfigurationRequestWithResponse(c, ReadSiemLogConfiguration, http.MethodGet, reqURL, nil, "", 200)
+	return siemLogConfigurationRequestWithResponse(c, ReadSiemLogConfiguration, http.MethodGet, reqURL, nil, accountId, 200)
 }
 
 func (c *Client) UpdateSiemLogConfiguration(siemLogConfiguration *SiemLogConfiguration) (*SiemLogConfiguration, *int, error) {

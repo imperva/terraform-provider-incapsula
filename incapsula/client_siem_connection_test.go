@@ -286,7 +286,7 @@ func TestClientReadExistingSiemConnection(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	siemConnection, _, err := client.ReadSiemConnection(ID)
+	siemConnection, _, err := client.ReadSiemConnection(ID, "")
 
 	if err != nil {
 		t.Errorf("Should not have received an error")
@@ -334,7 +334,7 @@ func TestClientReadNonExistingSiemConnection(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	siemConnection, _, err := client.ReadSiemConnection(ID)
+	siemConnection, _, err := client.ReadSiemConnection(ID, "")
 
 	if err == nil {
 		t.Errorf("Should have received an error")

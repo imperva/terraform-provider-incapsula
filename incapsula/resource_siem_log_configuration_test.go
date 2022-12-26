@@ -109,7 +109,7 @@ func getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName str
 
 func testAccReadSiemLogConfiguration(client *Client, ID string) error {
 	log.Printf("[INFO] SiemLogConfiguration ID: %s", ID)
-	siemLogConfiguration, statusCode, err := client.ReadSiemLogConfiguration(ID)
+	siemLogConfiguration, statusCode, err := client.ReadSiemLogConfiguration(ID, "")
 	if err != nil {
 		return err
 	}
