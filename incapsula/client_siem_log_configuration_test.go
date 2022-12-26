@@ -268,7 +268,7 @@ func TestClientReadExistingSiemLogConfiguration(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	siemLogConfiguration, _, err := client.ReadSiemLogConfiguration(ID)
+	siemLogConfiguration, _, err := client.ReadSiemLogConfiguration(ID, "")
 
 	if err != nil {
 		t.Errorf("Should not have received an error")
@@ -316,7 +316,7 @@ func TestClientReadNonExistingSiemLogConfiguration(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	siemLogConfiguration, _, err := client.ReadSiemLogConfiguration(ID)
+	siemLogConfiguration, _, err := client.ReadSiemLogConfiguration(ID, "")
 
 	if err == nil {
 		t.Errorf("Should have received an error")
