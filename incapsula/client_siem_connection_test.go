@@ -595,6 +595,6 @@ func ClientDeleteSiemConnectionBase(t *testing.T, responseStatusCode int) error 
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	_, err := client.DeleteSiemConnection(ID)
+	_, err := client.DeleteSiemConnection(ID, "")
 	return err
 }

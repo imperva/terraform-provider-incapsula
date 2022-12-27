@@ -171,8 +171,8 @@ func resourceSiemLogConfigurationUpdate(d *schema.ResourceData, m interface{}) e
 func resourceSiemLogConfigurationDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	ID := d.Id()
-
-	_, err := client.DeleteSiemLogConfiguration(ID)
+	accountId := d.Get("account_id").(string)
+	_, err := client.DeleteSiemLogConfiguration(ID, accountId)
 
 	if err != nil {
 		return err
