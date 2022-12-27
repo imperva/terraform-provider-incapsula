@@ -48,9 +48,9 @@ func (c *Client) UpdateSiemLogConfiguration(siemLogConfiguration *SiemLogConfigu
 	return siemLogConfigurationRequestWithResponse(c, UpdateSiemLogConfiguration, http.MethodPut, reqURL, siemLogConfigurationJSON, siemLogConfiguration.Data[0].AssetID, 200)
 }
 
-func (c *Client) DeleteSiemLogConfiguration(ID string) (*int, error) {
+func (c *Client) DeleteSiemLogConfiguration(ID string, accountId string) (*int, error) {
 	reqURL := fmt.Sprintf("%s/%s/%s", c.config.BaseURLAPI, endpointSiemLogConfiguration, ID)
-	_, _, responseStatusCode, err := siemLogConfigurationRequest(c, DeleteSiemLogConfiguration, http.MethodDelete, reqURL, nil, "", 200)
+	_, _, responseStatusCode, err := siemLogConfigurationRequest(c, DeleteSiemLogConfiguration, http.MethodDelete, reqURL, nil, accountId, 200)
 	return responseStatusCode, err
 }
 

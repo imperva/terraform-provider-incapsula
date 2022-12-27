@@ -496,6 +496,6 @@ func ClientDeleteSiemLogConfigurationBase(t *testing.T, ID string, responseStatu
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	_, err := client.DeleteSiemLogConfiguration(ID)
+	_, err := client.DeleteSiemLogConfiguration(ID, "")
 	return err
 }

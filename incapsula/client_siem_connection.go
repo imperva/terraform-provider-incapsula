@@ -52,9 +52,9 @@ func (c *Client) UpdateSiemConnection(siemConnection *SiemConnection) (*SiemConn
 	return siemConnectionRequestWithResponse(c, UpdateSiemConnection, http.MethodPut, reqURL, siemConnectionJSON, siemConnection.Data[0].AssetID, 200)
 }
 
-func (c *Client) DeleteSiemConnection(ID string) (*int, error) {
+func (c *Client) DeleteSiemConnection(ID string, accountId string) (*int, error) {
 	reqURL := fmt.Sprintf("%s/%s/%s", c.config.BaseURLAPI, endpointSiemConnection, ID)
-	_, _, statusCode, err := siemConnectionRequest(c, DeleteSiemConnection, http.MethodDelete, reqURL, nil, "", 200)
+	_, _, statusCode, err := siemConnectionRequest(c, DeleteSiemConnection, http.MethodDelete, reqURL, nil, accountId, 200)
 	return statusCode, err
 }
 

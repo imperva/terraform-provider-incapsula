@@ -187,8 +187,9 @@ func resourceSiemConnectionUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceSiemConnectionDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	ID := d.Id()
+	accountId := d.Get("account_id").(string)
 
-	_, err := client.DeleteSiemConnection(ID)
+	_, err := client.DeleteSiemConnection(ID, accountId)
 
 	if err != nil {
 		return err
