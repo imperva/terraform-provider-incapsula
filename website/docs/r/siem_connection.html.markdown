@@ -6,7 +6,7 @@ description: |-
 Provides a customer S3 connection configuration resource.
 ---
 
-# incapsula_siem_connection_s3
+# incapsula_siem_connection
 
 Provides a customer S3 connection configuration resource.
 This resource is used to manage the connection to the customer’s AWS S3 bucket.
@@ -54,5 +54,5 @@ The following attributes are exported:
 Customer connection  can be imported using `connectionId`:
 
 ```
-$ terraform import incapsula_siem_connection_s3.example_siem_connection connectionId
+$ terraform import incapsula_siem_connection.example_siem_connection connectionId
 ```
