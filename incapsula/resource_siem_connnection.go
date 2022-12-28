@@ -10,6 +10,7 @@ import (
 
 const StorageTypeCustomerS3 = "CUSTOMER_S3"
 const StorageTypeCustomerS3Arn = "CUSTOMER_S3_ARN"
+const sensitiveDataPlaceholder = "Sensitive data placeholder"
 
 func resourceSiemConnection() *schema.Resource {
 	return &schema.Resource{
@@ -49,12 +50,18 @@ func resourceSiemConnection() *schema.Resource {
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					expectedLen := 20
 					actualLen := len(val.(string))
-					if actualLen != expectedLen {
+					if actualLen != expectedLen && val != sensitiveDataPlaceholder {
 						errs = append(errs, fmt.Errorf("%q length should be %d, got: %d", key, expectedLen, actualLen))
 					}
 					return
 				},
 				RequiredWith: []string{"secret_key"},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if new == sensitiveDataPlaceholder {
+						return true
+					}
+					return false
+				},
 			},
 			"secret_key": {
 				Description: "Secret key in AWS.",
@@ -64,12 +71,18 @@ func resourceSiemConnection() *schema.Resource {
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					expectedLen := 40
 					actualLen := len(val.(string))
-					if actualLen != expectedLen {
+					if actualLen != expectedLen && val != sensitiveDataPlaceholder {
 						errs = append(errs, fmt.Errorf("%q length should be %d, got: %d", key, expectedLen, actualLen))
 					}
 					return
 				},
 				RequiredWith: []string{"access_key"},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if new == sensitiveDataPlaceholder {
+						return true
+					}
+					return false
+				},
 			},
 			"path": {
 				Description: "Store data from the specified connection under this path.",
