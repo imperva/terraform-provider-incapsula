@@ -31,7 +31,23 @@ resource "incapsula_siem_connection" "example_siem_connection_s3_arn"{
   	path = "myBucket/siem/logs"
 }
 ```
+> **NOTE:**
+When a resource is exported, the `access_key` and `secret_key` fields will be defined with the value `Sensitive data placeholder`.
+Note - This resource cannot be updated unless you specify a real value for the `access_key` and `secret_key` fields instead of `Sensitive data placeholder`.
+To clarify, any of fields cannot be changed in exported resources unless real `access_key` and `secret_key` value is set.
 
+Example of exported resource:
+
+```hcl
+resource "incapsula_siem_connection" "example_siem_connection_s3_basic"{
+	account_id = "1234567"
+	connection_name = "APB siem-logs connection basic auth"
+	storage_type = "CUSTOMER_S3"
+  	access_key = "Sensitive data placeholder"
+  	secret_key = "Sensitive data placeholder"
+  	path = "myBucket/siem/logs"
+}
+```
 ## Argument Reference
 
 The following arguments are supported:
