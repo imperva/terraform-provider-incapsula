@@ -34,7 +34,7 @@ resource "incapsula_siem_connection" "example_siem_connection_s3_arn"{
 > **NOTE:**
 When a resource is exported, the `access_key` and `secret_key` fields will be defined with the value `Sensitive data placeholder`.
 Note - This resource cannot be updated unless you specify a real value for the `access_key` and `secret_key` fields instead of `Sensitive data placeholder`.
-To clarify, any of fields cannot be changed in exported resources unless real `access_key` and `secret_key` value is set.
+To clarify, none of the fields in exported resources can be updated unless real `access_key` and `secret_key` values are set.
 
 Example of exported resource:
 
@@ -55,7 +55,7 @@ The following arguments are supported:
 * `connection_name` - (Required) Unique connection name.
 * `path` - (Required) Path to the files inside bucket including bucket name: `bucketName/folder/subfolder`.
 * `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
-* `access_key` - (Required when storage_type="CUSTOMER_S3" ) AWS Access key.
+* `access_key` - (Required when storage_type="CUSTOMER_S3" ) AWS access key.
 * `secret_key` - (Required when storage_type="CUSTOMER_S3") AWS access secret.
 * `storage_type` - (Required) Storage type. Possible values: `CUSTOMER_S3`, `CUSTOMER_S3_ARN` 
 
