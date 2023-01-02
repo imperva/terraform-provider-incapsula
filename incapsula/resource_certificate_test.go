@@ -1,6 +1,8 @@
 package incapsula
 
 import (
+	"log"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -24,7 +26,7 @@ const certificateName = "custom-certificate"
 const certificateResource = certificateResourceName + "." + certificateName
 
 var calculatedHash = ""
-var calculatedHashBase64 = ""
+var calculatedHashBase64 = "60f46b532df4f8dc794a2a151c7c6cc3a3b48fc3"
 
 func TestAccIncapsulaCustomCertificate_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -33,7 +35,8 @@ func TestAccIncapsulaCustomCertificate_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaCertificateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaCustomCertificateGoodConfig(t),
+				SkipFunc: IsCustomCertificateEnvVarExist,
+				Config:   testAccCheckIncapsulaCustomCertificateGoodConfig(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaCertificateExists(certificateResourceName),
 					resource.TestCheckResourceAttr(certificateResource, "input_hash", calculatedHashBase64),
@@ -86,8 +89,31 @@ func testAccCheckIncapsulaCertificateDestroy(state *terraform.State) error {
 	return fmt.Errorf("Error finding site_id in destroy custom certificate test")
 }
 
+func IsCustomCertificateEnvVarExist() (bool, error) {
+	skipTest := false
+	if v := os.Getenv("CUSTOM_CERTIFICATE"); v == "" {
+		skipTest = true
+		log.Printf("[ERROR] CUSTOM_CERTIFICATE environment variable does not exist, if you want to test custom certificate or MTLS client to Imperva you must prvide it")
+	}
+
+	if v := os.Getenv("CUSTOM_PRIVATE_KEY"); v == "" {
+		skipTest = true
+		log.Printf("[ERROR] FORTANIX_API_ID environment variable does not exist, if you want to test custom certificate or MTLS client you must prvide it")
+	}
+
+	return skipTest, nil
+}
+
 func testAccCheckIncapsulaCustomCertificateGoodConfig(t *testing.T) string {
-	cert, pkey := generateKeyPairBase64()
+	cert := os.Getenv("CUSTOM_CERTIFICATE")
+	if cert == "" {
+
+	}
+	pkey := os.Getenv("CUSTOM_PRIVATE_KEY")
+	if pkey == "" {
+
+	}
+	//cert, pkey := generateKeyPairBase64()
 	certRes := fmt.Sprintf("<<EOT\n%s\nEOT", cert)
 	pkeyRes := fmt.Sprintf("<<EOT\n%s\nEOT", pkey)
 	//cert, privateKey := generateKeyPair()

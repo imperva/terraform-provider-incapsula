@@ -26,7 +26,8 @@ func TestAccIncapsulaSiteClientToImervaCertificateAssociation_Basic(t *testing.T
 		CheckDestroy: testACCStateSiteClientToImervaCertificateAssociationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckClientToImervaCertificateAssociationBasic(t),
+				SkipFunc: IsCustomCertificateEnvVarExist,
+				Config:   testAccCheckClientToImervaCertificateAssociationBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckClientToImervaCertificateAssociationExists(),
 				),
