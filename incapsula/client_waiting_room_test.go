@@ -17,10 +17,10 @@ func TestClientCreateWaitingRoomBadConnection(t *testing.T) {
 	siteID := "42"
 
 	waitingRoom := WaitingRoomDTO{
-		Name:    "waiting room 1",
-		Enabled: true,
-		QueueInactivityTimeout:  5,
-		EntranceRateEnabled:  true,
+		Name:                   "waiting room 1",
+		Enabled:                true,
+		QueueInactivityTimeout: 5,
+		EntranceRateEnabled:    true,
 	}
 
 	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
@@ -55,10 +55,10 @@ func TestClientCreateWaitingRoomBadJSON(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	waitingRoom := WaitingRoomDTO{
-		Name:    "waiting room 1",
-		Enabled: true,
-		QueueInactivityTimeout:  5,
-		EntranceRateEnabled:  true,
+		Name:                   "waiting room 1",
+		Enabled:                true,
+		QueueInactivityTimeout: 5,
+		EntranceRateEnabled:    true,
 	}
 
 	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
@@ -92,10 +92,10 @@ func TestClientCreateWaitingRoomBadStatusCodeWithEmptyBody(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	waitingRoom := WaitingRoomDTO{
-		Name:    "waiting room 1",
-		Enabled: true,
-		QueueInactivityTimeout:  5,
-		EntranceRateEnabled:  true,
+		Name:                   "waiting room 1",
+		Enabled:                true,
+		QueueInactivityTimeout: 5,
+		EntranceRateEnabled:    true,
 	}
 
 	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
@@ -130,10 +130,10 @@ func TestClientCreateWaitingRoomBadStatusCode(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	waitingRoom := WaitingRoomDTO{
-		Name:    "waiting room 1",
-		Enabled: true,
-		QueueInactivityTimeout:  5,
-		EntranceRateEnabled:  true,
+		Name:                   "waiting room 1",
+		Enabled:                true,
+		QueueInactivityTimeout: 5,
+		EntranceRateEnabled:    true,
 	}
 
 	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
@@ -167,10 +167,10 @@ func TestClientCreateWaitingRoomEmptyBody(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	waitingRoom := WaitingRoomDTO{
-		Name:    "waiting room 1",
-		Enabled: true,
-		QueueInactivityTimeout:  5,
-		EntranceRateEnabled:  true,
+		Name:                   "waiting room 1",
+		Enabled:                true,
+		QueueInactivityTimeout: 5,
+		EntranceRateEnabled:    true,
 	}
 
 	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
@@ -205,10 +205,10 @@ func TestClientCreateWaitingRoomInvalidJSONValue(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	waitingRoom := WaitingRoomDTO{
-		Name:    "waiting room 1",
-		Enabled: true,
-		QueueInactivityTimeout:  5,
-		EntranceRateEnabled:  true,
+		Name:                   "waiting room 1",
+		Enabled:                true,
+		QueueInactivityTimeout: 5,
+		EntranceRateEnabled:    true,
 	}
 
 	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
@@ -243,11 +243,11 @@ func TestClientCreateWaitingRoomValidResponse(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	waitingRoom := WaitingRoomDTO{
-		Name:    "waiting room 1",
-		Enabled: true,
-		QueueInactivityTimeout:  5,
-		EntranceRateEnabled:  true,
-		EntranceRateThreshold: 500,
+		Name:                   "waiting room 1",
+		Enabled:                true,
+		QueueInactivityTimeout: 5,
+		EntranceRateEnabled:    true,
+		EntranceRateThreshold:  500,
 	}
 
 	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
@@ -472,17 +472,17 @@ func TestClientUpdateWaitingRoomBadConnection(t *testing.T) {
 	waitingRoomID := int64(1)
 
 	waitingRoom := WaitingRoomDTO{
-		Name:    "waiting room 1",
-		Enabled: true,
-		QueueInactivityTimeout:  5,
-		EntranceRateEnabled:  true,
+		Name:                   "waiting room 1",
+		Enabled:                true,
+		QueueInactivityTimeout: 5,
+		EntranceRateEnabled:    true,
 	}
 
 	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error from Incapsula service when updating Waiting Room %d for Site ID %s",waitingRoomID, siteID)) {
+	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error from Incapsula service when updating Waiting Room %d for Site ID %s", waitingRoomID, siteID)) {
 		t.Errorf("Should have received a client error, got: %s", diags[0].Detail)
 	}
 	if updateWaitingRoomResponse != nil {
@@ -510,10 +510,10 @@ func TestClientUpdateWaitingRoomBadJSON(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	waitingRoom := WaitingRoomDTO{
-		Name:    "waiting room 1",
-		Enabled: true,
-		QueueInactivityTimeout:  5,
-		EntranceRateEnabled:  true,
+		Name:                   "waiting room 1",
+		Enabled:                true,
+		QueueInactivityTimeout: 5,
+		EntranceRateEnabled:    true,
 	}
 
 	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
@@ -548,10 +548,10 @@ func TestClientUpdateWaitingRoomBadStatusCodeWithEmptyBody(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	waitingRoom := WaitingRoomDTO{
-		Name:    "waiting room 1",
-		Enabled: true,
-		QueueInactivityTimeout:  5,
-		EntranceRateEnabled:  true,
+		Name:                   "waiting room 1",
+		Enabled:                true,
+		QueueInactivityTimeout: 5,
+		EntranceRateEnabled:    true,
 	}
 
 	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
@@ -587,10 +587,10 @@ func TestClientUpdateWaitingRoomBadStatusCode(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	waitingRoom := WaitingRoomDTO{
-		Name:    "waiting room 1",
-		Enabled: true,
-		QueueInactivityTimeout:  5,
-		EntranceRateEnabled:  true,
+		Name:                   "waiting room 1",
+		Enabled:                true,
+		QueueInactivityTimeout: 5,
+		EntranceRateEnabled:    true,
 	}
 
 	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
@@ -625,10 +625,10 @@ func TestClientUpdateWaitingRoomEmptyBody(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	waitingRoom := WaitingRoomDTO{
-		Name:    "waiting room 1",
-		Enabled: true,
-		QueueInactivityTimeout:  5,
-		EntranceRateEnabled:  true,
+		Name:                   "waiting room 1",
+		Enabled:                true,
+		QueueInactivityTimeout: 5,
+		EntranceRateEnabled:    true,
 	}
 
 	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
@@ -663,11 +663,11 @@ func TestClientUpdateWaitingRoomValidResponse(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	waitingRoom := WaitingRoomDTO{
-		Name:    "waiting room 1",
-		Enabled: true,
-		QueueInactivityTimeout:  5,
-		EntranceRateEnabled:  true,
-		EntranceRateThreshold: 500,
+		Name:                   "waiting room 1",
+		Enabled:                true,
+		QueueInactivityTimeout: 5,
+		EntranceRateEnabled:    true,
+		EntranceRateThreshold:  500,
 	}
 
 	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
@@ -702,12 +702,15 @@ func TestClientDeleteWaitingRoomBadConnection(t *testing.T) {
 	siteID := "42"
 	waitingRoomID := int64(1)
 
-	diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
+	deleteWaitingRoomResponse, diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received a error")
 	}
 	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error from Incapsula service when deleting Waiting Room %d for Site ID %s", waitingRoomID, siteID)) {
 		t.Errorf("Should have received a client error, got: %s", diags[0].Detail)
+	}
+	if deleteWaitingRoomResponse != nil {
+		t.Errorf("Should have received a nil deleteWaitingRoomResponse instance")
 	}
 }
 
@@ -723,19 +726,22 @@ func TestClientDeleteWaitingRoomBadStatusCodeWithEmptyBody(t *testing.T) {
 		if req.URL.String() != endpoint || req.Method != "DELETE" {
 			t.Errorf("Should have have hit %s %s endpoint. Got: %s %s", "DELETE", endpoint, req.Method, req.URL.String())
 		}
-		rw.WriteHeader(http.StatusOK)
+		rw.WriteHeader(http.StatusNotFound)
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
+	deleteWaitingRoomResponse, diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error status code %d from Incapsula service when deleting Waiting Room %d for Site ID %s", 200, waitingRoomID, siteID)) {
+	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error status code %d from Incapsula service when deleting Waiting Room %d for Site ID %s", 404, waitingRoomID, siteID)) {
 		t.Errorf("Should have received a Status Code error, got: %s", diags[0].Detail)
+	}
+	if deleteWaitingRoomResponse != nil {
+		t.Errorf("Should have received a nil deleteWaitingRoomResponse instance")
 	}
 }
 
@@ -759,12 +765,15 @@ func TestClientDeleteWaitingRoomBadStatusCode(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
+	deleteWaitingRoomResponse, diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
 	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error status code %d from Incapsula service when deleting Waiting Room %d for Site ID %s", 404, waitingRoomID, siteID)) {
 		t.Errorf("Should have received a Status Code error, got: %s", diags[0].Detail)
+	}
+	if deleteWaitingRoomResponse == nil || deleteWaitingRoomResponse.Errors[0].Status != 404 {
+		t.Errorf("Should have received an error DTO")
 	}
 }
 
@@ -780,7 +789,7 @@ func TestClientDeleteWaitingRoomValidWaitingRoom(t *testing.T) {
 		if req.URL.String() != endpoint || req.Method != "DELETE" {
 			t.Errorf("Should have have hit %s %s endpoint. Got: %s %s", "DELETE", endpoint, req.Method, req.URL.String())
 		}
-		rw.WriteHeader(http.StatusNoContent)
+		rw.WriteHeader(http.StatusOK)
 		rw.Write([]byte(`{"data": [{"id": 1, "accountId":1234, "name":"waiting room 1","description":"","enabled":true,"htmlTemplateBase64":"","filter":"","botsActionInQueuingMode":"WAIT_IN_LINE","queueInactivityTimeout":5,"isEntranceRateEnabled":true,"entranceRateThreshold":500,"concurrentSessionsThreshold":0,"inactivityTimeout":5}]}`))
 	}))
 	defer server.Close()
@@ -788,8 +797,11 @@ func TestClientDeleteWaitingRoomValidWaitingRoom(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
+	deleteWaitingRoomResponse, diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
 	if diags != nil {
 		t.Errorf("Should not have received an error")
+	}
+	if deleteWaitingRoomResponse == nil || len(deleteWaitingRoomResponse.Data) == 0 {
+		t.Errorf("Should have recived a response")
 	}
 }

@@ -2,9 +2,9 @@ package incapsula
 
 import (
 	"fmt"
-	"testing"
 	"log"
 	"strconv"
+	"testing"
 	"time"
 
 	"math/rand"
@@ -23,20 +23,22 @@ func TestAccWaitingRoom_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccWaitingRoomDestroy,
+		CheckDestroy: checkWaitingRoomDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccWaitingRoomBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					//testCheckAccwaitingRoomAfterFullUpdate(),
 					resource.TestCheckResourceAttr(waitingRoomResource, "enabled", "true"),
+					resource.TestCheckResourceAttr(waitingRoomResource, "entrance_rate_threshold", "100"),
+					resource.TestCheckResourceAttr(waitingRoomResource, "concurrent_sessions_threshold", "150"),
 				),
 			},
 			{
 				ResourceName:      waitingRoomResource,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: testAccStateWaitingRoomID,
+				ImportStateIdFunc: getWaitingRoomImportString,
 			},
 		},
 	})
@@ -49,17 +51,49 @@ func testAccWaitingRoomBasic(t *testing.T) string {
 		name = "testWaitingRoom%d"
 		enabled = true
 		entrance_rate_threshold = 100
+		concurrent_sessions_threshold = 150
 	}`, waitingRoomResourceName, waitingRoomConfigName, rand.New(rand.NewSource(time.Now().UnixNano())).Intn(1000))
 }
 
-func testAccWaitingRoomDestroy(s *terraform.State) error {
+func checkWaitingRoomDestroy(state *terraform.State) error {
+	client := testAccProvider.Meta().(*Client)
+
+	for _, res := range state.RootModule().Resources {
+		if res.Type != waitingRoomResourceName {
+			continue
+		}
+
+		waitingRoomID := res.Primary.ID
+		if waitingRoomID == "" {
+			return fmt.Errorf("Incapsula Waiting Room ID does not exist")
+		}
+
+		siteID := res.Primary.Attributes["site_id"]
+		if siteID == "" {
+			return fmt.Errorf("Incapsula Waiting Room with id %s doesn't have site ID", waitingRoomID)
+		}
+
+		waitingRoomIdInt, err := strconv.ParseInt(waitingRoomID, 10, 64)
+		if err != nil {
+			return fmt.Errorf("Incapsula Waiting Room with id %s doesn't have numeric ID", waitingRoomID)
+		}
+
+		waitingRoomDTOResponse, _ := client.ReadWaitingRoom(siteID, waitingRoomIdInt)
+		if waitingRoomDTOResponse == nil {
+			return fmt.Errorf("Failed to check Waiting Room status (id=%s)", waitingRoomID)
+		}
+		if waitingRoomDTOResponse.Errors[0].Status != 404 {
+			return fmt.Errorf("Incapsula Waiting Room with id %s still exists", waitingRoomID)
+		}
+	}
+
 	return nil
 }
 
-func testAccStateWaitingRoomID(s *terraform.State) (string, error) {
-	fmt.Println(s)
-	fmt.Println(s.RootModule().Resources)
-	for _, rs := range s.RootModule().Resources {
+func getWaitingRoomImportString(state *terraform.State) (string, error) {
+	fmt.Println(state)
+	fmt.Println(state.RootModule().Resources)
+	for _, rs := range state.RootModule().Resources {
 		if rs.Type != "incapsula_waiting_room" {
 			continue
 		}

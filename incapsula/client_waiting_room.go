@@ -16,27 +16,27 @@ type WaitingRoomDTO struct {
 	Name                        string `json:"name"`
 	Description                 string `json:"description"`
 	Enabled                     bool   `json:"enabled"`
-	HtmlTemplateBase64          string `json:"htmlTemplateBase64"`
 	Filter                      string `json:"filter"`
+	HtmlTemplateBase64          string `json:"htmlTemplateBase64"`
 	CreatedAt                   int64  `json:"createdAt,omitempty"`
 	LastModifiedAt              int64  `json:"lastModifiedAt,omitempty"`
 	LastModifiedBy              string `json:"lastModifiedBy,omitempty"`
 	Mode                        string `json:"mode,omitempty"`
-	BotsActionInQueuingMode     string `json:"botsActionInQueuingMode"`
-	QueueInactivityTimeout      int64  `json:"queueInactivityTimeout"`
+	BotsActionInQueuingMode     string `json:"botsActionInQueuingMode,omitempty"`
+	QueueInactivityTimeout      int    `json:"queueInactivityTimeout,omitempty"`
 	EntranceRateEnabled         bool   `json:"isEntranceRateEnabled"`
-	EntranceRateThreshold       int64  `json:"entranceRateThreshold"`
+	EntranceRateThreshold       int    `json:"entranceRateThreshold,omitempty"`
 	ConcurrentSessionsEnabled   bool   `json:"isConcurrentSessionsEnabled"`
-	ConcurrentSessionsThreshold int64  `json:"concurrentSessionsThreshold"`
-	InactivityTimeout           int64  `json:"inactivityTimeout"`
+	ConcurrentSessionsThreshold int    `json:"concurrentSessionsThreshold,omitempty"`
+	InactivityTimeout           int    `json:"inactivityTimeout,omitempty"`
 }
 
 type WaitingRoomDTOResponse struct {
-	Data   []WaitingRoomDTO  `json:"data"`
-	Errors []APIErrors    `json:"errors"`
+	Data   []WaitingRoomDTO `json:"data"`
+	Errors []APIErrors      `json:"errors"`
 }
 
-func (c *Client) CreateWaitingRoom(siteID string, waitingRoom *WaitingRoomDTO) (*WaitingRoomDTOResponse,  diag.Diagnostics) {
+func (c *Client) CreateWaitingRoom(siteID string, waitingRoom *WaitingRoomDTO) (*WaitingRoomDTOResponse, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] Creating Waiting Room for Site ID %s\n", siteID)
 
@@ -96,7 +96,7 @@ func (c *Client) CreateWaitingRoom(siteID string, waitingRoom *WaitingRoomDTO) (
 	return &newWaitingRoom, diags
 }
 
-func (c *Client) ReadWaitingRoom(siteID string, waitingRoomID int64)  (*WaitingRoomDTOResponse,  diag.Diagnostics) {
+func (c *Client) ReadWaitingRoom(siteID string, waitingRoomID int64) (*WaitingRoomDTOResponse, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] Getting Incapsula Waiting Room %d for Site ID %s\n", waitingRoomID, siteID)
 
@@ -143,7 +143,7 @@ func (c *Client) ReadWaitingRoom(siteID string, waitingRoomID int64)  (*WaitingR
 	return &waitingRoom, diags
 }
 
-func (c *Client) UpdateWaitingRoom(siteID string, waitingRoomID int64, waitingRoom *WaitingRoomDTO)  (*WaitingRoomDTOResponse,  diag.Diagnostics) {
+func (c *Client) UpdateWaitingRoom(siteID string, waitingRoomID int64, waitingRoom *WaitingRoomDTO) (*WaitingRoomDTOResponse, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] Updating Incapsula Waiting Room %d for Site ID %s\n", waitingRoomID, siteID)
 
@@ -200,7 +200,7 @@ func (c *Client) UpdateWaitingRoom(siteID string, waitingRoomID int64, waitingRo
 	return &updatedWaitingRoom, diags
 }
 
-func (c *Client) DeleteWaitingRoom(siteID string, waitingRoomID int64)  (diag.Diagnostics) {
+func (c *Client) DeleteWaitingRoom(siteID string, waitingRoomID int64) (*WaitingRoomDTOResponse, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] Deleting Incapsula Waiting Room %d for Site ID %s\n", waitingRoomID, siteID)
 
@@ -213,7 +213,7 @@ func (c *Client) DeleteWaitingRoom(siteID string, waitingRoomID int64)  (diag.Di
 			Summary:  "Failure sending Waiting Room delete request",
 			Detail:   fmt.Sprintf("Error from Incapsula service when deleting Waiting Room %d for Site ID %s: %s", waitingRoomID, siteID, err.Error()),
 		})
-		return diags
+		return nil, diags
 	}
 
 	// Read the body
@@ -224,7 +224,7 @@ func (c *Client) DeleteWaitingRoom(siteID string, waitingRoomID int64)  (diag.Di
 	log.Printf("[DEBUG] Incapsula Delete Waiting Room JSON response: %s\n", string(responseBody))
 
 	// Check the response code
-	if resp.StatusCode != 204 {
+	if resp.StatusCode != 200 {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Failure Deleting Waiting Room",
@@ -232,5 +232,17 @@ func (c *Client) DeleteWaitingRoom(siteID string, waitingRoomID int64)  (diag.Di
 		})
 	}
 
-	return diags
+	// Parse the JSON
+	var waitingRoom WaitingRoomDTOResponse
+	err = json.Unmarshal([]byte(responseBody), &waitingRoom)
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Failure parsing Waiting Room delete response",
+			Detail:   fmt.Sprintf("Error parsing Waiting Room %d JSON response for Site ID %s: %s\nresponse: %s", waitingRoomID, siteID, err.Error(), string(responseBody)),
+		})
+		return nil, diags
+	}
+
+	return &waitingRoom, diags
 }
