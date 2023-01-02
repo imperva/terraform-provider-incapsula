@@ -162,37 +162,16 @@ func (c *Client) CreateApiSecurityApiConfig(siteId int, apiConfigPayload *ApiSec
 // UpdateApiSecurityApiConfig updates the Api-Security Api Config
 func (c *Client) UpdateApiSecurityApiConfig(siteId int, apiId string, apiConfigPayload *ApiSecurityApiConfigPostPayload) (*ApiSecurityApiConfigPostResponse, error) {
 	log.Printf("[INFO] Updating Incapsula API Security API Configuration for Site ID %d, API Config ID %s\n", siteId, apiId)
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
 
-	//In current implementation validateHost value is always set as "false". Will be changed in next releases
-	fw, err := writer.CreateFormField("validateHost")
-	if err != nil {
-		log.Printf("failed to create %s formdata field", "validateHost")
-	}
-	_, err = io.Copy(fw, strings.NewReader("false"))
-	if err != nil {
-		log.Printf("failed to write %s formdata field", "validateHost")
-	}
+	bodyMap := map[string]interface{}{}
+
+	bodyMap["validateHost"] = "false"
+
 	if apiConfigPayload.Description != "" {
-		fw, err := writer.CreateFormField("description")
-		if err != nil {
-			log.Printf("failed to create %s formdata field", "description")
-		}
-		_, err = io.Copy(fw, strings.NewReader(apiConfigPayload.Description))
-		if err != nil {
-			log.Printf("failed to write %s formdata field", "description")
-		}
+		bodyMap["description"] = apiConfigPayload.Description
 	}
 	if apiConfigPayload.BasePath != "" {
-		fw, err := writer.CreateFormField("basePath")
-		if err != nil {
-			log.Printf("failed to create %s formdata field", "basePath")
-		}
-		_, err = io.Copy(fw, strings.NewReader(apiConfigPayload.BasePath))
-		if err != nil {
-			log.Printf("failed to write %s formdata field", "basePath")
-		}
+		bodyMap["basePath"] = apiConfigPayload.BasePath
 	}
 	//init violation actions JSON
 	violationActionsStr, err := json.Marshal(apiConfigPayload.ViolationActions)
@@ -201,27 +180,15 @@ func (c *Client) UpdateApiSecurityApiConfig(siteId int, apiId string, apiConfigP
 	}
 
 	if apiConfigPayload.ViolationActions != (ViolationActions{}) {
-		fw, err := writer.CreateFormField("violationActions")
-		if err != nil {
-			log.Printf("failed to create %s formdata field", "violationActions")
-		}
-		_, err = io.Copy(fw, strings.NewReader(string(violationActionsStr)))
-		if err != nil {
-			log.Printf("failed to write %s formdata field", "violationActions")
-		}
+		bodyMap["violationActions"] = string(violationActionsStr)
 	}
-
-	fw, err = writer.CreateFormFile("apiSpecification", filepath.Base("swagger"))
-	if err != nil {
-		log.Printf("failed to create %s formdata field", "apiSpecification")
-	}
-	fw.Write([]byte(apiConfigPayload.ApiSpecification))
-
-	writer.Close()
+	bodyMap["apiSpecification"] = []byte(apiConfigPayload.ApiSpecification)
+	body, contentType := c.CreateFormDataBody(bodyMap)
 
 	reqURL := fmt.Sprintf("%s%s%d/%s", c.config.BaseURLAPI, apiConfigUrl, siteId, apiId)
-	contentType := writer.FormDataContentType()
-	resp, err := c.DoFormDataRequestWithHeaders(http.MethodPost, reqURL, body.Bytes(), contentType, UpdateApiSecApiConfig)
+
+	resp, err := c.DoFormDataRequestWithHeaders(http.MethodPost, reqURL, body, contentType, CreateMtlsClientToImpervaCertifiate)
+
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error updating API Security API Config for site id %d, API id %s :%s", siteId, apiId, err)
 	}

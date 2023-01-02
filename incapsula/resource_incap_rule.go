@@ -65,6 +65,11 @@ func resourceIncapRule() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
+			"rewrite_existing": {
+				Description: "Rewrite cookie or header if it exists.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+			},
 			"from": {
 				Description: "Pattern to rewrite. For `RULE_ACTION_REWRITE_URL` - Url to rewrite. For `RULE_ACTION_REWRITE_HEADER` and `RULE_ACTION_RESPONSE_REWRITE_HEADER` - Header value to rewrite. For `RULE_ACTION_REWRITE_COOKIE` - Cookie value to rewrite.",
 				Type:        schema.TypeString,
@@ -136,6 +141,12 @@ func resourceIncapRule() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"enabled": {
+				Description: "Enable or disable rule.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+			},
 		},
 	}
 }
@@ -149,6 +160,7 @@ func resourceIncapRuleCreate(d *schema.ResourceData, m interface{}) error {
 		Filter:                d.Get("filter").(string),
 		ResponseCode:          d.Get("response_code").(int),
 		AddMissing:            d.Get("add_missing").(bool),
+		rewriteExisting:       d.Get("rewrite_existing").(bool),
 		From:                  d.Get("from").(string),
 		To:                    d.Get("to").(string),
 		RewriteName:           d.Get("rewrite_name").(string),
@@ -163,6 +175,7 @@ func resourceIncapRuleCreate(d *schema.ResourceData, m interface{}) error {
 		MultipleDeletions:     d.Get("multiple_deletions").(bool),
 		OverrideWafRule:       d.Get("override_waf_rule").(string),
 		OverrideWafAction:     d.Get("override_waf_action").(string),
+		Enabled:               d.Get("enabled").(bool),
 	}
 
 	ruleWithID, err := client.AddIncapRule(d.Get("site_id").(string), &rule)
@@ -203,6 +216,7 @@ func resourceIncapRuleRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("filter", rule.Filter)
 	d.Set("response_code", rule.ResponseCode)
 	d.Set("add_missing", rule.AddMissing)
+	d.Set("rewrite_existing", rule.rewriteExisting)
 	d.Set("from", rule.From)
 	d.Set("to", rule.To)
 	d.Set("rewrite_name", rule.RewriteName)
@@ -217,6 +231,7 @@ func resourceIncapRuleRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("multiple_deletions", rule.MultipleDeletions)
 	d.Set("override_waf_rule", rule.OverrideWafRule)
 	d.Set("override_waf_action", rule.OverrideWafAction)
+	d.Set("enabled", rule.Enabled)
 
 	return nil
 }
@@ -230,6 +245,7 @@ func resourceIncapRuleUpdate(d *schema.ResourceData, m interface{}) error {
 		Filter:                d.Get("filter").(string),
 		ResponseCode:          d.Get("response_code").(int),
 		AddMissing:            d.Get("add_missing").(bool),
+		rewriteExisting:       d.Get("rewrite_existing").(bool),
 		From:                  d.Get("from").(string),
 		To:                    d.Get("to").(string),
 		RewriteName:           d.Get("rewrite_name").(string),
@@ -244,6 +260,7 @@ func resourceIncapRuleUpdate(d *schema.ResourceData, m interface{}) error {
 		MultipleDeletions:     d.Get("multiple_deletions").(bool),
 		OverrideWafRule:       d.Get("override_waf_rule").(string),
 		OverrideWafAction:     d.Get("override_waf_action").(string),
+		Enabled:               d.Get("enabled").(bool),
 	}
 
 	ruleID, err := strconv.Atoi(d.Id())

@@ -65,6 +65,7 @@ type AccountStatusResponse struct {
 	Email       string `json:"email"`
 	PlanID      string `json:"plan_id"`
 	PlanName    string `json:"plan_name"`
+	AccountType string `json:"account_type"`
 	AccountID   int    `json:"account_id"`
 	UserName    string `json:"user_name"`
 	AccountName string `json:"account_name"`
@@ -254,4 +255,11 @@ func (c *Client) DeleteAccount(accountID int) error {
 	}
 
 	return nil
+}
+
+func (accountStatus AccountStatusResponse) isSubAccount() bool {
+	if accountStatus.AccountType == "Sub Account" {
+		return true
+	}
+	return false
 }

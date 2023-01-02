@@ -87,30 +87,26 @@ func resourceApiSecurityApiConfig() *schema.Resource {
 			"invalid_param_name_violation_action": {
 				Description:  "The violation action taken when invalid request parameter name was sent. Possible values: ALERT_ONLY, BLOCK_REQUEST, BLOCK_USER, BLOCK_IP, IGNORE, DEFAULT. Assigning DEFAULT will inherit the action from parent object",
 				Type:         schema.TypeString,
+				Computed:     true,
 				Optional:     true,
-				Default:      "DEFAULT",
 				ValidateFunc: validation.StringInSlice([]string{"ALERT_ONLY", "BLOCK_REQUEST", "BLOCK_USER", "BLOCK_IP", "IGNORE", "DEFAULT"}, false),
 			},
-
 			"description": {
 				Description: "A description that will help recognize the API in the dashboard",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-
 			"base_path": {
 				Description: "Override the spec basePath / server base path with this value",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
 			},
-
 			"host_name": {
 				Description: "The host name from the swagger file",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-
 			"last_modified": {
 				Description: "The last modified timestamp",
 				Type:        schema.TypeInt,

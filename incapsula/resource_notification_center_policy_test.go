@@ -16,8 +16,8 @@ const fullResourceNamePolicy1WithoutAsset = notificationCenterPolicyResourceType
 const policy2AccountWithoutAssets = "notification-policy-account-without-assets"
 const fullResourcePolicy2NameWithAsset = notificationCenterPolicyResourceType + "." + policy2AccountWithoutAssets
 
-//##############################
-//TODO: Currently the test is disable
+// ##############################
+// TODO: Currently the test is disable
 var accountId = 1
 
 //##############################

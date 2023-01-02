@@ -3,11 +3,10 @@ package incapsula
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
 	"strings"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourcePolicy() *schema.Resource {
@@ -38,10 +37,19 @@ func resourcePolicy() *schema.Resource {
 				Required:    true,
 			},
 			"policy_settings": {
-				Description:      "The policy settings as JSON string. See Imperva documentation for help with constructing a correct value.",
-				Type:             schema.TypeString,
-				Required:         true,
-				DiffSuppressFunc: suppressEquivalentJSONStringDiffs,
+				Description: "The policy settings as JSON string. See Imperva documentation for help with constructing a correct value.",
+				Type:        schema.TypeString,
+				Required:    true,
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+					oldValue = strings.ReplaceAll(oldValue, " ", "")
+					oldValue = strings.ReplaceAll(oldValue, "\n", "")
+					oldValue = strings.ReplaceAll(oldValue, ",\"data\":{}", "")
+
+					newValue = strings.ReplaceAll(newValue, " ", "")
+					newValue = strings.ReplaceAll(newValue, "\n", "")
+					newValue = strings.ReplaceAll(newValue, ",\"data\":{}", "")
+					return suppressEquivalentJSONStringDiffs(k, oldValue, newValue, d)
+				},
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					// Check if valid JSON
 					d := val.(string)
@@ -68,6 +76,15 @@ func resourcePolicy() *schema.Resource {
 			},
 		},
 	}
+}
+
+func getCurrentAccountId(d *schema.ResourceData, accountStatus *AccountStatusResponse) *int {
+	caid := d.Get("account_id").(int)
+	if accountStatus.isSubAccount() || caid == 0 {
+		//in case of sub account we do not want to send the caid since the policy owner is the sub account's parent
+		return nil
+	}
+	return &caid
 }
 
 func resourcePolicyCreate(d *schema.ResourceData, m interface{}) error {
@@ -104,7 +121,10 @@ func resourcePolicyRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	policyID := d.Id()
-	policyGetResponse, err := client.GetPolicy(policyID)
+
+	currentAccountId := getCurrentAccountId(d, client.accountStatus)
+
+	policyGetResponse, err := client.GetPolicy(policyID, currentAccountId)
 
 	if err != nil {
 		log.Printf("[ERROR] Could not get Incapsula policy: %s - %s\n", policyID, err)
@@ -141,7 +161,8 @@ func resourcePolicyUpdate(d *schema.ResourceData, m interface{}) error {
 	var policySettings []PolicySetting
 	err = json.Unmarshal([]byte(policySettingsString), &policySettings)
 
-	policyGetResponse, err := client.GetPolicy(d.Id())
+	currentAccountId := getCurrentAccountId(d, client.accountStatus)
+	policyGetResponse, err := client.GetPolicy(d.Id(), currentAccountId)
 	if err != nil {
 		log.Printf("[ERROR] Could not get Incapsula policy: %d - %s\n", id, err)
 		if strings.Contains(err.Error(), "404") {
@@ -162,7 +183,7 @@ func resourcePolicyUpdate(d *schema.ResourceData, m interface{}) error {
 		PolicySettings:      policySettings,
 	}
 
-	_, err = client.UpdatePolicy(id, &policySubmitted)
+	_, err = client.UpdatePolicy(id, &policySubmitted, currentAccountId)
 
 	if err != nil {
 		log.Printf("[ERROR] Could not update Incapsula policy: %s - %s\n", policySubmitted.Name, err)
@@ -174,7 +195,8 @@ func resourcePolicyUpdate(d *schema.ResourceData, m interface{}) error {
 
 func resourcePolicyDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	err := client.DeletePolicy(d.Id())
+	currentAccountId := getCurrentAccountId(d, client.accountStatus)
+	err := client.DeletePolicy(d.Id(), currentAccountId)
 
 	if err != nil {
 		return err

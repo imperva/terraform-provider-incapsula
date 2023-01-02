@@ -1,6 +1,7 @@
 package incapsula
 
 import (
+	b64 "encoding/base64"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -12,9 +13,9 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	b64 "encoding/base64"
 	"encoding/pem"
 	"math/big"
+	mrand "math/rand"
 	"net"
 	"testing"
 	"time"
@@ -60,7 +61,7 @@ func testACCStateMtlsImpervaToOriginCertificateDestroy(s *terraform.State) error
 			fmt.Errorf("Parameter id was not found in resource %s", mtlsCrtificateResourceName)
 		}
 
-		_, err := client.GetMTLSCertificate(certificateID)
+		_, err := client.GetMTLSCertificate(certificateID, "")
 		if err == nil {
 			return fmt.Errorf("Resource %s with cerificate ID %s still exists", mtlsCrtificateResourceName, certificateID)
 		}
@@ -76,7 +77,7 @@ func testCheckMtlsImpervaToOriginCertificateExists() resource.TestCheckFunc {
 		}
 		certificateID := res.Primary.ID
 		client := testAccProvider.Meta().(*Client)
-		_, err := client.GetMTLSCertificate(certificateID)
+		_, err := client.GetMTLSCertificate(certificateID, "")
 		if err != nil {
 			return fmt.Errorf("Incapsula mTLS Imperva to Origin Certificate with ID %s does not exist", certificateID)
 		}
@@ -100,14 +101,16 @@ func testACCStateMtlsImpervaToOriginCertificateID(s *terraform.State) (string, e
 
 func testAccCheckMtlsImpervaToOriginCertificateBasic(t *testing.T) string {
 	cert, pkey, err := certsetup()
-	log.Printf("pkey mtls\n%v", pkey)
-	log.Printf("\n\ncertStr mtls\n%v", cert)
+
 	if err != nil {
 		panic(err)
 	}
-	//clientTLSConf := string(clientTLSConf.Certificates[0].Certificate)
 	return fmt.Sprintf(`
+data "incapsula_account_data" "account_data" {
+}
 	resource"%s""%s"{
+    account_id                       = data.incapsula_account_data.account_data.current_account
+
 		certificate_name = "acceptance test certificate"
   		certificate = %s
   		private_key = %s
@@ -117,8 +120,10 @@ func testAccCheckMtlsImpervaToOriginCertificateBasic(t *testing.T) string {
 }
 
 func certsetup() (cert, pkey string, err error) {
+	s3 := mrand.NewSource(time.Now().UnixNano())
+	r3 := mrand.New(s3)
 	ca := &x509.Certificate{
-		SerialNumber: big.NewInt(2019),
+		SerialNumber: big.NewInt(r3.Int63n(10000)),
 		Subject: pkix.Name{
 			Organization:  []string{"Company, INC."},
 			Country:       []string{"US"},
@@ -136,7 +141,7 @@ func certsetup() (cert, pkey string, err error) {
 	}
 
 	// create our private and public key
-	caPrivKey, err := rsa.GenerateKey(rand.Reader, 4096)
+	caPrivKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return "", "", err
 	}
@@ -162,7 +167,7 @@ func certsetup() (cert, pkey string, err error) {
 
 	// set up our server certificate
 	certificate := &x509.Certificate{
-		SerialNumber: big.NewInt(2019),
+		SerialNumber: big.NewInt(r3.Int63n(10000)),
 		Subject: pkix.Name{
 			Organization:  []string{"Company, INC."},
 			Country:       []string{"US"},
@@ -179,7 +184,7 @@ func certsetup() (cert, pkey string, err error) {
 		KeyUsage:     x509.KeyUsageDigitalSignature,
 	}
 
-	certPrivKey, err := rsa.GenerateKey(rand.Reader, 4096)
+	certPrivKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return "", "", err
 	}

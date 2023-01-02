@@ -69,7 +69,8 @@ func (c *Config) Client() (interface{}, error) {
 	client := NewClient(c)
 
 	// Verify client credentials
-	_, err := client.Verify()
+	accountStatusResponse, err := client.Verify()
+	client.accountStatus = accountStatusResponse
 	if err != nil {
 		return nil, err
 	}

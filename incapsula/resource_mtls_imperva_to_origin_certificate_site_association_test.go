@@ -44,7 +44,7 @@ func testACCStateSiteMtlsCertificateAssociationDestroy(s *terraform.State) error
 			return fmt.Errorf("Incapsula mTLS certificate is not assigned to Site ID %s (cannot find mandatory parameter site_id)", siteID)
 		}
 
-		_, err := client.GetMTLSCertificate(siteID)
+		_, err := client.GetMTLSCertificate(siteID, "")
 		if err == nil {
 			return fmt.Errorf("Resource %s with siteID ID %s still exists", siteMtlsCrtificateAssociationResourceName, siteID)
 		}

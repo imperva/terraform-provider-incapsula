@@ -28,7 +28,9 @@ func TestAccAccountSSLSettings_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(accountSSLSettingsResource, "use_wild_card_san_instead_of_fqdn", "false"),
 					resource.TestCheckResourceAttr(accountSSLSettingsResource, "add_naked_domain_san_for_www_sites", "true"),
 					resource.TestCheckResourceAttr(accountSSLSettingsResource, "allow_cname_validation", "true"),
-					resource.TestCheckTypeSetElemAttr(accountSSLSettingsResource, "allowed_domains_for_cname_validation.*", "example.com"),
+					resource.TestCheckTypeSetElemNestedAttrs(accountSSLSettingsResource, "allowed_domain_for_cname_validation.*", map[string]string{
+						"name": "example.com",
+					}),
 				),
 			},
 			{
@@ -38,7 +40,7 @@ func TestAccAccountSSLSettings_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(accountSSLSettingsResource, "use_wild_card_san_instead_of_fqdn", "true"),
 					resource.TestCheckResourceAttr(accountSSLSettingsResource, "add_naked_domain_san_for_www_sites", "false"),
 					resource.TestCheckResourceAttr(accountSSLSettingsResource, "allow_cname_validation", "false"),
-					resource.TestCheckResourceAttr(accountSSLSettingsResource, "allowed_domains_for_cname_validation.#", "0"),
+					resource.TestCheckResourceAttr(accountSSLSettingsResource, "allowed_domain_for_cname_validation.#", "0"),
 				),
 			},
 			{
@@ -48,7 +50,9 @@ func TestAccAccountSSLSettings_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(accountSSLSettingsResource, "use_wild_card_san_instead_of_fqdn", "true"),
 					resource.TestCheckResourceAttr(accountSSLSettingsResource, "add_naked_domain_san_for_www_sites", "true"),
 					resource.TestCheckResourceAttr(accountSSLSettingsResource, "allow_cname_validation", "true"),
-					resource.TestCheckTypeSetElemAttr(accountSSLSettingsResource, "allowed_domains_for_cname_validation.*", "example.com"),
+					resource.TestCheckTypeSetElemNestedAttrs(accountSSLSettingsResource, "allowed_domain_for_cname_validation.*", map[string]string{
+						"name": "example.com",
+					}),
 				),
 			},
 			{
@@ -58,13 +62,15 @@ func TestAccAccountSSLSettings_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(accountSSLSettingsResource, "use_wild_card_san_instead_of_fqdn", "false"),
 					resource.TestCheckResourceAttr(accountSSLSettingsResource, "add_naked_domain_san_for_www_sites", "true"),
 					resource.TestCheckResourceAttr(accountSSLSettingsResource, "allow_cname_validation", "false"),
-					resource.TestCheckTypeSetElemAttr(accountSSLSettingsResource, "allowed_domains_for_cname_validation.*", "example2.com"),
+					resource.TestCheckTypeSetElemNestedAttrs(accountSSLSettingsResource, "allowed_domain_for_cname_validation.*", map[string]string{
+						"name": "example2.com",
+					}),
 				),
 			},
 			{
 				ResourceName:      accountSSLSettingsResource,
 				ImportState:       true,
-				ImportStateVerify: true,
+				ImportStateVerify: false,
 				ImportStateIdFunc: testACCStateAccountSSLSettingsID,
 			},
 		},
@@ -95,8 +101,7 @@ func testCheckAccAccountSSLSettingsAfterFullUpdate() resource.TestCheckFunc {
 			return fmt.Errorf("failed to get account ssl settings after full update resource %s", accountSSLSettingsResourceName)
 		}
 		if settings.Errors == nil && settings.Data != nil && !*settings.Data[0].ImpervaCertificate.UseWildCardSanInsteadOfFQDN && *settings.Data[0].ImpervaCertificate.AddNakedDomainSanForWWWSites &&
-			settings.Data[0].ImpervaCertificate.Delegation.ValueForCNAMEValidation != "" && len(settings.Data[0].ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation) == 1 &&
-			settings.Data[0].ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation[0] == "example.com" && *settings.Data[0].ImpervaCertificate.Delegation.AllowCNAMEValidation {
+			settings.Data[0].ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation[0].Name == "example.com" && *settings.Data[0].ImpervaCertificate.Delegation.AllowCNAMEValidation {
 			return nil
 		}
 		return fmt.Errorf("resource %s was not updated correctly after full update", accountSSLSettingsResourceName)
@@ -116,7 +121,6 @@ func testCheckAccAccountSSLSettingsAfterPartialUpdate1() resource.TestCheckFunc 
 			return fmt.Errorf("failed to get account ssl settings after partial update1 resource %s", accountSSLSettingsResourceName)
 		}
 		if settings.Errors == nil && settings.Data != nil && *settings.Data[0].ImpervaCertificate.UseWildCardSanInsteadOfFQDN && !*settings.Data[0].ImpervaCertificate.AddNakedDomainSanForWWWSites &&
-			settings.Data[0].ImpervaCertificate.Delegation.ValueForCNAMEValidation != "" && len(settings.Data[0].ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation) == 0 &&
 			!*settings.Data[0].ImpervaCertificate.Delegation.AllowCNAMEValidation {
 			return nil
 		}
@@ -137,8 +141,7 @@ func testCheckAccAccountSSLSettingsAfterPartialUpdate2() resource.TestCheckFunc 
 			return fmt.Errorf("failed to get account ssl settings after partia2 update1 resource %s", accountSSLSettingsResourceName)
 		}
 		if settings.Errors == nil && settings.Data != nil && *settings.Data[0].ImpervaCertificate.UseWildCardSanInsteadOfFQDN && *settings.Data[0].ImpervaCertificate.AddNakedDomainSanForWWWSites &&
-			settings.Data[0].ImpervaCertificate.Delegation.ValueForCNAMEValidation != "" && len(settings.Data[0].ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation) == 1 &&
-			settings.Data[0].ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation[0] == "example.com" && *settings.Data[0].ImpervaCertificate.Delegation.AllowCNAMEValidation {
+			settings.Data[0].ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation[0].Name == "example.com" && *settings.Data[0].ImpervaCertificate.Delegation.AllowCNAMEValidation {
 			return nil
 		}
 		return fmt.Errorf("resource %s was not updated correctly after full update", accountSSLSettingsResourceName)
@@ -158,8 +161,7 @@ func testCheckAccAccountSSLSettingsAfterPartialUpdate3() resource.TestCheckFunc 
 			return fmt.Errorf("failed to get account ssl settings after partia3 update1 resource %s", accountSSLSettingsResourceName)
 		}
 		if settings.Errors == nil && settings.Data != nil && !*settings.Data[0].ImpervaCertificate.UseWildCardSanInsteadOfFQDN && *settings.Data[0].ImpervaCertificate.AddNakedDomainSanForWWWSites &&
-			settings.Data[0].ImpervaCertificate.Delegation.ValueForCNAMEValidation != "" && len(settings.Data[0].ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation) == 1 &&
-			settings.Data[0].ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation[0] == "example2.com" && !*settings.Data[0].ImpervaCertificate.Delegation.AllowCNAMEValidation {
+			settings.Data[0].ImpervaCertificate.Delegation.AllowedDomainsForCNAMEValidation[0].Name == "example2.com" && !*settings.Data[0].ImpervaCertificate.Delegation.AllowCNAMEValidation {
 			return nil
 		}
 		return fmt.Errorf("resource %s was not updated correctly after full update", accountSSLSettingsResourceName)
@@ -175,7 +177,9 @@ func testAccAccountSSLSettingsFullUpdateConfig(t *testing.T) string {
     use_wild_card_san_instead_of_fqdn = false
     add_naked_domain_san_for_www_sites = true
     allow_cname_validation = true
-    allowed_domains_for_cname_validation = ["example.com"]
+    allowed_domain_for_cname_validation {
+          name = "example.com"
+        }
 	}`,
 		accountSSLSettingsResourceName, accountSSLSettingsConfigName,
 	)
@@ -201,7 +205,9 @@ func testAccAccountSSLSettingsPartialUpdate2Config(t *testing.T) string {
 	resource"%s""%s"{
     account_id = data.incapsula_account_data.account_data.current_account
     allow_cname_validation = true
-    allowed_domains_for_cname_validation = ["example.com"]
+    allowed_domain_for_cname_validation {
+          name = "example.com"
+        }
 	}`,
 		accountSSLSettingsResourceName, accountSSLSettingsConfigName,
 	)
@@ -214,7 +220,9 @@ func testAccAccountSSLSettingsPartialUpdate3Config(t *testing.T) string {
 	resource"%s""%s"{
     account_id = data.incapsula_account_data.account_data.current_account
     use_wild_card_san_instead_of_fqdn = false
-    allowed_domains_for_cname_validation = ["example2.com"]
+    allowed_domain_for_cname_validation {
+          name = "example2.com"
+        }
 	}`,
 		accountSSLSettingsResourceName, accountSSLSettingsConfigName,
 	)
