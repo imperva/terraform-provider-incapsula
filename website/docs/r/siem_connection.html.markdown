@@ -32,7 +32,8 @@ resource "incapsula_siem_connection" "example_siem_connection_s3_arn"{
 }
 ```
 > **NOTE:**
-When a resource is exported, the `access_key` and `secret_key` fields will be defined with the value `Sensitive data placeholder`.
+For security reasons, when a resource is exported, the `access_key` and `secret_key` fields will be replaced with the value `Sensitive data placeholder`.
+The actual key values are still used in the communication with the s3 bucket.
 Note - This resource cannot be updated unless you specify a real value for the `access_key` and `secret_key` fields instead of `Sensitive data placeholder`.
 To clarify, none of the fields in exported resources can be updated unless real `access_key` and `secret_key` values are set.
 
