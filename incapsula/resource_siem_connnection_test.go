@@ -26,6 +26,25 @@ var s3SiemConnectionName = "SIEMCONNECTIONS3" + RandomLetterAndNumberString(10)
 
 var s3SiemConnectionNameUpdated = "UPDATED" + s3SiemConnectionName
 
+func isS3EnvVarExist() (bool, error) {
+	skipTest := false
+	if v := os.Getenv("SIEM_CONNECTION_S3_PATH"); v == "" {
+		skipTest = true
+		log.Printf("[ERROR] SIEM_CONNECTION_S3_PATH environment variable does not exist, if you want to test SIEM connection you must prvide it")
+	}
+
+	if v := os.Getenv("SIEM_CONNECTION_S3_ACCESS_KEY"); v == "" {
+		skipTest = true
+		log.Printf("[ERROR] SIEM_CONNECTION_S3_ACCESS_KEY environment variable does not exist, if you want to test SIEM connection you must prvide it")
+	}
+
+	if v := os.Getenv("SIEM_CONNECTION_S3_SECRET_KEY"); v == "" {
+		skipTest = true
+		log.Printf("[ERROR] SIEM_CONNECTION_S3_SECRET_KEY environment variable does not exist, if you want to test SIEM connection you must prvide it")
+	}
+
+	return skipTest, nil
+}
 func TestAccSiemConnection_Basic(t *testing.T) {
 	log.Printf("========================BEGIN TEST========================")
 	log.Printf("[DEBUG]Running test resource_siem_connection.go.TestAccSiemConnection_Basic")
@@ -36,7 +55,8 @@ func TestAccSiemConnection_Basic(t *testing.T) {
 		CheckDestroy: testAccIncapsulaSiemConnectionDestroy(siemConnectionResourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName),
+				SkipFunc: isS3EnvVarExist,
+				Config:   getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemConnectionExists(s3ArnSiemConnectionResource),
 					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "connection_name", s3ArnSiemConnectionName),
@@ -49,27 +69,25 @@ func TestAccSiemConnection_Basic(t *testing.T) {
 				ImportStateVerify: true,
 				ImportStateIdFunc: testACCStateSiemConnectionID(siemConnectionResourceType),
 			},
-		},
-	}
-
-	if v := os.Getenv("TESTING_PROFILE"); v == "" {
-		r.Steps = append(r.Steps,
-			resource.TestStep{
-				Config: getAccIncapsulaS3SiemConnectionConfigBasic(s3SiemConnectionName),
+			{
+				SkipFunc: isS3EnvVarExist,
+				Config:   getAccIncapsulaS3SiemConnectionConfigBasic(s3SiemConnectionName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemConnectionExists(s3SiemConnectionResource),
 					resource.TestCheckResourceAttr(s3SiemConnectionResource, "connection_name", s3SiemConnectionName),
 					resource.TestCheckResourceAttr(s3SiemConnectionResource, "storage_type", StorageTypeCustomerS3),
 				),
 			},
-			resource.TestStep{
+			{
 				ResourceName:            s3SiemConnectionResource,
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"secret_key"},
 				ImportStateIdFunc:       testACCStateSiemConnectionID(siemConnectionResourceType),
-			})
+			},
+		},
 	}
+
 	resource.Test(t, r)
 }
 
@@ -83,7 +101,8 @@ func TestAccSiemConnection_Update(t *testing.T) {
 		CheckDestroy: testAccIncapsulaSiemConnectionDestroy(siemConnectionResourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName),
+				SkipFunc: isS3EnvVarExist,
+				Config:   getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemConnectionExists(s3ArnSiemConnectionResource),
 					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "connection_name", s3ArnSiemConnectionName),
@@ -91,34 +110,33 @@ func TestAccSiemConnection_Update(t *testing.T) {
 				),
 			},
 			{
-				Config: getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionNameUpdated),
+				SkipFunc: isS3EnvVarExist,
+				Config:   getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemConnectionExists(s3ArnSiemConnectionResource),
 					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "connection_name", s3ArnSiemConnectionNameUpdated),
 					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "storage_type", StorageTypeCustomerS3Arn),
 				),
 			},
-		},
-	}
-
-	if v := os.Getenv("TESTING_PROFILE"); v == "" {
-		r.Steps = append(r.Steps,
-			resource.TestStep{
-				Config: getAccIncapsulaS3SiemConnectionConfigBasic(s3SiemConnectionName),
+			{
+				SkipFunc: isS3EnvVarExist,
+				Config:   getAccIncapsulaS3SiemConnectionConfigBasic(s3SiemConnectionName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemConnectionExists(s3SiemConnectionResource),
 					resource.TestCheckResourceAttr(s3SiemConnectionResource, "connection_name", s3SiemConnectionName),
 					resource.TestCheckResourceAttr(s3SiemConnectionResource, "storage_type", StorageTypeCustomerS3),
 				),
 			},
-			resource.TestStep{
-				Config: getAccIncapsulaS3SiemConnectionConfigBasic(s3SiemConnectionNameUpdated),
+			{
+				SkipFunc: isS3EnvVarExist,
+				Config:   getAccIncapsulaS3SiemConnectionConfigBasic(s3SiemConnectionNameUpdated),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemConnectionExists(s3SiemConnectionResource),
 					resource.TestCheckResourceAttr(s3SiemConnectionResource, "connection_name", s3SiemConnectionNameUpdated),
 					resource.TestCheckResourceAttr(s3SiemConnectionResource, "storage_type", StorageTypeCustomerS3),
 				),
-			})
+			},
+		},
 	}
 
 	resource.Test(t, r)
