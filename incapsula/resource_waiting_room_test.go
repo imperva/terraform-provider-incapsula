@@ -18,44 +18,141 @@ const waitingRoomConfigName = "testacc-terraform-waiting-room"
 const waitingRoomResource = waitingRoomResourceName + "." + waitingRoomConfigName
 
 func TestAccWaitingRoom_Basic(t *testing.T) {
+	var waitingRoomDTOResponse WaitingRoomDTO
+
 	log.Printf("========================BEGIN TEST========================")
 	log.Printf("[DEBUG]Running test resource_waiting_room_test.TestAccWaitingRoom_Basic")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: checkWaitingRoomDestroy,
+		CheckDestroy: testAccCheckWaitingRoomDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccWaitingRoomBasic(t),
+				Config: testAccWaitingRoomBasic(t, 100, 200),
 				Check: resource.ComposeTestCheckFunc(
-					//testCheckAccwaitingRoomAfterFullUpdate(),
+					testAccCheckWaitingRoomExists(&waitingRoomDTOResponse),
+					testAccCheckWaitingRoomThresholds(&waitingRoomDTOResponse, 100, 200),
 					resource.TestCheckResourceAttr(waitingRoomResource, "enabled", "true"),
 					resource.TestCheckResourceAttr(waitingRoomResource, "entrance_rate_threshold", "100"),
-					resource.TestCheckResourceAttr(waitingRoomResource, "concurrent_sessions_threshold", "150"),
+					resource.TestCheckResourceAttr(waitingRoomResource, "concurrent_sessions_threshold", "200"),
+				),
+			},
+			{
+				Config: testAccWaitingRoomEntranceRateOnly(t, 70),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWaitingRoomExists(&waitingRoomDTOResponse),
+					testAccCheckWaitingRoomThresholds(&waitingRoomDTOResponse, 70, 0),
+					resource.TestCheckResourceAttr(waitingRoomResource, "enabled", "true"),
+					resource.TestCheckResourceAttr(waitingRoomResource, "entrance_rate_threshold", "70"),
+					resource.TestCheckNoResourceAttr(waitingRoomResource, "concurrent_sessions_threshold"),
+				),
+			},
+			{
+				Config: testAccWaitingRoomConcurrentSessionsOnly(t, 50),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWaitingRoomExists(&waitingRoomDTOResponse),
+					testAccCheckWaitingRoomThresholds(&waitingRoomDTOResponse, 0, 50),
+					resource.TestCheckResourceAttr(waitingRoomResource, "enabled", "true"),
+					resource.TestCheckNoResourceAttr(waitingRoomResource, "entrance_rate_threshold"),
+					resource.TestCheckResourceAttr(waitingRoomResource, "concurrent_sessions_threshold", "50"),
 				),
 			},
 			{
 				ResourceName:      waitingRoomResource,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: getWaitingRoomImportString,
+				ImportStateIdFunc: testAccGetWaitingRoomImportString,
 			},
 		},
 	})
 }
 
-func testAccWaitingRoomBasic(t *testing.T) string {
+func testAccCheckWaitingRoomExists(waitingRoomDTOresponse *WaitingRoomDTO) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[waitingRoomResource]
+		if !ok {
+			return fmt.Errorf("Not found: %s", waitingRoomResource)
+		}
+
+		waitingRoomID, err := strconv.ParseInt(rs.Primary.ID, 10, 64)
+		if err != nil {
+			return fmt.Errorf("Error parsing ID %s to int", rs.Primary.ID)
+		}
+
+		siteID := rs.Primary.Attributes["site_id"]
+		if siteID == "" {
+			return fmt.Errorf("Incapsula Waiting Room with id %d doesn't have site ID", waitingRoomID)
+		}
+
+		client := testAccProvider.Meta().(*Client)
+
+		response, _ := client.ReadWaitingRoom(siteID, waitingRoomID)
+		if response == nil {
+			return fmt.Errorf("Failed to retrieve Waiting Room (id=%d)", waitingRoomID)
+		}
+
+		if response.Errors == nil && response.Data != nil {
+			*waitingRoomDTOresponse = response.Data[0]
+			return nil
+		}
+		return fmt.Errorf("resource %s was not updated correctly after full update", waitingRoomResource)
+	}
+}
+
+func testAccWaitingRoomBasic(t *testing.T, entranceRate int, concurrentSessions int) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 	resource "%s" "%s" {
 		site_id = incapsula_site.testacc-terraform-site.id
 		name = "testWaitingRoom%d"
 		enabled = true
-		entrance_rate_threshold = 100
-		concurrent_sessions_threshold = 150
-	}`, waitingRoomResourceName, waitingRoomConfigName, rand.New(rand.NewSource(time.Now().UnixNano())).Intn(1000))
+		entrance_rate_threshold = %d
+		concurrent_sessions_threshold = %d
+	}`, waitingRoomResourceName, waitingRoomConfigName, rand.New(rand.NewSource(time.Now().UnixNano())).Intn(1000), entranceRate, concurrentSessions)
 }
 
-func checkWaitingRoomDestroy(state *terraform.State) error {
+func testAccWaitingRoomEntranceRateOnly(t *testing.T, entranceRate int) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+	resource "%s" "%s" {
+		site_id = incapsula_site.testacc-terraform-site.id
+		name = "testWaitingRoom%d"
+		enabled = true
+		entrance_rate_threshold = %d
+	}`, waitingRoomResourceName, waitingRoomConfigName, rand.New(rand.NewSource(time.Now().UnixNano())).Intn(1000), entranceRate)
+}
+
+func testAccWaitingRoomConcurrentSessionsOnly(t *testing.T, concurrentSessions int) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+	resource "%s" "%s" {
+		site_id = incapsula_site.testacc-terraform-site.id
+		name = "testWaitingRoom%d"
+		enabled = true
+		concurrent_sessions_threshold = %d
+	}`, waitingRoomResourceName, waitingRoomConfigName, rand.New(rand.NewSource(time.Now().UnixNano())).Intn(1000), concurrentSessions)
+}
+
+func testAccCheckWaitingRoomThresholds(waitingRoomDTOresponse *WaitingRoomDTO, entranceRate int, concurrentSessions int) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		if entranceRate == 0 {
+			if waitingRoomDTOresponse.EntranceRateEnabled != false || waitingRoomDTOresponse.EntranceRateThreshold != 0 {
+				return fmt.Errorf("Expected disabled entrance threshold, found %d:", waitingRoomDTOresponse.EntranceRateThreshold)
+			}
+		} else if waitingRoomDTOresponse.EntranceRateEnabled == false || waitingRoomDTOresponse.EntranceRateThreshold == 0 {
+			return fmt.Errorf("Entrance rate disabled (should hav been %d)", entranceRate)
+		}
+
+		if concurrentSessions == 0 {
+			if waitingRoomDTOresponse.ConcurrentSessionsEnabled != false || waitingRoomDTOresponse.ConcurrentSessionsThreshold != 0 {
+				return fmt.Errorf("Expected disabled concurrent sessions, found %d:", waitingRoomDTOresponse.ConcurrentSessionsThreshold)
+			}
+		} else if waitingRoomDTOresponse.ConcurrentSessionsEnabled == false || waitingRoomDTOresponse.ConcurrentSessionsThreshold == 0 {
+			return fmt.Errorf("Concurrent sessions disabled (should hav been %d)", concurrentSessions)
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckWaitingRoomDestroy(state *terraform.State) error {
 	client := testAccProvider.Meta().(*Client)
 
 	for _, res := range state.RootModule().Resources {
@@ -90,7 +187,7 @@ func checkWaitingRoomDestroy(state *terraform.State) error {
 	return nil
 }
 
-func getWaitingRoomImportString(state *terraform.State) (string, error) {
+func testAccGetWaitingRoomImportString(state *terraform.State) (string, error) {
 	fmt.Println(state)
 	fmt.Println(state.RootModule().Resources)
 	for _, rs := range state.RootModule().Resources {
@@ -100,11 +197,11 @@ func getWaitingRoomImportString(state *terraform.State) (string, error) {
 
 		waitingRoomID, err := strconv.Atoi(rs.Primary.ID)
 		if err != nil {
-			return "", fmt.Errorf("Error parsing ID %v to int", rs.Primary.ID)
+			return "", fmt.Errorf("Error parsing ID %s to int", rs.Primary.ID)
 		}
 		siteID, err := strconv.Atoi(rs.Primary.Attributes["site_id"])
 		if err != nil {
-			return "", fmt.Errorf("Error parsing site_id %v to int", rs.Primary.Attributes["site_id"])
+			return "", fmt.Errorf("Error parsing site_id %s to int", rs.Primary.Attributes["site_id"])
 		}
 		return fmt.Sprintf("%d/%d", siteID, waitingRoomID), nil
 	}

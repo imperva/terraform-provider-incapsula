@@ -14,10 +14,10 @@ type WaitingRoomDTO struct {
 	Id                          int64  `json:"id,omitempty"`
 	AccountId                   int64  `json:"accountId,omitempty"`
 	Name                        string `json:"name"`
-	Description                 string `json:"description"`
+	Description                 string `json:"description,omitempty"`
 	Enabled                     bool   `json:"enabled"`
-	Filter                      string `json:"filter"`
-	HtmlTemplateBase64          string `json:"htmlTemplateBase64"`
+	Filter                      string `json:"filter,omitempty"`
+	HtmlTemplateBase64          string `json:"htmlTemplateBase64,omitempty"`
 	CreatedAt                   int64  `json:"createdAt,omitempty"`
 	LastModifiedAt              int64  `json:"lastModifiedAt,omitempty"`
 	LastModifiedBy              string `json:"lastModifiedBy,omitempty"`
