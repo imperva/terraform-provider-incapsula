@@ -146,3 +146,17 @@ const DeleteMtlsClientToImpervaCertifiateSiteAssociation = "delete_mtls_client_t
 
 const CreateSiteTlsSettings = "create_site_tls_settings"
 const ReadSiteTlsSettings = "read_site_tls_settings"
+
+const CreateAccountRole = "create_account_role"
+const ReadAccountRole = "read_account_role"
+const UpdateAccountRole = "update_account_role"
+const DeleteAccountRole = "delete_account_role"
+
+const ReadAccountAbilities = "read_account_abilities"
+const ReadAccountRoles = "read_account_roles"
+
+const CreateAccountUser = "create_account_user"
+const CreateSubAccountUser = "create_sub_account_user"
+const ReadAccountUser = "read_account_user"
+const UpdateAccountUser = "update_account_user"
+const DeleteAccountUser = "delete_account_user"
