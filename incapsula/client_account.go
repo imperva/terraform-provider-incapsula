@@ -84,6 +84,7 @@ type AccountStatusResponse struct {
 	DebugInfo                    struct {
 		IDInfo string `json:"id-info"`
 	} `json:"debug_info"`
+	AccountType string `json:"account_type"`
 }
 
 // AddAccount adds an account to be managed by Incapsula
