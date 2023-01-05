@@ -100,8 +100,8 @@ func TestClientGetDomainsForSiteBadJsonResponse(t *testing.T) {
 		t.Errorf("expected to get error")
 	}
 
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("[ERROR] Error status code 500 from Incapsula get domain details %s", siteID)) {
-		t.Errorf("Should have received an client error, got: %s", err)
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("[ERROR] Error parsing get domain details response for site ID %s: unexpected end of JSON input", siteID)) {
+		t.Errorf("Should have received client error, got: %s", err)
 	}
 
 	if addCertificateResponse != nil {
@@ -272,7 +272,7 @@ func TestClientAddDomainsForSiteErrorResponse(t *testing.T) {
 	}
 
 	log.Printf("expectin to get error. recieved: %s", err.Error())
-	if !strings.Contains(err.Error(), fmt.Sprintf("async update domains for site returned FAILED status")) {
+	if !strings.Contains(err.Error(), fmt.Sprintf("async update domains for siteId %s returned FAILED status", siteID)) {
 		t.Errorf("Should have received a client error, got: %s", err)
 	}
 }

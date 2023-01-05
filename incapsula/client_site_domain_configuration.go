@@ -17,7 +17,8 @@ type AsyncResponseDataDto struct {
 }
 
 type AsyncResponseDetailsDto struct {
-	Data []AsyncResponseDataDto `json:"data"`
+	Data   []AsyncResponseDataDto `json:"data"`
+	Errors []ApiErrorResponse     `json:"errors"`
 }
 
 type SiteDomainsExtraDetailsDto struct {
@@ -26,7 +27,8 @@ type SiteDomainsExtraDetailsDto struct {
 }
 
 type SiteDomainsExtraDetailsResponse struct {
-	Data []SiteDomainsExtraDetailsDto `json:"data"`
+	Data   []SiteDomainsExtraDetailsDto `json:"data"`
+	Errors []ApiErrorResponse           `json:"errors"`
 }
 
 type SiteDomainDetails struct {
@@ -43,24 +45,34 @@ type SiteDomainDetails struct {
 		LastDiscoveredTime int64  `json:"lastDiscoveredTime"`
 		CreationTime       int64  `json:"creationTime"`
 	} `json:"subDomains"`
-	CantDetachSubDomains bool   `json:"cantDetachSubDomains"`
-	ValidationMethod     string `json:"validationMethod"`
-	ValidationCode       string `json:"validationCode"`
-	Status               string `json:"status"`
-	CreationDate         int64  `json:"creationDate"`
+	CantDetachSubDomains bool               `json:"cantDetachSubDomains"`
+	ValidationMethod     string             `json:"validationMethod"`
+	ValidationCode       string             `json:"validationCode"`
+	Status               string             `json:"status"`
+	CreationDate         int64              `json:"creationDate"`
+	Errors               []ApiErrorResponse `json:"errors"`
 }
 
 type SiteDomainDetailsDto struct {
-	Errors []ApiError          `json:"errors"`
+	Errors []ApiErrorResponse  `json:"errors"`
 	Data   []SiteDomainDetails `json:"data"`
 }
 
 type BulkAddDomainsDto struct {
-	Data []DomainNameDto `json:"data"`
+	Data   []DomainNameDto    `json:"data"`
+	Errors []ApiErrorResponse `json:"errors"`
 }
 
 type DomainNameDto struct {
 	Name string `json:"name"`
+}
+
+type ApiErrorResponse struct {
+	ID     string         `json:"id"`
+	Status int            `json:"status"`
+	Title  string         `json:"title"`
+	Detail string         `json:"detail"`
+	Source ApiErrorSource `json:"source"`
 }
 
 func (c *Client) GetWebsiteDomains(siteId string) (*SiteDomainDetailsDto, error) {
@@ -79,21 +91,17 @@ func (c *Client) GetWebsiteDomains(siteId string) (*SiteDomainDetailsDto, error)
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	log.Printf("[DEBUG] Incapsula Get domain management response: %s\n", string(responseBody))
 
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("[ERROR] Error status code %d from Incapsula get domain details %s\n: %s\n%s", resp.StatusCode, siteId, err, string(responseBody))
-	}
-
 	var siteDomainDetailsResponse SiteDomainDetailsDto
 	err = json.Unmarshal([]byte(responseBody), &siteDomainDetailsResponse)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error parsing get domain details response for site ID %s: %s\nresponse: %s", siteId, err, string(responseBody))
 	}
 
-	if len(siteDomainDetailsResponse.Data) > 0 {
-		return &siteDomainDetailsResponse, nil
-	} else {
-		return nil, fmt.Errorf("domains for siteId %s not found", siteId)
+	if siteDomainDetailsResponse.Errors != nil && len(siteDomainDetailsResponse.Errors) > 0 {
+		return nil, fmt.Errorf("got error when trying to get domains for siteId %s: %s", siteId, siteDomainDetailsResponse.Errors[0].Detail)
 	}
+
+	return &siteDomainDetailsResponse, nil
 }
 
 func (c *Client) BulkUpdateDomainsToSite(siteID string, siteDomainDetails []SiteDomainDetails) error {
@@ -115,9 +123,7 @@ func (c *Client) BulkUpdateDomainsToSite(siteID string, siteDomainDetails []Site
 		return err
 	}
 
-	isStatusCompleted := false
-asyncStatusLoop:
-	for i := 1; i <= 15; i++ {
+	for i := 0; i < 15; i++ {
 		asyncResponseDataDto, err := checkForAsyncRequestStatus(c, siteID, resp.Data[0].Handler)
 		if err != nil {
 			return err
@@ -129,17 +135,13 @@ asyncStatusLoop:
 		case "IN_PROGRESS":
 			time.Sleep(10 * time.Second)
 		case "FAILED":
-			return fmt.Errorf("async update domains for site returned FAILED status")
+			return fmt.Errorf("async update domains for siteId %s returned FAILED status", siteID)
 		case "COMPLETED_SUCCESSFULLY":
-			isStatusCompleted = true
-			break asyncStatusLoop
+			return nil
 		}
 	}
 
-	if isStatusCompleted {
-		return nil
-	}
-	return fmt.Errorf("async request status timeout")
+	return fmt.Errorf("async request status for siteId %s reached timeout", siteID)
 }
 
 func checkForAsyncRequestStatus(c *Client, siteId string, requestUuid string) (*AsyncResponseDetailsDto, error) {
@@ -152,15 +154,16 @@ func checkForAsyncRequestStatus(c *Client, siteId string, requestUuid string) (*
 
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("[ERROR] Error status code %d from Incapsula get status for async request %s\n: %s\n%s", resp.StatusCode, requestUuid, err, string(responseBody))
-	}
-
 	var asyncResponseDetailsDto AsyncResponseDetailsDto
 	err = json.Unmarshal([]byte(responseBody), &asyncResponseDetailsDto)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error parsing async request status %s: %s\nresponse: %s", requestUuid, err, string(responseBody))
 	}
+
+	if asyncResponseDetailsDto.Errors != nil && len(asyncResponseDetailsDto.Errors) > 0 {
+		return nil, fmt.Errorf("got error when trying to get async update domains requst for siteId %s: %s", siteId, asyncResponseDetailsDto.Errors[0].Detail)
+	}
+
 	return &asyncResponseDetailsDto, nil
 }
 
@@ -180,14 +183,14 @@ func handleAddBulkRequest(c *Client, bulkAddDomainsDto BulkAddDomainsDto, siteId
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	log.Printf("[DEBUG] Incapsula update domain management response: %s\n", string(responseBody))
 
-	if resp.StatusCode != 202 {
-		return nil, fmt.Errorf("[ERROR] Error status code %d from Incapsula update domains for siteId %s\n: %s\n%s", resp.StatusCode, siteId, err, string(responseBody))
-	}
-
 	var asyncResponseDetailsDto AsyncResponseDetailsDto
 	err = json.Unmarshal([]byte(responseBody), &asyncResponseDetailsDto)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error parsing async request for update domains for siteId %s: %s\nresponse: %s", siteId, err, string(responseBody))
+	}
+
+	if asyncResponseDetailsDto.Errors != nil && len(asyncResponseDetailsDto.Errors) > 0 {
+		return nil, fmt.Errorf("update domains async request failed: %s", asyncResponseDetailsDto.Errors[0].Detail)
 	}
 	return &asyncResponseDetailsDto, nil
 }
@@ -195,7 +198,7 @@ func handleAddBulkRequest(c *Client, bulkAddDomainsDto BulkAddDomainsDto, siteId
 func verifyDomainsAmountBelowMaxAllowed(c *Client, siteId string, siteDomainDetails []SiteDomainDetails) error {
 	siteExtraDetails, err := GetSiteExtraDetails(c, siteId)
 	if err != nil {
-		fmt.Errorf(err.Error())
+		return err
 	}
 
 	var domainsAmountLimit = siteExtraDetails.MaxAllowedDomains
@@ -221,17 +224,18 @@ func GetSiteExtraDetails(c *Client, siteID string) (*SiteDomainsExtraDetailsDto,
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	log.Printf("[DEBUG] Incapsula get site domains extra details JSON response: %s\n", string(responseBody))
 
-	// Check the response code
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("[ERROR] Error status code %d from Incapsula get site domains extra details for siteId %s\n: %s\n%s", resp.StatusCode, siteID, err, string(responseBody))
-	}
-
-	// Dump JSON
 	var siteExtraDetailsResponse SiteDomainsExtraDetailsResponse
 	err = json.Unmarshal([]byte(responseBody), &siteExtraDetailsResponse)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error parsing add domains to site JSON response for site ID %s: %s\nresponse: %s", siteID, err, string(responseBody))
 	}
+	if siteExtraDetailsResponse.Errors != nil && len(siteExtraDetailsResponse.Errors) > 0 {
+		return nil, fmt.Errorf("got error when trying to get site extra details: %s", siteExtraDetailsResponse.Errors[0].Detail)
+	}
+	if len(siteExtraDetailsResponse.Data) > 0 {
+		return &siteExtraDetailsResponse.Data[0], nil
+	} else {
+		return nil, fmt.Errorf("fail to get extra data for siteId %s", siteID)
+	}
 
-	return &siteExtraDetailsResponse.Data[0], nil
 }
