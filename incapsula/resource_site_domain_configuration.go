@@ -106,14 +106,8 @@ func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if siteDomainDetailsDto.Errors != nil && len(siteDomainDetailsDto.Errors) > 0 {
-		if siteDomainDetailsDto.Errors[0].Status == "404" || siteDomainDetailsDto.Errors[0].Status == "400" {
-			log.Printf("[INFO] Operation not allowed: %s\n", siteDomainDetailsDto.Errors)
-			d.SetId("")
-			return nil
-		}
-
-		if siteDomainDetailsDto.Errors[0].Status == "500" {
-			log.Printf("[INFO] Internal Server Error: %s\n", siteDomainDetailsDto.Errors)
+		if siteDomainDetailsDto.Errors[0].Status == 404 || siteDomainDetailsDto.Errors[0].Status == 400 || siteDomainDetailsDto.Errors[0].Status == 401 {
+			log.Printf("[INFO] Operation not allowed: %s\n", siteDomainDetailsDto.Errors[0].Detail)
 			d.SetId("")
 			return nil
 		}
