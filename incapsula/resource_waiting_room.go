@@ -54,19 +54,17 @@ func resourceWaitingRoom() *schema.Resource {
 				Description: "whether this waiting room is enabled or not.",
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Computed:    true,
+				Default:    true,
 			},
 			"html_template_base64": {
 				Description: "The HTML template file path.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 			},
 			"filter": {
 				Description: "The rule conditions that determine on which sessions this waiting room applies. (no filter means the waiting room applies for the whole site)",
 				Type:        schema.TypeString,
 				Optional:    true,
-				Computed:    true,
 			},
 			"bots_action_in_queuing_mode": {
 				Description: "The waiting room bot handling action. Determines the waiting room behavior for legitimate bots trying to access your website during peak time",
