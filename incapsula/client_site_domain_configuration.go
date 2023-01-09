@@ -97,10 +97,6 @@ func (c *Client) GetWebsiteDomains(siteId string) (*SiteDomainDetailsDto, error)
 		return nil, fmt.Errorf("[ERROR] Error parsing get domain details response for site ID %s: %s\nresponse: %s", siteId, err, string(responseBody))
 	}
 
-	if siteDomainDetailsResponse.Errors != nil && len(siteDomainDetailsResponse.Errors) > 0 {
-		return nil, fmt.Errorf("got error when trying to get domains for siteId %s: %s", siteId, siteDomainDetailsResponse.Errors[0].Detail)
-	}
-
 	return &siteDomainDetailsResponse, nil
 }
 
