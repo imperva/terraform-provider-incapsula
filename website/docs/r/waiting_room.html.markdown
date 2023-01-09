@@ -22,7 +22,7 @@ resource "incapsula_waiting_room" "example-waiting-room" {
     description = "Waiting room description"
     enabled = true
     html_template_base64 = filebase64("${"path/to/your/template.html"}")
-    filter = >>>EOF
+    filter = <<EOF
         URL == "/example"
     EOF
     bots_action_in_queuing_mode = "WAIT_IN_LINE"
