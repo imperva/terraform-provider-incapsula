@@ -17,7 +17,7 @@ and the destination for the log files. The destination is defined by the <connec
 ## Example Usage
 
 ```hcl
-resource "incapsula_siem_connection_s3" "example_siem_connection"{
+resource "incapsula_siem_connection" "example_siem_connection_basic_auth"{
 	accountId = "1234567"
 	connectionName = "CWAF SIEM-LOGS CONNECTION"
   	storageType = "CUSTOMER_S3_ARN"
@@ -30,7 +30,7 @@ resource "incapsula_siem_log_configuration" "example_siem_log_configuration_abp"
   	producer = "ABP"
 	datasets = ["ABP"]
   	enabled = true
-  	connectionId = incapsula_siem_connection_s3.example_siem_connection_abp.id
+  	connectionId = incapsula_siem_connection.example_siem_connection_basic_auth.id
 
 }
 
@@ -40,7 +40,7 @@ resource "incapsula_siem_log_configuration" "example_siem_log_configuration_nets
   	producer = "NETSEC"
 	datasets = ["CONNECTION", "IP"]
   	enabled = true
-  	connectionId = incapsula_siem_connection_s3.example_siem_connection_netsec.id
+  	connectionId = incapsula_siem_connection.example_siem_connection_basic_auth.id
 
 }
 ```
