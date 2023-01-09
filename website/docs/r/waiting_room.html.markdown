@@ -11,7 +11,7 @@ description: |-
 Provides a waiting room resource.
 A waiting room controls the traffic to the website during peak periods when the origin server is unable to handle the load, and route the website visitors to a virtual waiting room when their requests can't be handled immediately.
 
-**Note:** at least one of the threshold strategies (entranceRateThreshold / concurrentSessionsThreshold) must be configured.
+**Note:** at least one of the threshold strategies (entrance_rate_threshold / concurrent_sessions_threshold) must be configured.
 
 ## Example Usage
 
