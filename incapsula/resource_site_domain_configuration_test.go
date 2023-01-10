@@ -58,11 +58,20 @@ func testCheckIncapsulaSiteDomainConfExists(name string) resource.TestCheckFunc 
 }
 
 func testAccCheckIncapsulaSiteDomainConfGoodConfig(t *testing.T, domain string) string {
-	result := testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+	result := checkIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "%s" "%s" {
   site_id=incapsula_site.testacc-terraform-site.id
   domain {name="%s"}
 depends_on = ["%s"]
 }`, siteDomainConfResourceName, siteDomainConfResource, domain, siteResourceName)
 	return result
+}
+
+func checkIncapsulaSiteConfigBasic(domain string) string {
+	return fmt.Sprintf(`
+		resource "incapsula_site" "testacc-terraform-site" {
+			domain = "%s"
+		}`,
+		domain,
+	)
 }
