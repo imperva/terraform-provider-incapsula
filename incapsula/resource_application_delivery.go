@@ -2,10 +2,11 @@ package incapsula
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 const defaultPortTo = 80
@@ -115,7 +116,11 @@ func resourceApplicationDelivery() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Allows supporting browsers to take advantage of the performance enhancements provided by HTTP/2 for your website. Non-supporting browsers can connect via HTTP/1.0 or HTTP/1.1.",
 				Optional:    true,
-				Default:     false,
+			},
+			"enable_http2_value": {
+				Type:        schema.TypeString,
+				Description: "String value of enable_http2",
+				Computed:    true,
 			},
 			"http2_to_origin": {
 				Type:        schema.TypeBool,
@@ -304,7 +309,10 @@ func resourceApplicationDeliveryRead(d *schema.ResourceData, m interface{}) erro
 	d.Set("tcp_pre_pooling", applicationDelivery.Network.TcpPrePooling)
 	d.Set("origin_connection_reuse", applicationDelivery.Network.OriginConnectionReuse)
 	d.Set("support_non_sni_clients", applicationDelivery.Network.SupportNonSniClients)
-	d.Set("enable_http2", applicationDelivery.Network.EnableHttp2)
+	d.Set("enable_http2", *applicationDelivery.Network.EnableHttp2)
+	if applicationDelivery.Network.EnableHttp2 != nil {
+		d.Set("enable_http2_value", strconv.FormatBool(*applicationDelivery.Network.EnableHttp2))
+	}
 	d.Set("http2_to_origin", applicationDelivery.Network.Http2ToOrigin)
 	d.Set("port_to", getPortTo(applicationDelivery.Network.Port.To, defaultPortTo))
 	d.Set("ssl_port_to", getPortTo(applicationDelivery.Network.SslPort.To, defaultSslPortTo))
@@ -347,10 +355,17 @@ func resourceApplicationDeliveryUpdate(d *schema.ResourceData, m interface{}) er
 		TcpPrePooling:         d.Get("tcp_pre_pooling").(bool),
 		OriginConnectionReuse: d.Get("origin_connection_reuse").(bool),
 		SupportNonSniClients:  d.Get("support_non_sni_clients").(bool),
-		EnableHttp2:           d.Get("enable_http2").(bool),
 		Http2ToOrigin:         d.Get("http2_to_origin").(bool),
 		Port:                  Port{To: strconv.Itoa(d.Get("port_to").(int))},
 		SslPort:               SslPort{To: strconv.Itoa(d.Get("ssl_port_to").(int))},
+	}
+	enable_http2 := new(bool)
+	if d.Get("enable_http2").(bool) == true {
+		*enable_http2 = true
+		network.EnableHttp2 = enable_http2
+	} else if d.Get("enable_http2_value").(string) != "" {
+		*enable_http2 = false
+		network.EnableHttp2 = enable_http2
 	}
 
 	redirection := Redirection{
