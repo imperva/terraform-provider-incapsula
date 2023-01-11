@@ -91,6 +91,14 @@ func resourceAccountUser() *schema.Resource {
 
 		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
 			if diff.HasChanges("email", "first_name", "last_name") {
+				emailOldStatusRaw, _ := diff.GetChange("email")
+				firstNameOldStatusRaw, _ := diff.GetChange("first_name")
+				lastNameOldStatusRaw, _ := diff.GetChange("last_name")
+				if (diff.HasChange("email") && emailOldStatusRaw.(string) == "") ||
+					(diff.HasChange("first_name") && firstNameOldStatusRaw.(string) == "") ||
+					(diff.HasChange("last_name") && lastNameOldStatusRaw.(string) == "") {
+					return nil
+				}
 				return fmt.Errorf("[ERROR] Cannot update email, first name or last name on a user")
 			}
 			return nil
