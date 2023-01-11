@@ -18,7 +18,7 @@ type AbilitiesDetailsDTO struct {
 
 func dataSourceAccountPermissions() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: dataSourceClientAppsRead,
+		ReadContext: dataSourceAccountPermissionsRead,
 
 		Description: "Provides the account permission of a given account.",
 
@@ -60,7 +60,7 @@ func dataSourceAccountPermissions() *schema.Resource {
 	}
 }
 
-func dataSourceClientAppsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceAccountPermissionsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 
 	accountId := d.Get("account_id").(int)
