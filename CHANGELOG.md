@@ -1,3 +1,13 @@
+## 3.13.0 (Jan 8, 2023)
+
+FEATURES:
+
+* **New Resource:** `incapsula_account_role`
+* **New Resource:** `incapsula_account_user`
+
+* **New DataSource:** `incapsula_account_permissions`
+
+
 ## 3.12.0 (Dec 11, 2022)
 
 IMPROVEMENTS:
