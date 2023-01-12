@@ -360,12 +360,14 @@ func resourceApplicationDeliveryUpdate(d *schema.ResourceData, m interface{}) er
 		SslPort:               SslPort{To: strconv.Itoa(d.Get("ssl_port_to").(int))},
 	}
 	enable_http2 := new(bool)
-	if d.Get("enable_http2").(bool) == true {
-		*enable_http2 = true
-		network.EnableHttp2 = enable_http2
-	} else if d.Get("enable_http2_value").(string) != "" {
-		*enable_http2 = false
-		network.EnableHttp2 = enable_http2
+	if d.HasChange("enable_http2") {
+		if d.Get("enable_http2").(bool) == true {
+			*enable_http2 = true
+			network.EnableHttp2 = enable_http2
+		} else if d.Get("enable_http2_value").(string) != "" {
+			*enable_http2 = false
+			network.EnableHttp2 = enable_http2
+		}
 	}
 
 	redirection := Redirection{
