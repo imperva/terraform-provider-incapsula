@@ -161,6 +161,10 @@ const ReadAccountUser = "read_account_user"
 const UpdateAccountUser = "update_account_user"
 const DeleteAccountUser = "delete_account_user"
 
+const UpdateDomain = "update_domain"
+const ReadDomain = "read_domain"
+const ReadDomainExtraDetails = "read_domain_extra_details"
+
 const CreateSiemConnection = "create_siem_connection"
 const ReadSiemConnection = "read_siem_connection"
 const UpdateSiemConnection = "update_siem_connection"
