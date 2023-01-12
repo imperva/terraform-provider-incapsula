@@ -8,3 +8,4 @@ incapsula/c.out
 terraform-provider-incapsula
 .idea/
 .tmp/
+vendor/
