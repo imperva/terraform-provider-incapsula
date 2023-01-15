@@ -1,3 +1,12 @@
+## 3.14.0 (Jan 15, 2023)
+
+FEATURES:
+
+* **New Resource:** `incapsula_site_domain_configuration`
+* **New Resource:** `incapsula_siem_log_configuration`
+* **New Resource:** `incapsula_siem_connection`
+
+
 ## 3.13.0 (Jan 8, 2023)
 
 FEATURES:
