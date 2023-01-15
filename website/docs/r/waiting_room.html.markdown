@@ -38,19 +38,35 @@ resource "incapsula_waiting_room" "example-waiting-room" {
 The following arguments are supported:
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
+
 * `name` - (Required) The waiting room name. Must be unique across all waiting room of the site.
+
 * `description` - (Optional) The waiting room description.
+
 * `enabled` - (Optional) whether this waiting room is enabled or not. **default:** true.
-* `html_template_base64` - (Optional) The HTML template file path. A default Incapsula template is used in case one isn't provided. The following placeholders can be used to insert dynamic information:
+
+* `html_template_base64` - (Optional) The HTML template file path in Base64 format. A default Incapsula template is used in case one isn't provided. The following placeholders can be used to insert dynamic information:
+  * `$WAITING_ROOM_CONFIG$` - Calls a script that periodically updates the status of the user, and reloads the page when the user is allowed to enter the website from the waiting room. This parameter is mandatory and should not be modified or deleted.
+  * `$WAITING_ROOM_LOADER$` - Used to validate the loading of the page. This parameter is mandatory and should not be modified or deleted.
+  * `$WAITING_ROOM_WRAPPER$` - Used to validate the content of the template. This parameter is mandatory and should not be modified or deleted.
+  * `$WAITING_ROOM_POSITION_IN_LINE$` - Used to display the user's position in the waiting room queue.
+  * `$WAITING_ROOM_LAST_STATUS_UPDATE$` - Used to display the time of the last status update.
+  * `$ESTIMATED_TIME_TO_WAIT$` - Estimated time to wait.
+
 * `filter` - (Optional) The condition that determines on which sessions this waiting room applies. **default:** no filter (i.e. the room applies to the whole website and all users)
+
 * `bots_action_in_queuing_mode` - (Optional) The waiting room bot handling action. Determines the waiting room behavior for legitimate bots trying to access your website during peak time. Applies only when the activation threshold has been passed and visitors are being sent to the queue. Possible values:
-- `WAIT_IN_LINE` - Wait in line alongside regular users.
-- `BYPASS` - Bypass the queue.
-- `BLOCK` - Block this request.
+  * `WAIT_IN_LINE` - Wait in line alongside regular users.
+  * `BYPASS` - Bypass the queue.
+  * `BLOCK` - Block this request.
 **default:** `WAIT_IN_LINE`
+
 * `entrance_rate_threshold` - (Optional) The entrance rate activation threshold of the waiting room. The waiting room is activated when sessions per minute exceed the specified value. Minimum of 60 users per minute.
+
 * `concurrent_sessions_threshold` - (Optional) The active users activation threshold of the waiting room. The waiting room is activated when number of active users reached specified value. Must be a positive number.
+
 * `inactivity_timeout` - (Optional, Mandatory if concurrentSessionsThreshold is used) Inactivity timeout, from 1 to 30 minutes. If waiting room conditions that limit the scope of the waiting room to a subset of the website have been defined, the user is considered active only when navigating the pages in scope of the conditions. A user who is inactive for a longer period of time is considered as having left the site. On returning to the site, the user needs to wait in line again if the waiting room is active. **Default:** 5 minutes.
+
 * `queue_inactivity_timeout` - (Optional) Queue inactivity timeout, from 1 to 10 minutes. A user in the waiting room who is inactive for a longer period of time is considered as having left the queue. On returning to the site, the user moves to the end of the queue and needs to wait in line again if the waiting room is active. **default:** 1 minute.
 
 ## Attributes Reference
