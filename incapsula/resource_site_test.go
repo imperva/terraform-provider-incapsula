@@ -33,7 +33,7 @@ func TestAccIncapsulaSite_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaSiteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaSiteConfigBasic(generatedDomain),
+				Config: testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(nil)),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiteExists(siteResourceName),
 					resource.TestCheckResourceAttr(siteResourceName, "domain", generatedDomain),
@@ -108,7 +108,6 @@ func testAccCheckIncapsulaSiteConfigBasic(domain string) string {
 	return fmt.Sprintf(`
 		resource "incapsula_site" "testacc-terraform-site" {
 			domain = "%s"
-			domain_validation = "cname"
 		}`,
 		domain,
 	)
