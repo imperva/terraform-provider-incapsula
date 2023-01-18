@@ -135,6 +135,12 @@ func resourceWaitingRoomCreate(ctx context.Context, data *schema.ResourceData, m
 	var diags diag.Diagnostics
 	siteID := data.Get("site_id").(string)
 
+	thresholdSettings := ThresholdSettings{
+		EntranceRateThreshold:       data.Get("entrance_rate_threshold").(int),
+		ConcurrentSessionsThreshold: data.Get("concurrent_sessions_threshold").(int),
+		InactivityTimeout:           data.Get("inactivity_timeout").(int),
+	}
+
 	waitingRoom := WaitingRoomDTO{
 		Name:                        data.Get("name").(string),
 		Description:                 data.Get("description").(string),
@@ -142,18 +148,16 @@ func resourceWaitingRoomCreate(ctx context.Context, data *schema.ResourceData, m
 		HtmlTemplateBase64:          data.Get("html_template_base64").(string),
 		Enabled:                     data.Get("enabled").(bool),
 		BotsActionInQueuingMode:     data.Get("bots_action_in_queuing_mode").(string),
-		EntranceRateThreshold:       data.Get("entrance_rate_threshold").(int),
-		ConcurrentSessionsThreshold: data.Get("concurrent_sessions_threshold").(int),
 		QueueInactivityTimeout:      data.Get("queue_inactivity_timeout").(int),
-		InactivityTimeout:           data.Get("inactivity_timeout").(int),
+		ThresholdSettings:           thresholdSettings,
 	}
 
-	if waitingRoom.EntranceRateThreshold != 0 {
-		waitingRoom.EntranceRateEnabled = true
+	if waitingRoom.ThresholdSettings.EntranceRateThreshold != 0 {
+		waitingRoom.ThresholdSettings.EntranceRateEnabled = true
 	}
 
-	if waitingRoom.ConcurrentSessionsThreshold != 0 {
-		waitingRoom.ConcurrentSessionsEnabled = true
+	if waitingRoom.ThresholdSettings.ConcurrentSessionsThreshold != 0 {
+		waitingRoom.ThresholdSettings.ConcurrentSessionsEnabled = true
 	}
 
 	waitingRoomDTOResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
@@ -225,13 +229,13 @@ func resourceWaitingRoomRead(ctx context.Context, data *schema.ResourceData, m i
 	data.Set("html_template_base64", waitingRoom.HtmlTemplateBase64)
 	data.Set("filter", waitingRoom.Filter)
 	data.Set("bots_action_in_queuing_mode", waitingRoom.BotsActionInQueuingMode)
-	if waitingRoom.EntranceRateEnabled {
-		data.Set("entrance_rate_threshold", waitingRoom.EntranceRateThreshold)
+	if waitingRoom.ThresholdSettings.EntranceRateEnabled {
+		data.Set("entrance_rate_threshold", waitingRoom.ThresholdSettings.EntranceRateThreshold)
 	}
-	if waitingRoom.ConcurrentSessionsEnabled {
-		data.Set("concurrent_sessions_threshold", waitingRoom.ConcurrentSessionsThreshold)
+	if waitingRoom.ThresholdSettings.ConcurrentSessionsEnabled {
+		data.Set("concurrent_sessions_threshold", waitingRoom.ThresholdSettings.ConcurrentSessionsThreshold)
 	}
-	data.Set("inactivity_timeout", waitingRoom.InactivityTimeout)
+	data.Set("inactivity_timeout", waitingRoom.ThresholdSettings.InactivityTimeout)
 	data.Set("queue_inactivity_timeout", waitingRoom.QueueInactivityTimeout)
 	data.Set("account_id", strconv.FormatInt(waitingRoom.AccountId, 10))
 	data.Set("created_at", strconv.FormatInt(waitingRoom.CreatedAt, 10))
@@ -257,6 +261,12 @@ func resourceWaitingRoomUpdate(ctx context.Context, data *schema.ResourceData, m
 		}}
 	}
 
+	thresholdSettings := ThresholdSettings{
+		EntranceRateThreshold:       data.Get("entrance_rate_threshold").(int),
+		ConcurrentSessionsThreshold: data.Get("concurrent_sessions_threshold").(int),
+		InactivityTimeout:           data.Get("inactivity_timeout").(int),
+	}
+
 	waitingRoom := WaitingRoomDTO{
 		Id:                          waitingRoomID,
 		Name:                        data.Get("name").(string),
@@ -265,18 +275,16 @@ func resourceWaitingRoomUpdate(ctx context.Context, data *schema.ResourceData, m
 		HtmlTemplateBase64:          data.Get("html_template_base64").(string),
 		Enabled:                     data.Get("enabled").(bool),
 		BotsActionInQueuingMode:     data.Get("bots_action_in_queuing_mode").(string),
-		EntranceRateThreshold:       data.Get("entrance_rate_threshold").(int),
-		ConcurrentSessionsThreshold: data.Get("concurrent_sessions_threshold").(int),
 		QueueInactivityTimeout:      data.Get("queue_inactivity_timeout").(int),
-		InactivityTimeout:           data.Get("inactivity_timeout").(int),
+		ThresholdSettings:           thresholdSettings,
 	}
 
-	if waitingRoom.EntranceRateThreshold != 0 {
-		waitingRoom.EntranceRateEnabled = true
+	if waitingRoom.ThresholdSettings.EntranceRateThreshold != 0 {
+		waitingRoom.ThresholdSettings.EntranceRateEnabled = true
 	}
 
-	if waitingRoom.ConcurrentSessionsThreshold != 0 {
-		waitingRoom.ConcurrentSessionsEnabled = true
+	if waitingRoom.ThresholdSettings.ConcurrentSessionsThreshold != 0 {
+		waitingRoom.ThresholdSettings.ConcurrentSessionsEnabled = true
 	}
 
 	waitingRoomDTOResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)

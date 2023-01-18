@@ -158,23 +158,23 @@ func testAccWaitingRoomConcurrentSessionsOnly(t *testing.T, concurrentSessions i
 func testAccCheckWaitingRoomThresholds(waitingRoomDTOresponse *WaitingRoomDTO, entranceRate int, concurrentSessions int, inactivityTimeout int, queueInactivityTimeout int) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		if entranceRate == 0 {
-			if waitingRoomDTOresponse.EntranceRateEnabled != false || waitingRoomDTOresponse.EntranceRateThreshold != 0 {
-				return fmt.Errorf("Expected disabled entrance threshold, found %d:", waitingRoomDTOresponse.EntranceRateThreshold)
+			if waitingRoomDTOresponse.ThresholdSettings.EntranceRateEnabled != false || waitingRoomDTOresponse.ThresholdSettings.EntranceRateThreshold != 0 {
+				return fmt.Errorf("Expected disabled entrance threshold, found %d:", waitingRoomDTOresponse.ThresholdSettings.EntranceRateThreshold)
 			}
-		} else if waitingRoomDTOresponse.EntranceRateEnabled == false || waitingRoomDTOresponse.EntranceRateThreshold == 0 {
+		} else if waitingRoomDTOresponse.ThresholdSettings.EntranceRateEnabled == false || waitingRoomDTOresponse.ThresholdSettings.EntranceRateThreshold == 0 {
 			return fmt.Errorf("Entrance rate disabled (should hav been %d)", entranceRate)
 		}
 
 		if concurrentSessions == 0 {
-			if waitingRoomDTOresponse.ConcurrentSessionsEnabled != false || waitingRoomDTOresponse.ConcurrentSessionsThreshold != 0 {
-				return fmt.Errorf("Expected disabled concurrent sessions, found %d:", waitingRoomDTOresponse.ConcurrentSessionsThreshold)
+			if waitingRoomDTOresponse.ThresholdSettings.ConcurrentSessionsEnabled != false || waitingRoomDTOresponse.ThresholdSettings.ConcurrentSessionsThreshold != 0 {
+				return fmt.Errorf("Expected disabled concurrent sessions, found %d:", waitingRoomDTOresponse.ThresholdSettings.ConcurrentSessionsThreshold)
 			}
-		} else if waitingRoomDTOresponse.ConcurrentSessionsEnabled == false || waitingRoomDTOresponse.ConcurrentSessionsThreshold == 0 {
+		} else if waitingRoomDTOresponse.ThresholdSettings.ConcurrentSessionsEnabled == false || waitingRoomDTOresponse.ThresholdSettings.ConcurrentSessionsThreshold == 0 {
 			return fmt.Errorf("Concurrent sessions disabled (should hav been %d)", concurrentSessions)
 		}
 
-		if waitingRoomDTOresponse.InactivityTimeout != inactivityTimeout {
-			return fmt.Errorf("Wrong inactivity timeout: expected: %d, actual: %d", inactivityTimeout, waitingRoomDTOresponse.InactivityTimeout)
+		if waitingRoomDTOresponse.ThresholdSettings.InactivityTimeout != inactivityTimeout {
+			return fmt.Errorf("Wrong inactivity timeout: expected: %d, actual: %d", inactivityTimeout, waitingRoomDTOresponse.ThresholdSettings.InactivityTimeout)
 		}
 
 		if waitingRoomDTOresponse.QueueInactivityTimeout != queueInactivityTimeout {

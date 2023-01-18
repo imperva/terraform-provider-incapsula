@@ -16,11 +16,15 @@ func TestClientCreateWaitingRoomBadConnection(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
 
+	thresholdSettings := ThresholdSettings{
+		EntranceRateEnabled: true,
+	}
+
 	waitingRoom := WaitingRoomDTO{
 		Name:                   "waiting room 1",
 		Enabled:                true,
 		QueueInactivityTimeout: 5,
-		EntranceRateEnabled:    true,
+		ThresholdSettings:      thresholdSettings,
 	}
 
 	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
@@ -54,11 +58,15 @@ func TestClientCreateWaitingRoomBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
+	thresholdSettings := ThresholdSettings{
+		EntranceRateEnabled: true,
+	}
+
 	waitingRoom := WaitingRoomDTO{
 		Name:                   "waiting room 1",
 		Enabled:                true,
 		QueueInactivityTimeout: 5,
-		EntranceRateEnabled:    true,
+		ThresholdSettings:      thresholdSettings,
 	}
 
 	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
@@ -91,11 +99,15 @@ func TestClientCreateWaitingRoomBadStatusCodeWithEmptyBody(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
+	thresholdSettings := ThresholdSettings{
+		EntranceRateEnabled: true,
+	}
+
 	waitingRoom := WaitingRoomDTO{
 		Name:                   "waiting room 1",
 		Enabled:                true,
 		QueueInactivityTimeout: 5,
-		EntranceRateEnabled:    true,
+		ThresholdSettings:      thresholdSettings,
 	}
 
 	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
@@ -129,11 +141,15 @@ func TestClientCreateWaitingRoomBadStatusCode(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
+	thresholdSettings := ThresholdSettings{
+		EntranceRateEnabled: true,
+	}
+
 	waitingRoom := WaitingRoomDTO{
 		Name:                   "waiting room 1",
 		Enabled:                true,
 		QueueInactivityTimeout: 5,
-		EntranceRateEnabled:    true,
+		ThresholdSettings:      thresholdSettings,
 	}
 
 	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
@@ -166,11 +182,15 @@ func TestClientCreateWaitingRoomEmptyBody(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
+	thresholdSettings := ThresholdSettings{
+		EntranceRateEnabled: true,
+	}
+
 	waitingRoom := WaitingRoomDTO{
 		Name:                   "waiting room 1",
 		Enabled:                true,
 		QueueInactivityTimeout: 5,
-		EntranceRateEnabled:    true,
+		ThresholdSettings:      thresholdSettings,
 	}
 
 	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
@@ -197,18 +217,22 @@ func TestClientCreateWaitingRoomInvalidJSONValue(t *testing.T) {
 			t.Errorf("Should have have hit %s %s endpoint. Got: %s %s", "POST", endpoint, req.Method, req.URL.String())
 		}
 		rw.WriteHeader(http.StatusCreated)
-		rw.Write([]byte(`{"data": [{"name":"waiting room 1","description":"","enabled":true,"htmlTemplateBase64":"","filter":"","botsActionInQueuingMode":"","queueInactivityTimeout":5,"isEntranceRateEnabled":true,"entranceRateThreshold":0,"isConcurrentSessionsEnabled":5,"concurrentSessionsThreshold":0,"inactivityTimeout":0}]}`))
+		rw.Write([]byte(`{"data": [{"name":"waiting room 1","description":"","enabled":true,"htmlTemplateBase64":"","filter":"","botsActionInQueuingMode":"","queueInactivityTimeout":5,"thresholdSettings": {"isEntranceRateEnabled":true,"entranceRateThreshold":0,"isConcurrentSessionsEnabled":5,"concurrentSessionsThreshold":0,"inactivityTimeout":0}}]}`))
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
+	thresholdSettings := ThresholdSettings{
+		EntranceRateEnabled: true,
+	}
+
 	waitingRoom := WaitingRoomDTO{
 		Name:                   "waiting room 1",
 		Enabled:                true,
 		QueueInactivityTimeout: 5,
-		EntranceRateEnabled:    true,
+		ThresholdSettings:      thresholdSettings,
 	}
 
 	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
@@ -235,19 +259,23 @@ func TestClientCreateWaitingRoomValidResponse(t *testing.T) {
 			t.Errorf("Should have have hit %s %s endpoint. Got: %s %s", "POST", endpoint, req.Method, req.URL.String())
 		}
 		rw.WriteHeader(http.StatusCreated)
-		rw.Write([]byte(`{"data": [{"id": 1, "accountId":1234, "name":"waiting room 1","description":"","enabled":true,"htmlTemplateBase64":"","filter":"","botsActionInQueuingMode":"WAIT_IN_LINE","queueInactivityTimeout":5,"isEntranceRateEnabled":true,"entranceRateThreshold":500,"isConcurrentSessionsEnabled":false,"concurrentSessionsThreshold":0,"inactivityTimeout":5}]}`))
+		rw.Write([]byte(`{"data": [{"id": 1, "accountId":1234, "name":"waiting room 1","description":"","enabled":true,"htmlTemplateBase64":"","filter":"","botsActionInQueuingMode":"WAIT_IN_LINE","queueInactivityTimeout":5,"thresholdSettings": {"isEntranceRateEnabled":true,"entranceRateThreshold":500,"isConcurrentSessionsEnabled":false,"concurrentSessionsThreshold":0,"inactivityTimeout":5}}]}`))
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
+	thresholdSettings := ThresholdSettings{
+		EntranceRateEnabled:   true,
+		EntranceRateThreshold: 500,
+	}
+
 	waitingRoom := WaitingRoomDTO{
 		Name:                   "waiting room 1",
 		Enabled:                true,
 		QueueInactivityTimeout: 5,
-		EntranceRateEnabled:    true,
-		EntranceRateThreshold:  500,
+		ThresholdSettings:      thresholdSettings,
 	}
 
 	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
@@ -269,7 +297,7 @@ func TestClientCreateWaitingRoomValidResponse(t *testing.T) {
 	if createWaitingRoomResponse.Data[0].Name != "waiting room 1" {
 		t.Errorf("Waiting Room name doesn't match")
 	}
-	if !createWaitingRoomResponse.Data[0].EntranceRateEnabled || createWaitingRoomResponse.Data[0].ConcurrentSessionsEnabled || createWaitingRoomResponse.Data[0].EntranceRateThreshold != 500 || createWaitingRoomResponse.Data[0].ConcurrentSessionsThreshold != 0 || createWaitingRoomResponse.Data[0].InactivityTimeout != 5 {
+	if !createWaitingRoomResponse.Data[0].ThresholdSettings.EntranceRateEnabled || createWaitingRoomResponse.Data[0].ThresholdSettings.ConcurrentSessionsEnabled || createWaitingRoomResponse.Data[0].ThresholdSettings.EntranceRateThreshold != 500 || createWaitingRoomResponse.Data[0].ThresholdSettings.ConcurrentSessionsThreshold != 0 || createWaitingRoomResponse.Data[0].ThresholdSettings.InactivityTimeout != 5 {
 		t.Errorf("Thresholds don't match")
 	}
 }
@@ -432,7 +460,7 @@ func TestClientReadWaitingRoomValidResponse(t *testing.T) {
 			t.Errorf("Should have have hit %s %s endpoint. Got: %s %s", "GET", endpoint, req.Method, req.URL.String())
 		}
 		rw.WriteHeader(http.StatusOK)
-		rw.Write([]byte(`{"data": [{"id": 1, "accountId":1234, "name":"waiting room 1","description":"","enabled":true,"htmlTemplateBase64":"","filter":"","botsActionInQueuingMode":"WAIT_IN_LINE","queueInactivityTimeout":5,"isEntranceRateEnabled":true,"entranceRateThreshold":500,"concurrentSessionsThreshold":0,"inactivityTimeout":5}]}`))
+		rw.Write([]byte(`{"data": [{"id": 1, "accountId":1234, "name":"waiting room 1","description":"","enabled":true,"htmlTemplateBase64":"","filter":"","botsActionInQueuingMode":"WAIT_IN_LINE","queueInactivityTimeout":5,"thresholdSettings": {"isEntranceRateEnabled":true,"entranceRateThreshold":500,"concurrentSessionsThreshold":0,"inactivityTimeout":5}}]}`))
 	}))
 	defer server.Close()
 
@@ -458,7 +486,7 @@ func TestClientReadWaitingRoomValidResponse(t *testing.T) {
 	if readWaitingRoomResponse.Data[0].Name != "waiting room 1" {
 		t.Errorf("Waiting Room name doesn't match")
 	}
-	if !readWaitingRoomResponse.Data[0].EntranceRateEnabled || readWaitingRoomResponse.Data[0].ConcurrentSessionsEnabled || readWaitingRoomResponse.Data[0].EntranceRateThreshold != 500 || readWaitingRoomResponse.Data[0].ConcurrentSessionsThreshold != 0 || readWaitingRoomResponse.Data[0].InactivityTimeout != 5 {
+	if !readWaitingRoomResponse.Data[0].ThresholdSettings.EntranceRateEnabled || readWaitingRoomResponse.Data[0].ThresholdSettings.ConcurrentSessionsEnabled || readWaitingRoomResponse.Data[0].ThresholdSettings.EntranceRateThreshold != 500 || readWaitingRoomResponse.Data[0].ThresholdSettings.ConcurrentSessionsThreshold != 0 || readWaitingRoomResponse.Data[0].ThresholdSettings.InactivityTimeout != 5 {
 		t.Errorf("Thresholds don't match")
 	}
 }
@@ -471,11 +499,15 @@ func TestClientUpdateWaitingRoomBadConnection(t *testing.T) {
 	siteID := "42"
 	waitingRoomID := int64(1)
 
+	thresholdSettings := ThresholdSettings{
+		EntranceRateEnabled: true,
+	}
+
 	waitingRoom := WaitingRoomDTO{
 		Name:                   "waiting room 1",
 		Enabled:                true,
 		QueueInactivityTimeout: 5,
-		EntranceRateEnabled:    true,
+		ThresholdSettings:      thresholdSettings,
 	}
 
 	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
@@ -509,11 +541,15 @@ func TestClientUpdateWaitingRoomBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
+	thresholdSettings := ThresholdSettings{
+		EntranceRateEnabled: true,
+	}
+
 	waitingRoom := WaitingRoomDTO{
 		Name:                   "waiting room 1",
 		Enabled:                true,
 		QueueInactivityTimeout: 5,
-		EntranceRateEnabled:    true,
+		ThresholdSettings:      thresholdSettings,
 	}
 
 	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
@@ -547,11 +583,15 @@ func TestClientUpdateWaitingRoomBadStatusCodeWithEmptyBody(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
+	thresholdSettings := ThresholdSettings{
+		EntranceRateEnabled: true,
+	}
+
 	waitingRoom := WaitingRoomDTO{
 		Name:                   "waiting room 1",
 		Enabled:                true,
 		QueueInactivityTimeout: 5,
-		EntranceRateEnabled:    true,
+		ThresholdSettings:      thresholdSettings,
 	}
 
 	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
@@ -586,11 +626,15 @@ func TestClientUpdateWaitingRoomBadStatusCode(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
+	thresholdSettings := ThresholdSettings{
+		EntranceRateEnabled: true,
+	}
+
 	waitingRoom := WaitingRoomDTO{
 		Name:                   "waiting room 1",
 		Enabled:                true,
 		QueueInactivityTimeout: 5,
-		EntranceRateEnabled:    true,
+		ThresholdSettings:      thresholdSettings,
 	}
 
 	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
@@ -624,11 +668,15 @@ func TestClientUpdateWaitingRoomEmptyBody(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
+	thresholdSettings := ThresholdSettings{
+		EntranceRateEnabled: true,
+	}
+
 	waitingRoom := WaitingRoomDTO{
 		Name:                   "waiting room 1",
 		Enabled:                true,
 		QueueInactivityTimeout: 5,
-		EntranceRateEnabled:    true,
+		ThresholdSettings:      thresholdSettings,
 	}
 
 	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
@@ -655,19 +703,23 @@ func TestClientUpdateWaitingRoomValidResponse(t *testing.T) {
 		if req.URL.String() != endpoint || req.Method != "PUT" {
 			t.Errorf("Should have have hit %s %s endpoint. Got: %s %s", "PUT", endpoint, req.Method, req.URL.String())
 		}
-		rw.Write([]byte(`{"data": [{"id": 1, "accountId":1234, "name":"waiting room 1","description":"","enabled":true,"htmlTemplateBase64":"","filter":"","botsActionInQueuingMode":"WAIT_IN_LINE","queueInactivityTimeout":5,"isEntranceRateEnabled":true,"entranceRateThreshold":500,"isConcurrentSessionsEnabled":false,"concurrentSessionsThreshold":0,"inactivityTimeout":5}]}`))
+		rw.Write([]byte(`{"data": [{"id": 1, "accountId":1234, "name":"waiting room 1","description":"","enabled":true,"htmlTemplateBase64":"","filter":"","botsActionInQueuingMode":"WAIT_IN_LINE","queueInactivityTimeout":5,"thresholdSettings": {"isEntranceRateEnabled":true,"entranceRateThreshold":500,"isConcurrentSessionsEnabled":false,"concurrentSessionsThreshold":0,"inactivityTimeout":5}}]}`))
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
+	thresholdSettings := ThresholdSettings{
+		EntranceRateEnabled:   true,
+		EntranceRateThreshold: 500,
+	}
+
 	waitingRoom := WaitingRoomDTO{
 		Name:                   "waiting room 1",
 		Enabled:                true,
 		QueueInactivityTimeout: 5,
-		EntranceRateEnabled:    true,
-		EntranceRateThreshold:  500,
+		ThresholdSettings:      thresholdSettings,
 	}
 
 	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
@@ -689,7 +741,7 @@ func TestClientUpdateWaitingRoomValidResponse(t *testing.T) {
 	if updateWaitingRoomResponse.Data[0].Name != "waiting room 1" {
 		t.Errorf("Waiting Room name doesn't match")
 	}
-	if !updateWaitingRoomResponse.Data[0].EntranceRateEnabled || updateWaitingRoomResponse.Data[0].ConcurrentSessionsEnabled || updateWaitingRoomResponse.Data[0].EntranceRateThreshold != 500 || updateWaitingRoomResponse.Data[0].ConcurrentSessionsThreshold != 0 || updateWaitingRoomResponse.Data[0].InactivityTimeout != 5 {
+	if !updateWaitingRoomResponse.Data[0].ThresholdSettings.EntranceRateEnabled || updateWaitingRoomResponse.Data[0].ThresholdSettings.ConcurrentSessionsEnabled || updateWaitingRoomResponse.Data[0].ThresholdSettings.EntranceRateThreshold != 500 || updateWaitingRoomResponse.Data[0].ThresholdSettings.ConcurrentSessionsThreshold != 0 || updateWaitingRoomResponse.Data[0].ThresholdSettings.InactivityTimeout != 5 {
 		t.Errorf("Thresholds don't match")
 	}
 }
@@ -790,7 +842,7 @@ func TestClientDeleteWaitingRoomValidWaitingRoom(t *testing.T) {
 			t.Errorf("Should have have hit %s %s endpoint. Got: %s %s", "DELETE", endpoint, req.Method, req.URL.String())
 		}
 		rw.WriteHeader(http.StatusOK)
-		rw.Write([]byte(`{"data": [{"id": 1, "accountId":1234, "name":"waiting room 1","description":"","enabled":true,"htmlTemplateBase64":"","filter":"","botsActionInQueuingMode":"WAIT_IN_LINE","queueInactivityTimeout":5,"isEntranceRateEnabled":true,"entranceRateThreshold":500,"concurrentSessionsThreshold":0,"inactivityTimeout":5}]}`))
+		rw.Write([]byte(`{"data": [{"id": 1, "accountId":1234, "name":"waiting room 1","description":"","enabled":true,"htmlTemplateBase64":"","filter":"","botsActionInQueuingMode":"WAIT_IN_LINE","queueInactivityTimeout":5,"thresholdSettings": {"isEntranceRateEnabled":true,"entranceRateThreshold":500,"concurrentSessionsThreshold":0,"inactivityTimeout":5}}]}`))
 	}))
 	defer server.Close()
 
