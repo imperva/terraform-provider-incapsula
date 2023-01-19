@@ -54,7 +54,7 @@ func resourceWaitingRoom() *schema.Resource {
 				Description: "whether this waiting room is enabled or not.",
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:    true,
+				Default:     true,
 			},
 			"html_template_base64": {
 				Description: "The HTML template file path.",
@@ -142,14 +142,14 @@ func resourceWaitingRoomCreate(ctx context.Context, data *schema.ResourceData, m
 	}
 
 	waitingRoom := WaitingRoomDTO{
-		Name:                        data.Get("name").(string),
-		Description:                 data.Get("description").(string),
-		Filter:                      data.Get("filter").(string),
-		HtmlTemplateBase64:          data.Get("html_template_base64").(string),
-		Enabled:                     data.Get("enabled").(bool),
-		BotsActionInQueuingMode:     data.Get("bots_action_in_queuing_mode").(string),
-		QueueInactivityTimeout:      data.Get("queue_inactivity_timeout").(int),
-		ThresholdSettings:           thresholdSettings,
+		Name:                    data.Get("name").(string),
+		Description:             data.Get("description").(string),
+		Filter:                  data.Get("filter").(string),
+		HtmlTemplateBase64:      data.Get("html_template_base64").(string),
+		Enabled:                 data.Get("enabled").(bool),
+		BotsActionInQueuingMode: data.Get("bots_action_in_queuing_mode").(string),
+		QueueInactivityTimeout:  data.Get("queue_inactivity_timeout").(int),
+		ThresholdSettings:       thresholdSettings,
 	}
 
 	if waitingRoom.ThresholdSettings.EntranceRateThreshold != 0 {
@@ -268,15 +268,15 @@ func resourceWaitingRoomUpdate(ctx context.Context, data *schema.ResourceData, m
 	}
 
 	waitingRoom := WaitingRoomDTO{
-		Id:                          waitingRoomID,
-		Name:                        data.Get("name").(string),
-		Description:                 data.Get("description").(string),
-		Filter:                      data.Get("filter").(string),
-		HtmlTemplateBase64:          data.Get("html_template_base64").(string),
-		Enabled:                     data.Get("enabled").(bool),
-		BotsActionInQueuingMode:     data.Get("bots_action_in_queuing_mode").(string),
-		QueueInactivityTimeout:      data.Get("queue_inactivity_timeout").(int),
-		ThresholdSettings:           thresholdSettings,
+		Id:                      waitingRoomID,
+		Name:                    data.Get("name").(string),
+		Description:             data.Get("description").(string),
+		Filter:                  data.Get("filter").(string),
+		HtmlTemplateBase64:      data.Get("html_template_base64").(string),
+		Enabled:                 data.Get("enabled").(bool),
+		BotsActionInQueuingMode: data.Get("bots_action_in_queuing_mode").(string),
+		QueueInactivityTimeout:  data.Get("queue_inactivity_timeout").(int),
+		ThresholdSettings:       thresholdSettings,
 	}
 
 	if waitingRoom.ThresholdSettings.EntranceRateThreshold != 0 {
