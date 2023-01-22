@@ -72,10 +72,9 @@ func TestIncapsulaAccountUser_ImportBasic(t *testing.T) {
 				Config: testCheckIncapsulaAccountUserConfigBasic(t),
 			},
 			{
-				ResourceName: accountResourceUserTypeName,
-				ImportState:  true,
-				// TODO - Setting to false - Not supported when state include data sources
-				ImportStateVerify: false,
+				ResourceName:      accountResourceUserTypeName,
+				ImportState:       true,
+				ImportStateVerify: true,
 				ImportStateIdFunc: testACCStateUserConfigID,
 			},
 		},
