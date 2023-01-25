@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"strings"
 )
 
 const AbpProvider = "ABP"
@@ -22,7 +23,17 @@ func resourceSiemLogConfiguration() *schema.Resource {
 		Delete: resourceSiemLogConfigurationDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				d.SetId(d.Id())
+				idSlice := strings.Split(d.Id(), "/")
+				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected account_id/logConfiguration_id", d.Id())
+				}
+
+				accountID := idSlice[0]
+				d.Set("account_id", accountID)
+
+				confID := idSlice[1]
+				d.SetId(confID)
+
 				return []*schema.ResourceData{d}, nil
 			},
 		},
