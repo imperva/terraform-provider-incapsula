@@ -68,8 +68,8 @@ The following attributes are exported:
 
 ## Import
 
-Customer connection  can be imported using `connectionId`:
+Customer connection  can be imported using `accountId`/`connectionId`:
 
 ```
-$ terraform import incapsula_siem_connection.example_siem_connection connectionId
+$ terraform import incapsula_siem_connection.example_siem_connection accountId/connectionId
 ```
