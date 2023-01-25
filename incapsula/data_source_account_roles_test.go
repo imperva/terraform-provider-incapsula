@@ -46,7 +46,7 @@ func TestAccIncapsulaDataSourceAccountRoles_Basic(t *testing.T) {
 			{
 				ResourceName:      incapsulaAccountRole + "." + terraformAccTestRole,
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
 			},
 		},
 	})

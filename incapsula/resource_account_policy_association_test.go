@@ -36,7 +36,7 @@ func TestAccIncapsulaAccountPolicyAssociation_basic(t *testing.T) {
 			{
 				ResourceName:      accountPolicyAssociationResource,
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
 				ImportStateIdFunc: testACCStateAccountPolicyAssociationID,
 			},
 		},

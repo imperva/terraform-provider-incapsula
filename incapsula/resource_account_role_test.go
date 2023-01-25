@@ -73,10 +73,9 @@ func TestIncapsulaAccountRole_ImportBasic(t *testing.T) {
 				Config: testCheckIncapsulaAccountRoleConfigBasic(t, accountRoleDescription),
 			},
 			{
-				ResourceName: accountResourceRoleTypeName,
-				ImportState:  true,
-				// TODO - Setting to false - Not supported when state include data sources
-				ImportStateVerify: false,
+				ResourceName:      accountResourceRoleTypeName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
