@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"strings"
 )
 
 const StorageTypeCustomerS3 = "CUSTOMER_S3"
@@ -20,7 +21,17 @@ func resourceSiemConnection() *schema.Resource {
 		Delete: resourceSiemConnectionDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				d.SetId(d.Id())
+				idSlice := strings.Split(d.Id(), "/")
+				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected account_id/connection_id", d.Id())
+				}
+
+				accountID := idSlice[0]
+				d.Set("account_id", accountID)
+
+				connectionID := idSlice[1]
+				d.SetId(connectionID)
+
 				return []*schema.ResourceData{d}, nil
 			},
 		},
