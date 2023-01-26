@@ -41,6 +41,7 @@ func resourceSiemConnection() *schema.Resource {
 				Description: "Client account id.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 			},
 			"connection_name": {
 				Description: "Name of the connection.",
@@ -170,6 +171,7 @@ func resourceSiemConnectionRead(d *schema.ResourceData, m interface{}) error {
 		return nil
 	} else if (*statusCode == 200) && (response != nil) && (len(response.Data) == 1) {
 		var connection = response.Data[0]
+		d.Set("account_id", connection.AssetID)
 		d.Set("connection_name", connection.ConnectionName)
 		d.Set("storage_type", connection.StorageType)
 		if connection.StorageType == StorageTypeCustomerS3 {
