@@ -43,6 +43,7 @@ func resourceSiemLogConfiguration() *schema.Resource {
 				Description: "Client account id.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 			},
 			"configuration_name": {
 				Description: "Name of the configuration.",
@@ -144,6 +145,7 @@ func resourceSiemLogConfigurationRead(d *schema.ResourceData, m interface{}) err
 		return nil
 	} else if (*statusCode == 200) && (reponse != nil) && (len(reponse.Data) == 1) {
 		var logConfiguration = reponse.Data[0]
+		d.Set("account_id", logConfiguration.AssetID)
 		d.Set("configuration_name", logConfiguration.ConfigurationName)
 		d.Set("producer", logConfiguration.Provider)
 		d.Set("datasets", logConfiguration.Datasets)
