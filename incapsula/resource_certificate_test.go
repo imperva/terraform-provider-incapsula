@@ -26,7 +26,7 @@ const certificateName = "custom-certificate"
 const certificateResource = certificateResourceName + "." + certificateName
 
 var calculatedHash = ""
-var calculatedHashBase64 = "60f46b532df4f8dc794a2a151c7c6cc3a3b48fc3"
+var calculatedHashBase64 = "3d1684629a33ee41456fb78a169953c63b982fd2"
 
 func TestAccIncapsulaCustomCertificate_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
