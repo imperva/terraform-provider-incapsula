@@ -45,6 +45,7 @@ func resourceAccount() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
+				Computed:    true,
 			},
 			"plan_id": {
 				Description: "An identifier of the plan to assign to the new account. For example, ent100 for the Enterprise 100 plan.",
@@ -56,6 +57,7 @@ func resourceAccount() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
+				Computed:    true,
 			},
 			"logs_account_id": {
 				Description: "Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.",

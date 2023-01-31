@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"strings"
 )
 
 const AbpProvider = "ABP"
@@ -22,7 +23,17 @@ func resourceSiemLogConfiguration() *schema.Resource {
 		Delete: resourceSiemLogConfigurationDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				d.SetId(d.Id())
+				idSlice := strings.Split(d.Id(), "/")
+				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected account_id/logConfiguration_id", d.Id())
+				}
+
+				accountID := idSlice[0]
+				d.Set("account_id", accountID)
+
+				confID := idSlice[1]
+				d.SetId(confID)
+
 				return []*schema.ResourceData{d}, nil
 			},
 		},
@@ -32,6 +43,7 @@ func resourceSiemLogConfiguration() *schema.Resource {
 				Description: "Client account id.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 			},
 			"configuration_name": {
 				Description: "Name of the configuration.",
@@ -133,6 +145,7 @@ func resourceSiemLogConfigurationRead(d *schema.ResourceData, m interface{}) err
 		return nil
 	} else if (*statusCode == 200) && (reponse != nil) && (len(reponse.Data) == 1) {
 		var logConfiguration = reponse.Data[0]
+		d.Set("account_id", logConfiguration.AssetID)
 		d.Set("configuration_name", logConfiguration.ConfigurationName)
 		d.Set("producer", logConfiguration.Provider)
 		d.Set("datasets", logConfiguration.Datasets)

@@ -71,8 +71,8 @@ The following attributes are exported:
 
 ## Import
 
-Customer connection can be imported using `logConfigurationId`:
+Customer connection can be imported using `accountId`/`logConfigurationId`:
 
 ```
-$ terraform import incapsula_siem_log_configuration.example_siem_log_configuration_abp logConfigurationId
+$ terraform import incapsula_siem_log_configuration.example_siem_log_configuration_abp accountId/logConfigurationId
 ```
