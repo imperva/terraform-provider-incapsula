@@ -67,16 +67,17 @@ func resourceWaitingRoom() *schema.Resource {
 				Optional:    true,
 			},
 			"bots_action_in_queuing_mode": {
-				Description: "The waiting room bot handling action. Determines the waiting room behavior for legitimate bots trying to access your website during peak time",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
+				Description:  "The waiting room bot handling action. Determines the waiting room behavior for legitimate bots trying to access your website during peak time",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "WAIT_IN_LINE",
+				ValidateFunc: validation.StringInSlice([]string{"WAIT_IN_LINE", "BYPASS", "BLOCK"}, false),
 			},
 			"entrance_rate_threshold": {
 				Description:      "The entrance rate activation threshold of the waiting room. The waiting room is activated when sessions per minute exceed the specified value.",
 				Type:             schema.TypeInt,
 				Optional:         true,
-				ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+				ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(60)),
 			},
 			"concurrent_sessions_threshold": {
 				Description:      "The active users activation threshold of the waiting room. The waiting room is activated when number of active users reached specified value.",
@@ -117,12 +118,12 @@ func resourceWaitingRoom() *schema.Resource {
 				Computed:    true,
 			},
 			"last_modified_by": {
-				Description: "The waiting room mode. Indicates whether the waiting room is currently queuing or not.",
+				Description: "The user who last modified the waiting room configuration",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
 			"mode": {
-				Description: "The user who last modified the waiting room configuration",
+				Description: "The waiting room mode. Indicates whether the waiting room is currently queuing or not.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -184,7 +185,6 @@ func resourceWaitingRoomCreate(ctx context.Context, data *schema.ResourceData, m
 	log.Printf("[INFO] Created Incapsula Waiting Room %d for Site: %s", waitingRoomDTOResponse.Data[0].Id, siteID)
 
 	diags = append(diags, resourceWaitingRoomRead(ctx, data, m)[:]...)
-
 	return diags
 }
 
@@ -205,8 +205,9 @@ func resourceWaitingRoomRead(ctx context.Context, data *schema.ResourceData, m i
 	}
 
 	waitingRoomDTOResponse, diags := client.ReadWaitingRoom(siteID, waitingRoomID)
-	if waitingRoomDTOResponse.Errors != nil && waitingRoomDTOResponse.Errors[0].Status == 404 {
+	if waitingRoomDTOResponse != nil && waitingRoomDTOResponse.Errors != nil && waitingRoomDTOResponse.Errors[0].Status == 404 {
 		data.SetId("")
+		return nil
 	}
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] Failed to read Waiting Room %d for Site ID %s", waitingRoomID, siteID)
@@ -231,9 +232,13 @@ func resourceWaitingRoomRead(ctx context.Context, data *schema.ResourceData, m i
 	data.Set("bots_action_in_queuing_mode", waitingRoom.BotsActionInQueuingMode)
 	if waitingRoom.ThresholdSettings.EntranceRateEnabled {
 		data.Set("entrance_rate_threshold", waitingRoom.ThresholdSettings.EntranceRateThreshold)
+	} else {
+		data.Set("entrance_rate_threshold", 0)
 	}
 	if waitingRoom.ThresholdSettings.ConcurrentSessionsEnabled {
 		data.Set("concurrent_sessions_threshold", waitingRoom.ThresholdSettings.ConcurrentSessionsThreshold)
+	} else {
+		data.Set("concurrent_sessions_threshold", 0)
 	}
 	data.Set("inactivity_timeout", waitingRoom.ThresholdSettings.InactivityTimeout)
 	data.Set("queue_inactivity_timeout", waitingRoom.QueueInactivityTimeout)
@@ -287,17 +292,13 @@ func resourceWaitingRoomUpdate(ctx context.Context, data *schema.ResourceData, m
 		waitingRoom.ThresholdSettings.ConcurrentSessionsEnabled = true
 	}
 
-	waitingRoomDTOResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
-	if waitingRoomDTOResponse.Errors != nil && waitingRoomDTOResponse.Errors[0].Status == 404 {
-		data.SetId("")
-	}
+	_, diags = client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] Failed to update Waiting Room %d for Site ID %s", waitingRoomID, siteID)
 		return diags
 	}
 
 	diags = append(diags, resourceWaitingRoomRead(ctx, data, m)[:]...)
-
 	return diags
 }
 
@@ -317,8 +318,9 @@ func resourceWaitingRoomDelete(ctx context.Context, data *schema.ResourceData, m
 	}
 
 	waitingRoomDTOResponse, diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
-	if waitingRoomDTOResponse.Errors != nil && waitingRoomDTOResponse.Errors[0].Status == 404 {
+	if waitingRoomDTOResponse != nil && waitingRoomDTOResponse.Errors != nil && waitingRoomDTOResponse.Errors[0].Status == 404 {
 		data.SetId("")
+		return nil
 	}
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] Failed to update Waiting Room %d for Site ID %s", waitingRoomID, siteID)
@@ -326,6 +328,5 @@ func resourceWaitingRoomDelete(ctx context.Context, data *schema.ResourceData, m
 	}
 
 	data.SetId("")
-
 	return diags
 }

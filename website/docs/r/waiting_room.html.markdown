@@ -10,6 +10,7 @@ description: |-
 
 Provides a waiting room resource.
 A waiting room controls the traffic to the website during peak periods when the origin server is unable to handle the load, and route the website visitors to a virtual waiting room when their requests can't be handled immediately.
+For full feature documentation, see [Set Up a Waiting Room](https://docs.imperva.com/bundle/cloud-application-security/page/waiting-room.htm).
 
 **Note:** at least one of the threshold strategies (entrance_rate_threshold / concurrent_sessions_threshold) must be configured.
 
@@ -55,17 +56,17 @@ The following arguments are supported:
 
 * `filter` - (Optional) The condition that determines on which sessions this waiting room applies. **default:** no filter (i.e. the room applies to the whole website and all users)
 
-* `bots_action_in_queuing_mode` - (Optional) The waiting room bot handling action. Determines the waiting room behavior for legitimate bots trying to access your website during peak time. Applies only when the activation threshold has been passed and visitors are being sent to the queue. Possible values:
+* `bots_action_in_queuing_mode` - (Optional) The waiting room bot handling action. Determines the waiting room behavior for legitimate bots trying to access your website during peak time. Applies only when the activation threshold has been passed and visitors are being sent to the queue. **default:** `WAIT_IN_LINE`
+Possible values:
   * `WAIT_IN_LINE` - Wait in line alongside regular users.
   * `BYPASS` - Bypass the queue.
   * `BLOCK` - Block this request.
-**default:** `WAIT_IN_LINE`
 
 * `entrance_rate_threshold` - (Optional) The entrance rate activation threshold of the waiting room. The waiting room is activated when sessions per minute exceed the specified value. Minimum of 60 users per minute.
 
 * `concurrent_sessions_threshold` - (Optional) The active users activation threshold of the waiting room. The waiting room is activated when number of active users reached specified value. Must be a positive number.
 
-* `inactivity_timeout` - (Optional, Mandatory if concurrentSessionsThreshold is used) Inactivity timeout, from 1 to 30 minutes. If waiting room conditions that limit the scope of the waiting room to a subset of the website have been defined, the user is considered active only when navigating the pages in scope of the conditions. A user who is inactive for a longer period of time is considered as having left the site. On returning to the site, the user needs to wait in line again if the waiting room is active. **Default:** 5 minutes.
+* `inactivity_timeout` - (Optional, Mandatory if concurrentSessionsThreshold is used) Inactivity timeout, from 1 to 30 minutes. If waiting room conditions that limit the scope of the waiting room to a subset of the website have been defined, the user is considered active only when navigating the pages in scope of the conditions. A user who is inactive for a longer period of time is considered as having left the site. On returning to the site, the user needs to wait in line again if the waiting room is active. **Tip:** When enabling the Total active users threshold, the inactivity timeout is very important. Once the site is at full capacity (the threshold has been passed), no new user can access the site until another user leaves and frees up space. To optimize the user experience, we recommend setting a balanced inactivity timeout value — long enough so that the user's session is still open if they return quickly, but not so long that it unnecessarily prevents access to other waiting visitors. The default timeout of 5 minutes is the recommended minimum value. **Default:** 5 minutes.
 
 * `queue_inactivity_timeout` - (Optional) Queue inactivity timeout, from 1 to 10 minutes. A user in the waiting room who is inactive for a longer period of time is considered as having left the queue. On returning to the site, the user moves to the end of the queue and needs to wait in line again if the waiting room is active. **default:** 1 minute.
 
