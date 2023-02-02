@@ -21,19 +21,19 @@ func resourceWaitingRoom() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: func(data *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				idSlice := strings.Split(data.Id(), "/")
-				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
-					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id/waiting_room_id", data.Id())
+				if len(idSlice) != 3 || idSlice[0] == "" || idSlice[1] == "" || idSlice[2] == "" {
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected account_id/site_id/waiting_room_id", data.Id())
 				}
 
-				data.Set("site_id", idSlice[0])
-				data.SetId(idSlice[1])
+				data.Set("account_id", idSlice[0])
+				data.Set("site_id", idSlice[1])
+				data.SetId(idSlice[2])
 
 				return []*schema.ResourceData{data}, nil
 			},
 		},
 
 		Schema: map[string]*schema.Schema{
-			// Required Arguments
 			"site_id": {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeString,
@@ -105,7 +105,9 @@ func resourceWaitingRoom() *schema.Resource {
 			"account_id": {
 				Description: "The account this waiting room belongs to.",
 				Type:        schema.TypeString,
+				Optional:    true,
 				Computed:    true,
+				ForceNew:    true,
 			},
 			"created_at": {
 				Description: "The waiting room creation date in milliseconds.",
@@ -135,6 +137,7 @@ func resourceWaitingRoomCreate(ctx context.Context, data *schema.ResourceData, m
 	client := m.(*Client)
 	var diags diag.Diagnostics
 	siteID := data.Get("site_id").(string)
+	accountId := data.Get("account_id").(string)
 
 	thresholdSettings := ThresholdSettings{
 		EntranceRateThreshold:       data.Get("entrance_rate_threshold").(int),
@@ -161,7 +164,7 @@ func resourceWaitingRoomCreate(ctx context.Context, data *schema.ResourceData, m
 		waitingRoom.ThresholdSettings.ConcurrentSessionsEnabled = true
 	}
 
-	waitingRoomDTOResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
+	waitingRoomDTOResponse, diags := client.CreateWaitingRoom(accountId, siteID, &waitingRoom)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] Failed to create Waiting Room for Site ID %s", siteID)
 		return diags
@@ -193,6 +196,7 @@ func resourceWaitingRoomRead(ctx context.Context, data *schema.ResourceData, m i
 	client := m.(*Client)
 	var diags diag.Diagnostics
 	siteID := data.Get("site_id").(string)
+	accountId := data.Get("account_id").(string)
 
 	waitingRoomID, err := strconv.ParseInt(data.Id(), 10, 64)
 	if err != nil {
@@ -204,7 +208,7 @@ func resourceWaitingRoomRead(ctx context.Context, data *schema.ResourceData, m i
 		}}
 	}
 
-	waitingRoomDTOResponse, diags := client.ReadWaitingRoom(siteID, waitingRoomID)
+	waitingRoomDTOResponse, diags := client.ReadWaitingRoom(accountId, siteID, waitingRoomID)
 	if waitingRoomDTOResponse != nil && waitingRoomDTOResponse.Errors != nil && waitingRoomDTOResponse.Errors[0].Status == 404 {
 		data.SetId("")
 		return nil
@@ -255,6 +259,7 @@ func resourceWaitingRoomUpdate(ctx context.Context, data *schema.ResourceData, m
 	client := m.(*Client)
 	var diags diag.Diagnostics
 	siteID := data.Get("site_id").(string)
+	accountId := data.Get("account_id").(string)
 
 	waitingRoomID, err := strconv.ParseInt(data.Id(), 10, 64)
 	if err != nil {
@@ -292,7 +297,7 @@ func resourceWaitingRoomUpdate(ctx context.Context, data *schema.ResourceData, m
 		waitingRoom.ThresholdSettings.ConcurrentSessionsEnabled = true
 	}
 
-	_, diags = client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
+	_, diags = client.UpdateWaitingRoom(accountId, siteID, waitingRoomID, &waitingRoom)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] Failed to update Waiting Room %d for Site ID %s", waitingRoomID, siteID)
 		return diags
@@ -306,6 +311,7 @@ func resourceWaitingRoomDelete(ctx context.Context, data *schema.ResourceData, m
 	client := m.(*Client)
 	var diags diag.Diagnostics
 	siteID := data.Get("site_id").(string)
+	accountId := data.Get("account_id").(string)
 
 	waitingRoomID, err := strconv.ParseInt(data.Id(), 10, 64)
 	if err != nil {
@@ -317,7 +323,7 @@ func resourceWaitingRoomDelete(ctx context.Context, data *schema.ResourceData, m
 		}}
 	}
 
-	waitingRoomDTOResponse, diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
+	waitingRoomDTOResponse, diags := client.DeleteWaitingRoom(accountId, siteID, waitingRoomID)
 	if waitingRoomDTOResponse != nil && waitingRoomDTOResponse.Errors != nil && waitingRoomDTOResponse.Errors[0].Status == 404 {
 		data.SetId("")
 		return nil

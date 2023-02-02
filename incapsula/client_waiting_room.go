@@ -40,7 +40,7 @@ type WaitingRoomDTOResponse struct {
 	Errors []APIErrors      `json:"errors"`
 }
 
-func (c *Client) CreateWaitingRoom(siteID string, waitingRoom *WaitingRoomDTO) (*WaitingRoomDTOResponse, diag.Diagnostics) {
+func (c *Client) CreateWaitingRoom(accountId string, siteID string, waitingRoom *WaitingRoomDTO) (*WaitingRoomDTOResponse, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] Creating Waiting Room for Site ID %s\n", siteID)
 
@@ -58,7 +58,7 @@ func (c *Client) CreateWaitingRoom(siteID string, waitingRoom *WaitingRoomDTO) (
 	log.Printf("[DEBUG] Waiting Room payload: %s\n", string(waitingRoomJSON))
 
 	// Post form to Incapsula
-	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms", c.config.BaseURLAPI, siteID)
+	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms?caid=%s", c.config.BaseURLAPI, siteID, accountId)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, waitingRoomJSON, CreateWaitingRoom)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -100,12 +100,12 @@ func (c *Client) CreateWaitingRoom(siteID string, waitingRoom *WaitingRoomDTO) (
 	return &newWaitingRoom, diags
 }
 
-func (c *Client) ReadWaitingRoom(siteID string, waitingRoomID int64) (*WaitingRoomDTOResponse, diag.Diagnostics) {
+func (c *Client) ReadWaitingRoom(accountId string, siteID string, waitingRoomID int64) (*WaitingRoomDTOResponse, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] Getting Incapsula Waiting Room %d for Site ID %s\n", waitingRoomID, siteID)
 
 	// Post form to Incapsula
-	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", c.config.BaseURLAPI, siteID, waitingRoomID)
+	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", c.config.BaseURLAPI, siteID, waitingRoomID, accountId)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadWaitingRoom)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -147,7 +147,7 @@ func (c *Client) ReadWaitingRoom(siteID string, waitingRoomID int64) (*WaitingRo
 	return &waitingRoom, diags
 }
 
-func (c *Client) UpdateWaitingRoom(siteID string, waitingRoomID int64, waitingRoom *WaitingRoomDTO) (*WaitingRoomDTOResponse, diag.Diagnostics) {
+func (c *Client) UpdateWaitingRoom(accountId string, siteID string, waitingRoomID int64, waitingRoom *WaitingRoomDTO) (*WaitingRoomDTOResponse, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] Updating Incapsula Waiting Room %d for Site ID %s\n", waitingRoomID, siteID)
 
@@ -162,7 +162,7 @@ func (c *Client) UpdateWaitingRoom(siteID string, waitingRoomID int64, waitingRo
 	}
 
 	// Put request to Incapsula
-	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", c.config.BaseURLAPI, siteID, waitingRoomID)
+	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", c.config.BaseURLAPI, siteID, waitingRoomID, accountId)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, waitingRoomJSON, UpdateWaitingRoom)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -204,12 +204,12 @@ func (c *Client) UpdateWaitingRoom(siteID string, waitingRoomID int64, waitingRo
 	return &updatedWaitingRoom, diags
 }
 
-func (c *Client) DeleteWaitingRoom(siteID string, waitingRoomID int64) (*WaitingRoomDTOResponse, diag.Diagnostics) {
+func (c *Client) DeleteWaitingRoom(accountId string, siteID string, waitingRoomID int64) (*WaitingRoomDTOResponse, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] Deleting Incapsula Waiting Room %d for Site ID %s\n", waitingRoomID, siteID)
 
 	// Delete request to Incapsula
-	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", c.config.BaseURLAPI, siteID, waitingRoomID)
+	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", c.config.BaseURLAPI, siteID, waitingRoomID, accountId)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteWaitingRoom)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
