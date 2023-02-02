@@ -102,9 +102,11 @@ func testAccCheckWaitingRoomExists(waitingRoomDTOresponse *WaitingRoomDTO) resou
 			return fmt.Errorf("Incapsula Waiting Room with id %d doesn't have site ID", waitingRoomID)
 		}
 
+		accountId := rs.Primary.Attributes["account_id"]
+
 		client := testAccProvider.Meta().(*Client)
 
-		response, _ := client.ReadWaitingRoom(siteID, waitingRoomID)
+		response, _ := client.ReadWaitingRoom(accountId, siteID, waitingRoomID)
 		if response == nil {
 			return fmt.Errorf("Failed to retrieve Waiting Room (id=%d)", waitingRoomID)
 		}
@@ -208,7 +210,9 @@ func testAccCheckWaitingRoomDestroy(state *terraform.State) error {
 			return fmt.Errorf("Incapsula Waiting Room with id %s doesn't have numeric ID", waitingRoomID)
 		}
 
-		waitingRoomDTOResponse, _ := client.ReadWaitingRoom(siteID, waitingRoomIdInt)
+		accountId := res.Primary.Attributes["account_id"]
+
+		waitingRoomDTOResponse, _ := client.ReadWaitingRoom(accountId, siteID, waitingRoomIdInt)
 		if waitingRoomDTOResponse == nil {
 			return fmt.Errorf("Failed to check Waiting Room status (id=%s)", waitingRoomID)
 		}
@@ -236,7 +240,9 @@ func testAccGetWaitingRoomImportString(state *terraform.State) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("Error parsing site_id %s to int", rs.Primary.Attributes["site_id"])
 		}
-		return fmt.Sprintf("%d/%d", siteID, waitingRoomID), nil
+		accountId := rs.Primary.Attributes["account_id"]
+
+		return fmt.Sprintf("%s/%d/%d", accountId, siteID, waitingRoomID), nil
 	}
 
 	return "", fmt.Errorf("Error finding Waiting Room")

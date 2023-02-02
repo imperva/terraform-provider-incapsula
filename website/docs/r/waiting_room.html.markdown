@@ -38,6 +38,8 @@ resource "incapsula_waiting_room" "example-waiting-room" {
 
 The following arguments are supported:
 
+* `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
+
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 
 * `name` - (Required) The waiting room name. Must be unique across all waiting rooms of the site.
@@ -75,7 +77,6 @@ Possible values:
 The following attributes are exported:
 
 * `id` - Unique identifier in the API for the waiting room.
-* `account_id` - The ID of the account that created the waiting room.
 * `created_at` - (timestamp) When the waiting room was created.
 * `modified_at` - (timestamp) When the waiting room was last modified.
 * `last_modified_by` - (user email) Last user modifying the waiting room.
@@ -83,8 +84,8 @@ The following attributes are exported:
 
 ## Import
 
-Waiting rooms can be imported using the waiting room site_id and waiting_room_id separated by /, e.g.:
+Waiting rooms can be imported using the waiting room account_id, site_id and waiting_room_id separated by /, e.g.:
 
 ```
-$ terraform import incapsula_waiting_room.example-waiting-room site_id/waiting_room_id
+$ terraform import incapsula_waiting_room.example-waiting-room account_id/site_id/waiting_room_id
 ```

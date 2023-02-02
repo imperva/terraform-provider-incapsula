@@ -15,6 +15,7 @@ func TestClientCreateWaitingRoomBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
+	accountId := "1234"
 
 	thresholdSettings := ThresholdSettings{
 		EntranceRateEnabled: true,
@@ -27,7 +28,7 @@ func TestClientCreateWaitingRoomBadConnection(t *testing.T) {
 		ThresholdSettings:      thresholdSettings,
 	}
 
-	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
+	createWaitingRoomResponse, diags := client.CreateWaitingRoom(accountId, siteID, &waitingRoom)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -43,8 +44,9 @@ func TestClientCreateWaitingRoomBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms", siteID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms?caid=%s", siteID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "POST" {
@@ -69,7 +71,7 @@ func TestClientCreateWaitingRoomBadJSON(t *testing.T) {
 		ThresholdSettings:      thresholdSettings,
 	}
 
-	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
+	createWaitingRoomResponse, diags := client.CreateWaitingRoom(accountId, siteID, &waitingRoom)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -85,8 +87,9 @@ func TestClientCreateWaitingRoomBadStatusCodeWithEmptyBody(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms", siteID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms?caid=%s", siteID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "POST" {
@@ -110,7 +113,7 @@ func TestClientCreateWaitingRoomBadStatusCodeWithEmptyBody(t *testing.T) {
 		ThresholdSettings:      thresholdSettings,
 	}
 
-	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
+	createWaitingRoomResponse, diags := client.CreateWaitingRoom(accountId, siteID, &waitingRoom)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -126,8 +129,9 @@ func TestClientCreateWaitingRoomBadStatusCode(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms", siteID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms?caid=%s", siteID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "POST" {
@@ -152,7 +156,7 @@ func TestClientCreateWaitingRoomBadStatusCode(t *testing.T) {
 		ThresholdSettings:      thresholdSettings,
 	}
 
-	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
+	createWaitingRoomResponse, diags := client.CreateWaitingRoom(accountId, siteID, &waitingRoom)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -168,8 +172,9 @@ func TestClientCreateWaitingRoomEmptyBody(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms", siteID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms?caid=%s", siteID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "POST" {
@@ -193,7 +198,7 @@ func TestClientCreateWaitingRoomEmptyBody(t *testing.T) {
 		ThresholdSettings:      thresholdSettings,
 	}
 
-	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
+	createWaitingRoomResponse, diags := client.CreateWaitingRoom(accountId, siteID, &waitingRoom)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -209,8 +214,9 @@ func TestClientCreateWaitingRoomInvalidJSONValue(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms", siteID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms?caid=%s", siteID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "POST" {
@@ -235,7 +241,7 @@ func TestClientCreateWaitingRoomInvalidJSONValue(t *testing.T) {
 		ThresholdSettings:      thresholdSettings,
 	}
 
-	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
+	createWaitingRoomResponse, diags := client.CreateWaitingRoom(accountId, siteID, &waitingRoom)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -251,8 +257,9 @@ func TestClientCreateWaitingRoomValidResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms", siteID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms?caid=%s", siteID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "POST" {
@@ -278,7 +285,7 @@ func TestClientCreateWaitingRoomValidResponse(t *testing.T) {
 		ThresholdSettings:      thresholdSettings,
 	}
 
-	createWaitingRoomResponse, diags := client.CreateWaitingRoom(siteID, &waitingRoom)
+	createWaitingRoomResponse, diags := client.CreateWaitingRoom(accountId, siteID, &waitingRoom)
 	if diags != nil {
 		t.Errorf("Should not have received an error")
 	}
@@ -308,9 +315,10 @@ func TestClientReadWaitingRoomBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
+	accountId := "1234"
 	waitingRoomID := int64(1)
 
-	readWaitingRoomResponse, diags := client.ReadWaitingRoom(siteID, waitingRoomID)
+	readWaitingRoomResponse, diags := client.ReadWaitingRoom(accountId, siteID, waitingRoomID)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -326,9 +334,10 @@ func TestClientReadWaitingRoomBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 	waitingRoomID := int64(1)
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", siteID, waitingRoomID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "GET" {
@@ -341,7 +350,7 @@ func TestClientReadWaitingRoomBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	readWaitingRoomResponse, diags := client.ReadWaitingRoom(siteID, waitingRoomID)
+	readWaitingRoomResponse, diags := client.ReadWaitingRoom(accountId, siteID, waitingRoomID)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -357,9 +366,10 @@ func TestClientReadWaitingRoomBadStatusCodeWithEmptyBody(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 	waitingRoomID := int64(1)
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", siteID, waitingRoomID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "GET" {
@@ -372,7 +382,7 @@ func TestClientReadWaitingRoomBadStatusCodeWithEmptyBody(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	readWaitingRoomResponse, diags := client.ReadWaitingRoom(siteID, waitingRoomID)
+	readWaitingRoomResponse, diags := client.ReadWaitingRoom(accountId, siteID, waitingRoomID)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -388,9 +398,10 @@ func TestClientReadWaitingRoomBadStatusCode(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 	waitingRoomID := int64(1)
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", siteID, waitingRoomID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "GET" {
@@ -404,7 +415,7 @@ func TestClientReadWaitingRoomBadStatusCode(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	readWaitingRoomResponse, diags := client.ReadWaitingRoom(siteID, waitingRoomID)
+	readWaitingRoomResponse, diags := client.ReadWaitingRoom(accountId, siteID, waitingRoomID)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -420,9 +431,10 @@ func TestClientReadWaitingRoomEmptyBody(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 	waitingRoomID := int64(1)
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", siteID, waitingRoomID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "GET" {
@@ -435,7 +447,7 @@ func TestClientReadWaitingRoomEmptyBody(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	readWaitingRoomResponse, diags := client.ReadWaitingRoom(siteID, waitingRoomID)
+	readWaitingRoomResponse, diags := client.ReadWaitingRoom(accountId, siteID, waitingRoomID)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -451,9 +463,10 @@ func TestClientReadWaitingRoomValidResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 	waitingRoomID := int64(1)
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", siteID, waitingRoomID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "GET" {
@@ -467,7 +480,7 @@ func TestClientReadWaitingRoomValidResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	readWaitingRoomResponse, diags := client.ReadWaitingRoom(siteID, waitingRoomID)
+	readWaitingRoomResponse, diags := client.ReadWaitingRoom(accountId, siteID, waitingRoomID)
 	if diags != nil {
 		t.Errorf("Should not have received an error")
 	}
@@ -497,6 +510,7 @@ func TestClientUpdateWaitingRoomBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
+	accountId := "1234"
 	waitingRoomID := int64(1)
 
 	thresholdSettings := ThresholdSettings{
@@ -510,7 +524,7 @@ func TestClientUpdateWaitingRoomBadConnection(t *testing.T) {
 		ThresholdSettings:      thresholdSettings,
 	}
 
-	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
+	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(accountId, siteID, waitingRoomID, &waitingRoom)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -526,9 +540,10 @@ func TestClientUpdateWaitingRoomBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 	waitingRoomID := int64(1)
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", siteID, waitingRoomID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "PUT" {
@@ -552,7 +567,7 @@ func TestClientUpdateWaitingRoomBadJSON(t *testing.T) {
 		ThresholdSettings:      thresholdSettings,
 	}
 
-	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
+	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(accountId, siteID, waitingRoomID, &waitingRoom)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -568,9 +583,10 @@ func TestClientUpdateWaitingRoomBadStatusCodeWithEmptyBody(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 	waitingRoomID := int64(1)
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", siteID, waitingRoomID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "PUT" {
@@ -594,7 +610,7 @@ func TestClientUpdateWaitingRoomBadStatusCodeWithEmptyBody(t *testing.T) {
 		ThresholdSettings:      thresholdSettings,
 	}
 
-	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
+	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(accountId, siteID, waitingRoomID, &waitingRoom)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -610,9 +626,10 @@ func TestClientUpdateWaitingRoomBadStatusCode(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 	waitingRoomID := int64(1)
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", siteID, waitingRoomID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "PUT" {
@@ -637,7 +654,7 @@ func TestClientUpdateWaitingRoomBadStatusCode(t *testing.T) {
 		ThresholdSettings:      thresholdSettings,
 	}
 
-	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
+	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(accountId, siteID, waitingRoomID, &waitingRoom)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -653,9 +670,10 @@ func TestClientUpdateWaitingRoomEmptyBody(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 	waitingRoomID := int64(1)
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", siteID, waitingRoomID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "PUT" {
@@ -679,7 +697,7 @@ func TestClientUpdateWaitingRoomEmptyBody(t *testing.T) {
 		ThresholdSettings:      thresholdSettings,
 	}
 
-	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
+	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(accountId, siteID, waitingRoomID, &waitingRoom)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -695,9 +713,10 @@ func TestClientUpdateWaitingRoomValidResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 	waitingRoomID := int64(1)
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", siteID, waitingRoomID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "PUT" {
@@ -722,7 +741,7 @@ func TestClientUpdateWaitingRoomValidResponse(t *testing.T) {
 		ThresholdSettings:      thresholdSettings,
 	}
 
-	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(siteID, waitingRoomID, &waitingRoom)
+	updateWaitingRoomResponse, diags := client.UpdateWaitingRoom(accountId, siteID, waitingRoomID, &waitingRoom)
 	if diags != nil {
 		t.Errorf("Should not have received an error")
 	}
@@ -752,9 +771,10 @@ func TestClientDeleteWaitingRoomBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
+	accountId := "1234"
 	waitingRoomID := int64(1)
 
-	deleteWaitingRoomResponse, diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
+	deleteWaitingRoomResponse, diags := client.DeleteWaitingRoom(accountId, siteID, waitingRoomID)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received a error")
 	}
@@ -770,9 +790,10 @@ func TestClientDeleteWaitingRoomBadStatusCodeWithEmptyBody(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 	waitingRoomID := int64(1)
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", siteID, waitingRoomID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "DELETE" {
@@ -785,7 +806,7 @@ func TestClientDeleteWaitingRoomBadStatusCodeWithEmptyBody(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	deleteWaitingRoomResponse, diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
+	deleteWaitingRoomResponse, diags := client.DeleteWaitingRoom(accountId, siteID, waitingRoomID)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -801,9 +822,10 @@ func TestClientDeleteWaitingRoomBadStatusCode(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 	waitingRoomID := int64(1)
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", siteID, waitingRoomID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "DELETE" {
@@ -817,7 +839,7 @@ func TestClientDeleteWaitingRoomBadStatusCode(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	deleteWaitingRoomResponse, diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
+	deleteWaitingRoomResponse, diags := client.DeleteWaitingRoom(accountId, siteID, waitingRoomID)
 	if diags == nil || len(diags) == 0 {
 		t.Errorf("Should have received an error")
 	}
@@ -833,9 +855,10 @@ func TestClientDeleteWaitingRoomValidWaitingRoom(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	accountId := "1234"
 	waitingRoomID := int64(1)
 
-	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", siteID, waitingRoomID)
+	endpoint := fmt.Sprintf("/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", siteID, waitingRoomID, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint || req.Method != "DELETE" {
@@ -849,7 +872,7 @@ func TestClientDeleteWaitingRoomValidWaitingRoom(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	deleteWaitingRoomResponse, diags := client.DeleteWaitingRoom(siteID, waitingRoomID)
+	deleteWaitingRoomResponse, diags := client.DeleteWaitingRoom(accountId, siteID, waitingRoomID)
 	if diags != nil {
 		t.Errorf("Should not have received an error")
 	}
