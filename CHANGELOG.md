@@ -1,4 +1,19 @@
-## 3.14.0 (Jan 15, 2023)
+## 3.15.1 (Feb 6, 2023)
+
+BUG FIXES:
+
+* Fix unchangeable attributes bug in account resource ([#284](https://github.com/imperva/terraform-provider-incapsula/pull/284))
+* Fix bug in import command of siem_log_configuration and incapsula_siem_connection resources ([#285](https://github.com/imperva/terraform-provider-incapsula/pull/285))
+
+
+## 3.15.0 (Feb 6, 2023)
+
+FEATURES:
+
+* **New Resource:** `incapsula_waiting_room`
+
+
+* ## 3.14.0 (Jan 15, 2023)
 
 FEATURES:
 
