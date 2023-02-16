@@ -174,3 +174,8 @@ const CreateSiemLogConfiguration = "create_siem_log_configuration"
 const ReadSiemLogConfiguration = "read_siem_log_configuration"
 const UpdateSiemLogConfiguration = "update_siem_log_configuration"
 const DeleteSiemLogConfiguration = "delete_siem_log_configuration"
+
+const CreateWaitingRoom = "create_waiting_room"
+const ReadWaitingRoom = "read_waiting_room"
+const UpdateWaitingRoom = "update_waiting_room"
+const DeleteWaitingRoom = "delete_waiting_room"

@@ -127,6 +127,7 @@ func Provider() *schema.Provider {
 			"incapsula_account_user":                                           resourceAccountUser(),
 			"incapsula_siem_connection":                                        resourceSiemConnection(),
 			"incapsula_siem_log_configuration":                                 resourceSiemLogConfiguration(),
+			"incapsula_waiting_room":                                           resourceWaitingRoom(),
 		},
 	}
 

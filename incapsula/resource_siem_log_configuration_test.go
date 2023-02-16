@@ -107,9 +107,9 @@ func getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName str
 	)
 }
 
-func testAccReadSiemLogConfiguration(client *Client, ID string) error {
+func testAccReadSiemLogConfiguration(client *Client, ID string, accountId string) error {
 	log.Printf("[INFO] SiemLogConfiguration ID: %s", ID)
-	siemLogConfiguration, statusCode, err := client.ReadSiemLogConfiguration(ID, "")
+	siemLogConfiguration, statusCode, err := client.ReadSiemLogConfiguration(ID, accountId)
 	if err != nil {
 		return err
 	}
@@ -133,7 +133,7 @@ func testAccIncapsulaSiemLogConfigurationDestroy(resourceType string) resource.T
 				continue
 			}
 
-			err := testAccReadSiemLogConfiguration(client, res.Primary.ID)
+			err := testAccReadSiemLogConfiguration(client, res.Primary.ID, res.Primary.Attributes["account_id"])
 			if err != nil {
 				return nil
 			} else {
@@ -157,7 +157,7 @@ func testCheckIncapsulaSiemLogConfigurationExists(resource string) resource.Test
 			return fmt.Errorf("[ERROR] Incapsula SiemLogConfiguration does not exist")
 		} else {
 			client := testAccProvider.Meta().(*Client)
-			return testAccReadSiemLogConfiguration(client, res.Primary.ID)
+			return testAccReadSiemLogConfiguration(client, res.Primary.ID, res.Primary.Attributes["account_id"])
 		}
 	}
 }
@@ -169,7 +169,7 @@ func testACCStateSiemLogConfigurationID(resourceType string) resource.ImportStat
 				continue
 			}
 
-			return fmt.Sprintf("%s", rs.Primary.ID), nil
+			return fmt.Sprintf("%s/%s", rs.Primary.Attributes["account_id"], rs.Primary.ID), nil
 		}
 
 		return "", fmt.Errorf("[ERROR] Cannot find SiemLogConfiguration ID")

@@ -171,9 +171,9 @@ func getAccIncapsulaS3SiemConnectionConfigBasic(s3SiemConnectionName string) str
 	)
 }
 
-func testAccReadSiemConnection(client *Client, ID string) error {
-	log.Printf("[INFO] SiemConnection ID: %s", ID)
-	siemConnection, statusCode, err := client.ReadSiemConnection(ID, "")
+func testAccReadSiemConnection(client *Client, ID string, accountId string) error {
+	log.Printf("[INFO] SiemConnection ID: %s, accountId: %s", ID, accountId)
+	siemConnection, statusCode, err := client.ReadSiemConnection(ID, accountId)
 	if err != nil {
 		return err
 	}
@@ -197,7 +197,7 @@ func testAccIncapsulaSiemConnectionDestroy(resourceType string) resource.TestChe
 				continue
 			}
 
-			err := testAccReadSiemConnection(client, res.Primary.ID)
+			err := testAccReadSiemConnection(client, res.Primary.ID, res.Primary.Attributes["account_id"])
 			if err != nil {
 				return nil
 			} else {
@@ -221,7 +221,7 @@ func testCheckIncapsulaSiemConnectionExists(resource string) resource.TestCheckF
 			return fmt.Errorf("[ERROR] Incapsula SiemConnection does not exist")
 		} else {
 			client := testAccProvider.Meta().(*Client)
-			return testAccReadSiemConnection(client, res.Primary.ID)
+			return testAccReadSiemConnection(client, res.Primary.ID, res.Primary.Attributes["account_id"])
 		}
 	}
 }
@@ -233,7 +233,7 @@ func testACCStateSiemConnectionID(resourceType string) resource.ImportStateIdFun
 				continue
 			}
 
-			return fmt.Sprintf("%s", rs.Primary.ID), nil
+			return fmt.Sprintf("%s/%s", rs.Primary.Attributes["account_id"], rs.Primary.ID), nil
 		}
 
 		return "", fmt.Errorf("[ERROR] Cannot find SiemConnection ID")
