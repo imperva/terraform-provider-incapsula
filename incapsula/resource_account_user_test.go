@@ -13,7 +13,8 @@ import (
 const accountResourceUserType = "incapsula_account_user"
 const accountResourceUserName = "test-terraform-account-user"
 const accountResourceUserTypeName = accountResourceUserType + "." + accountResourceUserName
-const accountUserEmail = "test1@test1.com"
+const accountUserEmail = "test-terraform@incaptest.com"
+const accountUserEmailSpecialChar = "test1+terraform@incaptest.com"
 const accountUserFirstName = "First"
 const accountUserLastName = "Last"
 
@@ -24,10 +25,29 @@ func TestIncapsulaAccountUser_Basic(t *testing.T) {
 		CheckDestroy: testCheckIncapsulaAccountUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCheckIncapsulaAccountUserConfigBasic(t),
+				Config: testCheckIncapsulaAccountUserConfigBasic(t, accountUserEmail),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaAccountUserExists(accountResourceUserTypeName),
 					resource.TestCheckResourceAttr(accountResourceUserTypeName, "email", accountUserEmail),
+					resource.TestCheckResourceAttr(accountResourceUserTypeName, "first_name", accountUserFirstName),
+					resource.TestCheckResourceAttr(accountResourceUserTypeName, "last_name", accountUserLastName),
+				),
+			},
+		},
+	})
+}
+
+func TestIncapsulaAccountUser_BasicWithSpecialChar(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testCheckIncapsulaAccountUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testCheckIncapsulaAccountUserConfigBasic(t, accountUserEmailSpecialChar),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaAccountUserExists(accountResourceUserTypeName),
+					resource.TestCheckResourceAttr(accountResourceUserTypeName, "email", accountUserEmailSpecialChar),
 					resource.TestCheckResourceAttr(accountResourceUserTypeName, "first_name", accountUserFirstName),
 					resource.TestCheckResourceAttr(accountResourceUserTypeName, "last_name", accountUserLastName),
 				),
@@ -43,7 +63,7 @@ func TestIncapsulaAccountUser_Update(t *testing.T) {
 		CheckDestroy: testCheckIncapsulaAccountUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCheckIncapsulaAccountUserConfigBasic(t),
+				Config: testCheckIncapsulaAccountUserConfigBasic(t, accountUserEmail),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaAccountUserExists(accountResourceUserTypeName),
 					resource.TestCheckResourceAttr(accountResourceUserTypeName, "email", accountUserEmail),
@@ -69,7 +89,7 @@ func TestIncapsulaAccountUser_ImportBasic(t *testing.T) {
 		CheckDestroy: testCheckIncapsulaAccountUserDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCheckIncapsulaAccountUserConfigBasic(t),
+				Config: testCheckIncapsulaAccountUserConfigBasic(t, accountUserEmail),
 			},
 			{
 				ResourceName:      accountResourceUserTypeName,
@@ -186,7 +206,7 @@ func testCheckIncapsulaAccountUserExists(name string) resource.TestCheckFunc {
 	}
 }
 
-func testCheckIncapsulaAccountUserConfigBasic(t *testing.T) string {
+func testCheckIncapsulaAccountUserConfigBasic(t *testing.T, email string) string {
 	return fmt.Sprintf(`
 		data "incapsula_account_data" "account_data" {}
 
@@ -196,7 +216,7 @@ func testCheckIncapsulaAccountUserConfigBasic(t *testing.T) string {
 			first_name = "%s"
 			last_name = "%s"
 		}`,
-		accountResourceUserType, accountResourceUserName, accountUserEmail, accountUserFirstName, accountUserLastName,
+		accountResourceUserType, accountResourceUserName, email, accountUserFirstName, accountUserLastName,
 	)
 }
 
