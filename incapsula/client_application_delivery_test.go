@@ -144,6 +144,7 @@ func TestUpdateApplicationDeliveryConfig(t *testing.T) {
 {
   "compression": {
     "file_compression": true,
+    "compression_type": "GZIP",
     "minify_js": true,
     "minify_css": false,
     "minify_static_html": true
@@ -315,6 +316,7 @@ func TestReadApplicationDeliveryConfig(t *testing.T) {
 {
   "compression": {
     "file_compression": true,
+    "compression_type": "GZIP",
     "minify_js": true,
     "minify_css": false,
     "minify_static_html": true

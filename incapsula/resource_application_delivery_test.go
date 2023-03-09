@@ -28,6 +28,7 @@ func TestAccIncapsulaApplicationDelivery_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckApplicationDeliveryExists(applicationDeliveryResource),
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "file_compression", "true"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "compression_type", "GZIP"),
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "minify_css", "true"), //value wasn't set by tf resurce. checking default value from server
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "minify_js", "true"),
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "minify_static_html", "false"),
@@ -105,6 +106,7 @@ resource "%s" "%s" {
   site_id = incapsula_site.testacc-terraform-site.id
   depends_on = ["%s"]
   file_compression = true
+  compression_file = GZIP
   compress_jpeg = true
   minify_static_html = false
   aggressive_compression = true
