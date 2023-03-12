@@ -44,7 +44,7 @@ func resourceApplicationDelivery() *schema.Resource {
 			// Optional Arguments
 			"file_compression": {
 				Type:        schema.TypeBool,
-				Description: "When this option is enabled, files such as JavaScript, CSS and HTML are dynamically compressed using the selected format as they are transferred. They are automatically unzipped within the browser. All modern browsers support this feature.",
+				Description: "When this option is enabled, files such as JavaScript, CSS and HTML are dynamically compressed using the selected format as they are transferred. They are automatically unzipped within the browser. If Brotli is not supported by the browser, files are automatically sent in Gzip.",
 				Optional:    true,
 				Default:     true,
 			},
