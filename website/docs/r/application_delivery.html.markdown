@@ -18,6 +18,7 @@ Note that destroy action will return the configuration to the default values.
 resource "incapsula_application_delivery" "example_application_delivery" {
 	site_id = incapsula_site.testacc-terraform-site.id
 	file_compression            = true
+	compression_type            = "GZIP"
 	minify_css                  = true
 	minify_js                   = true
 	minify_static_html          = false
@@ -46,6 +47,7 @@ The following arguments are supported:
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `file_compression` - (Optional) Compress JPEG images. Compression reduces download time by reducing the file size. Default: true
+* `compression_type` - (Optional) BROTLI (recommended for more efficient compression). Default: GZIP
 * `minify_js` - (Optional) Minify JavaScript. Minification removes characters that are not necessary for rendering the page, such as whitespace and comments. This makes the files smaller and therefore reduces their access time. Minification has no impact on the functionality of the Javascript, CSS, and HTML files. Default: true
 * `minify_css` - (Optional) Content minification can applied only to cached Javascript, CSS and HTML content. Default: true.
 * `minify_static_html` - (Optional) Minify static HTML. Default: true.

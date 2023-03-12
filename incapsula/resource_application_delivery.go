@@ -2,10 +2,12 @@ package incapsula
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 const defaultPortTo = 80
@@ -42,9 +44,16 @@ func resourceApplicationDelivery() *schema.Resource {
 			// Optional Arguments
 			"file_compression": {
 				Type:        schema.TypeBool,
-				Description: "When this option is enabled, any textual resource, such as Javascript, CSS and HTML, is compressed using Gzip as it is being transferred, and then unzipped within the browser. All modern browsers support this feature.",
+				Description: "When this option is enabled, files such as JavaScript, CSS and HTML are dynamically compressed using the selected format as they are transferred. They are automatically unzipped within the browser. If Brotli is not supported by the browser, files are automatically sent in Gzip.",
 				Optional:    true,
 				Default:     true,
+			},
+			"compression_type": {
+				Type:         schema.TypeString,
+				Description:  "Gzip (default). Brotli (recommended for more efficient compression)",
+				Optional:     true,
+				Default:      "GZIP",
+				ValidateFunc: validation.StringInSlice([]string{"GZIP", "BROTLI"}, false),
 			},
 			"minify_js": {
 				Type:        schema.TypeBool,
@@ -292,6 +301,7 @@ func resourceApplicationDeliveryRead(d *schema.ResourceData, m interface{}) erro
 	d.SetId(siteIdStr)
 
 	d.Set("file_compression", applicationDelivery.Compression.FileCompression)
+	d.Set("compression_type", applicationDelivery.Compression.CompressionType)
 	d.Set("minify_js", applicationDelivery.Compression.MinifyJs)
 	d.Set("minify_css", applicationDelivery.Compression.MinifyCss)
 	d.Set("minify_static_html", applicationDelivery.Compression.MinifyStaticHtml)
@@ -331,6 +341,7 @@ func resourceApplicationDeliveryUpdate(d *schema.ResourceData, m interface{}) er
 
 	compression := Compression{
 		FileCompression:  d.Get("file_compression").(bool),
+		CompressionType:  d.Get("compression_type").(string),
 		MinifyJs:         d.Get("minify_js").(bool),
 		MinifyCss:        d.Get("minify_css").(bool),
 		MinifyStaticHtml: d.Get("minify_static_html").(bool),
