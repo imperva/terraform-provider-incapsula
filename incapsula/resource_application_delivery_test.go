@@ -106,7 +106,7 @@ resource "%s" "%s" {
   site_id = incapsula_site.testacc-terraform-site.id
   depends_on = ["%s"]
   file_compression = true
-  compression_file = GZIP
+  compression_type = "GZIP"
   compress_jpeg = true
   minify_static_html = false
   aggressive_compression = true
