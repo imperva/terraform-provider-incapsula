@@ -422,9 +422,18 @@ func resourceApplicationDeliveryDelete(d *schema.ResourceData, m interface{}) er
 		},
 	}
 
+	compression := Compression{
+		FileCompression:  true,
+		CompressionType:  "GZIP",
+		MinifyJs:         true,
+		MinifyCss:        true,
+		MinifyStaticHtml: true,
+	}
+
 	payload := ApplicationDelivery{
 		Network:         network,
 		CustomErrorPage: customErrorPage,
+		Compression:     compression,
 	}
 
 	_, err := client.UpdateApplicationDelivery(siteID, &payload)
