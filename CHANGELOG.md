@@ -1,3 +1,9 @@
+## 3.16.0 (Mar 22, 2023)
+
+IMPROVEMENTS:
+
+* incapsula_application_delivery - support compression_type ([#301](https://github.com/imperva/terraform-provider-incapsula/pull/301))
+
 ## 3.15.2 (Feb 26, 2023)
 
 BUG FIXES:
