@@ -40,22 +40,22 @@ func resourceATOSiteAllowlist() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"ip": &schema.Schema{
+						"Ip": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "IP excluded from mitigation",
 						},
-						"mask": &schema.Schema{
+						"Mask": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Subnet excluded for the IP from mitigation",
 						},
-						"desc": &schema.Schema{
+						"Desc": &schema.Schema{
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Notes specified at the time of creating this allowlist entry",
 						},
-						"updated": &schema.Schema{
+						"Updated": &schema.Schema{
 							Type:        schema.TypeInt,
 							Computed:    true,
 							Description: "IP excluded from mitigation",
@@ -74,7 +74,8 @@ func resourceATOSiteAllowlistRead(d *schema.ResourceData, m interface{}) error {
 
 	// Fetch the ATO allowlist of IPs and subnets
 	siteId := d.Get("site_id").(int)
-	atoAllowlistDTO, err := client.GetAtoSiteAllowlist(siteId)
+	accountId := d.Get("account_id").(int)
+	atoAllowlistDTO, err := client.GetAtoSiteAllowlist(accountId, siteId)
 
 	// Handle fetch error
 	if err != nil {
@@ -95,10 +96,10 @@ func resourceATOSiteAllowlistRead(d *schema.ResourceData, m interface{}) error {
 
 		for i, allowlistItem := range atoAllowlistDTO.allowlist {
 			allowlistItemMap := make(map[string]interface{})
-			allowlistItemMap["ip"] = allowlistItem.ip
-			allowlistItemMap["mask"] = allowlistItem.mask
-			allowlistItemMap["desc"] = allowlistItem.desc
-			allowlistItemMap["updated"] = allowlistItem.updated
+			allowlistItemMap["Ip"] = allowlistItem.Ip
+			allowlistItemMap["Mask"] = allowlistItem.Mask
+			allowlistItemMap["Desc"] = allowlistItem.Desc
+			allowlistItemMap["Updated"] = allowlistItem.Updated
 			atoAllowlistMap["allowlist"].([]map[string]interface{})[i] = allowlistItemMap
 
 		}
@@ -134,7 +135,7 @@ func resourceATOSiteAllowlistUpdate(d *schema.ResourceData, m interface{}) error
 			return err
 		}
 
-		err = client.UpdateATOSiteAllowlist(siteId, atoAllowlistDTO)
+		err = client.UpdateATOSiteAllowlist(atoAllowlistDTO)
 		if err != nil {
 			e := fmt.Errorf("[ERROR] Could not update ATO site allowlist for site ID : %d Error : %s \n", atoAllowlistDTO.siteId, err)
 			return e
@@ -149,10 +150,11 @@ func resourceATOSiteAllowlistUpdate(d *schema.ResourceData, m interface{}) error
 func resourceATOSiteAllowlistDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteId := d.Get("site_id").(int)
+	accountId := d.Get("account_id").(int)
 
 	log.Printf("[DEBUG] Deleting ATO site allowlist site ID %d \n", siteId)
 
-	err := client.DeleteATOSiteAllowlist(siteId)
+	err := client.DeleteATOSiteAllowlist(accountId, siteId)
 	if err != nil {
 		e := fmt.Errorf("[ERROR] Could not delete ATO site allowlist for site ID : %d Error : %s \n", siteId, err)
 		return e
