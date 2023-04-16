@@ -74,7 +74,7 @@ func formAtoAllowlistDTOFromMap(atoAllowlistMap map[string]interface{}) (*ATOAll
 	case int:
 		break
 	default:
-		return nil, errors.InvalidArgumentError("site_id should be of type int")
+		return nil, fmt.Errorf("site_id should be of type int")
 	}
 
 	// validate account_id
@@ -82,7 +82,7 @@ func formAtoAllowlistDTOFromMap(atoAllowlistMap map[string]interface{}) (*ATOAll
 	case int:
 		break
 	default:
-		return nil, errors.InvalidArgumentError("site_id should be of type int")
+		return nil, fmt.Errorf("site_id should be of type int")
 	}
 
 	// Assign site ID
@@ -98,7 +98,7 @@ func formAtoAllowlistDTOFromMap(atoAllowlistMap map[string]interface{}) (*ATOAll
 
 	// Verify that the allowlist is an array
 	if _, ok := atoAllowlistMap["allowlist"].([]interface{}); !ok {
-		return nil, errors.InvalidArgumentError("allowlist should have type array")
+		return nil, fmt.Errorf("allowlist should have type array")
 	}
 
 	allowlistItemsInMap := atoAllowlistMap["allowlist"].([]interface{})
@@ -229,7 +229,7 @@ func (c *Client) UpdateATOSiteAllowlist(atoSiteAllowlistDTO *ATOAllowlistDTO) er
 
 	// verify site ID and account ID are not the default value for int type
 	if atoSiteAllowlistDTO.SiteId == 0 {
-		return errors.InvalidArgumentError("site_id is not specified in updating ATO allowlist")
+		return fmt.Errorf("site_id is not specified in updating ATO allowlist")
 	}
 	var reqURL string
 	if atoSiteAllowlistDTO.AccountId == 0 {
