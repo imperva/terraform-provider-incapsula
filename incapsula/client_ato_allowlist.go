@@ -7,8 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"reflect"
-	"strconv"
 	"time"
 )
 
@@ -99,25 +97,46 @@ func formAtoAllowlistDTOFromMap(atoAllowlistMap map[string]interface{}) (*ATOAll
 		atoAllowlistDTO.Allowlist = make([]AtoAllowlistItem, 0)
 	}
 
-	fmt.Sprintf("type is %s", reflect.TypeOf(atoAllowlistMap["allowlist"]))
-
+	// Verify that the allowlist is an array
 	if _, ok := atoAllowlistMap["allowlist"].([]interface{}); !ok {
 		return nil, errors.InvalidArgumentError("allowlist should have type array")
 	}
 
-	allowlistItems := atoAllowlistMap["allowlist"].([]interface{})
+	allowlistItemsInMap := atoAllowlistMap["allowlist"].([]interface{})
+	atoAllowlistDTO.Allowlist = make([]AtoAllowlistItem, len(allowlistItemsInMap))
 
-	atoAllowlistDTO.Allowlist = make([]AtoAllowlistItem, len(allowlistItems))
-
-	for i, allowlistItemMap := range allowlistItems {
+	// Convert each allowlist entry in the map to the allowlist item fro the DTO
+	for i, allowlistItemMap := range allowlistItemsInMap {
 		allowListItemMap := allowlistItemMap.(map[string]interface{})
-		updatedTimestampFromMap, _ := strconv.ParseInt(allowListItemMap["updated"].(string), 10, 64)
-		allowlistItem := AtoAllowlistItem{
-			Ip:      allowListItemMap["ip"].(string),
-			Mask:    allowListItemMap["mask"].(string),
-			Desc:    allowListItemMap["desc"].(string),
-			Updated: updatedTimestampFromMap,
+
+		// Initialize allowlist item
+		allowlistItem := AtoAllowlistItem{}
+
+		// Check that IP is not empty
+		if allowListItemMap["ip"] == nil {
+			return nil, fmt.Errorf("IP cannot be empty in allowlist items")
 		}
+
+		allowlistItem.Ip = allowListItemMap["ip"].(string)
+
+		// Extract description
+		if allowListItemMap["desc"] != nil {
+			allowlistItem.Desc = allowListItemMap["desc"].(string)
+		}
+
+		// Extract subnet from map
+		if allowListItemMap["mask"] != nil {
+			allowlistItem.Desc = allowListItemMap["mask"].(string)
+		}
+
+		// Get timestamp from map
+		if allowListItemMap["updated"] != nil {
+			updatedAtTimestamp, ok := allowListItemMap["updated"].(int64)
+			if ok {
+				allowlistItem.Updated = updatedAtTimestamp
+			}
+		}
+
 		atoAllowlistDTO.Allowlist[i] = allowlistItem
 	}
 
