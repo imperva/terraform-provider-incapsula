@@ -126,7 +126,7 @@ func formAtoAllowlistDTOFromMap(atoAllowlistMap map[string]interface{}) (*ATOAll
 
 		// Extract subnet from map
 		if allowListItemMap["mask"] != nil {
-			allowlistItem.Desc = allowListItemMap["mask"].(string)
+			allowlistItem.Mask = allowListItemMap["mask"].(string)
 		}
 
 		// Get timestamp from map
