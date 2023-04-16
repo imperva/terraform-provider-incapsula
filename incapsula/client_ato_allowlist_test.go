@@ -15,8 +15,8 @@ const (
 )
 
 const atoSiteAllowlistResourceType = "incapsula_ato_site_allowlist"
-const atoSiteAllowlistConfigName = "testacc-terraform-ato-site-allowlist"
-const atoSiteAllowlistConfigResource = atoSiteAllowlistResourceType + "." + atoSiteAllowlistConfigName
+const atoSiteAllowlistResourceName = "testacc-terraform-ato-site-allowlist"
+const atoSiteAllowlistConfigResource = atoSiteAllowlistResourceType + "." + atoSiteAllowlistResourceName
 
 func TestATOSiteAllowlistConfigBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
@@ -36,7 +36,7 @@ func TestATOSiteAllowlistConfigBadConnection(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	err = client.UpdateATOSiteAllowlist(&AtoAllowlistDTO{})
+	err = client.UpdateATOSiteAllowlist(&ATOAllowlistDTO{})
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -83,7 +83,7 @@ func TestATOSiteAllowlistConfigErrorResponse(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	err = client.UpdateATOSiteAllowlist(&AtoAllowlistDTO{})
+	err = client.UpdateATOSiteAllowlist(&ATOAllowlistDTO{})
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -126,7 +126,7 @@ func TestATOSiteAllowlistConfigInvalidResponse(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	err = client.UpdateATOSiteAllowlist(&AtoAllowlistDTO{})
+	err = client.UpdateATOSiteAllowlist(&ATOAllowlistDTO{})
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -152,15 +152,15 @@ func TestATOSiteAllowlistConfigResponse(t *testing.T) {
 		}
 		rw.Write([]byte(`[
     {
-        "Ip": "192.10.20.0",
-        "Mask": "24",
-        "Desc": "Test IP 1",
-        "Updated": 1632530998076
+        "ip": "192.10.20.0",
+        "mask": "24",
+        "desc": "Test IP 1",
+        "updated": 1632530998076
     }, {
-        "Ip": "192.10.20.1",
-        "Mask": "8",
-        "Desc": "Test IP 2",
-        "Updated": 1632530998077
+        "ip": "192.10.20.1",
+        "mask": "8",
+        "desc": "Test IP 2",
+        "updated": 1632530998077
     }
 ]`))
 	}))
@@ -172,7 +172,7 @@ func TestATOSiteAllowlistConfigResponse(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	// Fetch the allowlist for the site
-	response, err := client.GetAtoSiteAllowlist(accountId, siteId)
+	response, err := client.GetAtoSiteAllowlistWithRetries(accountId, siteId)
 
 	// Check for no value edge cases
 	if err != nil {
@@ -182,17 +182,17 @@ func TestATOSiteAllowlistConfigResponse(t *testing.T) {
 		t.Errorf("Should have received a response")
 	}
 
-	if response.allowlist == nil {
+	if response.Allowlist == nil {
 		t.Errorf("Allowlist should not be nil")
 	}
 
 	// Verify that there are 2 items in the allowlist
-	if len(response.allowlist) != 2 {
-		t.Errorf("Size of Allowlist should be 2, received : %d", len(response.allowlist))
+	if len(response.Allowlist) != 2 {
+		t.Errorf("Size of Allowlist should be 2, received : %d", len(response.Allowlist))
 	}
 
 	// Use the first item for testing values
-	allowlistItem := response.allowlist[0]
+	allowlistItem := response.Allowlist[0]
 
 	if allowlistItem.Ip != "192.10.20.0" {
 		t.Errorf("Expected allowlist IP : 192.10.20.0, received : %s", allowlistItem.Ip)
@@ -211,16 +211,16 @@ func TestATOSiteAllowlistConfigResponse(t *testing.T) {
 	}
 
 	// Verify that both the allowlist items are not the same
-	if allowlistItem.Ip == response.allowlist[1].Ip {
+	if allowlistItem.Ip == response.Allowlist[1].Ip {
 		t.Errorf("Allowlist IPs are not expected to be identical with a value of %s", allowlistItem.Ip)
 	}
-	if allowlistItem.Mask == response.allowlist[1].Mask {
+	if allowlistItem.Mask == response.Allowlist[1].Mask {
 		t.Errorf("Allowlist Mask are not expected to be identical with a value of %s", allowlistItem.Mask)
 	}
-	if allowlistItem.Desc == response.allowlist[1].Desc {
+	if allowlistItem.Desc == response.Allowlist[1].Desc {
 		t.Errorf("Allowlist descriptions are not expected to be identical with a value of %s", allowlistItem.Ip)
 	}
-	if allowlistItem.Ip == response.allowlist[1].Ip {
+	if allowlistItem.Ip == response.Allowlist[1].Ip {
 		t.Errorf("Allowlist IPs are not expected to be identical with a value of %s", allowlistItem.Ip)
 	}
 

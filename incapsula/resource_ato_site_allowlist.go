@@ -15,11 +15,11 @@ func resourceATOSiteAllowlist() *schema.Resource {
 		Delete: resourceATOSiteAllowlistDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				siteId, err := strconv.Atoi(d.Get("site_id").(string))
+				siteId, err := strconv.Atoi(d.Id())
+				err = d.Set("site_id", siteId)
 				if err != nil {
-					return nil, fmt.Errorf("site_id should be of type int")
+					return nil, fmt.Errorf("failed to extract site ID from import command, actual value: %s, error : %s", d.Id(), err)
 				}
-				d.SetId(strconv.Itoa(siteId))
 				log.Printf("[DEBUG] Import ATO allowlist for site ID %d", siteId)
 				return []*schema.ResourceData{d}, nil
 			},
@@ -27,40 +27,22 @@ func resourceATOSiteAllowlist() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
+			"account_id": {
+				Description: "Account ID that the site belongs to.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+			},
 			"site_id": {
 				Description: "Site ID to get the allowlist for.",
 				Type:        schema.TypeInt,
 				Required:    true,
 			},
-
-			// Computed attributes
 			"allowlist": {
 				Description: "The allowlist of IPs and IP ranges for the given site ID",
 				Type:        schema.TypeList,
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"Ip": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "IP excluded from mitigation",
-						},
-						"Mask": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Subnet excluded for the IP from mitigation",
-						},
-						"Desc": &schema.Schema{
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Notes specified at the time of creating this allowlist entry",
-						},
-						"Updated": &schema.Schema{
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "IP excluded from mitigation",
-						},
-					},
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeMap,
 				},
 			},
 		},
@@ -73,9 +55,22 @@ func resourceATOSiteAllowlistRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	// Fetch the ATO allowlist of IPs and subnets
-	siteId := d.Get("site_id").(int)
+	siteId, ok := d.Get("site_id").(int)
+
+	if !ok {
+		return fmt.Errorf("site_id should be of type int. Received : %s", d.Get("site_id"))
+	}
+
+	if siteId == 0 {
+		siteIdFromResourceId, conversionError := strconv.Atoi(d.Id())
+		if conversionError != nil {
+			return fmt.Errorf("atleast one of id or site_id should be set for incapsula_ato_site_allowlist")
+		}
+		siteId = siteIdFromResourceId
+	}
+
 	accountId := d.Get("account_id").(int)
-	atoAllowlistDTO, err := client.GetAtoSiteAllowlist(accountId, siteId)
+	atoAllowlistDTO, err := client.GetAtoSiteAllowlistWithRetries(accountId, siteId)
 
 	// Handle fetch error
 	if err != nil {
@@ -87,19 +82,19 @@ func resourceATOSiteAllowlistRead(d *schema.ResourceData, m interface{}) error {
 
 	/* Assign values from our received DTO to the map that terraform understands.
 	This is defined in the schema at dataSourceATOAllowlist() */
-	atoAllowlistMap["site_id"] = atoAllowlistDTO.siteId
+	atoAllowlistMap["site_id"] = atoAllowlistDTO.SiteId
 
 	// Assign the allowlist if present to the terraform compatible map
-	if atoAllowlistDTO.allowlist != nil {
+	if atoAllowlistDTO.Allowlist != nil {
 
-		atoAllowlistMap["allowlist"] = make([]map[string]interface{}, len(atoAllowlistDTO.allowlist))
+		atoAllowlistMap["allowlist"] = make([]map[string]interface{}, len(atoAllowlistDTO.Allowlist))
 
-		for i, allowlistItem := range atoAllowlistDTO.allowlist {
+		for i, allowlistItem := range atoAllowlistDTO.Allowlist {
 			allowlistItemMap := make(map[string]interface{})
-			allowlistItemMap["Ip"] = allowlistItem.Ip
-			allowlistItemMap["Mask"] = allowlistItem.Mask
-			allowlistItemMap["Desc"] = allowlistItem.Desc
-			allowlistItemMap["Updated"] = allowlistItem.Updated
+			allowlistItemMap["ip"] = allowlistItem.Ip
+			allowlistItemMap["mask"] = allowlistItem.Mask
+			allowlistItemMap["desc"] = allowlistItem.Desc
+			allowlistItemMap["updated"] = strconv.FormatInt(allowlistItem.Updated, 10)
 			atoAllowlistMap["allowlist"].([]map[string]interface{})[i] = allowlistItemMap
 
 		}
@@ -109,7 +104,7 @@ func resourceATOSiteAllowlistRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(strconv.Itoa(siteId))
-	err = d.Set("allowlist", atoAllowlistMap)
+	err = d.Set("allowlist", atoAllowlistMap["allowlist"])
 	if err != nil {
 		e := fmt.Errorf("[Error] Error in reading allowlist values : %s", err)
 		return e
@@ -121,27 +116,27 @@ func resourceATOSiteAllowlistRead(d *schema.ResourceData, m interface{}) error {
 func resourceATOSiteAllowlistUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteId := d.Get("site_id").(int)
-	atoAllowlistMap := d.Get("map").(map[string]interface{})
+	accountId := d.Get("account_id").(int)
+
+	atoAllowlistMap := make(map[string]interface{})
+	atoAllowlistMap["account_id"] = accountId
+	atoAllowlistMap["site_id"] = siteId
+	atoAllowlistMap["allowlist"] = d.Get("allowlist").([]interface{})
 
 	log.Printf("[DEBUG] Updating ATO site allowlist site ID %d \n", siteId)
 
-	// Assign the allowlist if present to the terraform compatible map
-	if atoAllowlistMap["allowlist"] != nil {
-		atoAllowlistMap := d.Get("allowlist")
-		atoAllowlistDTO, err := formAtoAllowlistDTOFromMap(atoAllowlistMap.(map[string]interface{}))
-		if err != nil {
-			e := fmt.Errorf("[Error] Error forming ATO allow list object for API call : %s", err)
-			log.Printf(e.Error())
-			return err
-		}
+	// convert terraform compatible map to ATOAllowlistDTO
+	atoAllowlistDTO, err := formAtoAllowlistDTOFromMap(atoAllowlistMap)
+	if err != nil {
+		e := fmt.Errorf("[Error] Error forming ATO allow list object for API call : %s", err)
+		log.Printf(e.Error())
+		return err
+	}
 
-		err = client.UpdateATOSiteAllowlist(atoAllowlistDTO)
-		if err != nil {
-			e := fmt.Errorf("[ERROR] Could not update ATO site allowlist for site ID : %d Error : %s \n", atoAllowlistDTO.siteId, err)
-			return e
-		}
-	} else {
-		// No update required as nil value implies that this resource is not managed by terraform
+	err = client.UpdateATOSiteAllowlistWithRetries(atoAllowlistDTO)
+	if err != nil {
+		e := fmt.Errorf("[ERROR] Could not update ATO site allowlist for site ID : %d Error : %s \n", atoAllowlistDTO.SiteId, err)
+		return e
 	}
 
 	return resourceATOSiteAllowlistRead(d, m)
@@ -160,5 +155,5 @@ func resourceATOSiteAllowlistDelete(d *schema.ResourceData, m interface{}) error
 		return e
 	}
 
-	return resourceATOSiteAllowlistRead(d, m)
+	return nil
 }

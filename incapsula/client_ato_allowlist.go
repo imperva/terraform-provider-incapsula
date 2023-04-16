@@ -7,9 +7,12 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"reflect"
+	"strconv"
+	"time"
 )
 
-const endpointSiteBase = "/v2/sites"
+const endpointATOSiteBase = "/ato/v2/sites"
 const endpointAtoAllowlist = "/allowlist"
 
 type AtoAllowlistItem struct {
@@ -19,33 +22,41 @@ type AtoAllowlistItem struct {
 	Updated int64  `json:"updated"`
 }
 
-type AtoAllowlistDTO struct {
-	accountId int                `json:"accountId"`
-	siteId    int                `json:"siteId"`
-	allowlist []AtoAllowlistItem `json:"allowlist"`
+type ATOAllowlistDTO struct {
+	AccountId int                `json:"accountId"`
+	SiteId    int                `json:"siteId"`
+	Allowlist []AtoAllowlistItem `json:"allowlist"`
 }
 
-func (atoAllowlistDTO *AtoAllowlistDTO) toMap() (map[string]interface{}, error) {
+func formEmptyAllowlistDTO(accountId, siteId int) *ATOAllowlistDTO {
+	return &ATOAllowlistDTO{
+		AccountId: accountId,
+		SiteId:    siteId,
+		Allowlist: make([]AtoAllowlistItem, 0),
+	}
+}
+
+func (atoAllowlistDTO *ATOAllowlistDTO) toMap() (map[string]interface{}, error) {
 
 	// Initialize the data map that terraform uses
 	var atoAllowlistMap = make(map[string]interface{})
 
 	// Set site id
-	atoAllowlistMap["site_id"] = atoAllowlistDTO.siteId
-	atoAllowlistMap["accountId"] = atoAllowlistDTO.accountId
+	atoAllowlistMap["site_id"] = atoAllowlistDTO.SiteId
+	atoAllowlistMap["accountId"] = atoAllowlistDTO.AccountId
 
 	// Assign the allowlist if present to the terraform compatible map
-	if atoAllowlistDTO.allowlist != nil {
+	if atoAllowlistDTO.Allowlist != nil {
 
-		atoAllowlistMap["allowlist"] = make([]map[string]interface{}, len(atoAllowlistDTO.allowlist))
+		atoAllowlistMap["allowlist"] = make([]map[string]interface{}, len(atoAllowlistDTO.Allowlist))
 
-		for i, allowlistItem := range atoAllowlistDTO.allowlist {
+		for i, allowlistItem := range atoAllowlistDTO.Allowlist {
 
 			atoAllowlistMap["allowlist"].([]map[string]interface{})[i] = map[string]interface{}{
-				"Ip":      allowlistItem.Ip,
-				"Mask":    allowlistItem.Mask,
-				"Desc":    allowlistItem.Desc,
-				"Updated": allowlistItem.Updated,
+				"ip":      allowlistItem.Ip,
+				"mask":    allowlistItem.Mask,
+				"desc":    allowlistItem.Desc,
+				"updated": allowlistItem.Updated,
 			}
 			atoAllowlistMap["allowlist"].([]map[string]interface{})[i] = atoAllowlistMap["allowlist"].([]map[string]interface{})[i]
 		}
@@ -57,52 +68,93 @@ func (atoAllowlistDTO *AtoAllowlistDTO) toMap() (map[string]interface{}, error) 
 	return atoAllowlistMap, nil
 }
 
-func formAtoAllowlistDTOFromMap(atoAllowlistMap map[string]interface{}) (*AtoAllowlistDTO, error) {
+func formAtoAllowlistDTOFromMap(atoAllowlistMap map[string]interface{}) (*ATOAllowlistDTO, error) {
 
-	atoAllowlistDTO := AtoAllowlistDTO{}
+	atoAllowlistDTO := ATOAllowlistDTO{}
 
-	// Assign site ID
-	if _, err := atoAllowlistMap["site_id"].(int); err {
+	// Validate site_id
+	switch atoAllowlistMap["site_id"].(type) {
+	case int:
+		break
+	default:
 		return nil, errors.InvalidArgumentError("site_id should be of type int")
 	}
-	atoAllowlistDTO.siteId = atoAllowlistMap["site_id"].(int)
+
+	// validate account_id
+	switch atoAllowlistMap["account_id"].(type) {
+	case int:
+		break
+	default:
+		return nil, errors.InvalidArgumentError("site_id should be of type int")
+	}
+
+	// Assign site ID
+	atoAllowlistDTO.SiteId = atoAllowlistMap["site_id"].(int)
 
 	// Assign account ID
-	if _, err := atoAllowlistMap["account_id"].(int); err {
-		return nil, errors.InvalidArgumentError("account_id should be of type int")
-	}
-	atoAllowlistDTO.accountId = atoAllowlistMap["account_id"].(int)
+	atoAllowlistDTO.AccountId = atoAllowlistMap["account_id"].(int)
 
 	// Assign the allowlist
 	if atoAllowlistMap["allowlist"] == nil {
-		atoAllowlistDTO.allowlist = make([]AtoAllowlistItem, 0)
+		atoAllowlistDTO.Allowlist = make([]AtoAllowlistItem, 0)
 	}
 
-	if _, err := atoAllowlistMap["allowlist"].([]interface{}); err {
+	fmt.Sprintf("type is %s", reflect.TypeOf(atoAllowlistMap["allowlist"]))
+
+	if _, ok := atoAllowlistMap["allowlist"].([]interface{}); !ok {
 		return nil, errors.InvalidArgumentError("allowlist should have type array")
 	}
 
-	allowlistItems := atoAllowlistMap["allowlist"].([]map[string]interface{})
-	atoAllowlistDTO.allowlist = make([]AtoAllowlistItem, len(allowlistItems))
+	allowlistItems := atoAllowlistMap["allowlist"].([]interface{})
+
+	atoAllowlistDTO.Allowlist = make([]AtoAllowlistItem, len(allowlistItems))
 
 	for i, allowlistItemMap := range allowlistItems {
+		allowListItemMap := allowlistItemMap.(map[string]interface{})
+		updatedTimestampFromMap, _ := strconv.ParseInt(allowListItemMap["updated"].(string), 10, 64)
 		allowlistItem := AtoAllowlistItem{
-			Ip:      allowlistItemMap["Ip"].(string),
-			Mask:    allowlistItemMap["Mask"].(string),
-			Desc:    allowlistItemMap["Desc"].(string),
-			Updated: allowlistItemMap["Updated"].(int64),
+			Ip:      allowListItemMap["ip"].(string),
+			Mask:    allowListItemMap["mask"].(string),
+			Desc:    allowListItemMap["desc"].(string),
+			Updated: updatedTimestampFromMap,
 		}
-		atoAllowlistDTO.allowlist[i] = allowlistItem
+		atoAllowlistDTO.Allowlist[i] = allowlistItem
 	}
 
 	return &atoAllowlistDTO, nil
 }
 
-func (c *Client) GetAtoSiteAllowlist(accountId, siteId int) (*AtoAllowlistDTO, error) {
+func (c *Client) GetAtoSiteAllowlistWithRetries(accountId, siteId int) (*ATOAllowlistDTO, error) {
+	// Since the newly created site can take upto 30 seconds to be fully configured, we per.si a simple backoff
+	var backoffSchedule = []time.Duration{
+		5 * time.Second,
+		15 * time.Second,
+		30 * time.Second,
+		60 * time.Second,
+	}
+	var lastError error
+
+	for _, backoff := range backoffSchedule {
+		atoAllowlistDTO, err := c.GetAtoSiteAllowlist(accountId, siteId)
+		if err == nil {
+			return atoAllowlistDTO, nil
+		}
+		lastError = err
+		time.Sleep(backoff)
+	}
+	return nil, lastError
+}
+
+func (c *Client) GetAtoSiteAllowlist(accountId, siteId int) (*ATOAllowlistDTO, error) {
 	log.Printf("[INFO] Getting IP allowlist for (Site Id: %d)\n", siteId)
 
 	// Get request to ATO
-	reqURL := fmt.Sprintf("%s%s/%d%s?caid=%d", c.config.BaseURLAPI, endpointSiteBase, siteId, endpointAtoAllowlist, accountId)
+	var reqURL string
+	if accountId == 0 {
+		reqURL = fmt.Sprintf("%s%s/%d%s", c.config.BaseURLAPI, endpointATOSiteBase, siteId, endpointAtoAllowlist)
+	} else {
+		reqURL = fmt.Sprintf("%s%s/%d%s?caid=%d", c.config.BaseURLAPI, endpointATOSiteBase, siteId, endpointAtoAllowlist, accountId)
+	}
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadATOSiteAllowlistOperation)
 	if err != nil {
 		return nil, fmt.Errorf("[Error] Error executing get ATO allowlist request for site with id %d: %s", siteId, err)
@@ -117,40 +169,73 @@ func (c *Client) GetAtoSiteAllowlist(accountId, siteId int) (*AtoAllowlistDTO, e
 
 	// Parse the JSON
 	var atoAllowlistItems []AtoAllowlistItem
-	var atoAllowlistDTO AtoAllowlistDTO
+	var atoAllowlistDTO ATOAllowlistDTO
 	err = json.Unmarshal(responseBody, &atoAllowlistItems)
-	atoAllowlistDTO.siteId = siteId
-	atoAllowlistDTO.accountId = accountId
-	atoAllowlistDTO.allowlist = atoAllowlistItems
+	atoAllowlistDTO.SiteId = siteId
+	atoAllowlistDTO.AccountId = accountId
+	atoAllowlistDTO.Allowlist = atoAllowlistItems
 	if err != nil {
-		return nil, fmt.Errorf("[Error] Error parsing ATO allowlist response for site with ID: %d %s\nresponse: %s", siteId, err, string(responseBody))
+		return nil, fmt.Errorf("[Error] Q Error parsing ATO allowlist response for site with ID: %d %s\nresponse: %s", siteId, err, string(responseBody))
 	}
 
 	return &atoAllowlistDTO, nil
 }
 
-func (c *Client) UpdateATOSiteAllowlist(atoSiteAllowlistDTO *AtoAllowlistDTO) error {
+func (c *Client) UpdateATOSiteAllowlistWithRetries(atoSiteAllowlistDTO *ATOAllowlistDTO) error {
+	// Since the newly created site can take upto 30 seconds to be fully configured, we perform a simple backoff
+	var backoffSchedule = []time.Duration{
+		5 * time.Second,
+		15 * time.Second,
+		30 * time.Second,
+		60 * time.Second,
+	}
+	var lastError error
 
-	log.Printf("[INFO] Updating IP allowlist for (Site Id: %d)\n", atoSiteAllowlistDTO.siteId)
+	for _, backoff := range backoffSchedule {
+		err := c.UpdateATOSiteAllowlist(atoSiteAllowlistDTO)
+		if err == nil {
+			return nil
+		}
+		lastError = err
+		time.Sleep(backoff)
+	}
+	return lastError
+}
+
+func (c *Client) UpdateATOSiteAllowlist(atoSiteAllowlistDTO *ATOAllowlistDTO) error {
+
+	log.Printf("[INFO] Updating IP allowlist for (Site Id: %d)\n", atoSiteAllowlistDTO.SiteId)
 
 	// Form the request body
-	atoAllowlistJSON, err := json.Marshal(atoSiteAllowlistDTO)
+	atoAllowlistJSON, err := json.Marshal(atoSiteAllowlistDTO.Allowlist)
 
 	// verify site ID and account ID are not the default value for int type
-	if atoSiteAllowlistDTO.siteId == 0 {
+	if atoSiteAllowlistDTO.SiteId == 0 {
 		return errors.InvalidArgumentError("site_id is not specified in updating ATO allowlist")
 	}
-	if atoSiteAllowlistDTO.accountId == 0 {
-		return errors.InvalidArgumentError("account_id is not specified in updating ATO allowlist")
+	var reqURL string
+	if atoSiteAllowlistDTO.AccountId == 0 {
+		reqURL = fmt.Sprintf("%s%s/%d%s", c.config.BaseURLAPI, endpointATOSiteBase, atoSiteAllowlistDTO.SiteId, endpointAtoAllowlist)
+	} else {
+		reqURL = fmt.Sprintf("%s%s/%d%s?caid=%d", c.config.BaseURLAPI, endpointATOSiteBase, atoSiteAllowlistDTO.SiteId, endpointAtoAllowlist, atoSiteAllowlistDTO.AccountId)
 	}
 
 	// Update request to ATO
-	reqURL := fmt.Sprintf("%s%s%d%s?caid=%d", c.config.BaseURLAPI, endpointSiteBase, atoSiteAllowlistDTO.siteId, endpointAtoAllowlist, atoSiteAllowlistDTO.accountId)
-	_, err = c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, atoAllowlistJSON, UpdateATOSiteAllowlistOperation)
+	response, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, atoAllowlistJSON, UpdateATOSiteAllowlistOperation)
+
+	// Read the body
+	defer response.Body.Close()
+	responseBody, err := io.ReadAll(response.Body)
+
+	log.Printf("Updated ATO allowlist with response : %s", responseBody)
 
 	// Handle request error
 	if err != nil {
-		return fmt.Errorf("[Error] Error executing update ATO allowlist request for site with id %d: %s", atoSiteAllowlistDTO.siteId, err)
+		return fmt.Errorf("[Error] Error executing update ATO allowlist request for site with id %d: %s", atoSiteAllowlistDTO.SiteId, err)
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("[Error] Error executing update ATO allowlist request for site with status %d: %s", atoSiteAllowlistDTO.SiteId, response.Status)
 	}
 
 	return nil
@@ -160,13 +245,11 @@ func (c *Client) UpdateATOSiteAllowlist(atoSiteAllowlistDTO *AtoAllowlistDTO) er
 func (c *Client) DeleteATOSiteAllowlist(accountId, siteId int) error {
 	log.Printf("[INFO] Deleting IP allowlist for (Site Id: %d)\n", siteId)
 
-	// Delete request to ATO
-	reqURL := fmt.Sprintf("%s%s%d%s?caid=%d", c.config.BaseURLAPI, endpointSiteBase, siteId, endpointAtoAllowlist, accountId)
-	_, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteATOSiteAllowlistOperation)
+	err := c.UpdateATOSiteAllowlist(formEmptyAllowlistDTO(accountId, siteId))
 
 	// Handle request error
 	if err != nil {
-		return fmt.Errorf("[Error] Error executing update ATO allowlist request for site with id %d: %s", siteId, err)
+		return fmt.Errorf("[Error] Error executing delete ATO allowlist request for site with id %d: %s", siteId, err)
 	}
 
 	return nil
