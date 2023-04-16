@@ -3,7 +3,6 @@ package incapsula
 import (
 	"encoding/json"
 	"fmt"
-	"golang.org/x/crypto/openpgp/errors"
 	"io"
 	"log"
 	"net/http"
