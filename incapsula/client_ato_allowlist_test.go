@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	ATOSitePath      = "/v2/sites"
+	ATOSitePath      = "/ato/v2/sites"
 	ATOAllowlistPath = "/allowlist"
 )
 

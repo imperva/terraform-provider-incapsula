@@ -122,6 +122,11 @@ const ReadATOSiteAllowlistOperation = "read_ato_site_allowlist"
 const UpdateATOSiteAllowlistOperation = "read_ato_site_allowlist"
 const DeleteATOSiteAllowlistOperation = "read_ato_site_allowlist"
 
+const CreateATOSiteMitigationConfigurationOperation = "create_ato_site_mitigation_configuration"
+const ReadATOSiteMitigationConfigurationOperation = "read_ato_site_mitigation_configuration"
+const UpdateATOSiteMitigationConfigurationOperation = "read_ato_site_mitigation_configuration"
+const DeleteATOSiteMitigationConfigurationOperation = "read_ato_site_mitigation_configuration"
+
 const CreateNotificationCenterPolicy = "create_notification_center_policy"
 const ReadNotificationCenterPolicy = "read_notification_center_policy"
 const UpdateNotificationCenterPolicy = "update_notification_center_policy"

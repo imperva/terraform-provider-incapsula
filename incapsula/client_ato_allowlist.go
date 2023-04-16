@@ -222,7 +222,7 @@ func (c *Client) UpdateATOSiteAllowlistWithRetries(atoSiteAllowlistDTO *ATOAllow
 
 func (c *Client) UpdateATOSiteAllowlist(atoSiteAllowlistDTO *ATOAllowlistDTO) error {
 
-	log.Printf("[INFO] Updating IP allowlist for (Site Id: %d)\n", atoSiteAllowlistDTO.SiteId)
+	log.Printf("[INFO] Updating ATO IP allowlist for (Site Id: %d)\n", atoSiteAllowlistDTO.SiteId)
 
 	// Form the request body
 	atoAllowlistJSON, err := json.Marshal(atoSiteAllowlistDTO.Allowlist)
