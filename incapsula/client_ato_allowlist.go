@@ -13,10 +13,9 @@ const endpointATOSiteBase = "/ato/v2/sites"
 const endpointAtoAllowlist = "/allowlist"
 
 type AtoAllowlistItem struct {
-	Ip      string `json:"ip"`
-	Mask    string `json:"mask"`
-	Desc    string `json:"desc"`
-	Updated int64  `json:"updated"`
+	Ip   string `json:"ip"`
+	Mask string `json:"mask"`
+	Desc string `json:"desc"`
 }
 
 type ATOAllowlistDTO struct {
@@ -50,10 +49,9 @@ func (atoAllowlistDTO *ATOAllowlistDTO) toMap() (map[string]interface{}, error) 
 		for i, allowlistItem := range atoAllowlistDTO.Allowlist {
 
 			atoAllowlistMap["allowlist"].([]map[string]interface{})[i] = map[string]interface{}{
-				"ip":      allowlistItem.Ip,
-				"mask":    allowlistItem.Mask,
-				"desc":    allowlistItem.Desc,
-				"updated": allowlistItem.Updated,
+				"ip":   allowlistItem.Ip,
+				"mask": allowlistItem.Mask,
+				"desc": allowlistItem.Desc,
 			}
 			atoAllowlistMap["allowlist"].([]map[string]interface{})[i] = atoAllowlistMap["allowlist"].([]map[string]interface{})[i]
 		}
@@ -126,14 +124,6 @@ func formAtoAllowlistDTOFromMap(atoAllowlistMap map[string]interface{}) (*ATOAll
 		// Extract subnet from map
 		if allowListItemMap["mask"] != nil {
 			allowlistItem.Mask = allowListItemMap["mask"].(string)
-		}
-
-		// Get timestamp from map
-		if allowListItemMap["updated"] != nil {
-			updatedAtTimestamp, ok := allowListItemMap["updated"].(int64)
-			if ok {
-				allowlistItem.Updated = updatedAtTimestamp
-			}
 		}
 
 		atoAllowlistDTO.Allowlist[i] = allowlistItem

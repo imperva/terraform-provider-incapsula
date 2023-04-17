@@ -132,7 +132,7 @@ func testAccCheckATOSiteAllowlistConfigBasic(t *testing.T) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 	resource "%s" "%s" {
 		site_id             = %s.id
-		allowlist			= [ { "ip": "192.10.20.0", "mask": "24", "desc": "Test IP 1", "updated": 1632530998076 }, { "ip": "192.10.20.1", "mask": "8", "desc": "Test IP 2", "updated": 1632530998077 } ]
+		allowlist			= [ { "ip": "192.10.20.0", "mask": "24", "desc": "Test IP 1"}, { "ip": "192.10.20.1", "mask": "8", "desc": "Test IP 2" } ]
 		depends_on 			= ["%s"]
 	}`,
 		atoSiteAllowlistResourceType, atoSiteAllowlistResourceName, siteResourceName, siteResourceName,

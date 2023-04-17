@@ -154,13 +154,11 @@ func TestATOSiteAllowlistConfigResponse(t *testing.T) {
     {
         "ip": "192.10.20.0",
         "mask": "24",
-        "desc": "Test IP 1",
-        "updated": 1632530998076
+        "desc": "Test IP 1"
     }, {
         "ip": "192.10.20.1",
         "mask": "8",
-        "desc": "Test IP 2",
-        "updated": 1632530998077
+        "desc": "Test IP 2"
     }
 ]`))
 	}))
@@ -204,10 +202,6 @@ func TestATOSiteAllowlistConfigResponse(t *testing.T) {
 
 	if allowlistItem.Desc != "Test IP 1" {
 		t.Errorf("Expected allowlist description to be 'Test IP 1', received : %s", allowlistItem.Desc)
-	}
-
-	if allowlistItem.Updated != 1632530998076 {
-		t.Errorf("Expected allowlist Updated at time to be 1632530998076, received : %d", allowlistItem.Updated)
 	}
 
 	// Verify that both the allowlist items are not the same

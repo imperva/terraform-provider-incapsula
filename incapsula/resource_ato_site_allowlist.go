@@ -42,6 +42,7 @@ func resourceATOSiteAllowlist() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Elem: &schema.Schema{
+					// Terraform does not allow us to granular type define the map
 					Type: schema.TypeMap,
 				},
 			},
@@ -93,7 +94,6 @@ func resourceATOSiteAllowlistRead(d *schema.ResourceData, m interface{}) error {
 			allowlistItemMap["ip"] = allowlistItem.Ip
 			allowlistItemMap["mask"] = allowlistItem.Mask
 			allowlistItemMap["desc"] = allowlistItem.Desc
-			allowlistItemMap["updated"] = strconv.FormatInt(allowlistItem.Updated, 10)
 			atoAllowlistMap["allowlist"].([]map[string]interface{})[i] = allowlistItemMap
 
 		}
