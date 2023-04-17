@@ -237,7 +237,7 @@ func (c *Client) UpdateATOSiteMitigationConfiguration(aTOSiteMitigationConfigura
 		return fmt.Errorf("[Error] Error executing update ATO mitigation configuratgion request for site with id %d: %s", aTOSiteMitigationConfigurationDTO.SiteId, err)
 	}
 
-	if response.StatusCode != http.StatusOK {
+	if response.StatusCode >= http.StatusBadRequest {
 		return fmt.Errorf("[Error] Error executing update ATO mitigation configuration request for site with status %d: %s", aTOSiteMitigationConfigurationDTO.SiteId, response.Status)
 	}
 

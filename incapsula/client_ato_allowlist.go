@@ -244,7 +244,7 @@ func (c *Client) UpdateATOSiteAllowlist(atoSiteAllowlistDTO *ATOAllowlistDTO) er
 		return fmt.Errorf("[Error] Error executing update ATO allowlist request for site with id %d: %s", atoSiteAllowlistDTO.SiteId, err)
 	}
 
-	if response.StatusCode != http.StatusOK {
+	if response.StatusCode >= http.StatusBadRequest {
 		return fmt.Errorf("[Error] Error executing update ATO allowlist request for site with status %d: %d", response.StatusCode, atoSiteAllowlistDTO.SiteId)
 	}
 
