@@ -755,3 +755,21 @@ resource "incapsula_api_security_endpoint_config" "example-api-security-endpoint
 	invalid_param_value_violation_action = "BLOCK_IP"
     missing_param_violation_action = "BLOCK_IP"
 }
+
+####################################################################
+# ATO Allowlist
+####################################################################
+
+resource "incapsula_ato_site_allowlist" "example-ato-site-allowlist-test" {
+  site_id           = incapsula_site.example-site.id
+  allowlist			= [ { "ip": "192.10.20.0", "mask": "24", "desc": "Test IP 1"}, { "ip": "192.10.20.1", "mask": "8", "desc": "Test IP 2" } ]
+}
+
+####################################################################
+# ATO Mitigation configuration
+####################################################################
+
+resource "incapsula_ato_site_mitigation_configuration" "example-ato-site-mitigation-configuration" {
+  site_id                   = incapsula_site.example-site.id
+  mitigation_configuration  = [ { "endpointId": "5000", "lowAction": "NONE", "mediumAction": "CAPTCHA", "highAction": "BLOCK" }, { "endpointId": "5001", "lowAction": "NONE", "mediumAction": "CAPTCHA", "highAction": "TARPIT" } ]
+}

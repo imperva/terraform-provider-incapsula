@@ -139,6 +139,7 @@ func (c *Client) GetAtoSiteAllowlistWithRetries(accountId, siteId int) (*ATOAllo
 		15 * time.Second,
 		30 * time.Second,
 		60 * time.Second,
+		75 * time.Second,
 	}
 	var lastError error
 
@@ -196,6 +197,7 @@ func (c *Client) UpdateATOSiteAllowlistWithRetries(atoSiteAllowlistDTO *ATOAllow
 		15 * time.Second,
 		30 * time.Second,
 		60 * time.Second,
+		75 * time.Second,
 	}
 	var lastError error
 
@@ -243,7 +245,7 @@ func (c *Client) UpdateATOSiteAllowlist(atoSiteAllowlistDTO *ATOAllowlistDTO) er
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return fmt.Errorf("[Error] Error executing update ATO allowlist request for site with status %d: %s", atoSiteAllowlistDTO.SiteId, response.Status)
+		return fmt.Errorf("[Error] Error executing update ATO allowlist request for site with status %d: %d", response.StatusCode, atoSiteAllowlistDTO.SiteId)
 	}
 
 	return nil
