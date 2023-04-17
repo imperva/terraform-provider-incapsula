@@ -46,9 +46,7 @@ func TestAccIncapsulaATOSiteAllowlistConfig_basic(t *testing.T) {
 func testCheckATOSiteAllowlistConfigExists(name string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 
-		// The ATO site configuration takes upto a minute to deploy worldwide. To keep the tests consistent we wait
-		//time.Sleep(60 * time.Second)
-
+		// Fetch the resource from the current state
 		res, ok := state.RootModule().Resources[name]
 		if !ok {
 			return fmt.Errorf("Incapsula ATO Site allowlist resource not found: %s", name)
@@ -73,7 +71,7 @@ func testCheckATOSiteAllowlistConfigExists(name string) resource.TestCheckFunc {
 		client := testAccProvider.Meta().(*Client)
 		aTOAllowlistDTO, err := client.GetAtoSiteAllowlistWithRetries(accountId, siteId)
 		if err != nil {
-			return fmt.Errorf("Error in fetching ATO allowlistg for site ID %d, Error : %s", siteId, err)
+			return fmt.Errorf("Error in fetching ATO allowlist for site ID %d, Error : %s", siteId, err)
 		}
 		if aTOAllowlistDTO == nil || aTOAllowlistDTO.Allowlist == nil {
 			return fmt.Errorf("ATO site allowlist is not present for site ID %d", siteId)

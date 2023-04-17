@@ -13,9 +13,6 @@ const (
 	ATOSiteMitigationConfigurationPath = "/mitigation"
 )
 
-const atoSiteMitigationConfigurationResourceType = "incapsula_ato_site_mitigation_configuration"
-const atoSiteMitigationConfigurationResourceName = "testacc-terraform-ato-site-mitigation-configuration"
-
 func TestATOSiteMitigationConfigurationBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
@@ -157,13 +154,13 @@ func TestATOSiteMitigationConfigurationResponse(t *testing.T) {
 		rw.Write([]byte(`[
 
     {
-        "endpointId": 5000,
+        "endpointId": "5000",
         "lowAction": "NONE",
         "mediumAction": "CAPTCHA",
         "highAction": "BLOCK"
     }, 
 	{
-        "endpointId": 5001,
+        "endpointId": "5001",
         "lowAction": "NONE",
         "mediumAction": "CAPTCHA",
         "highAction": "TARPIT"
@@ -201,8 +198,8 @@ func TestATOSiteMitigationConfigurationResponse(t *testing.T) {
 	// Use the first item for testing values
 	mitigationConfigurationItem := response.MitigationConfiguration[0]
 
-	if mitigationConfigurationItem.EndpointId != 5000 {
-		t.Errorf("Expected mitigation configuration endpointId : 5000, received : %d", mitigationConfigurationItem.EndpointId)
+	if mitigationConfigurationItem.EndpointId != "5000" {
+		t.Errorf("Expected mitigation configuration endpointId : 5000, received : %s", mitigationConfigurationItem.EndpointId)
 	}
 
 	if mitigationConfigurationItem.LowAction != "NONE" {
@@ -219,7 +216,7 @@ func TestATOSiteMitigationConfigurationResponse(t *testing.T) {
 
 	// Verify that both the mitigation configuration items are not the same
 	if mitigationConfigurationItem.EndpointId == response.MitigationConfiguration[1].EndpointId {
-		t.Errorf("Mitigation configuration endpoint are not expected to be identical with a value of %d", mitigationConfigurationItem.EndpointId)
+		t.Errorf("Mitigation configuration endpoint are not expected to be identical with a value of %s", mitigationConfigurationItem.EndpointId)
 	}
 
 }

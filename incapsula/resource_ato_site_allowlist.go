@@ -80,8 +80,7 @@ func resourceATOSiteAllowlistRead(d *schema.ResourceData, m interface{}) error {
 	// Initialize the data map that terraform uses
 	var atoAllowlistMap = make(map[string]interface{})
 
-	/* Assign values from our received DTO to the map that terraform understands.
-	This is defined in the schema at dataSourceATOAllowlist() */
+	// Assign values from our received DTO to the map that terraform understands.
 	atoAllowlistMap["site_id"] = atoAllowlistDTO.SiteId
 
 	// Assign the allowlist if present to the terraform compatible map
@@ -147,7 +146,7 @@ func resourceATOSiteAllowlistDelete(d *schema.ResourceData, m interface{}) error
 	siteId := d.Get("site_id").(int)
 	accountId := d.Get("account_id").(int)
 
-	log.Printf("[DEBUG] Deleting ATO site allowlist site ID %d \n", siteId)
+	log.Printf("[DEBUG] Deleting ATO site allowlist for site ID %d \n", siteId)
 
 	err := client.DeleteATOSiteAllowlist(accountId, siteId)
 	if err != nil {

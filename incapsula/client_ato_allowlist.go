@@ -82,7 +82,7 @@ func formAtoAllowlistDTOFromMap(atoAllowlistMap map[string]interface{}) (*ATOAll
 	case int:
 		break
 	default:
-		return nil, fmt.Errorf("site_id should be of type int")
+		return nil, fmt.Errorf("account_id should be of type int")
 	}
 
 	// Assign site ID
@@ -104,7 +104,7 @@ func formAtoAllowlistDTOFromMap(atoAllowlistMap map[string]interface{}) (*ATOAll
 	allowlistItemsInMap := atoAllowlistMap["allowlist"].([]interface{})
 	atoAllowlistDTO.Allowlist = make([]AtoAllowlistItem, len(allowlistItemsInMap))
 
-	// Convert each allowlist entry in the map to the allowlist item fro the DTO
+	// Convert each allowlist entry in the map to the allowlist item for the DTO
 	for i, allowlistItemMap := range allowlistItemsInMap {
 		allowListItemMap := allowlistItemMap.(map[string]interface{})
 
