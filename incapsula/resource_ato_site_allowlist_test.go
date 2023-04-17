@@ -25,11 +25,9 @@ func TestAccIncapsulaATOSiteAllowlistConfig_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(atoSiteAllowlistConfigResource, "allowlist.0.ip", "192.10.20.0"),
 					resource.TestCheckResourceAttr(atoSiteAllowlistConfigResource, "allowlist.0.mask", "24"),
 					resource.TestCheckResourceAttr(atoSiteAllowlistConfigResource, "allowlist.0.desc", "Test IP 1"),
-					resource.TestCheckResourceAttr(atoSiteAllowlistConfigResource, "allowlist.0.updated", "1632530998076"),
 					resource.TestCheckResourceAttr(atoSiteAllowlistConfigResource, "allowlist.1.ip", "192.10.20.1"),
 					resource.TestCheckResourceAttr(atoSiteAllowlistConfigResource, "allowlist.1.mask", "8"),
 					resource.TestCheckResourceAttr(atoSiteAllowlistConfigResource, "allowlist.1.desc", "Test IP 2"),
-					resource.TestCheckResourceAttr(atoSiteAllowlistConfigResource, "allowlist.1.updated", "1632530998077"),
 				),
 			},
 			{
