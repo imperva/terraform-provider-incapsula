@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 )
 
 // Endpoints (unexported consts)
@@ -119,7 +120,7 @@ func (c *Client) GetAccountUser(accountID int, email string) (*UserApisResponse,
 	log.Printf("[INFO] Getting Incapsula user status for email id: %s\n", email)
 
 	// Get to Incapsula
-	reqURL := fmt.Sprintf("%s/%s?caid=%d&email=%s", c.config.BaseURLAPI, endpointUserStatus, accountID, email)
+	reqURL := fmt.Sprintf("%s/%s?caid=%d&email=%s", c.config.BaseURLAPI, endpointUserStatus, accountID, url.QueryEscape(email))
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadAccountUser)
 
 	if err != nil {
@@ -210,7 +211,7 @@ func (c *Client) DeleteAccountUser(accountID int, email string) error {
 
 	// Delete form to Incapsula
 
-	reqURL := fmt.Sprintf("%s/%s?caid=%d&email=%s", c.config.BaseURLAPI, endpointUserDelete, accountID, email)
+	reqURL := fmt.Sprintf("%s/%s?caid=%d&email=%s", c.config.BaseURLAPI, endpointUserDelete, accountID, url.QueryEscape(email))
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteAccountUser)
 
 	if err != nil {

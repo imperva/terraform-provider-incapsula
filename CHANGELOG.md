@@ -1,6 +1,18 @@
-## 3.15.1 (Feb 6, 2023)
+## 3.16.0 (Mar 22, 2023)
+
+IMPROVEMENTS:
+
+* incapsula_application_delivery - support compression_type ([#301](https://github.com/imperva/terraform-provider-incapsula/pull/301))
+
+## 3.15.2 (Feb 26, 2023)
 
 BUG FIXES:
+
+* Fix a bug of '+' character in a user's email ([#292](https://github.com/imperva/terraform-provider-incapsula/pull/292))
+
+## 3.15.1 (Feb 6, 2023)
+
+BUG FIXES:  
 
 * Fix unchangeable attributes bug in account resource ([#284](https://github.com/imperva/terraform-provider-incapsula/pull/284))
 * Fix bug in import command of siem_log_configuration and incapsula_siem_connection resources ([#285](https://github.com/imperva/terraform-provider-incapsula/pull/285))

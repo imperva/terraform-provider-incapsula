@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -84,7 +85,7 @@ func TestClientUserStatusBadJSON(t *testing.T) {
 	accountID := 123
 	email := "example@example.com"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s?caid=%d&email=%s", endpointUserStatus, accountID, email) {
+		if req.URL.String() != fmt.Sprintf("/%s?caid=%d&email=%s", endpointUserStatus, accountID, url.QueryEscape(email)) {
 			t.Errorf("Should have have hit /%s?caid=%d&email=%s endpoint. Got: %s", endpointUserStatus, accountID, email, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
@@ -127,7 +128,7 @@ func TestClientDeleteUserBadJSON(t *testing.T) {
 	accountID := 123
 	email := "example@example.com"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s?caid=%d&email=%s", endpointUserDelete, accountID, email) {
+		if req.URL.String() != fmt.Sprintf("/%s?caid=%d&email=%s", endpointUserDelete, accountID, url.QueryEscape(email)) {
 			t.Errorf("Should have have hit /%s?caid=%d&email=%s endpoint. Got: %s", endpointUserDelete, accountID, email, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
