@@ -15,6 +15,10 @@ const NetsecProvider = "NETSEC"
 
 var NetsecDatasets = []string{"CONNECTION", "IP", "NETFLOW", "ATTACK"}
 
+const AtoProvider = "ATO"
+
+var AtoDatasets = []string{"ATO"}
+
 func resourceSiemLogConfiguration() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceSiemLogConfigurationCreate,
@@ -54,14 +58,14 @@ func resourceSiemLogConfiguration() *schema.Resource {
 				Description:  "Type of the producer.",
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{AbpProvider, NetsecProvider}, false),
+				ValidateFunc: validation.StringInSlice([]string{AbpProvider, NetsecProvider, AtoProvider}, false),
 			},
 			"datasets": {
 				Description: "All datasets for the supported producers.",
 				Type:        schema.TypeList,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice([]string{AbpDatasets[0], NetsecDatasets[0], NetsecDatasets[1], NetsecDatasets[2], NetsecDatasets[3]}, false),
+					ValidateFunc: validation.StringInSlice([]string{AbpDatasets[0], NetsecDatasets[0], NetsecDatasets[1], NetsecDatasets[2], NetsecDatasets[3], AtoDatasets[0]}, false),
 				},
 				Required: true,
 			},
@@ -88,6 +92,8 @@ func resourceValidation(d *schema.ResourceData) error {
 		providerDatasets = AbpDatasets
 	} else if producer == NetsecProvider {
 		providerDatasets = NetsecDatasets
+	} else if producer == AtoProvider {
+		providerDatasets = AtoDatasets
 	}
 
 	for _, s := range datasets {

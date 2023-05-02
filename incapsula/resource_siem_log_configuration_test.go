@@ -26,14 +26,17 @@ func TestSiemLogConfiguration_Basic(t *testing.T) {
 		CheckDestroy: testAccIncapsulaSiemLogConfigurationDestroy(siemLogConfigurationResourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\""),
+				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\"", "\"ATO\""),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_abp"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
+					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_ato"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "configuration_name", siemLogConfigurationName+"abp"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "producer", "ABP"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "configuration_name", siemLogConfigurationName+"netsec"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "producer", "NETSEC"),
+					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_ato", "configuration_name", siemLogConfigurationName+"ato"),
+					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_ato", "producer", "ATO"),
 				),
 			},
 			{
@@ -44,6 +47,12 @@ func TestSiemLogConfiguration_Basic(t *testing.T) {
 			},
 			{
 				ResourceName:      siemLogConfigurationResource + "_netsec",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testACCStateSiemLogConfigurationID(siemLogConfigurationResourceType),
+			},
+			{
+				ResourceName:      siemLogConfigurationResource + "_ato",
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: testACCStateSiemLogConfigurationID(siemLogConfigurationResourceType),
@@ -62,28 +71,32 @@ func TestSiemLogConfiguration_Update(t *testing.T) {
 		CheckDestroy: testAccIncapsulaSiemLogConfigurationDestroy(siemLogConfigurationResourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\""),
+				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\"", "\"ATO\""),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_abp"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
+					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_ato"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "configuration_name", siemLogConfigurationName+"abp"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "configuration_name", siemLogConfigurationName+"netsec"),
+					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_ato", "configuration_name", siemLogConfigurationName+"ato"),
 				),
 			},
 			{
-				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationNameUpdated, "\"ABP\"", "\"IP\", \"ATTACK\""),
+				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationNameUpdated, "\"ABP\"", "\"IP\", \"ATTACK\"", "\"ATO\""),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_abp"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
+					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_ato"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "configuration_name", siemLogConfigurationNameUpdated+"abp"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "configuration_name", siemLogConfigurationNameUpdated+"netsec"),
+					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_ato", "configuration_name", siemLogConfigurationNameUpdated+"ato"),
 				),
 			},
 		},
 	})
 }
 
-func getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName string, abpDatasets string, netsecDatasets string) string {
+func getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName string, abpDatasets string, netsecDatasets string, atoDatasets string) string {
 	return getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName) + fmt.Sprintf(`
 		resource "%s" "%s" {
 			configuration_name = "%s"
@@ -104,6 +117,16 @@ func getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName str
 		}`,
 		siemLogConfigurationResourceType, siemLogConfigurationResourceName+"_netsec", siemLogConfigurationName+"netsec",
 		netsecDatasets, siemConnectionResourceType, s3ArnSiemConnectionResourceName,
+	) + fmt.Sprintf(`
+		resource "%s" "%s" {	
+			configuration_name = "%s"
+			producer = "ATO"
+			datasets = [%s]
+			enabled = true
+			connection_id = %s.%s.id
+		}`,
+		siemLogConfigurationResourceType, siemLogConfigurationResourceName+"_ato", siemLogConfigurationName+"ato",
+		atoDatasets, siemConnectionResourceType, s3ArnSiemConnectionResourceName,
 	)
 }
 
