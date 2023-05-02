@@ -1,6 +1,7 @@
 package incapsula
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -105,6 +106,11 @@ func resourceAccount() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"APAC", "EU", "US", "AU"}, false),
 			},
+			"consent_required": {
+				Description: "Blocks Imperva from performing sensitive operations on your behalf. Options are `true`, `false`.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 
 			// Computed Attributes
 			"support_level": {
@@ -204,6 +210,7 @@ func resourceAccountRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("support_all_tls_versions", accountStatusResponse.Account.SupportAllTLSVersions)
 	d.Set("wildcard_san_for_new_sites", accountStatusResponse.Account.WildcardSANForNewSites)
 	d.Set("naked_domain_san_for_new_www_sites", accountStatusResponse.Account.NakedDomainSANForNewWWWSites)
+	d.Set("consent_required", fmt.Sprintf("%v", accountStatusResponse.ConsentRequired))
 
 	// Get the performance settings for the site
 	defaultAccountDataStorageRegion, err := client.GetAccountDataStorageRegion(d.Id())
@@ -276,7 +283,7 @@ func resourceAccountDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func updateAdditionalAccountProperties(client *Client, d *schema.ResourceData) error {
-	updateParams := [5]string{"name", "error_page_template", "support_all_tls_versions", "naked_domain_san_for_new_www_sites", "wildcard_san_for_new_sites"}
+	updateParams := [6]string{"name", "error_page_template", "support_all_tls_versions", "naked_domain_san_for_new_www_sites", "wildcard_san_for_new_sites", "consent_required"}
 	for i := 0; i < len(updateParams); i++ {
 		param := updateParams[i]
 		if d.HasChange(param) && d.Get(param) != "" {

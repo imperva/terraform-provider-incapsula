@@ -22,6 +22,7 @@ resource "incapsula_account" "example-account" {
   account_name                       = "Example Account"
   logs_account_id                    = "456"
   log_level                          = "full"
+  consent_required                   = "true"
 
   data_storage_region                = "US"
 
@@ -42,6 +43,7 @@ The following arguments are supported:
 * `account_name` - (Optional) Account name.
 * `logs_account_id` - (Optional) Account where logs should be stored. Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `log_level` - (Optional) The log level. Options are `full`, `security`, and `none`.
+* `consent_required` - (Optional) Blocks Imperva from performing sensitive operations on your behalf. You can then activate consent via the Cloud Security Console UI. Options are `true`, `false`.
 * `data_storage_region` - (Optional) Default data region of the account for newly created sites. Options are `APAC`, `EU`, `US` and `AU`. Defaults to `US`.
 * `support_all_tls_versions` - (Optional) Allow sites in the account to support all TLS versions for connectivity between clients (visitors) and the Imperva service.  
                                Note: this argument is deprecated, please use allow_support_old_tls_versions in account_ssl_settings resource instead.  
