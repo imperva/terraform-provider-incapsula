@@ -91,6 +91,10 @@ const DeleteDataCenter = "delete_data_center"
 const CreateDataCenterConfiguration = "create_data_configuration"
 const ReadDataCenterConfiguration = "read_data_configuration"
 
+const CreateBotConfiguration = "create_bot_configuration"
+const ReadBotConfiguration = "read_bot_configuration"
+const ReadClientApplications = "read_client_applications"
+
 const ReadDataStorageRegion = "read_data_storage_region"
 const UpdateDataStorageRegion = "update_data_storage_region"
 
@@ -142,3 +146,36 @@ const DeleteMtlsClientToImpervaCertifiateSiteAssociation = "delete_mtls_client_t
 
 const CreateSiteTlsSettings = "create_site_tls_settings"
 const ReadSiteTlsSettings = "read_site_tls_settings"
+
+const CreateAccountRole = "create_account_role"
+const ReadAccountRole = "read_account_role"
+const UpdateAccountRole = "update_account_role"
+const DeleteAccountRole = "delete_account_role"
+
+const ReadAccountAbilities = "read_account_abilities"
+const ReadAccountRoles = "read_account_roles"
+
+const CreateAccountUser = "create_account_user"
+const CreateSubAccountUser = "create_sub_account_user"
+const ReadAccountUser = "read_account_user"
+const UpdateAccountUser = "update_account_user"
+const DeleteAccountUser = "delete_account_user"
+
+const UpdateDomain = "update_domain"
+const ReadDomain = "read_domain"
+const ReadDomainExtraDetails = "read_domain_extra_details"
+
+const CreateSiemConnection = "create_siem_connection"
+const ReadSiemConnection = "read_siem_connection"
+const UpdateSiemConnection = "update_siem_connection"
+const DeleteSiemConnection = "delete_siem_connection"
+
+const CreateSiemLogConfiguration = "create_siem_log_configuration"
+const ReadSiemLogConfiguration = "read_siem_log_configuration"
+const UpdateSiemLogConfiguration = "update_siem_log_configuration"
+const DeleteSiemLogConfiguration = "delete_siem_log_configuration"
+
+const CreateWaitingRoom = "create_waiting_room"
+const ReadWaitingRoom = "read_waiting_room"
+const UpdateWaitingRoom = "update_waiting_room"
+const DeleteWaitingRoom = "delete_waiting_room"

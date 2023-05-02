@@ -37,10 +37,19 @@ func resourcePolicy() *schema.Resource {
 				Required:    true,
 			},
 			"policy_settings": {
-				Description:      "The policy settings as JSON string. See Imperva documentation for help with constructing a correct value.",
-				Type:             schema.TypeString,
-				Required:         true,
-				DiffSuppressFunc: suppressEquivalentJSONStringDiffs,
+				Description: "The policy settings as JSON string. See Imperva documentation for help with constructing a correct value.",
+				Type:        schema.TypeString,
+				Required:    true,
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+					oldValue = strings.ReplaceAll(oldValue, " ", "")
+					oldValue = strings.ReplaceAll(oldValue, "\n", "")
+					oldValue = strings.ReplaceAll(oldValue, ",\"data\":{}", "")
+
+					newValue = strings.ReplaceAll(newValue, " ", "")
+					newValue = strings.ReplaceAll(newValue, "\n", "")
+					newValue = strings.ReplaceAll(newValue, ",\"data\":{}", "")
+					return suppressEquivalentJSONStringDiffs(k, oldValue, newValue, d)
+				},
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					// Check if valid JSON
 					d := val.(string)
@@ -71,7 +80,7 @@ func resourcePolicy() *schema.Resource {
 
 func getCurrentAccountId(d *schema.ResourceData, accountStatus *AccountStatusResponse) *int {
 	caid := d.Get("account_id").(int)
-	if accountStatus.AccountType == "Sub Account" || caid == 0 {
+	if accountStatus.isSubAccount() || caid == 0 {
 		//in case of sub account we do not want to send the caid since the policy owner is the sub account's parent
 		return nil
 	}

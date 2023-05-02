@@ -39,7 +39,7 @@ type ApiSecurityEndpointConfigPostPayload struct {
 	SpecificationViolationAction string
 }
 
-//PostApiSecurityEndpointConfig updates an Api-Security Endpoint Config
+// PostApiSecurityEndpointConfig updates an Api-Security Endpoint Config
 func (c *Client) PostApiSecurityEndpointConfig(apiId, endpointId int, endpointConfigPayload *ApiSecurityEndpointConfigPostPayload) (*ApiSecurityEndpointConfigPostResponse, error) {
 	log.Printf("[INFO] Updating Incapsula API security Enpoint Configuration\n")
 	body := &bytes.Buffer{}

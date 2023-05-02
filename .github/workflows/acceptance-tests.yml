@@ -1,0 +1,54 @@
+name: Acceptance Tests
+concurrency:
+  group: acceptance-tests
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths-ignore:
+    - 'README.md'
+    - 'CHANGELOG.md'
+    - 'LICENSE'
+    - 'GNUmakefile'
+    - 'website/**'
+    - 'docs/**'
+    - '.changelog/**'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    env:
+      INCAPSULA_API_KEY: ${{ secrets.INCAPSULA_API_KEY }}
+      INCAPSULA_API_ID: ${{ secrets.INCAPSULA_API_ID }}
+      SIEM_CONNECTION_S3_PATH: ${{ secrets.SIEM_CONNECTION_S3_PATH }}
+      SIEM_CONNECTION_S3_SECRET_KEY: ${{ secrets.SIEM_CONNECTION_S3_SECRET_KEY }}
+      SIEM_CONNECTION_S3_ACCESS_KEY: ${{ secrets.SIEM_CONNECTION_S3_ACCESS_KEY }}
+      CUSTOM_PRIVATE_KEY: ${{ secrets.CUSTOM_PRIVATE_KEY }}
+      CUSTOM_CERTIFICATE: ${{ secrets.CUSTOM_CERTIFICATE }}
+      TESTING_PROFILE: true
+      
+    steps:
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: ^1.18
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v3
+
+    - uses: actions/cache@v3
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go${{ env.GO_VERSION }}-${{ hashFiles('**/go.sum') }}
+
+    #- name: Run unit tests
+     # run: go test ./incapsula
+
+    - name: Run acceptance tests
+      run: make testacc

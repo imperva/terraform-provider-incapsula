@@ -1,3 +1,73 @@
+## 3.16.0 (Mar 22, 2023)
+
+IMPROVEMENTS:
+
+* incapsula_application_delivery - support compression_type ([#301](https://github.com/imperva/terraform-provider-incapsula/pull/301))
+
+## 3.15.2 (Feb 26, 2023)
+
+BUG FIXES:
+
+* Fix a bug of '+' character in a user's email ([#292](https://github.com/imperva/terraform-provider-incapsula/pull/292))
+
+## 3.15.1 (Feb 6, 2023)
+
+BUG FIXES:  
+
+* Fix unchangeable attributes bug in account resource ([#284](https://github.com/imperva/terraform-provider-incapsula/pull/284))
+* Fix bug in import command of siem_log_configuration and incapsula_siem_connection resources ([#285](https://github.com/imperva/terraform-provider-incapsula/pull/285))
+
+
+## 3.15.0 (Feb 6, 2023)
+
+FEATURES:
+
+* **New Resource:** `incapsula_waiting_room`
+
+
+* ## 3.14.0 (Jan 15, 2023)
+
+FEATURES:
+
+* **New Resource:** `incapsula_site_domain_configuration`
+* **New Resource:** `incapsula_siem_log_configuration`
+* **New Resource:** `incapsula_siem_connection`
+
+
+## 3.13.0 (Jan 8, 2023)
+
+FEATURES:
+
+* **New Resource:** `incapsula_account_role`
+* **New Resource:** `incapsula_account_user`
+
+* **New DataSource:** `incapsula_account_permissions`
+
+
+## 3.12.0 (Dec 11, 2022)
+
+IMPROVEMENTS:
+
+* incapsula_incap_rule - Incap rules enable flag ([#259](https://github.com/imperva/terraform-provider-incapsula/pull/259))
+
+
+## 3.11.0 (Dec 4, 2022)
+
+FEATURES:
+
+* **New Resource:** incapsula_bots_configuration
+
+IMPROVEMENTS:
+
+* incapsula_incap_rule - Support overrideExisting Flag ([#244](https://github.com/imperva/terraform-provider-incapsula/pull/244))
+* incapsula_account_policy_association - added available_policy_ids optional argument + move to v3 apis to improve performance ([#250](https://github.com/imperva/terraform-provider-incapsula/pull/250))
+
+
+BUG FIXES:
+
+* Fix issue #234 - remove omitempty for boolean fields ([#247](https://github.com/imperva/terraform-provider-incapsula/pull/247))
+
+
 ## 3.10.3 (Nov 20, 2022)
 
 BUG FIXES:

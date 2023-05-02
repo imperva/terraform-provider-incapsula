@@ -10,13 +10,15 @@ import (
 )
 
 type Compression struct {
-	FileCompression  bool `json:"file_compression"`
-	MinifyJs         bool `json:"minify_js"`
-	MinifyCss        bool `json:"minify_css"`
-	MinifyStaticHtml bool `json:"minify_static_html"`
+	FileCompression  bool   `json:"file_compression"`
+	CompressionType  string `json:"compression_type"`
+	MinifyJs         bool   `json:"minify_js"`
+	MinifyCss        bool   `json:"minify_css"`
+	MinifyStaticHtml bool   `json:"minify_static_html"`
 }
 type CompressionStr struct {
 	FileCompression  string `json:"file_compression"`
+	CompressionType  string `json:"compression_type"`
 	MinifyJs         string `json:"minify_js"`
 	MinifyCss        string `json:"minify_css"`
 	MinifyStaticHtml string `json:"minify_static_html"`

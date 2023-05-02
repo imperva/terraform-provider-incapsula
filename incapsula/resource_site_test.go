@@ -22,7 +22,7 @@ func GenerateTestDomain(t *testing.T) string {
 	}
 	s3 := rand.NewSource(time.Now().UnixNano())
 	r3 := rand.New(s3)
-	generatedDomain = "id" + os.Getenv("INCAPSULA_API_ID") + strconv.Itoa(r3.Intn(1000)) + ".examplesite.com"
+	generatedDomain = "id" + os.Getenv("INCAPSULA_API_ID") + strconv.Itoa(r3.Intn(1000)) + ".examplewebsite.com"
 	return generatedDomain
 }
 
@@ -33,7 +33,7 @@ func TestAccIncapsulaSite_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaSiteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaSiteConfigBasic(generatedDomain),
+				Config: testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(nil)),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiteExists(siteResourceName),
 					resource.TestCheckResourceAttr(siteResourceName, "domain", generatedDomain),
@@ -43,7 +43,7 @@ func TestAccIncapsulaSite_Basic(t *testing.T) {
 				ResourceName:            "incapsula_site.testacc-terraform-site",
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"site_ip"},
+				ImportStateVerifyIgnore: []string{"site_ip", "domain_validation"},
 			},
 		},
 	})
@@ -108,7 +108,6 @@ func testAccCheckIncapsulaSiteConfigBasic(domain string) string {
 	return fmt.Sprintf(`
 		resource "incapsula_site" "testacc-terraform-site" {
 			domain = "%s"
-			domain_validation = "cname"
 		}`,
 		domain,
 	)

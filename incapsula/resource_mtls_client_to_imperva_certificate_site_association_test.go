@@ -26,7 +26,8 @@ func TestAccIncapsulaSiteClientToImervaCertificateAssociation_Basic(t *testing.T
 		CheckDestroy: testACCStateSiteClientToImervaCertificateAssociationDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckClientToImervaCertificateAssociationBasic(t),
+				SkipFunc: IsCustomCertificateEnvVarExist,
+				Config:   testAccCheckClientToImervaCertificateAssociationBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckClientToImervaCertificateAssociationExists(),
 				),
@@ -35,8 +36,8 @@ func TestAccIncapsulaSiteClientToImervaCertificateAssociation_Basic(t *testing.T
 	})
 }
 
-//todo KATRIN:
-//check destroy!!!!!!
+// todo KATRIN:
+// check destroy!!!!!!
 func testACCStateSiteClientToImervaCertificateAssociationDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*Client)
 

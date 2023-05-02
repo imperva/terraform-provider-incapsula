@@ -15,9 +15,10 @@ Note that destroy action will return the configuration to the default values.
 ### Basic Usage - Application Delivery
 
 ```hcl
-resource "resource_application_delivery" "example_application_delivery" {
+resource "incapsula_application_delivery" "example_application_delivery" {
 	site_id = incapsula_site.testacc-terraform-site.id
 	file_compression            = true
+	compression_type            = "GZIP"
 	minify_css                  = true
 	minify_js                   = true
 	minify_static_html          = false
@@ -45,7 +46,8 @@ resource "resource_application_delivery" "example_application_delivery" {
 The following arguments are supported:
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
-* `file_compression` - (Optional) Compress JPEG images. Compression reduces download time by reducing the file size. Default: true
+* `file_compression` - (Optional) When this option is enabled, files such as JavaScript, CSS and HTML are dynamically compressed using the selected format as they are transferred. They are automatically unzipped within the browser. If Brotli is not supported by the browser, files are automatically sent in Gzip. Default: true
+* `compression_type` - (Optional) BROTLI (recommended for more efficient compression). Default: GZIP
 * `minify_js` - (Optional) Minify JavaScript. Minification removes characters that are not necessary for rendering the page, such as whitespace and comments. This makes the files smaller and therefore reduces their access time. Minification has no impact on the functionality of the Javascript, CSS, and HTML files. Default: true
 * `minify_css` - (Optional) Content minification can applied only to cached Javascript, CSS and HTML content. Default: true.
 * `minify_static_html` - (Optional) Minify static HTML. Default: true.

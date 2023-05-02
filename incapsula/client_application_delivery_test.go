@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 // UpdateSiteMonitoring Tests
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 func TestUpdateApplicationDeliveryBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
@@ -144,6 +144,7 @@ func TestUpdateApplicationDeliveryConfig(t *testing.T) {
 {
   "compression": {
     "file_compression": true,
+    "compression_type": "GZIP",
     "minify_js": true,
     "minify_css": false,
     "minify_static_html": true
@@ -203,9 +204,9 @@ func TestUpdateApplicationDeliveryConfig(t *testing.T) {
 	}
 }
 
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 // ReadSiteMonitoring Tests
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 func TestReadApplicationDeliveryBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
@@ -315,6 +316,7 @@ func TestReadApplicationDeliveryConfig(t *testing.T) {
 {
   "compression": {
     "file_compression": true,
+    "compression_type": "GZIP",
     "minify_js": true,
     "minify_css": false,
     "minify_static_html": true
@@ -368,9 +370,9 @@ func TestReadApplicationDeliveryConfig(t *testing.T) {
 	}
 }
 
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 // DeleteSiteMonitoring Tests
-////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 func TestDeleteApplicationDeliveryBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
