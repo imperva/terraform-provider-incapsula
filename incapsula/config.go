@@ -24,6 +24,10 @@ type Config struct {
 	// The other endpoints will eventually move over but we'll need the following for now
 	BaseURLRev2 string
 
+	// Base URL Revision 3 (no trailing slash)
+	// Updates to APIv2 are underway and newer resources are supported
+	BaseURLRev3 string
+
 	// Base URL API
 	// API V2
 	// Same as revision 2 but with a different subdomain
@@ -34,6 +38,7 @@ var missingAPIIDMessage = "API Identifier (api_id) must be provided"
 var missingAPIKeyMessage = "API Key (api_key) must be provided"
 var missingBaseURLMessage = "Base URL must be provided"
 var missingBaseURLRev2Message = "Base URL Revision 2 must be provided"
+var missingBaseURLRev3Message = "Base URL Revision 3 must be provided"
 var missingBaseURLAPIMessage = "Base URL API must be provided"
 
 // Client configures and returns a fully initialized Incapsula Client
@@ -58,6 +63,11 @@ func (c *Config) Client() (interface{}, error) {
 	// Check Base URL Revision 2
 	if strings.TrimSpace(c.BaseURLRev2) == "" {
 		return nil, errors.New(missingBaseURLRev2Message)
+	}
+
+	// Check Base URL Revision 2
+	if strings.TrimSpace(c.BaseURLRev3) == "" {
+		return nil, errors.New(missingBaseURLRev3Message)
 	}
 
 	// Check Base URL API
