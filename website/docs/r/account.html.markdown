@@ -34,21 +34,21 @@ resource "incapsula_account" "example-account" {
 
 The following arguments are supported:
 
-* `email` - (Required) Email address. For example: joe@example.com.
+* `email` - (Required) Email address of the account admin. For example: joe@example.com.
 * `parent_id` - (Optional) The newly created account's parent id. If not specified, the invoking account will be assigned as the parent.
 * `ref_id` - (Optional) Customer specific identifier for this operation.
 * `user_name` - (Optional) The account owner's name. For example: John Doe.
-* `plan_id` - (Optional) An identifier of the plan to assign to the new account. For example, ent100 for the Enterprise 100 plan.
+* `plan_id` - (Optional) An identifier of the plan to assign to the new account. For example, ent100 for the Enterprise 100 plan (values can be provided by your account manager).
 * `account_name` - (Optional) Account name.
 * `logs_account_id` - (Optional) Account where logs should be stored. Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `log_level` - (Optional) The log level. Options are `full`, `security`, and `none`.
 * `data_storage_region` - (Optional) Default data region of the account for newly created sites. Options are `APAC`, `EU`, `US` and `AU`. Defaults to `US`.
 * `support_all_tls_versions` - (Optional) Allow sites in the account to support all TLS versions for connectivity between clients (visitors) and the Imperva service.  
-                               Note: this argument is deprecated, please use allow_support_old_tls_versions in account_ssl_settings resource instead.  
+                               Note: This argument is deprecated. Use add_naked_domain_san_for_www_sites in the account_ssl_settings resource instead.  
 * `naked_domain_san_for_new_www_sites` - (Optional) Add naked domain SAN to Incapsula SSL certificates for new www sites. Options are `true` and `false`. Defaults to `true`.  
-                                         Note: this argument is deprecated, please use add_naked_domain_san_for_www_sites in account_ssl_settings resource instead.
+                                         Note: This argument is deprecated. Use add_naked_domain_san_for_www_sites in the account_ssl_settings resource instead.
 * `wildcard_san_for_new_sites` - (Optional) Add wildcard SAN to Incapsula SSL certificates for new sites. Options are `true`, `false` and `default`. Defaults to `default`.  
-                                 Note: this argument is deprecated, please use use use_wild_card_san_instead_of_fqdn in account_ssl_settings resource instead.
+                               Note: This argument is deprecated. Use use_wild_card_san_instead_of_fqdn in the account_ssl_settings resource instead.
 * `error_page_template` - (Optional) Base64 encoded template for an error page.
 
 ## Attributes Reference
