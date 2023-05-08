@@ -2,7 +2,9 @@ package incapsula
 
 import (
 	"context"
+	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -32,6 +34,25 @@ func resourceAbpWebsites() *schema.Resource {
 		ReadContext:   resourceAbpWebsitesRead,
 		UpdateContext: resourceAbpWebsitesUpdate,
 		DeleteContext: resourceAbpWebsitesDelete,
+
+		Importer: &schema.ResourceImporter{
+			State: func(data *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				idSlice := strings.Split(data.Id(), "/")
+				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected account_id/website_group_id", data.Id())
+				}
+
+				accountId, err := strconv.Atoi(idSlice[0])
+				if err != nil {
+					return nil, fmt.Errorf("Expected account_id to be an integer: %s", err)
+				}
+
+				data.Set("account_id", accountId)
+				data.SetId(idSlice[1])
+
+				return []*schema.ResourceData{data}, nil
+			},
+		},
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -127,7 +148,10 @@ func resourceAbpWebsitesCreate(ctx context.Context, data *schema.ResourceData, m
 	var diags diag.Diagnostics
 
 	account := extractAccount(data)
-	_, diags = client.CreateAbpWebsites(strconv.Itoa(account.AccountId), account)
+	var abpWebsites *AbpTerraformAccount
+	abpWebsites, diags = client.CreateAbpWebsites(strconv.Itoa(account.AccountId), account)
+
+	data.SetId(strconv.Itoa(abpWebsites.AccountId))
 
 	return diags
 }

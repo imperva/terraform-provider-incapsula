@@ -122,7 +122,7 @@ func (c *Client) UpdateAbpWebsites(accountId string, account AbpTerraformAccount
 	log.Printf("[DEBUG] Incapsula Update %s JSON response: %s\n", resourceName, string(responseBody))
 
 	// Check the response code
-	if resp.StatusCode != 201 {
+	if resp.StatusCode != 200 {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  fmt.Sprintf("Failure Updating %s", resourceName),
@@ -146,14 +146,14 @@ func (c *Client) UpdateAbpWebsites(accountId string, account AbpTerraformAccount
 }
 
 func (c *Client) ReadAbpWebsites(accountId string) (*AbpTerraformAccount, diag.Diagnostics) {
-	return c.RequestAbpWebsites(accountId, http.MethodGet, ReadAbpWebsites, "Creating")
+	return c.RequestAbpWebsites(accountId, http.MethodGet, ReadAbpWebsites, "Reading", 200)
 }
 
 func (c *Client) DeleteAbpWebsites(accountId string) (*AbpTerraformAccount, diag.Diagnostics) {
-	return c.RequestAbpWebsites(accountId, http.MethodDelete, DeleteAbpWebsites, "Deleting")
+	return c.RequestAbpWebsites(accountId, http.MethodDelete, DeleteAbpWebsites, "Deleting", 200)
 }
 
-func (c *Client) RequestAbpWebsites(accountId string, method string, operation string, action string) (*AbpTerraformAccount, diag.Diagnostics) {
+func (c *Client) RequestAbpWebsites(accountId string, method string, operation string, action string, successStatus int) (*AbpTerraformAccount, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] %s Abp websites Account ID %s\n", action, accountId)
 
@@ -177,7 +177,7 @@ func (c *Client) RequestAbpWebsites(accountId string, method string, operation s
 	log.Printf("[DEBUG] Incapsula %s %s JSON response: %s\n", method, resourceName, string(responseBody))
 
 	// Check the response code
-	if resp.StatusCode != 201 {
+	if resp.StatusCode != successStatus {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  fmt.Sprintf("Failure Creating %s", resourceName),
