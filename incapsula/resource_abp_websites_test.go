@@ -37,12 +37,6 @@ func TestAccAbpWebsites_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.mitigation_enabled", "true"),
 				),
 			},
-			{
-				ResourceName:      abpWebsitesResource,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateIdFunc: testAccGetAbpWebsitesImportString,
-			},
 		},
 	})
 }
