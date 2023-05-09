@@ -178,23 +178,3 @@ func testAccCheckAbpWebsitesDestroy(state *terraform.State) error {
 
 	return nil
 }
-
-func testAccGetAbpWebsitesImportString(state *terraform.State) (string, error) {
-	fmt.Println(state)
-	fmt.Println(state.RootModule().Resources)
-	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "incapsula_abp_websites" {
-			continue
-		}
-
-		primaryID, err := strconv.Atoi(rs.Primary.ID)
-		if err != nil {
-			return "", fmt.Errorf("Error parsing ID %s to int", rs.Primary.ID)
-		}
-		accountId := rs.Primary.Attributes["account_id"]
-
-		return fmt.Sprintf("%s/%d", accountId, primaryID), nil
-	}
-
-	return "", fmt.Errorf("Error finding ABP Websites")
-}
