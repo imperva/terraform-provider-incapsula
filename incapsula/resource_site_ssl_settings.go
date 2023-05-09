@@ -9,7 +9,7 @@ var hstsConfigResource = schema.Resource{
 	Schema: map[string]*schema.Schema{
 		"is_enabled": {
 			Type:     schema.TypeBool,
-			Default:  false,
+			Computed: true,
 			Optional: true,
 		},
 		"max_age": {
@@ -19,12 +19,12 @@ var hstsConfigResource = schema.Resource{
 		},
 		"sub_domains_included": {
 			Type:     schema.TypeBool,
-			Default:  false,
+			Computed: true,
 			Optional: true,
 		},
 		"pre_loaded": {
 			Type:     schema.TypeBool,
-			Default:  false,
+			Computed: true,
 			Optional: true,
 		},
 	},
@@ -34,7 +34,7 @@ func resourceSiteSSLSettings() *schema.Resource {
 	return &schema.Resource{
 		Read:   resourceSiteSSLSettingsRead,
 		Update: resourceSiteSSLSettingsUpdate,
-		Create: resourceSiteSSLSettingsCreate,
+		Create: resourceSiteSSLSettingsUpdate,
 		Delete: resourceSiteSSLSettingsDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
@@ -60,7 +60,7 @@ func resourceSiteSSLSettings() *schema.Resource {
 	}
 }
 
-func resourceSiteSSLSettingsCreate(d *schema.ResourceData, m interface{}) error {
+func resourceSiteSSLSettingsUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
 	setting := getSSLSettingsDTO(d)
@@ -71,23 +71,7 @@ func resourceSiteSSLSettingsCreate(d *schema.ResourceData, m interface{}) error 
 		return err
 	}
 
-	d.SetId(fmt.Sprintf("site_ssl_settings_%d", d.Get("site_id").(int)))
-
 	return resourceSiteSSLSettingsRead(d, m)
-}
-
-func resourceSiteSSLSettingsUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*Client)
-
-	setting := getSSLSettingsDTO(d)
-
-	var _, err = client.UpdateSiteSSLSettings(d.Get("site_id").(int), setting)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func resourceSiteSSLSettingsRead(d *schema.ResourceData, m interface{}) error {
@@ -106,6 +90,8 @@ func resourceSiteSSLSettingsRead(d *schema.ResourceData, m interface{}) error {
 	if len(settingsData.Data) == 0 {
 		return nil
 	}
+
+	d.SetId(fmt.Sprintf("site_ssl_settings_%d", d.Get("site_id").(int)))
 
 	mapHSTSDTOtoHSTSResource(d, settingsData)
 	// map other settings here
