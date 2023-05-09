@@ -8,16 +8,16 @@ description: |- Provides an Incapsula Site SSL Settings resource.
 
 Provides an Incapsula Site SSL Settings resource.
 
-Running this Terraform resource from a site for which HSTS configuration API is disabled will result in the following error response:
+Running this Terraform resource from a site for which HSTS is disabled will result in the following error response:
 - `status:` 406
-- `message:` HSTS Configuration API is disabled
+- `message:` HSTS Configuration is disabled
 - To enable this feature for your site, HSTS configuration API should be enabled.
 
 
 If you run the same resource from a site for which SSL is not yet enabled will result in the following error response:
 - `status:` 406 
 - `message:` Site does not have SSL configured
-- To enable this feature for your site, you'll have to configure its SSL settings and have valid certificate.
+- To enable this feature for your site, you must first configure its SSL settings including a valid certificate.
 
 ## Example Usage
 
