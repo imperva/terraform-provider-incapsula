@@ -104,7 +104,7 @@ func (c *Client) UpdateAbpWebsites(accountId string, account AbpTerraformAccount
 
 	// Post form to Incapsula
 	reqURL := fmt.Sprintf("%s/v1/account/%s/terraform", c.AbpBaseUrl(), accountId)
-	resp, err := c.DoJsonRequestWithCustomHeaders(http.MethodPost, reqURL, accountJson, authHeader, UpdateAbpWebsites)
+	resp, err := c.DoJsonRequestWithCustomHeaders(http.MethodPut, reqURL, accountJson, authHeader, UpdateAbpWebsites)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,

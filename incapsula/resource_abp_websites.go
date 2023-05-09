@@ -2,6 +2,7 @@ package incapsula
 
 import (
 	"context"
+	"log"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -130,6 +131,11 @@ func resourceAbpWebsitesCreate(ctx context.Context, data *schema.ResourceData, m
 	var abpWebsites *AbpTerraformAccount
 	abpWebsites, diags = client.CreateAbpWebsites(strconv.Itoa(account.AccountId), account)
 
+	if diags != nil && diags.HasError() {
+		log.Printf("[ERROR] Failed to create ABP websites for Account ID %d", account.AccountId)
+		return diags
+	}
+
 	data.SetId(strconv.Itoa(abpWebsites.AccountId))
 
 	return diags
@@ -143,6 +149,11 @@ func resourceAbpWebsitesRead(ctx context.Context, data *schema.ResourceData, m i
 
 	_, diags = client.ReadAbpWebsites(strconv.Itoa(accountId))
 
+	if diags != nil && diags.HasError() {
+		log.Printf("[ERROR] Failed to read ABP websites for Account ID %d", accountId)
+		return diags
+	}
+
 	return diags
 }
 
@@ -153,6 +164,12 @@ func resourceAbpWebsitesUpdate(ctx context.Context, data *schema.ResourceData, m
 	account := extractAccount(data)
 
 	_, diags = client.UpdateAbpWebsites(strconv.Itoa(account.AccountId), account)
+
+	if diags != nil && diags.HasError() {
+		log.Printf("[ERROR] Failed to update ABP websites for Account ID %d", account.AccountId)
+		return diags
+	}
+
 	return diags
 }
 
@@ -164,6 +181,12 @@ func resourceAbpWebsitesDelete(ctx context.Context, data *schema.ResourceData, m
 
 	_, diags = client.DeleteAbpWebsites(strconv.Itoa(accountId))
 
+	if diags != nil && diags.HasError() {
+		log.Printf("[ERROR] Failed to delete ABP websites for Account ID %d", accountId)
+		return diags
+	}
+
 	data.SetId("")
+
 	return diags
 }

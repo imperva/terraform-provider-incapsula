@@ -37,6 +37,23 @@ func TestAccAbpWebsites_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.mitigation_enabled", "true"),
 				),
 			},
+			{
+				Config: testAccAbpWebsitesMultipleWebsites(t),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAbpWebsitesExists(&websitesResponse),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", "4002"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.mitigation_enabled", "true"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.name", "sites-2"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.website.0.website_id", "11113"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.website.0.mitigation_enabled", "false"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.name", "sites-2"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.website.1.website_id", "11114"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.website.1.mitigation_enabled", "true"),
+				),
+			},
 		},
 	})
 }
@@ -92,6 +109,32 @@ func testAccCheckAbpWebsitesExists(websitesresponse *AbpTerraformAccount) resour
 		*websitesresponse = *response
 		return nil
 	}
+}
+
+func testAccAbpWebsitesMultipleWebsites(t *testing.T) string {
+	return fmt.Sprintf(`
+	resource "%s" "%s" {
+		account_id = 4002
+		auto_publish = true
+		website_group {
+			name = "sites-1"
+			website {
+				website_id = 11112
+				mitigation_enabled = true
+			}
+		}
+		website_group {
+			name = "sites-2"
+			website {
+				website_id = 11113
+				mitigation_enabled = false
+			}
+			website {
+				website_id = 11114
+				mitigation_enabled = true
+			}
+		}
+	}`, abpWebsitesResourceName, accountConfigName)
 }
 
 func testAccAbpWebsitesBasic(t *testing.T, mitigationEnabled bool) string {
