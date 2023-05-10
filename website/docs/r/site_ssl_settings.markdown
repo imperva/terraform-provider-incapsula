@@ -8,22 +8,18 @@ description: |- Provides an Incapsula Site SSL Settings resource.
 
 Provides an Incapsula Site SSL Settings resource.
 
-Running this Terraform resource from a site for which HSTS is disabled will result in the following error response:
-- `status:` 406
-- `message:` HSTS Configuration is disabled
-- To enable this feature for your site, HSTS configuration API should be enabled.
-
-
-If you run the same resource from a site for which SSL is not yet enabled will result in the following error response:
+If you run the same resource from a site for which SSL is not yet enabled and **approved** will result in the following error response:
 - `status:` 406 
 - `message:` Site does not have SSL configured
 - To enable this feature for your site, you must first configure its SSL settings including a valid certificate.
+
+For more information what HSTS is click [here](https://www.imperva.com/blog/hsts-strict-transport-security/).
 
 ## Example Usage
 
 ```hcl
 resource "site_ssl_settings" "example" {
-  site_id = "12345"
+  site_id = incapsula_site.mysite.id
   
   hsts {
     is_enabled = true
@@ -69,7 +65,7 @@ The following attributes are exported:
 
 Site SSL settings can be imported using the `id`:
 ```
-terraform import incapsula_site_ssl_settings.incapsula_site_ssl_settings-1234 1234
+terraform import incapsula_site_ssl_settings.example 1234
 ```
 
 

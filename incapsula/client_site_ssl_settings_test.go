@@ -43,7 +43,7 @@ func TestUpdateSiteSSLSettingsHandleResponseCodeNotSuccess(t *testing.T) {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 
-		rw.Write([]byte(`{"res":9413,"res_message":"Unknown/unauthorized site_id","debug_info":{"site_id":"42","id-info":"13008"}}`))
+		rw.Write([]byte(`{"res":406,"res_message":"Unknown/unauthorized site_id","debug_info":{"site_id":"42","id-info":"13008"}}`))
 	}))
 	defer server.Close()
 
