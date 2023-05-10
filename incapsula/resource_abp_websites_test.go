@@ -62,7 +62,7 @@ func TestAccAbpWebsites_Basic2(t *testing.T) {
 	var websitesResponse AbpTerraformAccount
 
 	log.Printf("========================BEGIN TEST========================")
-	log.Printf("[DEBUG]Running test resource_abp_websites_test.TestAccAbpWebsites_Basic")
+	log.Printf("[DEBUG]Running test resource_abp_websites_test.TestAccAbpWebsites_Basic2")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -79,6 +79,55 @@ func TestAccAbpWebsites_Basic2(t *testing.T) {
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.mitigation_enabled", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccAbpWebsites_AutoPublish(t *testing.T) {
+	var websitesResponse AbpTerraformAccount
+
+	log.Printf("========================BEGIN TEST========================")
+	log.Printf("[DEBUG]Running test resource_abp_websites_test.TestAccAbpWebsites_AutoPublish")
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAbpWebsitesDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAbpWebsitesAutoPublish(t, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAbpWebsitesExists(&websitesResponse),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", "4002"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "false"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.mitigation_enabled", "true"),
+				),
+			},
+			{
+				Config: testAccAbpWebsitesAutoPublish(t, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAbpWebsitesExists(&websitesResponse),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", "4002"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.mitigation_enabled", "true"),
+				),
+			},
+			{
+				Config: testAccAbpWebsitesAutoPublish(t, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAbpWebsitesExists(&websitesResponse),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", "4002"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "false"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.mitigation_enabled", "true"),
 				),
 			},
 		},
@@ -150,6 +199,21 @@ func testAccAbpWebsitesBasic(t *testing.T, mitigationEnabled bool) string {
 			}
 		}
 	}`, abpWebsitesResourceName, accountConfigName, mitigationEnabled)
+}
+
+func testAccAbpWebsitesAutoPublish(t *testing.T, autoPublish bool) string {
+	return fmt.Sprintf(`
+	resource "%s" "%s" {
+		account_id = 4002
+		auto_publish = %t
+		website_group {
+			name = "sites-1"
+			website {
+				website_id = 11112
+				mitigation_enabled = true
+			}
+		}
+	}`, abpWebsitesResourceName, accountConfigName, autoPublish)
 }
 
 func testAccCheckAbpWebsitesDestroy(state *terraform.State) error {

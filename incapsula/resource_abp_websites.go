@@ -52,7 +52,7 @@ func resourceAbpWebsites() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeBool,
+							Type:     schema.TypeString,
 							Computed: true,
 						},
 						"name": {
@@ -64,7 +64,7 @@ func resourceAbpWebsites() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"id": {
-										Type:     schema.TypeBool,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 									"website_id": {
@@ -123,6 +123,37 @@ func extractAccount(data *schema.ResourceData) AbpTerraformAccount {
 	}
 }
 
+func serializeAccount(data *schema.ResourceData, account AbpTerraformAccount) {
+
+	data.Set("account_id", account.AccountId)
+	// We never store this on the server side, just in the terraform state so ignore what the server sends
+	// data.Set("auto_publish", account.AutoPublish)
+
+	websiteGroupsData := make([]interface{}, len(account.WebsiteGroups), len(account.WebsiteGroups))
+	for i, websiteGroup := range account.WebsiteGroups {
+		websiteGroupData := make(map[string]interface{})
+
+		websitesData := make([]interface{}, len(websiteGroup.Websites), len(websiteGroup.Websites))
+		for j, website := range websiteGroup.Websites {
+			websiteData := make(map[string]interface{})
+
+			websiteData["id"] = website.Id
+			websiteData["website_id"] = website.WebsiteId
+			websiteData["mitigation_enabled"] = website.MitigationEnabled
+
+			websitesData[j] = websiteData
+		}
+
+		websiteGroupData["id"] = websiteGroup.Id
+		websiteGroupData["name"] = websiteGroup.Name
+		websiteGroupData["website"] = websitesData
+
+		websiteGroupsData[i] = websiteGroupData
+	}
+
+	data.Set("website_group", websiteGroupsData)
+}
+
 func resourceAbpWebsitesCreate(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	var diags diag.Diagnostics
@@ -136,6 +167,8 @@ func resourceAbpWebsitesCreate(ctx context.Context, data *schema.ResourceData, m
 		return diags
 	}
 
+	serializeAccount(data, *abpWebsites)
+
 	data.SetId(strconv.Itoa(abpWebsites.AccountId))
 
 	return diags
@@ -147,12 +180,15 @@ func resourceAbpWebsitesRead(ctx context.Context, data *schema.ResourceData, m i
 
 	accountId := data.Get("account_id").(int)
 
-	_, diags = client.ReadAbpWebsites(strconv.Itoa(accountId))
+	var abpWebsites *AbpTerraformAccount
+	abpWebsites, diags = client.ReadAbpWebsites(strconv.Itoa(accountId))
 
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] Failed to read ABP websites for Account ID %d", accountId)
 		return diags
 	}
+
+	serializeAccount(data, *abpWebsites)
 
 	return diags
 }
@@ -163,12 +199,15 @@ func resourceAbpWebsitesUpdate(ctx context.Context, data *schema.ResourceData, m
 
 	account := extractAccount(data)
 
-	_, diags = client.UpdateAbpWebsites(strconv.Itoa(account.AccountId), account)
+	var abpWebsites *AbpTerraformAccount
+	abpWebsites, diags = client.UpdateAbpWebsites(strconv.Itoa(account.AccountId), account)
 
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] Failed to update ABP websites for Account ID %d", account.AccountId)
 		return diags
 	}
+
+	serializeAccount(data, *abpWebsites)
 
 	return diags
 }

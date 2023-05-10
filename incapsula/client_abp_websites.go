@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -14,8 +15,10 @@ import (
 const resourceName = "ABP Websites"
 
 func (c *Client) AbpBaseUrl() string {
-	if true {
-		return "http://localhost:5000"
+	// Useful for local testing of the ABP API
+	url, ok := os.LookupEnv("INCAPSULA_ABP_BASE_URL_OVERRIDE")
+	if ok {
+		return url
 	} else {
 		return c.config.BaseURLAPI
 	}
