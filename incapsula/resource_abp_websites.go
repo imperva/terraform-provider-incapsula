@@ -10,7 +10,6 @@ import (
 )
 
 type AbpTerraformAccount struct {
-	AccountId     int                        `json:"account_id"`
 	AutoPublish   bool                       `json:"auto_publish"`
 	WebsiteGroups []AbpTerraformWebsiteGroup `json:"website_groups"`
 }
@@ -90,7 +89,6 @@ func resourceAbpWebsites() *schema.Resource {
 
 func extractAccount(data *schema.ResourceData) AbpTerraformAccount {
 
-	accountId := data.Get("account_id").(int)
 	autoPublish := data.Get("auto_publish").(bool)
 
 	var websiteGroups []AbpTerraformWebsiteGroup
@@ -117,7 +115,6 @@ func extractAccount(data *schema.ResourceData) AbpTerraformAccount {
 	}
 
 	return AbpTerraformAccount{
-		AccountId:     accountId,
 		AutoPublish:   autoPublish,
 		WebsiteGroups: websiteGroups,
 	}
@@ -125,7 +122,6 @@ func extractAccount(data *schema.ResourceData) AbpTerraformAccount {
 
 func serializeAccount(data *schema.ResourceData, account AbpTerraformAccount) {
 
-	data.Set("account_id", account.AccountId)
 	// We never store this on the server side, just in the terraform state so ignore what the server sends
 	// data.Set("auto_publish", account.AutoPublish)
 
@@ -158,18 +154,19 @@ func resourceAbpWebsitesCreate(ctx context.Context, data *schema.ResourceData, m
 	client := m.(*Client)
 	var diags diag.Diagnostics
 
+	accountId := data.Get("account_id").(int)
 	account := extractAccount(data)
 	var abpWebsites *AbpTerraformAccount
-	abpWebsites, diags = client.CreateAbpWebsites(strconv.Itoa(account.AccountId), account)
+	abpWebsites, diags = client.CreateAbpWebsites(strconv.Itoa(accountId), account)
 
 	if diags != nil && diags.HasError() {
-		log.Printf("[ERROR] Failed to create ABP websites for Account ID %d", account.AccountId)
+		log.Printf("[ERROR] Failed to create ABP websites for Account ID %d", accountId)
 		return diags
 	}
 
 	serializeAccount(data, *abpWebsites)
 
-	data.SetId(strconv.Itoa(abpWebsites.AccountId))
+	data.SetId(strconv.Itoa(accountId))
 
 	return diags
 }
@@ -197,13 +194,14 @@ func resourceAbpWebsitesUpdate(ctx context.Context, data *schema.ResourceData, m
 	client := m.(*Client)
 	var diags diag.Diagnostics
 
+	accountId := data.Get("account_id").(int)
 	account := extractAccount(data)
 
 	var abpWebsites *AbpTerraformAccount
-	abpWebsites, diags = client.UpdateAbpWebsites(strconv.Itoa(account.AccountId), account)
+	abpWebsites, diags = client.UpdateAbpWebsites(strconv.Itoa(accountId), account)
 
 	if diags != nil && diags.HasError() {
-		log.Printf("[ERROR] Failed to update ABP websites for Account ID %d", account.AccountId)
+		log.Printf("[ERROR] Failed to update ABP websites for Account ID %d", accountId)
 		return diags
 	}
 
