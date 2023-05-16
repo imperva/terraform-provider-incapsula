@@ -21,9 +21,9 @@ type AbpTerraformWebsiteGroup struct {
 }
 
 type AbpTerraformWebsite struct {
-	Id                *string `json:"id"`
-	WebsiteId         int     `json:"website_id"`
-	MitigationEnabled bool    `json:"mitigation_enabled"`
+	Id               *string `json:"id"`
+	WebsiteId        int     `json:"website_id"`
+	EnableMitigation bool    `json:"enable_mitigation"`
 }
 
 func resourceAbpWebsites() *schema.Resource {
@@ -70,7 +70,7 @@ func resourceAbpWebsites() *schema.Resource {
 										Type:     schema.TypeInt,
 										Required: true,
 									},
-									"mitigation_enabled": {
+									"enable_mitigation": {
 										Type:     schema.TypeBool,
 										Optional: true,
 										Default:  true,
@@ -101,9 +101,9 @@ func extractAccount(data *schema.ResourceData) AbpTerraformAccount {
 
 			websites = append(websites,
 				AbpTerraformWebsite{
-					Id:                nil,
-					WebsiteId:         website["website_id"].(int),
-					MitigationEnabled: website["mitigation_enabled"].(bool),
+					Id:               nil,
+					WebsiteId:        website["website_id"].(int),
+					EnableMitigation: website["enable_mitigation"].(bool),
 				})
 		}
 
@@ -135,7 +135,7 @@ func serializeAccount(data *schema.ResourceData, account AbpTerraformAccount) {
 
 			websiteData["id"] = website.Id
 			websiteData["website_id"] = website.WebsiteId
-			websiteData["mitigation_enabled"] = website.MitigationEnabled
+			websiteData["enable_mitigation"] = website.EnableMitigation
 
 			websitesData[j] = websiteData
 		}
@@ -215,8 +215,9 @@ func resourceAbpWebsitesDelete(ctx context.Context, data *schema.ResourceData, m
 	var diags diag.Diagnostics
 
 	accountId := data.Get("account_id").(int)
+	autoPublish := data.Get("auto_publish").(bool)
 
-	_, diags = client.DeleteAbpWebsites(strconv.Itoa(accountId))
+	_, diags = client.DeleteAbpWebsites(strconv.Itoa(accountId), autoPublish)
 
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] Failed to delete ABP websites for Account ID %d", accountId)

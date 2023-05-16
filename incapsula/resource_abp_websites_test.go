@@ -34,7 +34,7 @@ func TestAccAbpWebsites_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.mitigation_enabled", "true"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "true"),
 				),
 			},
 			{
@@ -45,13 +45,13 @@ func TestAccAbpWebsites_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.mitigation_enabled", "true"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "true"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.name", "sites-2"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.website.0.website_id", "11113"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.website.0.mitigation_enabled", "false"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.website.0.enable_mitigation", "false"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.name", "sites-2"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.website.1.website_id", "11114"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.website.1.mitigation_enabled", "true"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.website.1.enable_mitigation", "true"),
 				),
 			},
 		},
@@ -78,7 +78,7 @@ func TestAccAbpWebsites_Basic2(t *testing.T) {
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.mitigation_enabled", "false"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "false"),
 				),
 			},
 		},
@@ -105,7 +105,7 @@ func TestAccAbpWebsites_AutoPublish(t *testing.T) {
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "false"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.mitigation_enabled", "true"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "true"),
 				),
 			},
 			{
@@ -116,7 +116,7 @@ func TestAccAbpWebsites_AutoPublish(t *testing.T) {
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.mitigation_enabled", "true"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "true"),
 				),
 			},
 			{
@@ -127,7 +127,7 @@ func TestAccAbpWebsites_AutoPublish(t *testing.T) {
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "false"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.mitigation_enabled", "true"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "true"),
 				),
 			},
 		},
@@ -169,18 +169,18 @@ func testAccAbpWebsitesMultipleWebsites(t *testing.T) string {
 			name = "sites-1"
 			website {
 				website_id = 11112
-				mitigation_enabled = true
+				enable_mitigation = true
 			}
 		}
 		website_group {
 			name = "sites-2"
 			website {
 				website_id = 11113
-				mitigation_enabled = false
+				enable_mitigation = false
 			}
 			website {
 				website_id = 11114
-				mitigation_enabled = true
+				enable_mitigation = true
 			}
 		}
 	}`, abpWebsitesResourceName, accountConfigName)
@@ -195,7 +195,7 @@ func testAccAbpWebsitesBasic(t *testing.T, mitigationEnabled bool) string {
 			name = "sites-1"
 			website {
 				website_id = 11112
-				mitigation_enabled = %t
+				enable_mitigation = %t
 			}
 		}
 	}`, abpWebsitesResourceName, accountConfigName, mitigationEnabled)
@@ -210,7 +210,7 @@ func testAccAbpWebsitesAutoPublish(t *testing.T, autoPublish bool) string {
 			name = "sites-1"
 			website {
 				website_id = 11112
-				mitigation_enabled = true
+				enable_mitigation = true
 			}
 		}
 	}`, abpWebsitesResourceName, accountConfigName, autoPublish)

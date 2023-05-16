@@ -149,19 +149,24 @@ func (c *Client) UpdateAbpWebsites(accountId string, account AbpTerraformAccount
 }
 
 func (c *Client) ReadAbpWebsites(accountId string) (*AbpTerraformAccount, diag.Diagnostics) {
-	return c.RequestAbpWebsites(accountId, http.MethodGet, ReadAbpWebsites, "Reading", 200)
+	return c.RequestAbpWebsites(accountId, false, http.MethodGet, ReadAbpWebsites, "Reading", 200)
 }
 
-func (c *Client) DeleteAbpWebsites(accountId string) (*AbpTerraformAccount, diag.Diagnostics) {
-	return c.RequestAbpWebsites(accountId, http.MethodDelete, DeleteAbpWebsites, "Deleting", 200)
+func (c *Client) DeleteAbpWebsites(accountId string, autoPublish bool) (*AbpTerraformAccount, diag.Diagnostics) {
+	return c.RequestAbpWebsites(accountId, autoPublish, http.MethodDelete, DeleteAbpWebsites, "Deleting", 200)
 }
 
-func (c *Client) RequestAbpWebsites(accountId string, method string, operation string, action string, successStatus int) (*AbpTerraformAccount, diag.Diagnostics) {
+func (c *Client) RequestAbpWebsites(accountId string, autoPublish bool, method string, operation string, action string, successStatus int) (*AbpTerraformAccount, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] %s Abp websites Account ID %s\n", action, accountId)
 
 	// Post form to Incapsula
-	reqURL := fmt.Sprintf("%s/v1/account/%s/terraform", c.AbpBaseUrl(), accountId)
+	var reqURL string
+	if autoPublish {
+		reqURL = fmt.Sprintf("%s/v1/account/%s/terraform?autoPublish=1", c.AbpBaseUrl(), accountId)
+	} else {
+		reqURL = fmt.Sprintf("%s/v1/account/%s/terraform", c.AbpBaseUrl(), accountId)
+	}
 	resp, err := c.DoJsonRequestWithCustomHeaders(method, reqURL, nil, authHeader, operation)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
