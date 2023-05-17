@@ -79,6 +79,7 @@ type AccountStatusResponse struct {
 	SupportAllTLSVersions        bool        `json:"supprt_all_tls_versions"`
 	WildcardSANForNewSites       string      `json:"wildcard_san_for_new_sites"`
 	NakedDomainSANForNewWWWSites bool        `json:"naked_domain_san_for_new_www_sites"`
+	ConsentRequired              bool        `json:"consent_required"`
 	Res                          interface{} `json:"res"`
 	ResMessage                   string      `json:"res_message"`
 	DebugInfo                    struct {
@@ -180,7 +181,7 @@ func (c *Client) AccountStatus(accountID int, operation string) (*AccountStatusR
 
 // UpdateAccount will update the specific param/value on the account resource
 func (c *Client) UpdateAccount(accountID, param, value string) (*AccountUpdateResponse, error) {
-	log.Printf("[INFO] Updating Incapsula account for accountID: %s\n", accountID)
+	log.Printf("[INFO] Updating Incapsula account for accountID: %s. Param: %s. Value: %s\n", accountID, param, value)
 
 	values := url.Values{
 		"account_id": {accountID},

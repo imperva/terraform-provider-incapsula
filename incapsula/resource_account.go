@@ -105,6 +105,12 @@ func resourceAccount() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"APAC", "EU", "US", "AU"}, false),
 			},
+			"consent_required": {
+				Description: "Blocks Imperva from performing sensitive operations on your behalf. Options are `true`, `false`.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+			},
 
 			// Computed Attributes
 			"support_level": {
@@ -204,6 +210,7 @@ func resourceAccountRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("support_all_tls_versions", accountStatusResponse.Account.SupportAllTLSVersions)
 	d.Set("wildcard_san_for_new_sites", accountStatusResponse.Account.WildcardSANForNewSites)
 	d.Set("naked_domain_san_for_new_www_sites", accountStatusResponse.Account.NakedDomainSANForNewWWWSites)
+	d.Set("consent_required", accountStatusResponse.ConsentRequired)
 
 	// Get the performance settings for the site
 	defaultAccountDataStorageRegion, err := client.GetAccountDataStorageRegion(d.Id())
@@ -276,18 +283,30 @@ func resourceAccountDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func updateAdditionalAccountProperties(client *Client, d *schema.ResourceData) error {
-	updateParams := [5]string{"name", "error_page_template", "support_all_tls_versions", "naked_domain_san_for_new_www_sites", "wildcard_san_for_new_sites"}
+	consentRequiredParam := "consent_required"
+	updateParams := [6]string{"name", "error_page_template", "support_all_tls_versions", "naked_domain_san_for_new_www_sites", "wildcard_san_for_new_sites", consentRequiredParam}
 	for i := 0; i < len(updateParams); i++ {
 		param := updateParams[i]
-		if d.HasChange(param) && d.Get(param) != "" {
-			log.Printf("[INFO] Updating Incapsula account param (%s) with value (%s) for account_id: %s\n", param, d.Get(param).(string), d.Id())
-			_, err := client.UpdateAccount(d.Id(), param, d.Get(param).(string))
-			if err != nil {
-				log.Printf("[ERROR] Could not update Incapsula account param (%s) with value (%s) for account_id: %s %s\n", param, d.Get(param).(string), d.Id(), err)
-				return err
+		if d.HasChange(param) {
+			var paramValStr string
+
+			if param == consentRequiredParam {
+				paramValStr = strconv.FormatBool(d.Get(param).(bool))
+			} else {
+				paramValStr = d.Get(param).(string)
+			}
+
+			if paramValStr != "" {
+				log.Printf("[INFO] Updating Incapsula account param (%s) with value (%s) for account_id: %s\n", param, paramValStr, d.Id())
+				_, err := client.UpdateAccount(d.Id(), param, paramValStr)
+				if err != nil {
+					log.Printf("[ERROR] Could not update Incapsula account param (%s) with value (%s) for account_id: %s %s\n", param, paramValStr, d.Id(), err)
+					return err
+				}
 			}
 		}
 	}
+
 	return nil
 }
 
