@@ -34,7 +34,7 @@ resource "incapsula_account_role" "role_1" {
 
 ### Data Sources Usage
 
-Using `incapsula_account_permissions` data sources we can use Account Permissions display names that is more "human-readable".
+The incapsula_account_permissions data sources provide the Account Permissions display names that are more "human-readable".
 
 ```hcl
 data "incapsula_account_permissions" "account_permissions" {
@@ -73,9 +73,7 @@ resource "incapsula_account_role" "role_2" {
 
 The following arguments are supported:
 
-* `account_id` - (Required) Numeric identifier of the account to operate on
-
-  Using reference to account datasource
+* `account_id` - (Required) Numeric identifier of the account to operate on - a reference to the account datasource may be used
 
 * `name` - (Required) The role name
 
