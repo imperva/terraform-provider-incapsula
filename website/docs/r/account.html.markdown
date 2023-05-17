@@ -22,7 +22,7 @@ resource "incapsula_account" "example-account" {
   account_name                       = "Example Account"
   logs_account_id                    = "456"
   log_level                          = "full"
-  consent_required                   = "true"
+  consent_required                   = true
 
   data_storage_region                = "US"
 
