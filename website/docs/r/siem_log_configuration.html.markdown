@@ -43,6 +43,26 @@ resource "incapsula_siem_log_configuration" "example_siem_log_configuration_nets
   	connectionId = incapsula_siem_connection.example_siem_connection_basic_auth.id
 
 }
+
+resource "incapsula_siem_log_configuration" "example_siem_log_configuration_ato"{
+    accountId = 1234567
+  	configurationName = "ATO SIEM-LOGS configuration"
+  	producer = "ATO"
+	datasets = ["ATO"]
+  	enabled = true
+  	connectionId = incapsula_siem_connection.example_siem_connection_basic_auth.id
+
+}
+
+resource "incapsula_siem_log_configuration" "example_siem_log_configuration_audit"{
+    accountId = 1234567
+  	configurationName = "AUDIT Trail SIEM-LOGS configuration"
+  	producer = "AUDIT"
+	datasets = ["AUDIT_TRAIL"]
+  	enabled = true
+  	connectionId = incapsula_siem_connection.example_siem_connection_basic_auth.id
+
+}
 ```
 
 ## Argument Reference
@@ -50,17 +70,19 @@ resource "incapsula_siem_log_configuration" "example_siem_log_configuration_nets
 The following arguments are supported:
 * `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `configurationName` - (Required) Unique configuration name.
-* `producer` - (Required) Provider type. Values: `ABP`, `NETSEC`
-* `datasets` - (Required) An array of strings representing the type of logs. Values:<br /> `ABP` for provider type `ABP`<br /> `CONNECTION`, `NETFLOW`, `IP`, `ATTACK` for provider type `NETSEC`
+* `producer` - (Required) Provider type. Values: `ABP`, `NETSEC`, `ATO`, `AUDIT`
+* `datasets` - (Required) An array of strings representing the type of logs. Values:<br /> `ABP` for provider type `ABP`<br /> `CONNECTION`, `NETFLOW`, `IP`, `ATTACK` for provider type `NETSEC`<br /> `ATO` for provider type `ATO`<br /> `AUDIT_TRAIL` for provider type `AUDIT`
 * `enabled`  - (Required) Boolean. Values: `true`/ `false`
 * `connectionId` - (Required) Connection id associated with this log configuration
 
 **Note**: The connection should be chosen according to conjunction of producer and dataset:
 
-| producer  | datasets        | allowed storage_type            |
-| --------- |-----------------|---------------------------------|
-|  ABP      | CUSTOMER_S3     | ABP                             |
-|  NETSEC   | CUSTOMER_S3     | CONNECTION, NETFLOW, IP, ATTACK |
+| producer | allowed storage_type | datasets                        |
+|----------|----------------------|---------------------------------|
+| ABP      | CUSTOMER_S3          | ABP                             |
+| NETSEC   | CUSTOMER_S3          | CONNECTION, NETFLOW, IP, ATTACK |
+| ATO      | CUSTOMER_S3          | ATO                             |
+| AUDIT    | CUSTOMER_S3          | AUDIT_TRAIL                     |
 
 
 ## Attributes Reference
