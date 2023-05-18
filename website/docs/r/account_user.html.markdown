@@ -95,7 +95,7 @@ resource "incapsula_account_user" "user_3" {
 
 For subaccounts we are not creating a new user but assigning an existing user from the parent account.
 In terms of the TF resource, it means the email attribute must be taken from an existing user, by reference (preferred option) or hardcoded.
-The first and last name are redundant and then, ignored and taken from the existing selected account.
+The first and last name are redundant and will be taken from the existing selected account.
 The roles are not taken from the existing user and must be assigned independently.
 
 ```hcl
@@ -149,7 +149,7 @@ The following arguments are supported:
 * `email` - (Required) The user email. This attribute cannot be updated.
 * `first_name` - (Optional) The user's first name. This attribute cannot be updated.
 * `last_name` - (Optional) The user's last name. This attribute cannot be updated.
-* `role_ids` - (Optional) List of role ids to be associated to the user. <p/>
+* `role_ids` - (Optional) List of role ids to be associated with the user. <p/>
   Default value is an empty list (user with no roles).
 
 

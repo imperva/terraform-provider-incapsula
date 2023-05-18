@@ -1,4 +1,11 @@
-## 3.16.0 (Mar 22, 2023)
+## 3.17.0 (May 17, 2023)
+
+IMPROVEMENTS:
+
+* incapsula_account - support managing consent ([#307](https://github.com/imperva/terraform-provider-incapsula/pull/307))
+* incapsula_siem_log_configuration - Support ATO and AUDIT_TRAIL  ([#308](https://github.com/imperva/terraform-provider-incapsula/pull/308))
+
+## 3.16.1 (Mar 22, 2023)
 
 IMPROVEMENTS:
 
