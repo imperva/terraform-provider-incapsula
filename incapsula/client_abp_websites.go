@@ -46,8 +46,8 @@ func (c *Client) CreateAbpWebsites(accountId string, account AbpTerraformAccount
 	log.Printf("[DEBUG] %s payload: %s\n", resourceName, string(accountJson))
 
 	// Post form to Incapsula
-	reqURL := fmt.Sprintf("%s/v1/account/%s/terraform", c.AbpBaseUrl(), accountId)
-	resp, err := c.DoJsonRequestWithCustomHeaders(http.MethodPost, reqURL, accountJson, authHeader, CreateAbpWebsites)
+	reqURL := fmt.Sprintf("%s/botmanagement/v1/account/%s/terraform", c.AbpBaseUrl(), accountId)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, accountJson, CreateAbpWebsites)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -96,7 +96,7 @@ func (c *Client) UpdateAbpWebsites(accountId string, account AbpTerraformAccount
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  fmt.Sprintf("Failure generating %s create request", resourceName),
+			Summary:  fmt.Sprintf("Failure generating %s update request", resourceName),
 			Detail:   fmt.Sprintf("Failed to JSON marshal AbpWebsites: %s", err.Error()),
 		})
 		return nil, diags
@@ -106,13 +106,13 @@ func (c *Client) UpdateAbpWebsites(accountId string, account AbpTerraformAccount
 	log.Printf("[DEBUG] %s payload: %s\n", resourceName, string(accountJson))
 
 	// Post form to Incapsula
-	reqURL := fmt.Sprintf("%s/v1/account/%s/terraform", c.AbpBaseUrl(), accountId)
-	resp, err := c.DoJsonRequestWithCustomHeaders(http.MethodPut, reqURL, accountJson, authHeader, UpdateAbpWebsites)
+	reqURL := fmt.Sprintf("%s/botmanagement/v1/account/%s/terraform", c.AbpBaseUrl(), accountId)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, accountJson, UpdateAbpWebsites)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  fmt.Sprintf("Failure Updating %s", resourceName),
-			Detail:   fmt.Sprintf("Error from Incapsula service when creating %s for Account ID %s: %s", resourceName, accountId, err.Error()),
+			Detail:   fmt.Sprintf("Error from Incapsula service when updating %s for Account ID %s: %s", resourceName, accountId, err.Error()),
 		})
 		return nil, diags
 	}
@@ -129,7 +129,7 @@ func (c *Client) UpdateAbpWebsites(accountId string, account AbpTerraformAccount
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  fmt.Sprintf("Failure Updating %s", resourceName),
-			Detail:   fmt.Sprintf("Error status code %d from Incapsula service when creating %s for Account ID %s: %s", resp.StatusCode, resourceName, accountId, string(responseBody)),
+			Detail:   fmt.Sprintf("Error status code %d from Incapsula service when updating %s for Account ID %s: %s", resp.StatusCode, resourceName, accountId, string(responseBody)),
 		})
 	}
 
@@ -139,7 +139,7 @@ func (c *Client) UpdateAbpWebsites(accountId string, account AbpTerraformAccount
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  fmt.Sprintf("Failure parsing %s create response", resourceName),
+			Summary:  fmt.Sprintf("Failure parsing %s updating response", resourceName),
 			Detail:   fmt.Sprintf("Error parsing %s JSON response for Account ID %s: %s\nresponse: %s", resourceName, accountId, err.Error(), string(responseBody)),
 		})
 		return nil, diags
@@ -163,11 +163,11 @@ func (c *Client) RequestAbpWebsites(accountId string, autoPublish bool, method s
 	// Post form to Incapsula
 	var reqURL string
 	if autoPublish {
-		reqURL = fmt.Sprintf("%s/v1/account/%s/terraform?autoPublish=1", c.AbpBaseUrl(), accountId)
+		reqURL = fmt.Sprintf("%s/botmanagement/v1/account/%s/terraform?autoPublish=1", c.AbpBaseUrl(), accountId)
 	} else {
-		reqURL = fmt.Sprintf("%s/v1/account/%s/terraform", c.AbpBaseUrl(), accountId)
+		reqURL = fmt.Sprintf("%s/botmanagement/v1/account/%s/terraform", c.AbpBaseUrl(), accountId)
 	}
-	resp, err := c.DoJsonRequestWithCustomHeaders(method, reqURL, nil, authHeader, operation)
+	resp, err := c.DoJsonRequestWithHeaders(method, reqURL, nil, operation)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -195,6 +195,7 @@ func (c *Client) RequestAbpWebsites(accountId string, autoPublish bool, method s
 
 	// Parse the JSON
 	var newAbpWebsites AbpTerraformAccount
+	fmt.Println(string(responseBody))
 	err = json.Unmarshal([]byte(responseBody), &newAbpWebsites)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
