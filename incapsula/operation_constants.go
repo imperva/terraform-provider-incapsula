@@ -146,6 +146,8 @@ const DeleteMtlsClientToImpervaCertifiateSiteAssociation = "delete_mtls_client_t
 
 const CreateSiteTlsSettings = "create_site_tls_settings"
 const ReadSiteTlsSettings = "read_site_tls_settings"
+const UpdateSiteSSLSettings = "update_site_ssl_settings"
+const ReadSiteSSLSettings = "read_site_ssl_settings"
 
 const CreateAccountRole = "create_account_role"
 const ReadAccountRole = "read_account_role"
