@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -54,32 +55,40 @@ func TestAccAbpWebsites_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.website.1.enable_mitigation", "true"),
 				),
 			},
+			{
+				Config: testAccAbpWebsitesBasic2(t, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAbpWebsitesExists(&websitesResponse),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", "4002"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-2"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "false"),
+				),
+			},
 		},
 	})
 }
 
-func TestAccAbpWebsites_Basic2(t *testing.T) {
-	var websitesResponse AbpTerraformAccount
+func TestAccAbpWebsites_DuplicateWebsites(t *testing.T) {
 
 	log.Printf("========================BEGIN TEST========================")
-	log.Printf("[DEBUG]Running test resource_abp_websites_test.TestAccAbpWebsites_Basic2")
+	log.Printf("[DEBUG]Running test resource_abp_websites_test.TestAccAbpWebsites_DuplicateWebsites")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
 		},
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAbpWebsitesDestroy,
+		ErrorCheck: func(err error) error {
+			if strings.Contains(err.Error(), "already in use") {
+				return nil
+			}
+			return err
+		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAbpWebsitesBasic(t, false),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckAbpWebsitesExists(&websitesResponse),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", "4002"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "false"),
-				),
+				Config: testAccAbpWebsitesDuplicate(t),
 			},
 		},
 	})
@@ -199,6 +208,40 @@ func testAccAbpWebsitesBasic(t *testing.T, mitigationEnabled bool) string {
 			}
 		}
 	}`, abpWebsitesResourceName, accountConfigName, mitigationEnabled)
+}
+
+func testAccAbpWebsitesBasic2(t *testing.T, mitigationEnabled bool) string {
+	return fmt.Sprintf(`
+	resource "%s" "%s" {
+		account_id = 4002
+		auto_publish = true
+		website_group {
+			name = "sites-2"
+			website {
+				website_id = 11113
+				enable_mitigation = %t
+			}
+		}
+	}`, abpWebsitesResourceName, accountConfigName, mitigationEnabled)
+}
+
+func testAccAbpWebsitesDuplicate(t *testing.T) string {
+	return fmt.Sprintf(`
+	resource "%s" "%s" {
+		account_id = 4002
+		auto_publish = true
+		website_group {
+			name = "sites-2"
+			website {
+				website_id = 11113
+				enable_mitigation = false
+			}
+			website {
+				website_id = 11113
+				enable_mitigation = true
+			}
+		}
+	}`, abpWebsitesResourceName, accountConfigName)
 }
 
 func testAccAbpWebsitesAutoPublish(t *testing.T, autoPublish bool) string {
