@@ -99,16 +99,26 @@ func extractAccount(data *schema.ResourceData) AbpTerraformAccount {
 		for _, website := range websiteGroup["website"].([]interface{}) {
 			website := website.(map[string]interface{})
 
+			id := website["id"].(string)
+			var idOpt *string
+			if id != "" {
+				idOpt = &id
+			}
 			websites = append(websites,
 				AbpTerraformWebsite{
-					Id:               nil,
+					Id:               idOpt,
 					WebsiteId:        website["website_id"].(int),
 					EnableMitigation: website["enable_mitigation"].(bool),
 				})
 		}
 
+		id := websiteGroup["id"].(string)
+		var idOpt *string
+		if id != "" {
+			idOpt = &id
+		}
 		websiteGroups = append(websiteGroups, AbpTerraformWebsiteGroup{
-			Id:       nil,
+			Id:       idOpt,
 			Name:     websiteGroup["name"].(string),
 			Websites: websites,
 		})
@@ -133,14 +143,18 @@ func serializeAccount(data *schema.ResourceData, account AbpTerraformAccount) {
 		for j, website := range websiteGroup.Websites {
 			websiteData := make(map[string]interface{})
 
-			websiteData["id"] = website.Id
+			if website.Id != nil {
+				websiteData["id"] = *website.Id
+			}
 			websiteData["website_id"] = website.WebsiteId
 			websiteData["enable_mitigation"] = website.EnableMitigation
 
 			websitesData[j] = websiteData
 		}
 
-		websiteGroupData["id"] = websiteGroup.Id
+		if websiteGroup.Id != nil {
+			websiteGroupData["id"] = *websiteGroup.Id
+		}
 		websiteGroupData["name"] = websiteGroup.Name
 		websiteGroupData["website"] = websitesData
 
