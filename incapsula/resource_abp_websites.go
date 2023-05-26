@@ -15,7 +15,8 @@ type AbpTerraformAccount struct {
 }
 
 type AbpTerraformWebsiteGroup struct {
-	Id       *string               `json:"id"`
+	Id       *string `json:"id"`
+	NameId   *string
 	Name     string                `json:"name"`
 	Websites []AbpTerraformWebsite `json:"websites"`
 }
@@ -24,6 +25,13 @@ type AbpTerraformWebsite struct {
 	Id               *string `json:"id"`
 	WebsiteId        int     `json:"website_id"`
 	EnableMitigation bool    `json:"enable_mitigation"`
+}
+
+func (a *AbpTerraformWebsiteGroup) UniqueId() string {
+	if a.NameId == nil {
+		return a.Name
+	}
+	return *a.NameId
 }
 
 func resourceAbpWebsites() *schema.Resource {
@@ -54,9 +62,15 @@ func resourceAbpWebsites() *schema.Resource {
 							Type:     schema.TypeString,
 							Computed: true,
 						},
+						"name_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Unique user-defined identifier used to differentiate websites groups whose `name` are identical",
+						},
 						"name": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Name for the website group. Must be unique unless `name_id` is specified.",
 						},
 						"website": {
 							Type: schema.TypeList,
@@ -89,10 +103,23 @@ func resourceAbpWebsites() *schema.Resource {
 
 func extractAccount(data *schema.ResourceData) AbpTerraformAccount {
 
+	// Map the unique names to
+	nameToId := make(map[string]string)
+	oldWebsiteGroup, newWebsiteGroup := data.GetChange("website_group")
+	for _, websiteGroup := range oldWebsiteGroup.([]interface{}) {
+		websiteGroup := websiteGroup.(map[string]interface{})
+
+		nameId := websiteGroup["name_id"].(string)
+		if nameId == "" {
+			nameId = websiteGroup["name"].(string)
+		}
+		nameToId[nameId] = websiteGroup["id"].(string)
+	}
+
 	autoPublish := data.Get("auto_publish").(bool)
 
 	var websiteGroups []AbpTerraformWebsiteGroup
-	for _, websiteGroup := range data.Get("website_group").([]interface{}) {
+	for _, websiteGroup := range newWebsiteGroup.([]interface{}) {
 		websiteGroup := websiteGroup.(map[string]interface{})
 
 		var websites []AbpTerraformWebsite
@@ -112,14 +139,34 @@ func extractAccount(data *schema.ResourceData) AbpTerraformAccount {
 				})
 		}
 
-		id := websiteGroup["id"].(string)
-		var idOpt *string
-		if id != "" {
-			idOpt = &id
+		name := websiteGroup["name"].(string)
+
+		nameId := websiteGroup["name_id"].(string)
+
+		var nameIdOpt *string
+		if nameId != "" {
+			nameIdOpt = &nameId
 		}
+
+		// The items in the website group list may have shifted around making the ids not match name/name_id. Thus we use name/name_id
+		// to lookup the id of the old configuration.
+		var idOpt *string
+		if nameIdOpt == nil {
+			id, ok := nameToId[name]
+			if ok {
+				idOpt = &id
+			}
+		} else {
+			id, ok := nameToId[*nameIdOpt]
+			if ok {
+				idOpt = &id
+			}
+		}
+
 		websiteGroups = append(websiteGroups, AbpTerraformWebsiteGroup{
 			Id:       idOpt,
-			Name:     websiteGroup["name"].(string),
+			NameId:   nameIdOpt,
+			Name:     name,
 			Websites: websites,
 		})
 	}

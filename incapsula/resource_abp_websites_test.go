@@ -62,7 +62,7 @@ func TestAccAbpWebsites_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", "4002"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-2"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11113"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "false"),
 				),
 			},
@@ -277,6 +277,10 @@ func testAccCheckAbpWebsitesDestroy(state *terraform.State) error {
 		websitesResponse, _ := client.ReadAbpWebsites(accountId)
 		if websitesResponse == nil {
 			return fmt.Errorf("Failed to check ABP Websites status (id=%s)", accountID)
+		}
+
+		if len(websitesResponse.WebsiteGroups) != 0 {
+			return fmt.Errorf("Found some website groups remaining after delete: %+v", websitesResponse)
 		}
 		// if websitesResponse.Errors[0].Status != 404 {
 		// 	return fmt.Errorf("Incapsula ABP Websites with id %s still exists", accountID)
