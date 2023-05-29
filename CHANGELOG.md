@@ -1,3 +1,9 @@
+## 3.18.0 (May 29, 2023)
+
+FEATURES:
+
+* **New Resource:** `incapsula_site_ssl_settings`
+
 ## 3.17.0 (May 17, 2023)
 
 IMPROVEMENTS:
