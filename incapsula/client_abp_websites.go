@@ -195,7 +195,6 @@ func (c *Client) RequestAbpWebsites(accountId string, autoPublish bool, method s
 
 	// Parse the JSON
 	var newAbpWebsites AbpTerraformAccount
-	fmt.Println(string(responseBody))
 	err = json.Unmarshal([]byte(responseBody), &newAbpWebsites)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{

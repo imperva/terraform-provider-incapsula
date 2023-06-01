@@ -3,6 +3,7 @@ package incapsula
 import (
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -15,7 +16,7 @@ const abpWebsitesResourceName = "incapsula_abp_websites"
 const accountConfigName = "testacc-terraform-abp-websites"
 const abpWebsitesResource = abpWebsitesResourceName + "." + accountConfigName
 
-const testAccountId = "50201698"
+const testAccountId = "53417487"
 
 func TestAccAbpWebsites_Basic(t *testing.T) {
 	var websitesResponse AbpTerraformAccount
@@ -36,7 +37,7 @@ func TestAccAbpWebsites_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", testAccountId),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.website_id"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "true"),
 				),
 			},
@@ -47,13 +48,13 @@ func TestAccAbpWebsites_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", testAccountId),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.website_id"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "true"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.name", "sites-2"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.website.0.website_id", "11113"),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.1.website.0.website_id"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.website.0.enable_mitigation", "false"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.name", "sites-2"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.website.1.website_id", "11114"),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.1.website.1.website_id"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.website.1.enable_mitigation", "true"),
 				),
 			},
@@ -61,10 +62,10 @@ func TestAccAbpWebsites_Basic(t *testing.T) {
 				Config: testAccAbpWebsitesBasic2(t, false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAbpWebsitesExists(&websitesResponse),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", "4002"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", testAccountId),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-2"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11113"),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.website_id"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "false"),
 				),
 			},
@@ -83,7 +84,9 @@ func TestAccAbpWebsites_DuplicateWebsites(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAbpWebsitesDestroy,
 		ErrorCheck: func(err error) error {
-			if strings.Contains(err.Error(), "already in use") {
+			// Normalize newlines as the error will have line breaks in it to limit its width
+			msg := strings.ReplaceAll(err.Error(), "\n", " ")
+			if strings.Contains(msg, "is referenced twice") {
 				return nil
 			}
 			return err
@@ -115,8 +118,9 @@ func TestAccAbpWebsites_AutoPublish(t *testing.T) {
 					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", testAccountId),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "false"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.website_id"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "true"),
+					resource.TestCheckNoResourceAttr(abpWebsitesResource, "website_group.1"),
 				),
 			},
 			{
@@ -126,7 +130,7 @@ func TestAccAbpWebsites_AutoPublish(t *testing.T) {
 					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", testAccountId),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.website_id"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "true"),
 				),
 			},
@@ -137,7 +141,7 @@ func TestAccAbpWebsites_AutoPublish(t *testing.T) {
 					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", testAccountId),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "false"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.website_id", "11112"),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.website_id"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "true"),
 				),
 			},
@@ -171,7 +175,8 @@ func testAccCheckAbpWebsitesExists(websitesresponse *AbpTerraformAccount) resour
 	}
 }
 
-func testAccCheckIncapsulaSiteConfig(name string, domain string) string {
+func testAccCheckIncapsulaSiteConfig(t *testing.T, name string) string {
+	domain := createTestDomain(t, name)
 	return fmt.Sprintf(`
 		resource "incapsula_site" "%s" {
 			domain = "%s"
@@ -181,9 +186,21 @@ func testAccCheckIncapsulaSiteConfig(name string, domain string) string {
 	)
 }
 
+func createTestDomain(t *testing.T, id string) string {
+	if v := os.Getenv("INCAPSULA_API_ID"); v == "" && t != nil {
+		t.Fatal("INCAPSULA_API_ID must be set for acceptance tests")
+	}
+	// Using examplewebsite.com like the other tests gives an error
+	// "Error from Incapsula service when adding site for domain id1165506sites-1.examplewebsite.com:
+	// {"res":1,"res_message":"Unexpected error","debug_info":{"problem":"[Load Balancing mode is disabled for this site, you need to reduce number of servers to 1]","id-info":"999999"}}"
+	generatedDomain = "id" + os.Getenv("INCAPSULA_API_ID") + "-" + strings.ToLower(strings.ReplaceAll(t.Name(), "_", "-")) + "-" + id + ".distil.ninja"
+	return generatedDomain
+}
+
 func testAccAbpWebsitesMultipleWebsites(t *testing.T) string {
-	return testAccCheckIncapsulaSiteConfig("sites-1", GenerateTestDomain(t)) +
-		testAccCheckIncapsulaSiteConfig("sites-2", GenerateTestDomain(t)) +
+	return testAccCheckIncapsulaSiteConfig(t, "sites-1") +
+		testAccCheckIncapsulaSiteConfig(t, "sites-2") +
+		testAccCheckIncapsulaSiteConfig(t, "sites-3") +
 		fmt.Sprintf(`
 	resource "%s" "%s" {
 		account_id = "%s"
@@ -191,18 +208,18 @@ func testAccAbpWebsitesMultipleWebsites(t *testing.T) string {
 		website_group {
 			name = "sites-1"
 			website {
-				website_id = 11112
+				website_id = incapsula_site.sites-1.id
 				enable_mitigation = true
 			}
 		}
 		website_group {
 			name = "sites-2"
 			website {
-				website_id = 11113
+				website_id = incapsula_site.sites-2.id
 				enable_mitigation = false
 			}
 			website {
-				website_id = 11114
+				website_id = incapsula_site.sites-3.id
 				enable_mitigation = true
 			}
 		}
@@ -210,14 +227,14 @@ func testAccAbpWebsitesMultipleWebsites(t *testing.T) string {
 }
 
 func testAccAbpWebsitesBasic(t *testing.T, mitigationEnabled bool) string {
-	return testAccCheckIncapsulaSiteConfig("sites-1", GenerateTestDomain(t)) + fmt.Sprintf(`
+	return testAccCheckIncapsulaSiteConfig(t, "sites-1") + fmt.Sprintf(`
 	resource "%s" "%s" {
 		account_id = "%s"
 		auto_publish = true
 		website_group {
 			name = "sites-1"
 			website {
-				website_id = 11112
+				website_id = incapsula_site.sites-1.id
 				enable_mitigation = %t
 			}
 		}
@@ -225,48 +242,48 @@ func testAccAbpWebsitesBasic(t *testing.T, mitigationEnabled bool) string {
 }
 
 func testAccAbpWebsitesBasic2(t *testing.T, mitigationEnabled bool) string {
-	return fmt.Sprintf(`
+	return testAccCheckIncapsulaSiteConfig(t, "sites-2") + fmt.Sprintf(`
 	resource "%s" "%s" {
-		account_id = 4002
+		account_id = "%s"
 		auto_publish = true
 		website_group {
 			name = "sites-2"
 			website {
-				website_id = 11113
+				website_id = incapsula_site.sites-2.id
 				enable_mitigation = %t
 			}
 		}
-	}`, abpWebsitesResourceName, accountConfigName, mitigationEnabled)
+	}`, abpWebsitesResourceName, accountConfigName, testAccountId, mitigationEnabled)
 }
 
 func testAccAbpWebsitesDuplicate(t *testing.T) string {
-	return fmt.Sprintf(`
+	return testAccCheckIncapsulaSiteConfig(t, "sites-2") + fmt.Sprintf(`
 	resource "%s" "%s" {
-		account_id = 4002
+		account_id = "%s"
 		auto_publish = true
 		website_group {
 			name = "sites-2"
 			website {
-				website_id = 11113
+				website_id = incapsula_site.sites-2.id
 				enable_mitigation = false
 			}
 			website {
-				website_id = 11113
+				website_id = incapsula_site.sites-2.id
 				enable_mitigation = true
 			}
 		}
-	}`, abpWebsitesResourceName, accountConfigName)
+	}`, abpWebsitesResourceName, accountConfigName, testAccountId)
 }
 
 func testAccAbpWebsitesAutoPublish(t *testing.T, autoPublish bool) string {
-	return testAccCheckIncapsulaSiteConfig("sites-1", GenerateTestDomain(t)) + fmt.Sprintf(`
+	return testAccCheckIncapsulaSiteConfig(t, "sites-1") + fmt.Sprintf(`
 	resource "%s" "%s" {
 		account_id = "%s"
 		auto_publish = %t
 		website_group {
 			name = "sites-1"
 			website {
-				website_id = 11112
+				website_id = incapsula_site.sites-1.id
 				enable_mitigation = true
 			}
 		}
