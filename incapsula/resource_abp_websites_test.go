@@ -3,7 +3,6 @@ package incapsula
 import (
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -19,8 +18,6 @@ const abpWebsitesResource = abpWebsitesResourceName + "." + accountConfigName
 func TestAccAbpWebsites_Basic(t *testing.T) {
 	var websitesResponse AbpTerraformAccount
 
-	log.Printf("========================BEGIN TEST========================")
-	log.Printf("[DEBUG]Running test resource_abp_websites_test.TestAccAbpWebsites_Basic")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -73,8 +70,6 @@ func TestAccAbpWebsites_Basic(t *testing.T) {
 
 func TestAccAbpWebsites_DuplicateWebsites(t *testing.T) {
 
-	log.Printf("========================BEGIN TEST========================")
-	log.Printf("[DEBUG]Running test resource_abp_websites_test.TestAccAbpWebsites_DuplicateWebsites")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -97,11 +92,61 @@ func TestAccAbpWebsites_DuplicateWebsites(t *testing.T) {
 	})
 }
 
+func TestAccAbpWebsites_DuplicateWebsiteGroups(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAbpWebsitesDestroy,
+		ErrorCheck: func(err error) error {
+			// Normalize newlines as the error will have line breaks in it to limit its width
+			msg := strings.ReplaceAll(err.Error(), "\n", " ")
+			if strings.Contains(msg, "is referenced twice") {
+				return nil
+			}
+			return err
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAbpWebsiteGroupsDuplicate(t),
+			},
+		},
+	})
+}
+
+func TestAccAbpWebsites_DuplicateNamesButDiscriminatedId(t *testing.T) {
+	var websitesResponse AbpTerraformAccount
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAbpWebsitesDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAbpWebsitesDiscriminatedId(t),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAbpWebsitesExists(&websitesResponse),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites"),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.website_id"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "true"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.name", "sites"),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.1.website.0.website_id"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.website.0.enable_mitigation", "false"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccAbpWebsites_AutoPublish(t *testing.T) {
 	var websitesResponse AbpTerraformAccount
 
-	log.Printf("========================BEGIN TEST========================")
-	log.Printf("[DEBUG]Running test resource_abp_websites_test.TestAccAbpWebsites_AutoPublish")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -190,13 +235,10 @@ func testAccCheckIncapsulaSiteConfig(t *testing.T, name string) string {
 }
 
 func createTestDomain(t *testing.T, id string) string {
-	if v := os.Getenv("INCAPSULA_API_ID"); v == "" && t != nil {
-		t.Fatal("INCAPSULA_API_ID must be set for acceptance tests")
-	}
 	// Using examplewebsite.com like the other tests gives an error
 	// "Error from Incapsula service when adding site for domain id1165506sites-1.examplewebsite.com:
 	// {"res":1,"res_message":"Unexpected error","debug_info":{"problem":"[Load Balancing mode is disabled for this site, you need to reduce number of servers to 1]","id-info":"999999"}}"
-	generatedDomain = "id" + os.Getenv("INCAPSULA_API_ID") + "-" + strings.ToLower(strings.ReplaceAll(t.Name(), "_", "-")) + "-" + id + ".distil.ninja"
+	generatedDomain = strings.ToLower(strings.ReplaceAll(t.Name(), "_", "-")) + "-" + id + ".distil.ninja"
 	return generatedDomain
 }
 
@@ -281,6 +323,54 @@ func testAccAbpWebsitesDuplicate(t *testing.T) string {
 			website {
 				website_id = incapsula_site.sites-2.id
 				enable_mitigation = true
+			}
+		}
+	}`, abpWebsitesResourceName, accountConfigName)
+}
+
+func testAccAbpWebsiteGroupsDuplicate(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfig(t, "sites-1") + testAccCheckIncapsulaSiteConfig(t, "sites-2") + fmt.Sprintf(`
+	data "incapsula_account_data" "account_data" {
+    }
+	resource "%s" "%s" {
+		account_id = data.incapsula_account_data.account_data.current_account
+		auto_publish = true
+		website_group {
+			name = "sites"
+			website {
+				website_id = incapsula_site.sites-1.id
+				enable_mitigation = false
+			}
+		}
+		website_group {
+			name = "sites"
+			website {
+				website_id = incapsula_site.sites-2.id
+				enable_mitigation = true
+			}
+		}
+	}`, abpWebsitesResourceName, accountConfigName)
+}
+func testAccAbpWebsitesDiscriminatedId(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfig(t, "sites-1") +
+		testAccCheckIncapsulaSiteConfig(t, "sites-2") + fmt.Sprintf(`
+	data "incapsula_account_data" "account_data" {
+    }
+	resource "%s" "%s" {
+		account_id = data.incapsula_account_data.account_data.current_account
+		auto_publish = true
+		website_group {
+			name = "sites"
+			website {
+				website_id = incapsula_site.sites-1.id
+				enable_mitigation = true
+			}
+		}
+		website_group {
+			name = "sites"
+			website {
+				website_id = incapsula_site.sites-2.id
+				enable_mitigation = false
 			}
 		}
 	}`, abpWebsitesResourceName, accountConfigName)
