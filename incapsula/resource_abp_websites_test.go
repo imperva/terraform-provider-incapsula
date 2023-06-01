@@ -16,8 +16,6 @@ const abpWebsitesResourceName = "incapsula_abp_websites"
 const accountConfigName = "testacc-terraform-abp-websites"
 const abpWebsitesResource = abpWebsitesResourceName + "." + accountConfigName
 
-const testAccountId = "53417487"
-
 func TestAccAbpWebsites_Basic(t *testing.T) {
 	var websitesResponse AbpTerraformAccount
 
@@ -34,7 +32,7 @@ func TestAccAbpWebsites_Basic(t *testing.T) {
 				Config: testAccAbpWebsitesBasic(t, true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAbpWebsitesExists(&websitesResponse),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", testAccountId),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
 					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.website_id"),
@@ -45,7 +43,7 @@ func TestAccAbpWebsites_Basic(t *testing.T) {
 				Config: testAccAbpWebsitesMultipleWebsites(t),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAbpWebsitesExists(&websitesResponse),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", testAccountId),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
 					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.website_id"),
@@ -62,7 +60,7 @@ func TestAccAbpWebsites_Basic(t *testing.T) {
 				Config: testAccAbpWebsitesBasic2(t, false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAbpWebsitesExists(&websitesResponse),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", testAccountId),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-2"),
 					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.website_id"),
@@ -115,7 +113,7 @@ func TestAccAbpWebsites_AutoPublish(t *testing.T) {
 				Config: testAccAbpWebsitesAutoPublish(t, false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAbpWebsitesExists(&websitesResponse),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", testAccountId),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "false"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
 					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.website_id"),
@@ -127,7 +125,7 @@ func TestAccAbpWebsites_AutoPublish(t *testing.T) {
 				Config: testAccAbpWebsitesAutoPublish(t, true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAbpWebsitesExists(&websitesResponse),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", testAccountId),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
 					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.website_id"),
@@ -138,7 +136,7 @@ func TestAccAbpWebsites_AutoPublish(t *testing.T) {
 				Config: testAccAbpWebsitesAutoPublish(t, false),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAbpWebsitesExists(&websitesResponse),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "account_id", testAccountId),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "false"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
 					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.website_id"),
@@ -165,7 +163,12 @@ func testAccCheckAbpWebsitesExists(websitesresponse *AbpTerraformAccount) resour
 
 		client := testAccProvider.Meta().(*Client)
 
-		response, _ := client.ReadAbpWebsites(accountId)
+		id, err := strconv.Atoi(accountId)
+		if err != nil {
+			return err
+		}
+
+		response, _ := client.ReadAbpWebsites(id)
 		if response == nil {
 			return fmt.Errorf("Failed to retrieve ABP Websites (id=%d)", accountID)
 		}
@@ -202,8 +205,10 @@ func testAccAbpWebsitesMultipleWebsites(t *testing.T) string {
 		testAccCheckIncapsulaSiteConfig(t, "sites-2") +
 		testAccCheckIncapsulaSiteConfig(t, "sites-3") +
 		fmt.Sprintf(`
+	data "incapsula_account_data" "account_data" {
+    }
 	resource "%s" "%s" {
-		account_id = "%s"
+		account_id = data.incapsula_account_data.account_data.current_account
 		auto_publish = true
 		website_group {
 			name = "sites-1"
@@ -223,13 +228,15 @@ func testAccAbpWebsitesMultipleWebsites(t *testing.T) string {
 				enable_mitigation = true
 			}
 		}
-	}`, abpWebsitesResourceName, accountConfigName, testAccountId)
+	}`, abpWebsitesResourceName, accountConfigName)
 }
 
 func testAccAbpWebsitesBasic(t *testing.T, mitigationEnabled bool) string {
 	return testAccCheckIncapsulaSiteConfig(t, "sites-1") + fmt.Sprintf(`
+	data "incapsula_account_data" "account_data" {
+    }
 	resource "%s" "%s" {
-		account_id = "%s"
+		account_id = data.incapsula_account_data.account_data.current_account
 		auto_publish = true
 		website_group {
 			name = "sites-1"
@@ -238,13 +245,15 @@ func testAccAbpWebsitesBasic(t *testing.T, mitigationEnabled bool) string {
 				enable_mitigation = %t
 			}
 		}
-	}`, abpWebsitesResourceName, accountConfigName, testAccountId, mitigationEnabled)
+	}`, abpWebsitesResourceName, accountConfigName, mitigationEnabled)
 }
 
 func testAccAbpWebsitesBasic2(t *testing.T, mitigationEnabled bool) string {
 	return testAccCheckIncapsulaSiteConfig(t, "sites-2") + fmt.Sprintf(`
+	data "incapsula_account_data" "account_data" {
+    }
 	resource "%s" "%s" {
-		account_id = "%s"
+		account_id = data.incapsula_account_data.account_data.current_account
 		auto_publish = true
 		website_group {
 			name = "sites-2"
@@ -253,13 +262,15 @@ func testAccAbpWebsitesBasic2(t *testing.T, mitigationEnabled bool) string {
 				enable_mitigation = %t
 			}
 		}
-	}`, abpWebsitesResourceName, accountConfigName, testAccountId, mitigationEnabled)
+	}`, abpWebsitesResourceName, accountConfigName, mitigationEnabled)
 }
 
 func testAccAbpWebsitesDuplicate(t *testing.T) string {
 	return testAccCheckIncapsulaSiteConfig(t, "sites-2") + fmt.Sprintf(`
+	data "incapsula_account_data" "account_data" {
+    }
 	resource "%s" "%s" {
-		account_id = "%s"
+		account_id = data.incapsula_account_data.account_data.current_account
 		auto_publish = true
 		website_group {
 			name = "sites-2"
@@ -272,13 +283,15 @@ func testAccAbpWebsitesDuplicate(t *testing.T) string {
 				enable_mitigation = true
 			}
 		}
-	}`, abpWebsitesResourceName, accountConfigName, testAccountId)
+	}`, abpWebsitesResourceName, accountConfigName)
 }
 
 func testAccAbpWebsitesAutoPublish(t *testing.T, autoPublish bool) string {
 	return testAccCheckIncapsulaSiteConfig(t, "sites-1") + fmt.Sprintf(`
+	data "incapsula_account_data" "account_data" {
+    }
 	resource "%s" "%s" {
-		account_id = "%s"
+		account_id = data.incapsula_account_data.account_data.current_account
 		auto_publish = %t
 		website_group {
 			name = "sites-1"
@@ -287,7 +300,7 @@ func testAccAbpWebsitesAutoPublish(t *testing.T, autoPublish bool) string {
 				enable_mitigation = true
 			}
 		}
-	}`, abpWebsitesResourceName, accountConfigName, testAccountId, autoPublish)
+	}`, abpWebsitesResourceName, accountConfigName, autoPublish)
 }
 
 func testAccCheckAbpWebsitesDestroy(state *terraform.State) error {
@@ -305,7 +318,12 @@ func testAccCheckAbpWebsitesDestroy(state *terraform.State) error {
 
 		accountId := res.Primary.Attributes["account_id"]
 
-		websitesResponse, _ := client.ReadAbpWebsites(accountId)
+		id, err := strconv.Atoi(accountId)
+		if err != nil {
+			return err
+		}
+
+		websitesResponse, _ := client.ReadAbpWebsites(id)
 		if websitesResponse == nil {
 			return fmt.Errorf("Failed to check ABP Websites status (id=%s)", accountID)
 		}

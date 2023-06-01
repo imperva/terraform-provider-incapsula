@@ -219,7 +219,7 @@ func resourceAbpWebsitesCreate(ctx context.Context, data *schema.ResourceData, m
 	account := extractAccount(data)
 	var abpWebsites *AbpTerraformAccount
 
-	abpWebsites, diags = client.CreateAbpWebsites(strconv.Itoa(accountId), account)
+	abpWebsites, diags = client.CreateAbpWebsites(accountId, account)
 
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] Failed to create ABP websites for Account ID %d", accountId)
@@ -240,7 +240,7 @@ func resourceAbpWebsitesRead(ctx context.Context, data *schema.ResourceData, m i
 	accountId := data.Get("account_id").(int)
 
 	var abpWebsites *AbpTerraformAccount
-	abpWebsites, diags = client.ReadAbpWebsites(strconv.Itoa(accountId))
+	abpWebsites, diags = client.ReadAbpWebsites(accountId)
 
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] Failed to read ABP websites for Account ID %d", accountId)
@@ -260,7 +260,7 @@ func resourceAbpWebsitesUpdate(ctx context.Context, data *schema.ResourceData, m
 	account := extractAccount(data)
 
 	var abpWebsites *AbpTerraformAccount
-	abpWebsites, diags = client.UpdateAbpWebsites(strconv.Itoa(accountId), account)
+	abpWebsites, diags = client.UpdateAbpWebsites(accountId, account)
 
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] Failed to update ABP websites for Account ID %d", accountId)
@@ -279,7 +279,7 @@ func resourceAbpWebsitesDelete(ctx context.Context, data *schema.ResourceData, m
 	accountId := data.Get("account_id").(int)
 	autoPublish := data.Get("auto_publish").(bool)
 
-	_, diags = client.DeleteAbpWebsites(strconv.Itoa(accountId), autoPublish)
+	_, diags = client.DeleteAbpWebsites(accountId, autoPublish)
 
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] Failed to delete ABP websites for Account ID %d", accountId)
