@@ -102,7 +102,7 @@ func TestAccAbpWebsites_DuplicateWebsiteGroups(t *testing.T) {
 		ErrorCheck: func(err error) error {
 			// Normalize newlines as the error will have line breaks in it to limit its width
 			msg := strings.ReplaceAll(err.Error(), "\n", " ")
-			if strings.Contains(msg, "Found duplicate identifeir (sites)") {
+			if strings.Contains(msg, "Found duplicate identifier (sites)") {
 				return nil
 			}
 			return err
