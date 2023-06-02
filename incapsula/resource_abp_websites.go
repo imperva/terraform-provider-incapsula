@@ -2,6 +2,7 @@ package incapsula
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strconv"
 
@@ -91,7 +92,7 @@ func resourceAbpWebsites() *schema.Resource {
 									},
 								},
 							},
-							Required: true,
+							Optional: true,
 						},
 					},
 				},
@@ -101,11 +102,35 @@ func resourceAbpWebsites() *schema.Resource {
 	}
 }
 
-func extractAccount(data *schema.ResourceData) AbpTerraformAccount {
+func extractAccount(data *schema.ResourceData) (AbpTerraformAccount, diag.Diagnostics) {
 
-	// Map the unique names to
-	nameToId := make(map[string]string)
 	oldWebsiteGroup, newWebsiteGroup := data.GetChange("website_group")
+
+	usedNames := make(map[string]bool)
+	var diags diag.Diagnostics
+	for _, websiteGroup := range newWebsiteGroup.([]interface{}) {
+		websiteGroup := websiteGroup.(map[string]interface{})
+
+		nameId := websiteGroup["name_id"].(string)
+		if nameId == "" {
+			nameId = websiteGroup["name"].(string)
+		}
+		_, ok := usedNames[nameId]
+		if ok {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("Found duplicate identifier (%s) for website group", nameId),
+				Detail:   fmt.Sprintf("Identifiers must be unique per website group. If you need duplicate `name`s you may specify `name_id` with an unique identifier"),
+			})
+		}
+		usedNames[nameId] = true
+	}
+
+	if len(diags) > 0 {
+		return AbpTerraformAccount{}, diags
+	}
+
+	nameToId := make(map[string]string)
 	for _, websiteGroup := range oldWebsiteGroup.([]interface{}) {
 		websiteGroup := websiteGroup.(map[string]interface{})
 
@@ -122,7 +147,7 @@ func extractAccount(data *schema.ResourceData) AbpTerraformAccount {
 	for _, websiteGroup := range newWebsiteGroup.([]interface{}) {
 		websiteGroup := websiteGroup.(map[string]interface{})
 
-		var websites []AbpTerraformWebsite
+		websites := make([]AbpTerraformWebsite, 0)
 		for _, website := range websiteGroup["website"].([]interface{}) {
 			website := website.(map[string]interface{})
 
@@ -174,7 +199,7 @@ func extractAccount(data *schema.ResourceData) AbpTerraformAccount {
 	return AbpTerraformAccount{
 		AutoPublish:   autoPublish,
 		WebsiteGroups: websiteGroups,
-	}
+	}, nil
 }
 
 func serializeAccount(data *schema.ResourceData, account AbpTerraformAccount) {
@@ -183,8 +208,10 @@ func serializeAccount(data *schema.ResourceData, account AbpTerraformAccount) {
 	// data.Set("auto_publish", account.AutoPublish)
 
 	websiteGroupsData := make([]interface{}, len(account.WebsiteGroups), len(account.WebsiteGroups))
+	oldWebsiteGroups := data.Get("website_group").([]interface{})
 	for i, websiteGroup := range account.WebsiteGroups {
 		websiteGroupData := make(map[string]interface{})
+		oldWebsiteGroup := oldWebsiteGroups[i].(map[string]interface{})
 
 		websitesData := make([]interface{}, len(websiteGroup.Websites), len(websiteGroup.Websites))
 		for j, website := range websiteGroup.Websites {
@@ -205,6 +232,9 @@ func serializeAccount(data *schema.ResourceData, account AbpTerraformAccount) {
 		websiteGroupData["name"] = websiteGroup.Name
 		websiteGroupData["website"] = websitesData
 
+		// Don't lose the name_id that might have been set by the user
+		websiteGroupData["name_id"] = oldWebsiteGroup["name_id"]
+
 		websiteGroupsData[i] = websiteGroupData
 	}
 
@@ -216,7 +246,10 @@ func resourceAbpWebsitesCreate(ctx context.Context, data *schema.ResourceData, m
 	var diags diag.Diagnostics
 
 	accountId := data.Get("account_id").(int)
-	account := extractAccount(data)
+	account, diags := extractAccount(data)
+	if diags != nil && diags.HasError() {
+		return diags
+	}
 	var abpWebsites *AbpTerraformAccount
 
 	abpWebsites, diags = client.CreateAbpWebsites(accountId, account)
@@ -257,7 +290,10 @@ func resourceAbpWebsitesUpdate(ctx context.Context, data *schema.ResourceData, m
 	var diags diag.Diagnostics
 
 	accountId := data.Get("account_id").(int)
-	account := extractAccount(data)
+	account, diags := extractAccount(data)
+	if diags != nil && diags.HasError() {
+		return diags
+	}
 
 	var abpWebsites *AbpTerraformAccount
 	abpWebsites, diags = client.UpdateAbpWebsites(accountId, account)

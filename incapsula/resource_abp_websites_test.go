@@ -2,7 +2,6 @@ package incapsula
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"testing"
@@ -103,7 +102,7 @@ func TestAccAbpWebsites_DuplicateWebsiteGroups(t *testing.T) {
 		ErrorCheck: func(err error) error {
 			// Normalize newlines as the error will have line breaks in it to limit its width
 			msg := strings.ReplaceAll(err.Error(), "\n", " ")
-			if strings.Contains(msg, "is referenced twice") {
+			if strings.Contains(msg, "Found duplicate identifeir (sites)") {
 				return nil
 			}
 			return err
@@ -133,11 +132,21 @@ func TestAccAbpWebsites_DuplicateNamesButDiscriminatedId(t *testing.T) {
 					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites"),
-					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.website_id"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "true"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.name", "sites"),
-					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.1.website.0.website_id"),
-					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.website.0.enable_mitigation", "false"),
+				),
+			},
+			{
+				Config: testAccAbpWebsitesDiscriminatedId2(t),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAbpWebsitesExists(&websitesResponse),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name_id", ""),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.name", "sites"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.name_id", "sites-2"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.2.name", "sites"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.2.name_id", "sites-3"),
 				),
 			},
 		},
@@ -351,9 +360,9 @@ func testAccAbpWebsiteGroupsDuplicate(t *testing.T) string {
 		}
 	}`, abpWebsitesResourceName, accountConfigName)
 }
+
 func testAccAbpWebsitesDiscriminatedId(t *testing.T) string {
-	return testAccCheckIncapsulaSiteConfig(t, "sites-1") +
-		testAccCheckIncapsulaSiteConfig(t, "sites-2") + fmt.Sprintf(`
+	return fmt.Sprintf(`
 	data "incapsula_account_data" "account_data" {
     }
 	resource "%s" "%s" {
@@ -361,17 +370,31 @@ func testAccAbpWebsitesDiscriminatedId(t *testing.T) string {
 		auto_publish = true
 		website_group {
 			name = "sites"
-			website {
-				website_id = incapsula_site.sites-1.id
-				enable_mitigation = true
-			}
 		}
 		website_group {
 			name = "sites"
-			website {
-				website_id = incapsula_site.sites-2.id
-				enable_mitigation = false
-			}
+			name_id = "sites-2"
+		}
+	}`, abpWebsitesResourceName, accountConfigName)
+}
+
+func testAccAbpWebsitesDiscriminatedId2(t *testing.T) string {
+	return fmt.Sprintf(`
+	data "incapsula_account_data" "account_data" {
+    }
+	resource "%s" "%s" {
+		account_id = data.incapsula_account_data.account_data.current_account
+		auto_publish = true
+		website_group {
+			name = "sites"
+		}
+		website_group {
+			name = "sites"
+			name_id = "sites-2"
+		}
+		website_group {
+			name = "sites"
+			name_id = "sites-3"
 		}
 	}`, abpWebsitesResourceName, accountConfigName)
 }
