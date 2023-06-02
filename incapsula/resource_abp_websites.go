@@ -2,6 +2,7 @@ package incapsula
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"log"
 	"strconv"
@@ -35,12 +36,17 @@ func (a *AbpTerraformWebsiteGroup) UniqueId() string {
 	return *a.NameId
 }
 
+//go:embed abp_websites_description.md
+var abp_websites_description string
+
 func resourceAbpWebsites() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceAbpWebsitesCreate,
 		ReadContext:   resourceAbpWebsitesRead,
 		UpdateContext: resourceAbpWebsitesUpdate,
 		DeleteContext: resourceAbpWebsitesDelete,
+
+		Description: abp_websites_description,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -49,13 +55,13 @@ func resourceAbpWebsites() *schema.Resource {
 				Required:    true,
 			},
 			"auto_publish": {
-				Description: "Whether to publish the changes automatically.",
+				Description: "Whether to publish the changes automatically. Changes don't take take effect until they have been published.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
 			},
 			"website_group": {
-				Description: "Whether to publish the changes automatically.",
+				Description: "List of website groups which are associated to ABP.",
 				Type:        schema.TypeList,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -74,7 +80,8 @@ func resourceAbpWebsites() *schema.Resource {
 							Description: "Name for the website group. Must be unique unless `name_id` is specified.",
 						},
 						"website": {
-							Type: schema.TypeList,
+							Description: "List of websites within the website group.",
+							Type:        schema.TypeList,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"id": {
@@ -82,13 +89,15 @@ func resourceAbpWebsites() *schema.Resource {
 										Computed: true,
 									},
 									"website_id": {
-										Type:     schema.TypeInt,
-										Required: true,
+										Type:        schema.TypeInt,
+										Required:    true,
+										Description: "Which `incapsula_site` this website refers to",
 									},
 									"enable_mitigation": {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  true,
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Default:     true,
+										Description: "Enables the ABP mitigation for this website. Defaults to true.",
 									},
 								},
 							},
