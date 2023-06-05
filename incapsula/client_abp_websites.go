@@ -24,12 +24,16 @@ func (c *Client) AbpBaseUrl() string {
 	}
 }
 
+func (c *Client) AbpTerraformUrl(accountId int) string {
+	return fmt.Sprintf("%s/botmanagement/v1/account/%d/terraform", c.AbpBaseUrl(), accountId)
+}
+
 func (c *Client) CreateAbpWebsites(accountId int, account AbpTerraformAccount) (*AbpTerraformAccount, diag.Diagnostics) {
-	return c.RequestAbpWebsitesWithBody(accountId, account, http.MethodPost, CreateAbpWebsites, "Creating", 201)
+	return c.RequestAbpWebsitesWithBody(accountId, account, http.MethodPost, CreateAbpWebsites, "Creating", http.StatusCreated)
 }
 
 func (c *Client) UpdateAbpWebsites(accountId int, account AbpTerraformAccount) (*AbpTerraformAccount, diag.Diagnostics) {
-	return c.RequestAbpWebsitesWithBody(accountId, account, http.MethodPut, UpdateAbpWebsites, "Updating", 200)
+	return c.RequestAbpWebsitesWithBody(accountId, account, http.MethodPut, UpdateAbpWebsites, "Updating", http.StatusOK)
 }
 
 func (c *Client) RequestAbpWebsitesWithBody(accountId int, account AbpTerraformAccount, method string, operation string, action string, successStatus int) (*AbpTerraformAccount, diag.Diagnostics) {
@@ -50,7 +54,7 @@ func (c *Client) RequestAbpWebsitesWithBody(accountId int, account AbpTerraformA
 	log.Printf("[DEBUG] %s payload: %s\n", resourceName, string(accountJson))
 
 	// Post form to Incapsula
-	reqURL := fmt.Sprintf("%s/botmanagement/v1/account/%d/terraform", c.AbpBaseUrl(), accountId)
+	reqURL := c.AbpTerraformUrl(accountId)
 	resp, err := c.DoJsonRequestWithHeaders(method, reqURL, accountJson, UpdateAbpWebsites)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -65,6 +69,15 @@ func (c *Client) RequestAbpWebsitesWithBody(accountId int, account AbpTerraformA
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  fmt.Sprintf("Failure reading %s %s HTTP body", resourceName, strings.ToLower(action)),
+			Detail:   fmt.Sprintf("Error reading %s HTTP body for Account ID %d: %s\nresponse: %s", resourceName, accountId, err.Error(), string(responseBody)),
+		})
+		return nil, diags
+	}
+
 	// Dump JSON
 	log.Printf("[DEBUG] Incapsula Update %s JSON response: %s\n", resourceName, string(responseBody))
 
@@ -75,6 +88,7 @@ func (c *Client) RequestAbpWebsitesWithBody(accountId int, account AbpTerraformA
 			Summary:  fmt.Sprintf("Failure %s %s", strings.ToLower(action), resourceName),
 			Detail:   fmt.Sprintf("Error status code %d from Incapsula service when %s %s for Account ID %d: %s", resp.StatusCode, strings.ToLower(action), resourceName, accountId, string(responseBody)),
 		})
+		return nil, diags
 	}
 
 	// Parse the JSON
@@ -93,11 +107,11 @@ func (c *Client) RequestAbpWebsitesWithBody(accountId int, account AbpTerraformA
 }
 
 func (c *Client) ReadAbpWebsites(accountId int) (*AbpTerraformAccount, diag.Diagnostics) {
-	return c.RequestAbpWebsites(accountId, false, http.MethodGet, ReadAbpWebsites, "Reading", 200)
+	return c.RequestAbpWebsites(accountId, false, http.MethodGet, ReadAbpWebsites, "Reading", http.StatusOK)
 }
 
 func (c *Client) DeleteAbpWebsites(accountId int, autoPublish bool) (*AbpTerraformAccount, diag.Diagnostics) {
-	return c.RequestAbpWebsites(accountId, autoPublish, http.MethodDelete, DeleteAbpWebsites, "Deleting", 200)
+	return c.RequestAbpWebsites(accountId, autoPublish, http.MethodDelete, DeleteAbpWebsites, "Deleting", http.StatusOK)
 }
 
 func (c *Client) RequestAbpWebsites(accountId int, autoPublish bool, method string, operation string, action string, successStatus int) (*AbpTerraformAccount, diag.Diagnostics) {
@@ -107,9 +121,9 @@ func (c *Client) RequestAbpWebsites(accountId int, autoPublish bool, method stri
 	// Post form to Incapsula
 	var reqURL string
 	if autoPublish {
-		reqURL = fmt.Sprintf("%s/botmanagement/v1/account/%d/terraform?autoPublish=1", c.AbpBaseUrl(), accountId)
+		reqURL = fmt.Sprintf("%s?autoPublish=1", c.AbpTerraformUrl(accountId))
 	} else {
-		reqURL = fmt.Sprintf("%s/botmanagement/v1/account/%d/terraform", c.AbpBaseUrl(), accountId)
+		reqURL = c.AbpTerraformUrl(accountId)
 	}
 	resp, err := c.DoJsonRequestWithHeaders(method, reqURL, nil, operation)
 	if err != nil {
@@ -125,6 +139,15 @@ func (c *Client) RequestAbpWebsites(accountId int, autoPublish bool, method stri
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  fmt.Sprintf("Failure reading %s %s HTTP body", resourceName, strings.ToLower(action)),
+			Detail:   fmt.Sprintf("Error reading %s HTTP body for Account ID %d: %s\nresponse: %s", resourceName, accountId, err.Error(), string(responseBody)),
+		})
+		return nil, diags
+	}
+
 	// Dump JSON
 	log.Printf("[DEBUG] Incapsula %s %s JSON response: %s\n", method, resourceName, string(responseBody))
 
@@ -135,6 +158,7 @@ func (c *Client) RequestAbpWebsites(accountId int, autoPublish bool, method stri
 			Summary:  fmt.Sprintf("Failure Creating %s", resourceName),
 			Detail:   fmt.Sprintf("Error status code %d from Incapsula service when %s %s for Account ID %d: %s", resp.StatusCode, strings.ToLower(action), resourceName, accountId, string(responseBody)),
 		})
+		return nil, diags
 	}
 
 	// Parse the JSON

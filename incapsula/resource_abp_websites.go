@@ -186,13 +186,11 @@ func extractAccount(data *schema.ResourceData) (AbpTerraformAccount, diag.Diagno
 		// to lookup the id of the old configuration.
 		var idOpt *string
 		if nameIdOpt == nil {
-			id, ok := nameToId[name]
-			if ok {
+			if id, ok := nameToId[name]; ok {
 				idOpt = &id
 			}
 		} else {
-			id, ok := nameToId[*nameIdOpt]
-			if ok {
+			if id, ok := nameToId[*nameIdOpt]; ok {
 				idOpt = &id
 			}
 		}
