@@ -36,9 +36,6 @@ func (a *AbpTerraformWebsiteGroup) UniqueId() string {
 	return *a.NameId
 }
 
-//go:embed abp_websites_description.md
-var abp_websites_description string
-
 func resourceAbpWebsites() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceAbpWebsitesCreate,
@@ -46,7 +43,7 @@ func resourceAbpWebsites() *schema.Resource {
 		UpdateContext: resourceAbpWebsitesUpdate,
 		DeleteContext: resourceAbpWebsitesDelete,
 
-		Description: abp_websites_description,
+		Description: "Provides an Incapsula ABP (Advanced Bot Protection) websites resource. Allows for ABP to enabled and configured for given websites.",
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
