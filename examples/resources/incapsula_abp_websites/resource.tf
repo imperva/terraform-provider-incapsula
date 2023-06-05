@@ -4,14 +4,14 @@ resource "incapsula_abp_websites" "abp_websites" {
     website_group {
         name = "sites-1"
         website {
-            website_id = incapsula_site.sites-1.id
+            site_id = incapsula_site.sites-1.id
             enable_mitigation = false
         }
     }
     website_group {
         name = "sites-2"
         website {
-            website_id = incapsula_site.sites-2.id
+            site_id = incapsula_site.sites-2.id
             enable_mitigation = true
         }
     }

@@ -85,7 +85,7 @@ func resourceAbpWebsites() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"website_id": {
+									"site_id": {
 										Type:        schema.TypeInt,
 										Required:    true,
 										Description: "Which `incapsula_site` this website refers to",
@@ -165,7 +165,7 @@ func extractAccount(data *schema.ResourceData) (AbpTerraformAccount, diag.Diagno
 			websites = append(websites,
 				AbpTerraformWebsite{
 					Id:               idOpt,
-					WebsiteId:        website["website_id"].(int),
+					WebsiteId:        website["site_id"].(int),
 					EnableMitigation: website["enable_mitigation"].(bool),
 				})
 		}
@@ -224,7 +224,7 @@ func serializeAccount(data *schema.ResourceData, account AbpTerraformAccount) {
 			if website.Id != nil {
 				websiteData["id"] = *website.Id
 			}
-			websiteData["website_id"] = website.WebsiteId
+			websiteData["site_id"] = website.WebsiteId
 			websiteData["enable_mitigation"] = website.EnableMitigation
 
 			websitesData[j] = websiteData
