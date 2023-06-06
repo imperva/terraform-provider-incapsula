@@ -18,7 +18,7 @@ For more information what HSTS is click [here](https://www.imperva.com/blog/hsts
 ## Example Usage
 
 ```hcl
-resource "site_ssl_settings" "example" {
+resource "incapsula_site_ssl_settings" "example"  {
   site_id = incapsula_site.mysite.id
   
   hsts {
