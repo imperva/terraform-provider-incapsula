@@ -18,7 +18,7 @@ For more information what HSTS is click [here](https://www.imperva.com/blog/hsts
 ## Example Usage
 
 ```hcl
-resource "site_ssl_settings" "example" {
+resource "site_ssl_settings" "site_ssl_settings-1234" {
   site_id = incapsula_site.mysite.id
   
   hsts {
@@ -29,6 +29,8 @@ resource "site_ssl_settings" "example" {
   }
 }
 ```
+This is an example where 1234 is the selected site id.\
+You should replace 1234 with your own site id.
 
 ## Argument Reference
 
@@ -65,7 +67,7 @@ The following attributes are exported:
 
 Site SSL settings can be imported using the `id`:
 ```
-terraform import incapsula_site_ssl_settings.example 1234
+terraform import incapsula_site_ssl_settings.incapsula_site_ssl_settings-1234 1234
 ```
 
 
