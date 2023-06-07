@@ -57,11 +57,7 @@ func (c *Client) RequestAbpWebsitesWithBody(accountId int, account AbpTerraformA
 	reqURL := c.AbpTerraformUrl(accountId)
 	resp, err := c.DoJsonRequestWithHeaders(method, reqURL, accountJson, UpdateAbpWebsites)
 	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  fmt.Sprintf("Failure %s %s", action, resourceName),
-			Detail:   fmt.Sprintf("Error from Incapsula service when %s %s for Account ID %d: %s", strings.ToLower(action), resourceName, accountId, err.Error()),
-		})
+		diags = append(diags, httpErrorDiagnostic(err, resourceName, accountId, method, action))
 		return nil, diags
 	}
 
@@ -70,11 +66,7 @@ func (c *Client) RequestAbpWebsitesWithBody(accountId int, account AbpTerraformA
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  fmt.Sprintf("Failure reading %s %s HTTP body", resourceName, strings.ToLower(action)),
-			Detail:   fmt.Sprintf("Error reading %s HTTP body for Account ID %d: %s\nresponse: %s", resourceName, accountId, err.Error(), string(responseBody)),
-		})
+		diags = append(diags, httpBodyErrorDiagnostic(err, resourceName, accountId, method, action, responseBody))
 		return nil, diags
 	}
 
@@ -83,11 +75,7 @@ func (c *Client) RequestAbpWebsitesWithBody(accountId int, account AbpTerraformA
 
 	// Check the response code
 	if resp.StatusCode != successStatus {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  fmt.Sprintf("Failure %s %s", strings.ToLower(action), resourceName),
-			Detail:   fmt.Sprintf("Error status code %d from Incapsula service when %s %s for Account ID %d: %s", resp.StatusCode, strings.ToLower(action), resourceName, accountId, string(responseBody)),
-		})
+		diags = append(diags, httpStatusErrorDiagnostic(err, resourceName, accountId, method, action, resp, responseBody))
 		return nil, diags
 	}
 
@@ -95,11 +83,7 @@ func (c *Client) RequestAbpWebsitesWithBody(accountId int, account AbpTerraformA
 	var newAbpWebsites AbpTerraformAccount
 	err = json.Unmarshal([]byte(responseBody), &newAbpWebsites)
 	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  fmt.Sprintf("Failure parsing %s %s response", resourceName, strings.ToLower(action)),
-			Detail:   fmt.Sprintf("Error parsing %s JSON response for Account ID %d: %s\nresponse: %s", resourceName, accountId, err.Error(), string(responseBody)),
-		})
+		diags = append(diags, jsonErrorDiagnostic(err, resourceName, accountId, method, responseBody))
 		return nil, diags
 	}
 
@@ -127,11 +111,7 @@ func (c *Client) RequestAbpWebsites(accountId int, autoPublish bool, method stri
 	}
 	resp, err := c.DoJsonRequestWithHeaders(method, reqURL, nil, operation)
 	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  fmt.Sprintf("Failure %s %s", action, resourceName),
-			Detail:   fmt.Sprintf("Error from Incapsula service when %s %s for Account ID %d: %s", strings.ToLower(action), resourceName, accountId, err.Error()),
-		})
+		diags = append(diags, httpErrorDiagnostic(err, resourceName, accountId, method, action))
 		return nil, diags
 	}
 
@@ -140,11 +120,7 @@ func (c *Client) RequestAbpWebsites(accountId int, autoPublish bool, method stri
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  fmt.Sprintf("Failure reading %s %s HTTP body", resourceName, strings.ToLower(action)),
-			Detail:   fmt.Sprintf("Error reading %s HTTP body for Account ID %d: %s\nresponse: %s", resourceName, accountId, err.Error(), string(responseBody)),
-		})
+		diags = append(diags, httpBodyErrorDiagnostic(err, resourceName, accountId, method, action, responseBody))
 		return nil, diags
 	}
 
@@ -153,11 +129,7 @@ func (c *Client) RequestAbpWebsites(accountId int, autoPublish bool, method stri
 
 	// Check the response code
 	if resp.StatusCode != successStatus {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  fmt.Sprintf("Failure Creating %s", resourceName),
-			Detail:   fmt.Sprintf("Error status code %d from Incapsula service when %s %s for Account ID %d: %s", resp.StatusCode, strings.ToLower(action), resourceName, accountId, string(responseBody)),
-		})
+		diags = append(diags, httpStatusErrorDiagnostic(err, resourceName, accountId, method, action, resp, responseBody))
 		return nil, diags
 	}
 
@@ -165,13 +137,41 @@ func (c *Client) RequestAbpWebsites(accountId int, autoPublish bool, method stri
 	var newAbpWebsites AbpTerraformAccount
 	err = json.Unmarshal([]byte(responseBody), &newAbpWebsites)
 	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  fmt.Sprintf("Failure parsing %s %s response", resourceName, method),
-			Detail:   fmt.Sprintf("Error parsing %s JSON response for Account ID %d: %s\nresponse: %s", resourceName, accountId, err.Error(), string(responseBody)),
-		})
+		diags = append(diags, jsonErrorDiagnostic(err, resourceName, accountId, method, responseBody))
 		return nil, diags
 	}
 
 	return &newAbpWebsites, diags
+}
+
+func httpErrorDiagnostic(err error, resourceName string, accountId int, method string, action string) diag.Diagnostic {
+	return diag.Diagnostic{
+		Severity: diag.Error,
+		Summary:  fmt.Sprintf("Failure %s %s", action, resourceName),
+		Detail:   fmt.Sprintf("Error from Incapsula service when %s %s for Account ID %d: %s", strings.ToLower(action), resourceName, accountId, err.Error()),
+	}
+}
+
+func httpBodyErrorDiagnostic(err error, resourceName string, accountId int, method string, action string, responseBody []byte) diag.Diagnostic {
+	return diag.Diagnostic{
+		Severity: diag.Error,
+		Summary:  fmt.Sprintf("Failure %s %s HTTP body", strings.ToLower(action), resourceName),
+		Detail:   fmt.Sprintf("Error %s %s HTTP body for Account ID %d: %s\nresponse: %s", strings.ToLower(action), resourceName, accountId, err.Error(), string(responseBody)),
+	}
+}
+
+func httpStatusErrorDiagnostic(err error, resourceName string, accountId int, method string, action string, resp *http.Response, responseBody []byte) diag.Diagnostic {
+	return diag.Diagnostic{
+		Severity: diag.Error,
+		Summary:  fmt.Sprintf("Failure %s %s", action, resourceName),
+		Detail:   fmt.Sprintf("Error status code %d from Incapsula service when %s %s for Account ID %d: %s", resp.StatusCode, strings.ToLower(action), resourceName, accountId, string(responseBody)),
+	}
+}
+
+func jsonErrorDiagnostic(err error, resourceName string, accountId int, method string, responseBody []byte) diag.Diagnostic {
+	return diag.Diagnostic{
+		Severity: diag.Error,
+		Summary:  fmt.Sprintf("Failure parsing %s %s response", resourceName, method),
+		Detail:   fmt.Sprintf("Error parsing %s JSON response for Account ID %d: %s\nresponse: %s", resourceName, accountId, err.Error(), string(responseBody)),
+	}
 }
