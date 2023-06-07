@@ -43,6 +43,31 @@ func resourceAbpWebsites() *schema.Resource {
 		UpdateContext: resourceAbpWebsitesUpdate,
 		DeleteContext: resourceAbpWebsitesDelete,
 
+		Importer: &schema.ResourceImporter{
+			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				accountIdStr := d.Id()
+				accountId, err := strconv.Atoi(accountIdStr)
+
+				if err != nil {
+					return nil, fmt.Errorf("Expected an account Id which must be an integer: %s", err.Error())
+				}
+
+				d.Set("account_id", accountId)
+				d.SetId(accountIdStr)
+
+				diags := resourceAbpWebsitesRead(ctx, d, meta)
+				for _, diagnostic := range diags {
+					if diagnostic.Severity == diag.Error {
+						return nil, fmt.Errorf("%s", diagnostic.Detail)
+					}
+				}
+
+				log.Printf("[DEBUG] Import ABP websites for acconut id %d", accountId)
+
+				return []*schema.ResourceData{d}, nil
+			},
+		},
+
 		Description: "Provides an Incapsula ABP (Advanced Bot Protection) websites resource. Allows for ABP to enabled and configured for given websites.",
 
 		Schema: map[string]*schema.Schema{
@@ -149,7 +174,7 @@ func extractAccount(data *schema.ResourceData) (AbpTerraformAccount, diag.Diagno
 
 	autoPublish := data.Get("auto_publish").(bool)
 
-	var websiteGroups []AbpTerraformWebsiteGroup
+	websiteGroups := make([]AbpTerraformWebsiteGroup, 0, 0)
 	for _, websiteGroup := range newWebsiteGroup.([]interface{}) {
 		websiteGroup := websiteGroup.(map[string]interface{})
 
@@ -215,7 +240,6 @@ func serializeAccount(data *schema.ResourceData, account AbpTerraformAccount) {
 	oldWebsiteGroups := data.Get("website_group").([]interface{})
 	for i, websiteGroup := range account.WebsiteGroups {
 		websiteGroupData := make(map[string]interface{})
-		oldWebsiteGroup := oldWebsiteGroups[i].(map[string]interface{})
 
 		websitesData := make([]interface{}, len(websiteGroup.Websites), len(websiteGroup.Websites))
 		for j, website := range websiteGroup.Websites {
@@ -236,8 +260,11 @@ func serializeAccount(data *schema.ResourceData, account AbpTerraformAccount) {
 		websiteGroupData["name"] = websiteGroup.Name
 		websiteGroupData["website"] = websitesData
 
-		// Don't lose the name_id that might have been set by the user
-		websiteGroupData["name_id"] = oldWebsiteGroup["name_id"]
+		if i < len(oldWebsiteGroups) {
+			oldWebsiteGroup := oldWebsiteGroups[i].(map[string]interface{})
+			// Don't lose the name_id that might have been set by the user
+			websiteGroupData["name_id"] = oldWebsiteGroup["name_id"]
+		}
 
 		websiteGroupsData[i] = websiteGroupData
 	}

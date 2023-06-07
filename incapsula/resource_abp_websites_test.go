@@ -201,6 +201,37 @@ func TestAccAbpWebsites_AutoPublish(t *testing.T) {
 	})
 }
 
+func TestAccAbpWebsites_BasicImport(t *testing.T) {
+	var websitesResponse AbpTerraformAccount
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAbpWebsitesDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAbpWebsitesBasic(t, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAbpWebsitesExists(&websitesResponse),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.site_id"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "true"),
+				),
+			},
+			{
+				ResourceName:            abpWebsitesResourceName + "." + accountConfigName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"auto_publish"},
+			},
+		},
+	})
+}
+
 func testAccCheckAbpWebsitesExists(websitesresponse *AbpTerraformAccount) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[abpWebsitesResource]
