@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func TestClientAbpWebsitesBadConnection(t *testing.T) {
+func TestClientAbpWebsitesReadBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	accountId := 1234
@@ -27,7 +27,7 @@ func TestClientAbpWebsitesBadConnection(t *testing.T) {
 	}
 }
 
-func TestClientAbpWebsitesBadJSON(t *testing.T) {
+func TestClientAbpWebsitesReadBadJSON(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.Write([]byte(`{`))
 	}))
@@ -48,7 +48,7 @@ func TestClientAbpWebsitesBadJSON(t *testing.T) {
 	}
 }
 
-func TestClientAbpWebsitesBadRequest(t *testing.T) {
+func TestClientAbpWebsitesReadBadRequest(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(400)
 		rw.Write([]byte(`some error`))
@@ -70,7 +70,7 @@ func TestClientAbpWebsitesBadRequest(t *testing.T) {
 	}
 }
 
-func TestClientAbpWebsitesOk(t *testing.T) {
+func TestClientAbpWebsitesReadOk(t *testing.T) {
 	id1 := "id1"
 	id2 := "id2"
 	id3 := "id3"
@@ -115,32 +115,109 @@ func TestClientAbpWebsitesOk(t *testing.T) {
 	}
 }
 
-/*
+func TestClientAbpWebsitesCreateBadConnection(t *testing.T) {
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "badness.incapsula.com"}
+	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
+	accountId := 1234
+	abpWebsitesResponse, diags := client.CreateAbpWebsites(accountId, AbpTerraformAccount{})
+	if len(diags) == 0 {
+		t.Errorf("Should have received an error")
+	}
+	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error from Incapsula service when creating ABP Websites for Account ID %d", accountId)) {
+		t.Errorf("Should have received a client error, got: %+v", diags)
+	}
+	if abpWebsitesResponse != nil {
+		t.Errorf("Should have received a nil abpWebsitesResponse instance")
+	}
+}
 
-
-func TestClientAbpWebsitesValidRule(t *testing.T) {
-	log.Printf("======================== BEGIN TEST ========================")
-	log.Printf("[DEBUG] Running test client_certificate_test.TestClientAbpWebsitesValidRule")
+func TestClientAbpWebsitesCreateBadJSON(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointCertificateAdd) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointCertificateAdd, req.URL.String())
-		}
-		rw.Write([]byte(`{"res":0,"res_message":"OK","debug_info":{"id-info":"13008"}}`))
+		rw.WriteHeader(http.StatusCreated)
+		rw.Write([]byte(`{`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteID := "1234"
-	abpWebsitesResponse, err := client.AbpWebsites(siteID, "", "", "", "")
-	if err != nil {
-		t.Errorf("Should not have received an error")
+	accountId := 1234
+	abpWebsitesResponse, diags := client.CreateAbpWebsites(accountId, AbpTerraformAccount{})
+	if len(diags) == 0 {
+		t.Errorf("Should have received an error")
 	}
-	if abpWebsitesResponse == nil {
-		t.Errorf("Should not have received a nil abpWebsitesResponse instance")
+	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error parsing ABP Websites JSON response for Account ID %d", accountId)) {
+		t.Errorf("Should have received a client error, got: %+v", diags)
 	}
-	if abpWebsitesResponse.Res != 0 {
-		t.Errorf("Response code doesn't match")
+	if abpWebsitesResponse != nil {
+		t.Errorf("Should have received a nil abpWebsitesResponse instance")
 	}
 }
-*/
+
+func TestClientAbpWebsitesCreateBadRequest(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(400)
+		rw.Write([]byte(`some error`))
+	}))
+	defer server.Close()
+
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+	accountId := 1234
+	abpWebsitesResponse, diags := client.CreateAbpWebsites(accountId, AbpTerraformAccount{})
+	if len(diags) == 0 {
+		t.Errorf("Should have received an error")
+	}
+	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error status code 400 from Incapsula service when creating ABP Websites for Account ID %d: some error", accountId)) {
+		t.Errorf("Should have received a client error, got: %+v", diags)
+	}
+	if abpWebsitesResponse != nil {
+		t.Errorf("Should have received a nil abpWebsitesResponse instance")
+	}
+}
+
+func TestClientAbpWebsitesCreateOk(t *testing.T) {
+	id1 := "id1"
+	id2 := "id2"
+	id3 := "id3"
+	nameid1 := "nameid1"
+	abpWebsites := AbpTerraformAccount{
+		AutoPublish: true,
+		WebsiteGroups: []AbpTerraformWebsiteGroup{
+			{
+				Id:     &id1,
+				NameId: &nameid1,
+				Name:   "name1",
+				Websites: []AbpTerraformWebsite{{
+					Id:               &id2,
+					WebsiteId:        1,
+					EnableMitigation: true,
+				},
+					{
+						Id:               &id3,
+						WebsiteId:        4,
+						EnableMitigation: false,
+					},
+				},
+			},
+		},
+	}
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		b, _ := json.Marshal(abpWebsites)
+		rw.WriteHeader(http.StatusCreated)
+		rw.Write(b)
+	}))
+	defer server.Close()
+
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+	accountId := 1234
+	abpWebsitesResponse, diags := client.CreateAbpWebsites(accountId, abpWebsites)
+	if len(diags) != 0 {
+		t.Errorf("Should not have received an error %+v", diags)
+		return
+	}
+
+	if !reflect.DeepEqual(*abpWebsitesResponse, abpWebsites) {
+		t.Errorf("Unexpected abpWebsitesResponse: %+v", abpWebsitesResponse)
+	}
+}
