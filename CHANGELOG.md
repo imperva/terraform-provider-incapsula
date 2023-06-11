@@ -1,3 +1,12 @@
+## 3.18.1 (Jun 11, 2023)
+
+BUG FIXES:
+
+* Fix documentation site_ssl_settings resource ([#317](https://github.com/imperva/terraform-provider-incapsula/pull/317))
+* Fix import for site_ssl_settings resource ([#318](https://github.com/imperva/terraform-provider-incapsula/pull/318))
+* Fix rewrite_existing cannot be set to false in incap_rule resource ([#319](https://github.com/imperva/terraform-provider-incapsula/pull/319))
+
+
 ## 3.18.0 (May 29, 2023)
 
 FEATURES:
