@@ -3,6 +3,8 @@ package incapsula
 import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
+	"strconv"
 )
 
 var hstsConfigResource = schema.Resource{
@@ -38,7 +40,13 @@ func resourceSiteSSLSettings() *schema.Resource {
 		Delete: resourceSiteSSLSettingsDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				d.Set(siteId, d.Id())
+				siteID, err := strconv.Atoi(d.Id())
+				if err != nil {
+					fmt.Errorf("failed to convert Site Id from import command, actual value: %s, expected numeric id", d.Id())
+				}
+
+				d.Set("site_id", siteID)
+				log.Printf("[DEBUG] Import  Site Config JSON for Site ID %d", siteID)
 				return []*schema.ResourceData{d}, nil
 			},
 		},
