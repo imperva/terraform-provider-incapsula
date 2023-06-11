@@ -734,14 +734,13 @@ resource "incapsula_api_security_api_configuration" "example-api-security-api-co
     site_id = 123
     api_specification = "${file("/path/to/swagger/file.yaml")}"
     validate_host = true
-    description = "put your description here"
     invalid_url_violation_action = "BLOCK_REQUEST"
     invalid_method_violation_action = "BLOCK_IP"
     missing_param_violation_action = "IGNORE"
     invalid_param_value_violation_action = "IGNORE"
-	description = "your site API description"
-	base_path = "/base/path"
-	host_name = "host.name.com"
+    description = "your site API description"
+    base_path = "/base/path"
+    host_name = "host.name.com"
 }
 
 ###################################################################
