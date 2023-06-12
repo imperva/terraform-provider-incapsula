@@ -248,6 +248,9 @@ func resourceIncapRuleRead(d *schema.ResourceData, m interface{}) error {
 		if rule.RewriteExisting != nil {
 			d.Set("rewrite_existing", *rule.RewriteExisting)
 		}
+	} else {
+		//align with schema default to avoid diff when importing resources
+		d.Set("rewrite_existing", true)
 	}
 
 	return nil
