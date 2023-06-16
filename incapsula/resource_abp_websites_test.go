@@ -232,6 +232,78 @@ func TestAccAbpWebsites_BasicImport(t *testing.T) {
 	})
 }
 
+func TestAccAbpWebsites_ImportDuplicateNames(t *testing.T) {
+	var websitesResponse AbpTerraformAccount
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAbpWebsitesDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					data "incapsula_account_data" "account_data" {
+					}
+					resource "%s" "%s" {
+						account_id = data.incapsula_account_data.account_data.current_account
+						auto_publish = true
+						website_group {
+							name = "sites"
+						}
+						website_group {
+							name = "sites"
+							name_id = "sites-1"
+						}
+						website_group {
+							name = "sites-other"
+						}
+						website_group {
+							name = "sites"
+							name_id = "sites-2"
+						}
+					}`, abpWebsitesResourceName, accountConfigName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAbpWebsitesExists(&websitesResponse),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.1.name", "sites"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.2.name", "sites-other"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.3.name", "sites"),
+				),
+			},
+			{
+				ResourceName:      abpWebsitesResourceName + "." + accountConfigName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// name_id is checked in `ImportStateCheck`. They differ because we must generate them during import
+				ImportStateVerifyIgnore: []string{"auto_publish", "website_group.1.name_id", "website_group.3.name_id"},
+				ImportStateCheck: func(is []*terraform.InstanceState) error {
+					attrs := is[0].Attributes
+
+					if err := checkEqual(attrs, "website_group.1.name_id", "sites-0"); err != nil {
+						return err
+					}
+					if err := checkEqual(attrs, "website_group.3.name_id", "sites-1"); err != nil {
+						return err
+					}
+
+					return nil
+				},
+			},
+		},
+	})
+}
+
+func checkEqual(attrs map[string]string, l, r string) error {
+	if attrs[l] != r {
+		return fmt.Errorf("Key `%s` does not match `%s` != `%s` in %+v", l, attrs[l], r, attrs)
+	}
+	return nil
+}
+
 func testAccCheckAbpWebsitesExists(websitesresponse *AbpTerraformAccount) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[abpWebsitesResource]

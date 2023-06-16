@@ -55,12 +55,18 @@ func resourceAbpWebsites() *schema.Resource {
 				d.Set("account_id", accountId)
 				d.SetId(accountIdStr)
 
-				diags := resourceAbpWebsitesRead(ctx, d, meta)
+				client := meta.(*Client)
+				abpWebsites, diags := client.ReadAbpWebsites(accountId)
+
 				for _, diagnostic := range diags {
 					if diagnostic.Severity == diag.Error {
 						return nil, fmt.Errorf("%s", diagnostic.Detail)
 					}
 				}
+
+				setUniqueNameIds(abpWebsites)
+
+				serializeAccount(d, *abpWebsites)
 
 				log.Printf("[DEBUG] Import ABP websites for acconut id %d", accountId)
 
@@ -231,6 +237,31 @@ func extractAccount(data *schema.ResourceData) (AbpTerraformAccount, diag.Diagno
 	}, nil
 }
 
+func setUniqueNameIds(account *AbpTerraformAccount) {
+	nameIds := make(map[string]bool, 0)
+	for _, websiteGroup := range account.WebsiteGroups {
+		nameIds[websiteGroup.Name] = true
+	}
+
+	names := make(map[string]bool, 0)
+	for i, websiteGroup := range account.WebsiteGroups {
+		if _, ok := names[websiteGroup.Name]; ok {
+			nameId := websiteGroup.Name + "-0"
+			for i := 0; i < 1000000; i++ {
+				if _, ok := nameIds[nameId]; ok {
+					nameId = websiteGroup.Name + "-" + strconv.Itoa(i)
+				} else {
+					nameIds[nameId] = true
+					break
+				}
+			}
+
+			account.WebsiteGroups[i].NameId = &nameId
+		}
+		names[websiteGroup.Name] = true
+	}
+}
+
 func serializeAccount(data *schema.ResourceData, account AbpTerraformAccount) {
 
 	// We never store this on the server side, just in the terraform state so ignore what the server sends
@@ -264,6 +295,8 @@ func serializeAccount(data *schema.ResourceData, account AbpTerraformAccount) {
 			oldWebsiteGroup := oldWebsiteGroups[i].(map[string]interface{})
 			// Don't lose the name_id that might have been set by the user
 			websiteGroupData["name_id"] = oldWebsiteGroup["name_id"]
+		} else if websiteGroup.NameId != nil {
+			websiteGroupData["name_id"] = *websiteGroup.NameId
 		}
 
 		websiteGroupsData[i] = websiteGroupData
