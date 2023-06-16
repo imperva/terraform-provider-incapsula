@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -68,7 +69,7 @@ func resourceAbpWebsites() *schema.Resource {
 
 				serializeAccount(d, *abpWebsites)
 
-				log.Printf("[DEBUG] Import ABP websites for acconut id %d", accountId)
+				log.Printf("[DEBUG] Import ABP websites for account id %d", accountId)
 
 				return []*schema.ResourceData{d}, nil
 			},
@@ -87,6 +88,11 @@ func resourceAbpWebsites() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
+			},
+			"last_publish": {
+				Description: "When the last publish was done for this terraform resource. Changes are published when `auto_publish` is true and the terraform config is applied.",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 			"website_group": {
 				Description: "List of website groups which are associated to ABP.",
@@ -264,9 +270,6 @@ func setUniqueNameIds(account *AbpTerraformAccount) {
 
 func serializeAccount(data *schema.ResourceData, account AbpTerraformAccount) {
 
-	// We never store this on the server side, just in the terraform state so ignore what the server sends
-	// data.Set("auto_publish", account.AutoPublish)
-
 	websiteGroupsData := make([]interface{}, len(account.WebsiteGroups), len(account.WebsiteGroups))
 	oldWebsiteGroups := data.Get("website_group").([]interface{})
 	for i, websiteGroup := range account.WebsiteGroups {
@@ -325,6 +328,10 @@ func resourceAbpWebsitesCreate(ctx context.Context, data *schema.ResourceData, m
 
 	serializeAccount(data, *abpWebsites)
 
+	if data.Get("auto_publish").(bool) {
+		data.Set("last_publish", time.Now().Format(time.RFC3339))
+	}
+
 	data.SetId(strconv.Itoa(accountId))
 
 	return diags
@@ -368,6 +375,10 @@ func resourceAbpWebsitesUpdate(ctx context.Context, data *schema.ResourceData, m
 	}
 
 	serializeAccount(data, *abpWebsites)
+
+	if data.Get("auto_publish").(bool) {
+		data.Set("last_publish", time.Now().Format(time.RFC3339))
+	}
 
 	return diags
 }
