@@ -71,7 +71,7 @@ Read-Only:
 
 Required:
 
-- `site_id` (Number) Which `incapsula_site` this website refers to
+- `incapsula_site_id` (Number) Which `incapsula_site` this website refers to
 
 Optional:
 

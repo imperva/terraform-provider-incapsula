@@ -84,12 +84,12 @@ func TestClientAbpWebsitesReadOk(t *testing.T) {
 				Name:   "name1",
 				Websites: []AbpTerraformWebsite{{
 					Id:               &id2,
-					WebsiteId:        1,
+					IncapsulaSiteId:  1,
 					EnableMitigation: true,
 				},
 					{
 						Id:               &id3,
-						WebsiteId:        4,
+						IncapsulaSiteId:  4,
 						EnableMitigation: false,
 					},
 				},
@@ -189,12 +189,12 @@ func TestClientAbpWebsitesCreateOk(t *testing.T) {
 				Name:   "name1",
 				Websites: []AbpTerraformWebsite{{
 					Id:               &id2,
-					WebsiteId:        1,
+					IncapsulaSiteId:  1,
 					EnableMitigation: true,
 				},
 					{
 						Id:               &id3,
-						WebsiteId:        4,
+						IncapsulaSiteId:  4,
 						EnableMitigation: false,
 					},
 				},

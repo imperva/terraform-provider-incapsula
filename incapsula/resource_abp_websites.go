@@ -26,7 +26,7 @@ type AbpTerraformWebsiteGroup struct {
 
 type AbpTerraformWebsite struct {
 	Id               *string `json:"id"`
-	WebsiteId        int     `json:"website_id"`
+	IncapsulaSiteId  int     `json:"incapsula_site_id"`
 	EnableMitigation bool    `json:"enable_mitigation"`
 }
 
@@ -122,7 +122,7 @@ func resourceAbpWebsites() *schema.Resource {
 										Type:     schema.TypeString,
 										Computed: true,
 									},
-									"site_id": {
+									"incapsula_site_id": {
 										Type:        schema.TypeInt,
 										Required:    true,
 										Description: "Which `incapsula_site` this website refers to",
@@ -202,7 +202,7 @@ func extractAccount(data *schema.ResourceData) (AbpTerraformAccount, diag.Diagno
 			websites = append(websites,
 				AbpTerraformWebsite{
 					Id:               idOpt,
-					WebsiteId:        website["site_id"].(int),
+					IncapsulaSiteId:  website["incapsula_site_id"].(int),
 					EnableMitigation: website["enable_mitigation"].(bool),
 				})
 		}
@@ -282,7 +282,7 @@ func serializeAccount(data *schema.ResourceData, account AbpTerraformAccount) {
 			if website.Id != nil {
 				websiteData["id"] = *website.Id
 			}
-			websiteData["site_id"] = website.WebsiteId
+			websiteData["incapsula_site_id"] = website.IncapsulaSiteId
 			websiteData["enable_mitigation"] = website.EnableMitigation
 
 			websitesData[j] = websiteData
