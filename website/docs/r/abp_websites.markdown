@@ -43,7 +43,7 @@ resource "incapsula_abp_websites" "abp_websites" {
 ### Optional
 
 - `auto_publish` (Boolean) Whether to publish the changes automatically. Changes don't take take effect until they have been published.
-- `website_group` (Block List) List of website groups which are associated to ABP. (see [below for nested schema](#nestedblock--website_group))
+- `website_group` (Block List) List of website groups which are associated to ABP. Website groups are matched in a top-down fashion. If a more specific website group should take precedence over over a wild card entry then that should be higher in the list. (see [below for nested schema](#nestedblock--website_group))
 
 ### Read-Only
 
@@ -60,7 +60,7 @@ Required:
 Optional:
 
 - `name_id` (String) Unique user-defined identifier used to differentiate website groups whose `name` is identical
-- `website` (Block List) List of websites within the website group. (see [below for nested schema](#nestedblock--website_group--website))
+- `website` (Block List) List of websites within the website group. Websites are matched in a top-down fashion. If a more specific website should take precedence over over a wild card entry then that should be higher in the list (see [below for nested schema](#nestedblock--website_group--website))
 
 Read-Only:
 

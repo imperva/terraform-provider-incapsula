@@ -95,7 +95,7 @@ func resourceAbpWebsites() *schema.Resource {
 				Computed:    true,
 			},
 			"website_group": {
-				Description: "List of website groups which are associated to ABP.",
+				Description: "List of website groups which are associated to ABP. Website groups are matched in a top-down fashion. If a more specific website group should take precedence over over a wild card entry then that should be higher in the list.",
 				Type:        schema.TypeList,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -114,7 +114,7 @@ func resourceAbpWebsites() *schema.Resource {
 							Description: "Name for the website group. Must be unique unless `name_id` is specified.",
 						},
 						"website": {
-							Description: "List of websites within the website group.",
+							Description: "List of websites within the website group. Websites are matched in a top-down fashion. If a more specific website should take precedence over over a wild card entry then that should be higher in the list",
 							Type:        schema.TypeList,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
