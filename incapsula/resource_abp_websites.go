@@ -75,7 +75,7 @@ func resourceAbpWebsites() *schema.Resource {
 			},
 		},
 
-		Description: "Provides an Incapsula ABP (Advanced Bot Protection) websites resource. Allows for ABP to enabled and configured for given websites.",
+		Description: "Provides an Incapsula ABP (Advanced Bot Protection) website resource. Allows you to enable and configure ABP for given websites.",
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -106,7 +106,7 @@ func resourceAbpWebsites() *schema.Resource {
 						"name_id": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Unique user-defined identifier used to differentiate websites groups whose `name` are identical",
+							Description: "Unique user-defined identifier used to differentiate website groups whose `name` is identical",
 						},
 						"name": {
 							Type:        schema.TypeString,

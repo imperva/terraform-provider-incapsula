@@ -3,12 +3,12 @@
 page_title: "incapsula_abp_websites Resource - terraform-provider-incapsula"
 subcategory: ""
 description: |-
-  Provides an Incapsula ABP (Advanced Bot Protection) websites resource. Allows for ABP to enabled and configured for given websites.
+  Provides an Incapsula ABP (Advanced Bot Protection) website resource. Allows you to enable and configure ABP for given websites.
 ---
 
 # incapsula_abp_websites (Resource)
 
-Provides an Incapsula ABP (Advanced Bot Protection) websites resource. Allows for ABP to enabled and configured for given websites.
+Provides an Incapsula ABP (Advanced Bot Protection) website resource. Allows you to enable and configure ABP for given websites.
 
 ## Example Usage
 
@@ -48,6 +48,7 @@ resource "incapsula_abp_websites" "abp_websites" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `last_publish` (String) When the last publish was done for this terraform resource. Changes are published when `auto_publish` is true and the terraform config is applied.
 
 <a id="nestedblock--website_group"></a>
 ### Nested Schema for `website_group`
@@ -58,7 +59,7 @@ Required:
 
 Optional:
 
-- `name_id` (String) Unique user-defined identifier used to differentiate websites groups whose `name` are identical
+- `name_id` (String) Unique user-defined identifier used to differentiate website groups whose `name` is identical
 - `website` (Block List) List of websites within the website group. (see [below for nested schema](#nestedblock--website_group--website))
 
 Read-Only:
