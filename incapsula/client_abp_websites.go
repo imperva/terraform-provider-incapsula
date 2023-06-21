@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -14,18 +13,8 @@ import (
 
 const resourceName = "ABP Websites"
 
-func (c *Client) AbpBaseUrl() string {
-	// Useful for local testing of the ABP API
-	url, ok := os.LookupEnv("INCAPSULA_ABP_BASE_URL_OVERRIDE")
-	if ok {
-		return url
-	} else {
-		return c.config.BaseURLAPI
-	}
-}
-
 func (c *Client) AbpTerraformUrl(accountId int) string {
-	return fmt.Sprintf("%s/botmanagement/v1/account/%d/terraform", c.AbpBaseUrl(), accountId)
+	return fmt.Sprintf("%s/v1/account/%d/terraform", c.config.BaseURLAPI, accountId)
 }
 
 func (c *Client) CreateAbpWebsites(accountId int, account AbpTerraformAccount) (*AbpTerraformAccount, diag.Diagnostics) {

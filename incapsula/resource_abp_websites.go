@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 type AbpTerraformAccount struct {
-	AutoPublish   bool                       `json:"auto_publish"`
+	AutoPublish   bool `json:"auto_publish"`
+	LastPublish   string
 	WebsiteGroups []AbpTerraformWebsiteGroup `json:"website_groups"`
 }
 
@@ -305,6 +305,10 @@ func serializeAccount(data *schema.ResourceData, account AbpTerraformAccount) {
 		websiteGroupsData[i] = websiteGroupData
 	}
 
+	if account.LastPublish != "" {
+		data.Set("last_publish", account.LastPublish)
+	}
+
 	data.Set("website_group", websiteGroupsData)
 }
 
@@ -327,10 +331,6 @@ func resourceAbpWebsitesCreate(ctx context.Context, data *schema.ResourceData, m
 	}
 
 	serializeAccount(data, *abpWebsites)
-
-	if data.Get("auto_publish").(bool) {
-		data.Set("last_publish", time.Now().Format(time.RFC3339))
-	}
 
 	data.SetId(strconv.Itoa(accountId))
 
@@ -375,10 +375,6 @@ func resourceAbpWebsitesUpdate(ctx context.Context, data *schema.ResourceData, m
 	}
 
 	serializeAccount(data, *abpWebsites)
-
-	if data.Get("auto_publish").(bool) {
-		data.Set("last_publish", time.Now().Format(time.RFC3339))
-	}
 
 	return diags
 }
