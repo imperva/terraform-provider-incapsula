@@ -56,7 +56,6 @@ func resourceAccount() *schema.Resource {
 				Description: "Account name.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 				Computed:    true,
 			},
 			"logs_account_id": {
@@ -209,7 +208,7 @@ func resourceAccountRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("support_level", accountStatusResponse.Account.SupportLevel)
 	d.Set("support_all_tls_versions", accountStatusResponse.Account.SupportAllTLSVersions)
 	d.Set("wildcard_san_for_new_sites", accountStatusResponse.Account.WildcardSANForNewSites)
-	d.Set("naked_domain_san_for_new_www_sites", accountStatusResponse.Account.NakedDomainSANForNewWWWSites)
+	d.Set("naked_domain_san_for_new_www_sites", strconv.FormatBool(accountStatusResponse.Account.NakedDomainSANForNewWWWSites))
 	d.Set("consent_required", accountStatusResponse.ConsentRequired)
 
 	// Get the performance settings for the site
@@ -284,7 +283,7 @@ func resourceAccountDelete(d *schema.ResourceData, m interface{}) error {
 
 func updateAdditionalAccountProperties(client *Client, d *schema.ResourceData) error {
 	consentRequiredParam := "consent_required"
-	updateParams := [6]string{"name", "error_page_template", "support_all_tls_versions", "naked_domain_san_for_new_www_sites", "wildcard_san_for_new_sites", consentRequiredParam}
+	updateParams := [6]string{"account_name", "error_page_template", "support_all_tls_versions", "naked_domain_san_for_new_www_sites", "wildcard_san_for_new_sites", consentRequiredParam}
 	for i := 0; i < len(updateParams); i++ {
 		param := updateParams[i]
 		if d.HasChange(param) {
@@ -297,6 +296,7 @@ func updateAdditionalAccountProperties(client *Client, d *schema.ResourceData) e
 			}
 
 			if paramValStr != "" {
+				param = replaceAccountNameParamName(param)
 				log.Printf("[INFO] Updating Incapsula account param (%s) with value (%s) for account_id: %s\n", param, paramValStr, d.Id())
 				_, err := client.UpdateAccount(d.Id(), param, paramValStr)
 				if err != nil {
@@ -308,6 +308,13 @@ func updateAdditionalAccountProperties(client *Client, d *schema.ResourceData) e
 	}
 
 	return nil
+}
+
+func replaceAccountNameParamName(param string) string {
+	if param == "account_name" {
+		param = "name"
+	}
+	return param
 }
 
 func updateAccountLogLevel(client *Client, d *schema.ResourceData) error {
