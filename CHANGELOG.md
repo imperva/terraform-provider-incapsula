@@ -1,3 +1,10 @@
+## 3.18.2 (Jun 26, 2023)
+
+BUG FIXES:
+
+* Policy resource - fix bug with empty policyDataExceptions array in local resource always shows diff ([#322](https://github.com/imperva/terraform-provider-incapsula/pull/322)
+
+
 ## 3.18.1 (Jun 11, 2023)
 
 BUG FIXES:
