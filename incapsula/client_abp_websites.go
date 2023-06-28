@@ -14,7 +14,7 @@ import (
 const resourceName = "ABP Websites"
 
 func (c *Client) AbpTerraformUrl(accountId int) string {
-	return fmt.Sprintf("%s/v1/account/%d/terraform", c.config.BaseURLAPI, accountId)
+	return fmt.Sprintf("%s/botmanagement/v1/account/%d/terraform", c.config.BaseURLAPI, accountId)
 }
 
 func (c *Client) CreateAbpWebsites(accountId int, account AbpTerraformAccount) (*AbpTerraformAccount, diag.Diagnostics) {

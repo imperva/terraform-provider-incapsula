@@ -12,8 +12,8 @@ import (
 )
 
 type AbpTerraformAccount struct {
-	AutoPublish   bool `json:"auto_publish"`
-	LastPublish   string
+	AutoPublish   bool                       `json:"auto_publish"`
+	LastPublish   string                     `json:"last_publish"`
 	WebsiteGroups []AbpTerraformWebsiteGroup `json:"website_groups"`
 }
 

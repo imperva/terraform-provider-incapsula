@@ -174,7 +174,8 @@ func TestAccAbpWebsites_AutoPublish(t *testing.T) {
 					testAccCheckAbpWebsitesExists(&websitesResponse),
 					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "false"),
-					resource.TestCheckNoResourceAttr(abpWebsitesResource, "last_publish"),
+					// Can be set due to publishes from other tests, or earlier test runs
+					// resource.TestCheckNoResourceAttr(abpWebsitesResource, "last_publish"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites-1"),
 					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.incapsula_site_id"),
 					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "true"),
@@ -209,7 +210,7 @@ func TestAccAbpWebsites_AutoPublish(t *testing.T) {
 	})
 }
 
-func TestAccAbpWebsites_BasicImport(t *testing.T) {
+func TestAccAbpWebsites_ImportBasic(t *testing.T) {
 	var websitesResponse AbpTerraformAccount
 
 	resource.Test(t, resource.TestCase{
