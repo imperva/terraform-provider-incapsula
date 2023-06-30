@@ -169,11 +169,8 @@ func extractAccount(data *schema.ResourceData) (AbpTerraformAccount, diag.Diagno
 		usedNames[nameId] = true
 	}
 
-	if len(diags) > 0 {
-		return AbpTerraformAccount{}, diags
-	}
-
 	nameToId := make(map[string]string)
+	siteIdToId := make(map[int]string)
 	for _, websiteGroup := range oldWebsiteGroup.([]interface{}) {
 		websiteGroup := websiteGroup.(map[string]interface{})
 
@@ -182,6 +179,26 @@ func extractAccount(data *schema.ResourceData) (AbpTerraformAccount, diag.Diagno
 			nameId = websiteGroup["name"].(string)
 		}
 		nameToId[nameId] = websiteGroup["id"].(string)
+
+		for _, website := range websiteGroup["website"].([]interface{}) {
+			website := website.(map[string]interface{})
+
+			incapsulaSiteId := website["incapsula_site_id"].(int)
+
+			if _, ok := siteIdToId[incapsulaSiteId]; ok {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  fmt.Sprintf("Found duplicate incapsula_site_id (%d) for website", incapsulaSiteId),
+					Detail:   fmt.Sprintf("Each incapsula_site can only be used by a single website"),
+				})
+			} else {
+				siteIdToId[incapsulaSiteId] = website["id"].(string)
+			}
+		}
+	}
+
+	if len(diags) > 0 {
+		return AbpTerraformAccount{}, diags
 	}
 
 	autoPublish := data.Get("auto_publish").(bool)
@@ -194,15 +211,17 @@ func extractAccount(data *schema.ResourceData) (AbpTerraformAccount, diag.Diagno
 		for _, website := range websiteGroup["website"].([]interface{}) {
 			website := website.(map[string]interface{})
 
-			id := website["id"].(string)
+			incapsulaSiteId := website["incapsula_site_id"].(int)
+
 			var idOpt *string
-			if id != "" {
+			if id, ok := siteIdToId[incapsulaSiteId]; ok {
 				idOpt = &id
 			}
+
 			websites = append(websites,
 				AbpTerraformWebsite{
 					Id:               idOpt,
-					IncapsulaSiteId:  website["incapsula_site_id"].(int),
+					IncapsulaSiteId:  incapsulaSiteId,
 					EnableMitigation: website["enable_mitigation"].(bool),
 				})
 		}

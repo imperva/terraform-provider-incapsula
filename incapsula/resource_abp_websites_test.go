@@ -308,6 +308,44 @@ func TestAccAbpWebsites_ImportDuplicateNames(t *testing.T) {
 	})
 }
 
+func TestAccAbpWebsites_ChangeSiteId(t *testing.T) {
+	var websitesResponse AbpTerraformAccount
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+		},
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAbpWebsitesDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAbpWebsitesChangeSiteId(t, "sites-1"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAbpWebsitesExists(&websitesResponse),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "last_publish"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites"),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.incapsula_site_id"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "true"),
+				),
+			},
+			{
+				Config: testAccAbpWebsitesChangeSiteId(t, "sites-2"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAbpWebsitesExists(&websitesResponse),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "auto_publish", "true"),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "last_publish"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.name", "sites"),
+					resource.TestCheckResourceAttrSet(abpWebsitesResource, "website_group.0.website.0.incapsula_site_id"),
+					resource.TestCheckResourceAttr(abpWebsitesResource, "website_group.0.website.0.enable_mitigation", "true"),
+				),
+			},
+		},
+	})
+}
+
 func checkEqual(attrs map[string]string, l, r string) error {
 	if attrs[l] != r {
 		return fmt.Errorf("Key `%s` does not match `%s` != `%s` in %+v", l, attrs[l], r, attrs)
@@ -528,6 +566,24 @@ func testAccAbpWebsitesAutoPublish(t *testing.T, autoPublish bool) string {
 			}
 		}
 	}`, abpWebsitesResourceName, accountConfigName, autoPublish)
+}
+
+func testAccAbpWebsitesChangeSiteId(t *testing.T, siteId string) string {
+	return testAccCheckIncapsulaSiteConfig(t, "sites-1") + testAccCheckIncapsulaSiteConfig(t, "sites-2") +
+		fmt.Sprintf(`
+	data "incapsula_account_data" "account_data" {
+    }
+	resource "%s" "%s" {
+		account_id = data.incapsula_account_data.account_data.current_account
+		auto_publish = true
+		website_group {
+			name = "sites"
+			website {
+				incapsula_site_id = incapsula_site.%s.id
+				enable_mitigation = true
+			}
+		}
+	}`, abpWebsitesResourceName, accountConfigName, siteId)
 }
 
 func testAccCheckAbpWebsitesDestroy(state *terraform.State) error {
