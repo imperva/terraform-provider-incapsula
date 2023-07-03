@@ -10,8 +10,6 @@ description: |-
 
 Provides an Incapsula Policy Asset Association resource. This resource enables you to apply policies to assets in your account.
 
- 
-
 ## Example Usage
 
 ```hcl
