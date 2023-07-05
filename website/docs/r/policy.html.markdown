@@ -8,7 +8,7 @@ description: |-
 
 # incapsula_policy
 
-Provides a Incapsula Policy resource. 
+Provides an Incapsula Policy resource. This resource enables you to define policies to centrally configure settings for assets in your account.
 
 **Note**: We are currently rolling out the new WAF Rules policy type. It may not yet be available in your account.
 
