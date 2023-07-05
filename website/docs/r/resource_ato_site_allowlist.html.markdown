@@ -23,7 +23,7 @@ resource "incapsula_ato_site_mitigation_configuration" "demo-terraform-ato-site-
 
 The following arguments are supported:
 
-* `account_id` - (Optional) Numeric identifier of the account to operate on. This is required only if the site belongs to the sub account associated with the api key and the apip ID 
+* `account_id` - (Optional) Numeric identifier of the account to operate on. This is required only if the site belongs to the sub account associated with the api key and the api ID 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `allowlist` - (Required) Array of AllowlistItem which consists of
   - ip : string. example: 192.10.20.0 IP address to exclude. This will be either an IPv4 (e.g. 50.3.183.2) or normalized IPv6 representation (e.g. 2001:db8:0:0:1:0:0:1).

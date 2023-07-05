@@ -1,18 +1,18 @@
 ---
 layout: "incapsula"
-page_title: "Incapsula: incapsula-ato-site-allowlist"
-sidebar_current: "docs-incapsula-resource-ato-site-allowlist"
+page_title: "Incapsula: incapsula-ato-site-mitigation-configuration"
+sidebar_current: "docs-incapsula-resource-ato-site-mitigation-configuration"
 description: |- Provides an Incapsula ATO site allowlist resource.
 ---
 
-# incapsula_ato_site_allowlist
+# incapsula_ato_site_mitigation_configuration
 
 Provides an Incapsula ATO site allowlist configuration resource.
 
 ## Example Usage
 
 ```hcl
-resource "incapsula_ato_site_allowlist" "demo-terraform-ato-site-allowlist" {
+resource "incapsula_ato_site_mitigation_configuration" "demo-terraform-ato-site-mitigation-configuration" {
   account_id                     = incapsula_site.example-site.account_id
   site_id                        = incapsula_site.example-site.id
   mitigation_configuration       = [ { "endpointId": "5000", "lowAction": "NONE", "mediumAction": "CAPTCHA", "highAction": "BLOCK" }, { "endpointId": "5001", "lowAction": "NONE", "mediumAction": "CAPTCHA", "highAction": "TARPIT" } ] 
@@ -23,7 +23,7 @@ resource "incapsula_ato_site_allowlist" "demo-terraform-ato-site-allowlist" {
 
 The following arguments are supported:
 
-* `account_id` - (Optional) Numeric identifier of the account to operate on. This is required only if the site belongs to the sub account associated with the api key and the apip ID 
+* `account_id` - (Optional) Numeric identifier of the account to operate on. This is required only if the site belongs to the sub account associated with the api key and the api ID 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `mitigation_configuration` - (Required) Array of MitigationConfigurationItem which consists of :
   - endpointId:   string, readOnly: true, Endpoint ID associated with this request.
