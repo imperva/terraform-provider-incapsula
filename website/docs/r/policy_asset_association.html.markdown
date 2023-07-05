@@ -14,8 +14,8 @@ Provides an Incapsula Policy Asset Association resource. This resource enables y
 
 ```hcl
 resource "incapsula_policy_asset_association" "example-policy-asset-association" {
-  policy_id  = "123456"
-  asset_id   = "456789"
+  policy_id  = incapsula_policy.example-policy.id
+  asset_id   = incapsula_site.example-site-dns.id
   asset_type = "WEBSITE"
 }
 ```
