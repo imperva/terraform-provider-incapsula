@@ -1,3 +1,10 @@
+## 3.18.3 (Jul 05, 2023)
+
+BUG FIXES:
+
+* Incapsula_account resource changes: allow to edit account_name + map naked_domain_san_for_new_www_sites value on Read ([#325](https://github.com/imperva/terraform-provider-incapsula/pull/325)
+
+
 ## 3.18.2 (Jun 26, 2023)
 
 BUG FIXES:
