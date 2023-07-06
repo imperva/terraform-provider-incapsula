@@ -17,6 +17,7 @@ func ATOEndpointMitigationConfiguration() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				keyParts := strings.Split(d.Id(), "/")
+				print("id is %s", d.Id())
 				if len(keyParts) != 3 {
 					return nil, fmt.Errorf("Error parsing ID, actual value: %s, expected two numeric IDs and string seperated by '/'\n", d.Id())
 				}
@@ -50,13 +51,25 @@ func ATOEndpointMitigationConfiguration() *schema.Resource {
 				Type:        schema.TypeInt,
 				Required:    true,
 			},
-			"mitigation_configuration": {
-				Description: "The mitigation configuration of IPs and IP ranges for the given site ID",
-				Type:        schema.TypeList,
-				Optional:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeMap,
-				},
+			"endpoint_id": {
+				Description: "Endpoint ID associated with this request",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
+			"low_action": {
+				Description: "Mitigation action configured for low risk requests - in UPPER CASE.",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
+			"medium_action": {
+				Description: "Mitigation action configured for medium risk requests - in UPPER CASE.",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
+			"high_action": {
+				Description: "Mitigation action configured for high risk requests - in UPPER CASE.",
+				Type:        schema.TypeString,
+				Required:    true,
 			},
 		},
 	}
@@ -75,9 +88,9 @@ func resourceATOEndpointMitigationConfigurationRead(d *schema.ResourceData, m in
 	}
 
 	if siteId == 0 {
-		siteIdFromResourceId, conversionError := strconv.Atoi(d.Id())
+		siteIdFromResourceId, conversionError := strconv.Atoi(strings.Split(d.Id(), "/")[1])
 		if conversionError != nil {
-			return fmt.Errorf("atleast one of id or site_id should be set for incapsula_ato_site_allowlist")
+			return fmt.Errorf("either id : %s or (account_id, site_id and endpoint_id) should be set for incapsula_ato_endpoint_mitigation_configuration for reading mitigation configuration", d.Id())
 		}
 		siteId = siteIdFromResourceId
 	}
@@ -129,7 +142,7 @@ func ATOEndpointMitigationConfigurationUpdate(d *schema.ResourceData, m interfac
 	if siteId == 0 {
 		siteIdFromResourceId, conversionError := strconv.Atoi(d.Id())
 		if conversionError != nil {
-			return fmt.Errorf("atleast one of id or site_id should be set for incapsula_ato_site_allowlist")
+			return fmt.Errorf("either id or (account_id, site_id and endpoint_id) should be set for incapsula_ato_endpoint_mitigation_configuration for updating mitigation configuration")
 		}
 		siteId = siteIdFromResourceId
 	}

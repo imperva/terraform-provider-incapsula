@@ -145,7 +145,8 @@ func (c *Client) GetAtoEndpointMitigationConfiguration(accountId, siteId int, en
 
 	for _, atoMitigationItem := range atoMitigationItems {
 		if atoMitigationItem.EndpointId == endpointId {
-			atoEndpointMitigationConfigurationDTO.AccountId = atoMitigationItem.AccountId
+			atoEndpointMitigationConfigurationDTO.AccountId = accountId
+			atoEndpointMitigationConfigurationDTO.SiteId = siteId
 			atoEndpointMitigationConfigurationDTO.EndpointId = atoMitigationItem.EndpointId
 			atoEndpointMitigationConfigurationDTO.LowAction = atoMitigationItem.LowAction
 			atoEndpointMitigationConfigurationDTO.MediumAction = atoMitigationItem.MediumAction
