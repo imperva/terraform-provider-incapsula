@@ -54,7 +54,7 @@ func TestATOSiteMitigationConfigurationErrorResponse(t *testing.T) {
 	accountId := 55
 	siteId := 42
 	endpointId := "123"
-	endpoint := fmt.Sprintf("%s/%d%s?caid=%d", ATOSitePath, siteId, ATOSiteMitigationConfigurationPath, accountId)
+	endpoint := fmt.Sprintf("%s/%d%s?caid=%d&endpointIds=123", ATOSitePath, siteId, ATOSiteMitigationConfigurationPath, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(500)
@@ -98,7 +98,7 @@ func TestATOSiteAMitigationConfigurationInvalidResponse(t *testing.T) {
 	siteId := 42
 	accountId := 55
 	endpointId := "123"
-	endpoint := fmt.Sprintf("%s/%d%s?caid=%d", ATOSitePath, siteId, ATOSiteMitigationConfigurationPath, accountId)
+	endpoint := fmt.Sprintf("%s/%d%s?caid=%d&endpointIds=123", ATOSitePath, siteId, ATOSiteMitigationConfigurationPath, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -148,7 +148,7 @@ func TestATOSiteMitigationConfigurationResponse(t *testing.T) {
 	accountId := 55
 	siteId := 42
 	endpointId := "5000"
-	endpoint := fmt.Sprintf("%s/%d%s?caid=%d", ATOSitePath, siteId, ATOSiteMitigationConfigurationPath, accountId)
+	endpoint := fmt.Sprintf("%s/%d%s?caid=%d&endpointIds=5000", ATOSitePath, siteId, ATOSiteMitigationConfigurationPath, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
