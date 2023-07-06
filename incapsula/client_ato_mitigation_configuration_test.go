@@ -18,8 +18,9 @@ func TestATOSiteMitigationConfigurationBadConnection(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteId := 42
 	accountId := 55
+	endpointId := "123"
 
-	ret, err := client.GetAtoSiteMitigationConfiguration(accountId, siteId)
+	ret, err := client.GetAtoEndpointMitigationConfiguration(accountId, siteId, endpointId)
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -31,7 +32,7 @@ func TestATOSiteMitigationConfigurationBadConnection(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	err = client.UpdateATOSiteMitigationConfiguration(&ATOSiteMitigationConfigurationDTO{})
+	err = client.UpdateATOSiteMitigationConfiguration(&ATOEndpointMitigationConfigurationDTO{})
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -52,6 +53,7 @@ func TestATOSiteMitigationConfigurationErrorResponse(t *testing.T) {
 	apiKey := "bar"
 	accountId := 55
 	siteId := 42
+	endpointId := "123"
 	endpoint := fmt.Sprintf("%s/%d%s?caid=%d", ATOSitePath, siteId, ATOSiteMitigationConfigurationPath, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -67,7 +69,7 @@ func TestATOSiteMitigationConfigurationErrorResponse(t *testing.T) {
 	config := &Config{APIID: apiId, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	ret, err := client.GetAtoSiteMitigationConfiguration(accountId, siteId)
+	ret, err := client.GetAtoEndpointMitigationConfiguration(accountId, siteId, endpointId)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -78,7 +80,7 @@ func TestATOSiteMitigationConfigurationErrorResponse(t *testing.T) {
 		t.Errorf("Should have received a nil response")
 	}
 
-	err = client.UpdateATOSiteMitigationConfiguration(&ATOSiteMitigationConfigurationDTO{})
+	err = client.UpdateATOSiteMitigationConfiguration(&ATOEndpointMitigationConfigurationDTO{})
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -95,6 +97,7 @@ func TestATOSiteAMitigationConfigurationInvalidResponse(t *testing.T) {
 	apiKey := "bar"
 	siteId := 42
 	accountId := 55
+	endpointId := "123"
 	endpoint := fmt.Sprintf("%s/%d%s?caid=%d", ATOSitePath, siteId, ATOSiteMitigationConfigurationPath, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -110,7 +113,7 @@ func TestATOSiteAMitigationConfigurationInvalidResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	ret, err := client.GetAtoSiteMitigationConfiguration(accountId, siteId)
+	ret, err := client.GetAtoEndpointMitigationConfiguration(accountId, siteId, endpointId)
 	if err == nil {
 		t.Errorf("Should have received an error")
 		return
@@ -124,7 +127,7 @@ func TestATOSiteAMitigationConfigurationInvalidResponse(t *testing.T) {
 		return
 	}
 
-	err = client.UpdateATOSiteMitigationConfiguration(&ATOSiteMitigationConfigurationDTO{})
+	err = client.UpdateATOSiteMitigationConfiguration(&ATOEndpointMitigationConfigurationDTO{})
 	if err == nil {
 		t.Errorf("Should have received an error")
 		return
@@ -144,6 +147,7 @@ func TestATOSiteMitigationConfigurationResponse(t *testing.T) {
 	apiKey := "bar"
 	accountId := 55
 	siteId := 42
+	endpointId := "5000"
 	endpoint := fmt.Sprintf("%s/%d%s?caid=%d", ATOSitePath, siteId, ATOSiteMitigationConfigurationPath, accountId)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -158,12 +162,6 @@ func TestATOSiteMitigationConfigurationResponse(t *testing.T) {
         "lowAction": "NONE",
         "mediumAction": "CAPTCHA",
         "highAction": "BLOCK"
-    }, 
-	{
-        "endpointId": "5001",
-        "lowAction": "NONE",
-        "mediumAction": "CAPTCHA",
-        "highAction": "TARPIT"
     }
 
 ]`))
@@ -176,27 +174,15 @@ func TestATOSiteMitigationConfigurationResponse(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	// Fetch the mitigation configuration for the site
-	response, err := client.GetAtoSiteMitigationConfigurationWithRetries(accountId, siteId)
+	mitigationConfigurationItem, err := client.GetAtoEndpointMitigationConfigurationWithRetries(accountId, siteId, endpointId)
 
 	// Check for no value edge cases
 	if err != nil {
 		t.Errorf("Should have not received an error")
 	}
-	if response == nil {
-		t.Errorf("Should have received a response")
+	if mitigationConfigurationItem == nil {
+		t.Errorf("Should have received a response for GetAtoEndpointMitigationConfigurationWithRetries")
 	}
-
-	if response.MitigationConfiguration == nil {
-		t.Errorf("ATO mitigation configuration should not be nil")
-	}
-
-	// Verify that there are 2 items in the ATO mitigation configuration
-	if len(response.MitigationConfiguration) != 2 {
-		t.Errorf("Size of  mitigation configuration should be 2, received : %d", len(response.MitigationConfiguration))
-	}
-
-	// Use the first item for testing values
-	mitigationConfigurationItem := response.MitigationConfiguration[0]
 
 	if mitigationConfigurationItem.EndpointId != "5000" {
 		t.Errorf("Expected mitigation configuration endpointId : 5000, received : %s", mitigationConfigurationItem.EndpointId)
@@ -212,11 +198,6 @@ func TestATOSiteMitigationConfigurationResponse(t *testing.T) {
 
 	if mitigationConfigurationItem.HighAction != "BLOCK" {
 		t.Errorf("Expected HighAction 'BLOCK', received : %s", mitigationConfigurationItem.HighAction)
-	}
-
-	// Verify that both the mitigation configuration items are not the same
-	if mitigationConfigurationItem.EndpointId == response.MitigationConfiguration[1].EndpointId {
-		t.Errorf("Mitigation configuration endpoint are not expected to be identical with a value of %s", mitigationConfigurationItem.EndpointId)
 	}
 
 }

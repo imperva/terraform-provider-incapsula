@@ -11,44 +11,43 @@ import (
 
 const endpointATOMitigation = "/mitigation"
 
-type AtoMitigationItem struct {
+type ATOEndpointMitigationConfigurationDTO struct {
+	AccountId    int    `json:"accountId"`
+	SiteId       int    `json:"siteId"`
 	EndpointId   string `json:"endpointId"`
 	LowAction    string `json:"lowAction"`
 	MediumAction string `json:"mediumAction"`
 	HighAction   string `json:"highAction"`
 }
 
-type ATOSiteMitigationConfigurationDTO struct {
-	AccountId               int                 `json:"accountId"`
-	SiteId                  int                 `json:"siteId"`
-	MitigationConfiguration []AtoMitigationItem `json:"mitigationConfiguration"`
-}
-
-func formNoMitigationConfigurationDTO(accountId, siteId int) *ATOSiteMitigationConfigurationDTO {
-	return &ATOSiteMitigationConfigurationDTO{
-		AccountId:               accountId,
-		SiteId:                  siteId,
-		MitigationConfiguration: make([]AtoMitigationItem, 0),
+func formNoMitigationConfigurationDTO(accountId, siteId int, endpointId string) *ATOEndpointMitigationConfigurationDTO {
+	return &ATOEndpointMitigationConfigurationDTO{
+		AccountId:    accountId,
+		SiteId:       siteId,
+		EndpointId:   endpointId,
+		LowAction:    "NONE",
+		MediumAction: "NONE",
+		HighAction:   "NONE",
 	}
 }
 
-func (atoMitigationItem *AtoMitigationItem) toMap() (map[string]interface{}, error) {
+func (atoEndpointMitigationConfigurationDTO *ATOEndpointMitigationConfigurationDTO) toMap() (map[string]interface{}, error) {
 
 	// Initialize the data map that terraform uses
 	var atoMitigationItemMap = make(map[string]interface{})
 
 	// Set properties
-	atoMitigationItemMap["endpointId"] = atoMitigationItem.EndpointId
-	atoMitigationItemMap["lowAction"] = atoMitigationItem.LowAction
-	atoMitigationItemMap["mediumAction"] = atoMitigationItem.MediumAction
-	atoMitigationItemMap["highAction"] = atoMitigationItem.HighAction
+	atoMitigationItemMap["endpointId"] = atoEndpointMitigationConfigurationDTO.EndpointId
+	atoMitigationItemMap["lowAction"] = atoEndpointMitigationConfigurationDTO.LowAction
+	atoMitigationItemMap["mediumAction"] = atoEndpointMitigationConfigurationDTO.MediumAction
+	atoMitigationItemMap["highAction"] = atoEndpointMitigationConfigurationDTO.HighAction
 
 	return atoMitigationItemMap, nil
 }
 
-func formAtoMitigationConfigurationDTOFromMap(atoMitigationConfigurationMap map[string]interface{}) (*ATOSiteMitigationConfigurationDTO, error) {
+func formAtoMitigationConfigurationDTOFromMap(atoMitigationConfigurationMap map[string]interface{}) (*ATOEndpointMitigationConfigurationDTO, error) {
 
-	atoSiteMitigationConfigurationDTO := ATOSiteMitigationConfigurationDTO{}
+	atoEndpointMitigationConfigurationDTO := ATOEndpointMitigationConfigurationDTO{}
 
 	// Validate site_id
 	switch atoMitigationConfigurationMap["site_id"].(type) {
@@ -67,60 +66,24 @@ func formAtoMitigationConfigurationDTOFromMap(atoMitigationConfigurationMap map[
 	}
 
 	// Assign site ID
-	atoSiteMitigationConfigurationDTO.SiteId = atoMitigationConfigurationMap["site_id"].(int)
+	atoEndpointMitigationConfigurationDTO.SiteId = atoMitigationConfigurationMap["site_id"].(int)
 
 	// Assign account ID
-	atoSiteMitigationConfigurationDTO.AccountId = atoMitigationConfigurationMap["account_id"].(int)
+	atoEndpointMitigationConfigurationDTO.AccountId = atoMitigationConfigurationMap["account_id"].(int)
 
-	// Assign the mitigation configuration
-	if atoMitigationConfigurationMap["mitigation_configuration"] == nil {
-		atoSiteMitigationConfigurationDTO.MitigationConfiguration = make([]AtoMitigationItem, 0)
-	} else if _, ok := atoMitigationConfigurationMap["mitigation_configuration"].([]interface{}); !ok {
-		// Verify that the mitigation configuration is an array
-		return nil, fmt.Errorf("mitigation configuration should have type array")
-	} else {
+	// Assign endpoint ID
+	atoEndpointMitigationConfigurationDTO.EndpointId = atoMitigationConfigurationMap["endpoint_id"].(string)
 
-		mitigationConfigurationItemsInMap := atoMitigationConfigurationMap["mitigation_configuration"].([]interface{})
-		atoSiteMitigationConfigurationDTO.MitigationConfiguration = make([]AtoMitigationItem, len(mitigationConfigurationItemsInMap))
+	// Assign mitigation action for risks
+	atoEndpointMitigationConfigurationDTO.LowAction = atoMitigationConfigurationMap["low_action"].(string)
+	atoEndpointMitigationConfigurationDTO.MediumAction = atoMitigationConfigurationMap["medium_action"].(string)
+	atoEndpointMitigationConfigurationDTO.HighAction = atoMitigationConfigurationMap["high_action"].(string)
 
-		// Convert each mitigation configuration entry in the map to the mitigation configuration item for the DTO
-		for i, mitigationConfigurationItemInMap := range mitigationConfigurationItemsInMap {
-
-			// Convert to the DTO items
-			mitigationItemMap, err := formAtoMitigationItemFromMap(mitigationConfigurationItemInMap.(map[string]interface{}))
-
-			if err != nil {
-				return nil, fmt.Errorf("Error in extracting mitigation configuration, error : %s", err)
-			}
-
-			atoSiteMitigationConfigurationDTO.MitigationConfiguration[i] = *mitigationItemMap
-
-		}
-
-	}
-
-	return &atoSiteMitigationConfigurationDTO, nil
+	return &atoEndpointMitigationConfigurationDTO, nil
 }
 
-func formAtoMitigationItemFromMap(atoMitigationItemMap map[string]interface{}) (*AtoMitigationItem, error) {
-
-	atoMitigationItem := AtoMitigationItem{}
-
-	// Set endpointId
-	if atoMitigationItemMap["endpoint_id"] != nil {
-		atoMitigationItem.EndpointId = atoMitigationItemMap["endpoint_id"].(string)
-	} else {
-		return nil, fmt.Errorf("endpoint_id cannot be empty")
-	}
-
-	atoMitigationItem.LowAction = atoMitigationItemMap["low_action"].(string)
-	atoMitigationItem.MediumAction = atoMitigationItemMap["medium_action"].(string)
-	atoMitigationItem.HighAction = atoMitigationItemMap["high_action"].(string)
-
-	return &atoMitigationItem, nil
-}
-
-func (c *Client) GetAtoSiteMitigationConfigurationWithRetries(accountId, siteId int) (*ATOSiteMitigationConfigurationDTO, error) {
+// GetAtoEndpointMitigationConfigurationWithRetries Fetch the mitigation configuration for an endpoint
+func (c *Client) GetAtoEndpointMitigationConfigurationWithRetries(accountId, siteId int, endpointId string) (*ATOEndpointMitigationConfigurationDTO, error) {
 	// Since the newly created site can take upto 30 seconds to be fully configured, we per.si a simple backoff
 	var backoffSchedule = []time.Duration{
 		5 * time.Second,
@@ -131,9 +94,9 @@ func (c *Client) GetAtoSiteMitigationConfigurationWithRetries(accountId, siteId 
 	var lastError error
 
 	for _, backoff := range backoffSchedule {
-		aatoSiteMitigationConfigurationDTO, err := c.GetAtoSiteMitigationConfiguration(accountId, siteId)
+		atoEndpointMitigationConfigurationDTO, err := c.GetAtoEndpointMitigationConfiguration(accountId, siteId, endpointId)
 		if err == nil {
-			return aatoSiteMitigationConfigurationDTO, nil
+			return atoEndpointMitigationConfigurationDTO, nil
 		}
 		lastError = err
 		time.Sleep(backoff)
@@ -141,7 +104,7 @@ func (c *Client) GetAtoSiteMitigationConfigurationWithRetries(accountId, siteId 
 	return nil, lastError
 }
 
-func (c *Client) GetAtoSiteMitigationConfiguration(accountId, siteId int) (*ATOSiteMitigationConfigurationDTO, error) {
+func (c *Client) GetAtoEndpointMitigationConfiguration(accountId, siteId int, endpointId string) (*ATOEndpointMitigationConfigurationDTO, error) {
 	log.Printf("[INFO] Getting ATO mitigation configuration for (Site Id: %d)\n", siteId)
 
 	// Get request to ATO
@@ -151,7 +114,8 @@ func (c *Client) GetAtoSiteMitigationConfiguration(accountId, siteId int) (*ATOS
 	} else {
 		reqURL = fmt.Sprintf("%s%s/%d%s?caid=%d", c.config.BaseURLAPI, endpointATOSiteBase, siteId, endpointATOMitigation, accountId)
 	}
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadATOSiteMitigationConfigurationOperation)
+	// Adding specific endpoint ID from the API spec at https://docs.imperva.com/bundle/account-takeover/page/account-takeover/ato-api-definition.htm
+	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, reqURL, nil, map[string]string{"endpointIds": endpointId}, ReadATOSiteMitigationConfigurationOperation)
 	if err != nil {
 		return nil, fmt.Errorf("[Error] Error executing get ATO mitigation configuration request for site with id %d: %s", siteId, err)
 	}
@@ -169,22 +133,36 @@ func (c *Client) GetAtoSiteMitigationConfiguration(accountId, siteId int) (*ATOS
 	}
 
 	// Parse the JSON
-	var atoMitigationItems []AtoMitigationItem
-	var atoSiteMitigationConfigurationDTO ATOSiteMitigationConfigurationDTO
+	var atoMitigationItems []ATOEndpointMitigationConfigurationDTO
 	err = json.Unmarshal(responseBody, &atoMitigationItems)
 
 	if err != nil {
 		return nil, fmt.Errorf("Error in parsing JSON response for ATO mitigation configuration : %s", responseBody)
 	}
 
-	atoSiteMitigationConfigurationDTO.SiteId = siteId
-	atoSiteMitigationConfigurationDTO.AccountId = accountId
-	atoSiteMitigationConfigurationDTO.MitigationConfiguration = atoMitigationItems
+	// Get the desired mitigation configuration for the endpoint specified
+	var atoEndpointMitigationConfigurationDTO ATOEndpointMitigationConfigurationDTO
 
-	return &atoSiteMitigationConfigurationDTO, nil
+	for _, atoMitigationItem := range atoMitigationItems {
+		if atoMitigationItem.EndpointId == endpointId {
+			atoEndpointMitigationConfigurationDTO.AccountId = atoMitigationItem.AccountId
+			atoEndpointMitigationConfigurationDTO.EndpointId = atoMitigationItem.EndpointId
+			atoEndpointMitigationConfigurationDTO.LowAction = atoMitigationItem.LowAction
+			atoEndpointMitigationConfigurationDTO.MediumAction = atoMitigationItem.MediumAction
+			atoEndpointMitigationConfigurationDTO.HighAction = atoMitigationItem.HighAction
+			break
+		}
+	}
+
+	// Endpoint was missing in the mitigation configuration
+	if atoEndpointMitigationConfigurationDTO.EndpointId == "" {
+		return formNoMitigationConfigurationDTO(accountId, siteId, endpointId), nil
+	}
+
+	return &atoEndpointMitigationConfigurationDTO, nil
 }
 
-func (c *Client) UpdateATOSiteMitigationConfigurationWithRetries(atoSiteMitigationConfigurationDTO *ATOSiteMitigationConfigurationDTO) error {
+func (c *Client) UpdateATOEndpointMitigationConfigurationWithRetries(atoSiteMitigationConfigurationDTO *ATOEndpointMitigationConfigurationDTO) error {
 	// Since the newly created site can take upto 30 seconds to be fully configured, we perform a simple backoff
 	var backoffSchedule = []time.Duration{
 		5 * time.Second,
@@ -205,22 +183,23 @@ func (c *Client) UpdateATOSiteMitigationConfigurationWithRetries(atoSiteMitigati
 	return lastError
 }
 
-func (c *Client) UpdateATOSiteMitigationConfiguration(aTOSiteMitigationConfigurationDTO *ATOSiteMitigationConfigurationDTO) error {
+func (c *Client) UpdateATOSiteMitigationConfiguration(atoSiteMitigationConfigurationDTO *ATOEndpointMitigationConfigurationDTO) error {
 
-	log.Printf("[INFO] Updating ATO mitigation configuration for (Site Id: %d)\n", aTOSiteMitigationConfigurationDTO.SiteId)
+	log.Printf("[INFO] Updating ATO mitigation configuration for (Site Id: %d)\n", atoSiteMitigationConfigurationDTO.SiteId)
 
 	// Form the request body
-	mitigationConfigurationJSON, err := json.Marshal(aTOSiteMitigationConfigurationDTO.MitigationConfiguration)
+	var mitigationConfigBody = []ATOEndpointMitigationConfigurationDTO{*atoSiteMitigationConfigurationDTO}
+	mitigationConfigurationJSON, err := json.Marshal(mitigationConfigBody)
 
 	// verify site ID and account ID are not the default value for int type
-	if aTOSiteMitigationConfigurationDTO.SiteId == 0 {
+	if atoSiteMitigationConfigurationDTO.SiteId == 0 {
 		return fmt.Errorf("site_id is not specified in updating ATO Mitigation configuration")
 	}
 	var reqURL string
-	if aTOSiteMitigationConfigurationDTO.AccountId == 0 {
-		reqURL = fmt.Sprintf("%s%s/%d%s", c.config.BaseURLAPI, endpointATOSiteBase, aTOSiteMitigationConfigurationDTO.SiteId, endpointATOMitigation)
+	if atoSiteMitigationConfigurationDTO.AccountId == 0 {
+		reqURL = fmt.Sprintf("%s%s/%d%s", c.config.BaseURLAPI, endpointATOSiteBase, atoSiteMitigationConfigurationDTO.SiteId, endpointATOMitigation)
 	} else {
-		reqURL = fmt.Sprintf("%s%s/%d%s?caid=%d", c.config.BaseURLAPI, endpointATOSiteBase, aTOSiteMitigationConfigurationDTO.SiteId, endpointATOMitigation, aTOSiteMitigationConfigurationDTO.AccountId)
+		reqURL = fmt.Sprintf("%s%s/%d%s?caid=%d", c.config.BaseURLAPI, endpointATOSiteBase, atoSiteMitigationConfigurationDTO.SiteId, endpointATOMitigation, atoSiteMitigationConfigurationDTO.AccountId)
 	}
 
 	// Update request to ATO
@@ -234,23 +213,23 @@ func (c *Client) UpdateATOSiteMitigationConfiguration(aTOSiteMitigationConfigura
 
 	// Handle request error
 	if err != nil {
-		return fmt.Errorf("[Error] Error executing update ATO mitigation configuratgion request for site with id %d: %s", aTOSiteMitigationConfigurationDTO.SiteId, err)
+		return fmt.Errorf("[Error] Error executing update ATO mitigation configuratgion request for site with id %d: %s", atoSiteMitigationConfigurationDTO.SiteId, err)
 	}
 
 	if response.StatusCode >= http.StatusBadRequest {
-		return fmt.Errorf("[Error] Error executing update ATO mitigation configuration request for site with status %d: %s", aTOSiteMitigationConfigurationDTO.SiteId, response.Status)
+		return fmt.Errorf("[Error] Error executing update ATO mitigation configuration request for site with status %d: %s", atoSiteMitigationConfigurationDTO.SiteId, response.Status)
 	}
 
 	return nil
 
 }
 
-func (c *Client) DisableATOSiteMitigationConfiguration(accountId, siteId int) error {
+func (c *Client) DisableATOEndpointMitigationConfiguration(accountId, siteId int, endpointId string) error {
 	log.Printf("[INFO] Disabling ATO site mitigation configuration for (Site Id: %d)\n", siteId)
 
 	// We are using empty mitigation config array instead of assigning 'NONE' to all risk levels
 	// This has the advantage of resetting config entirely instead of possible enum conversion issues in the future
-	err := c.UpdateATOSiteMitigationConfiguration(formNoMitigationConfigurationDTO(accountId, siteId))
+	err := c.UpdateATOSiteMitigationConfiguration(formNoMitigationConfigurationDTO(accountId, siteId, endpointId))
 
 	// Handle request error
 	if err != nil {
