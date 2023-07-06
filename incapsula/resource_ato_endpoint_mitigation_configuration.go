@@ -8,20 +8,32 @@ import (
 	"strings"
 )
 
-func resourceATOSiteMitigationConfiguration() *schema.Resource {
+func ATOEndpointMitigationConfiguration() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceATOSiteMitigationConfigurationUpdate,
+		Create: ATOEndpointMitigationConfigurationUpdate,
 		Read:   resourceATOEndpointMitigationConfigurationRead,
-		Update: resourceATOSiteMitigationConfigurationUpdate,
-		Delete: resourceATOSiteMitigationConfigurationDelete,
+		Update: ATOEndpointMitigationConfigurationUpdate,
+		Delete: ATOEndpointMitigationConfigurationDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				siteId, err := strconv.Atoi(d.Id())
-				err = d.Set("site_id", siteId)
-				if err != nil {
-					return nil, fmt.Errorf("failed to extract site ID from import command, actual value: %s, error : %s", d.Id(), err)
+				keyParts := strings.Split(d.Id(), "/")
+				if len(keyParts) != 3 {
+					return nil, fmt.Errorf("Error parsing ID, actual value: %s, expected two numeric IDs and string seperated by '/'\n", d.Id())
 				}
-				log.Printf("[DEBUG] Import ATO allowlist for site ID %d", siteId)
+				accountId, err := strconv.Atoi(keyParts[0])
+				if err != nil {
+					return nil, fmt.Errorf("failed to convert account ID from import command, actual value: %s, expected numeric id", keyParts[0])
+				}
+				siteId, err := strconv.Atoi(keyParts[1])
+				if err != nil {
+					return nil, fmt.Errorf("failed to convert site ID from import command, actual value: %s, expected numeric id", keyParts[1])
+				}
+				endpointId := keyParts[1]
+
+				d.Set("account_id", accountId)
+				d.Set("site_id", siteId)
+				d.Set("endpoint_id", endpointId)
+				log.Printf("[DEBUG] To Import ATO endpoint mitigation for account ID %d , site ID %d , endpoint ID %s", accountId, siteId, endpointId)
 				return []*schema.ResourceData{d}, nil
 			},
 		},
@@ -106,7 +118,7 @@ func resourceATOEndpointMitigationConfigurationRead(d *schema.ResourceData, m in
 	return nil
 }
 
-func resourceATOSiteMitigationConfigurationUpdate(d *schema.ResourceData, m interface{}) error {
+func ATOEndpointMitigationConfigurationUpdate(d *schema.ResourceData, m interface{}) error {
 	// Extract the required identifiers siteId, accountId and endpointId
 	siteId, ok := d.Get("site_id").(int)
 
@@ -184,7 +196,7 @@ func resourceATOSiteMitigationConfigurationUpdate(d *schema.ResourceData, m inte
 	return resourceATOEndpointMitigationConfigurationRead(d, m)
 }
 
-func resourceATOSiteMitigationConfigurationDelete(d *schema.ResourceData, m interface{}) error {
+func ATOEndpointMitigationConfigurationDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteId := d.Get("site_id").(int)
 	accountId := d.Get("account_id").(int)

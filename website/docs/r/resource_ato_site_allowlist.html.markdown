@@ -5,14 +5,14 @@ sidebar_current: "docs-incapsula-resource-ato-site-mitigation-configuration"
 description: |- Provides an Incapsula ATO site mitigation onfiguration resource.
 ---
 
-# incapsula_ato_site_mitigation_configuration
+# incapsula_ato_endpoint_mitigation_configuration
 
 Provides an Incapsula ATO site mitigation configuration resource.
 
 ## Example Usage
 
 ```hcl
-resource "incapsula_ato_site_mitigation_configuration" "demo-terraform-ato-site-mitigation-configuration" {
+resource "incapsula_ato_endpoint_mitigation_configuration" "demo-terraform-ato-site-mitigation-configuration" {
   account_id      = incapsula_site.example-site.account_id
   site_id         = incapsula_site.example-site.id
   allowlist       = [ { "ip": "192.10.20.0", "mask": "24", "desc": "Test IP 1" }, { "ip": "192.10.20.1", "mask": "8", "desc": "Test IP 2" } ]

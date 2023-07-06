@@ -769,7 +769,10 @@ resource "incapsula_ato_site_allowlist" "example-ato-site-allowlist-test" {
 # ATO Mitigation configuration
 ####################################################################
 
-resource "incapsula_ato_site_mitigation_configuration" "example-ato-site-mitigation-configuration" {
+resource "incapsula_ato_endpoint_mitigation_configuration" "example-ato-endpoint-1-mitigation-configuration" {
   site_id                   = incapsula_site.example-site.id
-  mitigation_configuration  = [ { "endpointId": "5000", "lowAction": "NONE", "mediumAction": "CAPTCHA", "highAction": "BLOCK" }, { "endpointId": "5001", "lowAction": "NONE", "mediumAction": "CAPTCHA", "highAction": "TARPIT" } ]
+  endpoint_id               = "5000"
+  low_action                = "NONE"
+  medium_action             = "NONE"
+  high_action               = "NONE"
 }
