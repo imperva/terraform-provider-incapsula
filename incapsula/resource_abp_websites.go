@@ -2,7 +2,6 @@ package incapsula
 
 import (
 	"context"
-	_ "embed"
 	"fmt"
 	"log"
 	"strconv"
