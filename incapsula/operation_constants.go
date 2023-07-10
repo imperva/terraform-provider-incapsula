@@ -181,3 +181,8 @@ const CreateWaitingRoom = "create_waiting_room"
 const ReadWaitingRoom = "read_waiting_room"
 const UpdateWaitingRoom = "update_waiting_room"
 const DeleteWaitingRoom = "delete_waiting_room"
+
+const CreateAbpWebsites = "create_abp_websites"
+const ReadAbpWebsites = "read_abp_websites"
+const UpdateAbpWebsites = "update_abp_websites"
+const DeleteAbpWebsites = "delete_abp_websites"
