@@ -23,6 +23,10 @@ const AuditProvider = "AUDIT"
 
 var AuditDatasets = []string{"AUDIT_TRAIL"}
 
+const CspProvider = "CSP"
+
+var CspDatasets = []string{"GOOGLE_ANALYTICS_IDS", "SIGNIFICANT_DOMAIN_DISCOVERY"}
+
 func resourceSiemLogConfiguration() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceSiemLogConfigurationCreate,
@@ -62,14 +66,14 @@ func resourceSiemLogConfiguration() *schema.Resource {
 				Description:  "Type of the producer.",
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{AbpProvider, NetsecProvider, AtoProvider, AuditProvider}, false),
+				ValidateFunc: validation.StringInSlice([]string{AbpProvider, NetsecProvider, AtoProvider, AuditProvider, CspProvider}, false),
 			},
 			"datasets": {
 				Description: "All datasets for the supported producers.",
 				Type:        schema.TypeList,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice([]string{AbpDatasets[0], NetsecDatasets[0], NetsecDatasets[1], NetsecDatasets[2], NetsecDatasets[3], AtoDatasets[0], AuditDatasets[0]}, false),
+					ValidateFunc: validation.StringInSlice([]string{AbpDatasets[0], NetsecDatasets[0], NetsecDatasets[1], NetsecDatasets[2], NetsecDatasets[3], AtoDatasets[0], AuditDatasets[0], CspDatasets[0], CspDatasets[1]}, false),
 				},
 				Required: true,
 			},
@@ -100,6 +104,8 @@ func resourceValidation(d *schema.ResourceData) error {
 		providerDatasets = AtoDatasets
 	} else if producer == AuditProvider {
 		providerDatasets = AuditDatasets
+	} else if producer == CspProvider {
+		providerDatasets = CspDatasets
 	}
 
 	for _, s := range datasets {

@@ -26,12 +26,13 @@ func TestSiemLogConfiguration_Basic(t *testing.T) {
 		CheckDestroy: testAccIncapsulaSiemLogConfigurationDestroy(siemLogConfigurationResourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\"", "\"ATO\"", "\"AUDIT_TRAIL\""),
+				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\"", "\"ATO\"", "\"AUDIT_TRAIL\"", "\"GOOGLE_ANALYTICS_IDS\", \"SIGNIFICANT_DOMAIN_DISCOVERY\""),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_abp"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_ato"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_audit"),
+					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_csp"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "configuration_name", siemLogConfigurationName+"abp"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "producer", "ABP"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "configuration_name", siemLogConfigurationName+"netsec"),
@@ -40,6 +41,8 @@ func TestSiemLogConfiguration_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_ato", "producer", "ATO"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_audit", "configuration_name", siemLogConfigurationName+"audit"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_audit", "producer", "AUDIT"),
+					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_csp", "configuration_name", siemLogConfigurationName+"csp"),
+					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_csp", "producer", "CSP"),
 				),
 			},
 			{
@@ -66,6 +69,12 @@ func TestSiemLogConfiguration_Basic(t *testing.T) {
 				ImportStateVerify: true,
 				ImportStateIdFunc: testACCStateSiemLogConfigurationID(siemLogConfigurationResourceType),
 			},
+			{
+				ResourceName:      siemLogConfigurationResource + "_csp",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testACCStateSiemLogConfigurationID(siemLogConfigurationResourceType),
+			},
 		},
 	})
 }
@@ -80,36 +89,40 @@ func TestSiemLogConfiguration_Update(t *testing.T) {
 		CheckDestroy: testAccIncapsulaSiemLogConfigurationDestroy(siemLogConfigurationResourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\"", "\"ATO\"", "\"AUDIT_TRAIL\""),
+				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\"", "\"ATO\"", "\"AUDIT_TRAIL\"", "\"GOOGLE_ANALYTICS_IDS\", \"SIGNIFICANT_DOMAIN_DISCOVERY\""),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_abp"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_ato"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_audit"),
+					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_csp"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "configuration_name", siemLogConfigurationName+"abp"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "configuration_name", siemLogConfigurationName+"netsec"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_ato", "configuration_name", siemLogConfigurationName+"ato"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_audit", "configuration_name", siemLogConfigurationName+"audit"),
+					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_csp", "configuration_name", siemLogConfigurationName+"csp"),
 				),
 			},
 			{
-				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationNameUpdated, "\"ABP\"", "\"IP\", \"ATTACK\"", "\"ATO\"", "\"AUDIT_TRAIL\""),
+				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationNameUpdated, "\"ABP\"", "\"IP\", \"ATTACK\"", "\"ATO\"", "\"AUDIT_TRAIL\"", "\"GOOGLE_ANALYTICS_IDS\", \"SIGNIFICANT_DOMAIN_DISCOVERY\""),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_abp"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_ato"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_audit"),
+					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_csp"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "configuration_name", siemLogConfigurationNameUpdated+"abp"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "configuration_name", siemLogConfigurationNameUpdated+"netsec"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_ato", "configuration_name", siemLogConfigurationNameUpdated+"ato"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_audit", "configuration_name", siemLogConfigurationNameUpdated+"audit"),
+					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_csp", "configuration_name", siemLogConfigurationNameUpdated+"csp"),
 				),
 			},
 		},
 	})
 }
 
-func getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName string, abpDatasets string, netsecDatasets string, atoDatasets string, auditDatasets string) string {
+func getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName string, abpDatasets string, netsecDatasets string, atoDatasets string, auditDatasets string, cspDatasets string) string {
 	return getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName) + fmt.Sprintf(`
 		resource "%s" "%s" {
 			configuration_name = "%s"
@@ -150,6 +163,16 @@ func getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName str
 		}`,
 		siemLogConfigurationResourceType, siemLogConfigurationResourceName+"_audit", siemLogConfigurationName+"audit",
 		auditDatasets, siemConnectionResourceType, s3ArnSiemConnectionResourceName,
+	) + fmt.Sprintf(`
+		resource "%s" "%s" {
+			configuration_name = "%s"
+			producer = "CSP"
+			datasets = [%s]
+			enabled = true
+			connection_id = %s.%s.id
+		}`,
+		siemLogConfigurationResourceType, siemLogConfigurationResourceName+"_csp", siemLogConfigurationName+"csp",
+		cspDatasets, siemConnectionResourceType, s3ArnSiemConnectionResourceName,
 	)
 }
 
