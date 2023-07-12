@@ -1,3 +1,14 @@
+## 3.19.0 (Jul 12, 2023)
+
+FEATURES:
+
+* **New Resource:** `incapsula_abp_websites`
+
+IMPROVEMENTS:
+
+* Adding CSP for SIEM Log configuration producer and the accompanying datasets ([#334](https://github.com/imperva/terraform-provider-incapsula/pull/334))
+
+
 ## 3.18.3 (Jul 05, 2023)
 
 BUG FIXES:
