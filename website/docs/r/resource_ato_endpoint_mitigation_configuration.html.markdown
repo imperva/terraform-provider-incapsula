@@ -1,21 +1,24 @@
 ---
 layout: "incapsula"
-page_title: "Incapsula: incapsula-ato-site-mitigation-configuration"
-sidebar_current: "docs-incapsula-resource-ato-site-mitigation-configuration"
-description: |- Provides an Incapsula ATO site allowlist resource.
+page_title: "Incapsula: incapsula-ato-endpoint-mitigation-configuration"
+sidebar_current: "docs-incapsula-resource-ato-endpoint-mitigation-configuration"
+description: "Provides an Incapsula ATO endpoint mitigation resource"
 ---
 
 # incapsula_ato_endpoint_mitigation_configuration
 
-Provides an Incapsula ATO site allowlist configuration resource.
+Provides an Incapsula ATO mitigation configuration resource for an endpoint.
 
 ## Example Usage
 
 ```hcl
-resource "incapsula_ato_endpoint_mitigation_configuration" "demo-terraform-ato-site-mitigation-configuration" {
+resource "incapsula_ato_endpoint_mitigation_configuration" "demo-terraform-ato-endpoint-mitigation-configuration" {
   account_id                     = incapsula_site.example-site.account_id
   site_id                        = incapsula_site.example-site.id
-  mitigation_configuration       = [ { "endpointId": "5000", "lowAction": "NONE", "mediumAction": "CAPTCHA", "highAction": "BLOCK" }, { "endpointId": "5001", "lowAction": "NONE", "mediumAction": "CAPTCHA", "highAction": "TARPIT" } ] 
+  endpoint_id                    = "5001"
+  mitigation_action_for_high_risk                    = "BLOCK"
+  mitigation_action_for_medium_risk                  = "BLOCK"
+  mitigation_action_for_low_risk                     = "NONE" 
 }
 ```
 
@@ -25,10 +28,10 @@ The following arguments are supported:
 
 * `account_id` - (Optional) Numeric identifier of the account to operate on. This is required only if the site belongs to the sub account associated with the api key and the api ID 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
-* `endpoint_id` - (Required) string, readOnly: true, Endpoint ID associated with this request.
-* `low_action` - (Required) string, readOnly: true, Mitigation action configured for low risk requests - in UPPER CASE.
-* `medium_action` - (Required) string, readOnly: true, Mitigation action configured for low risk requests - in UPPER CASE.
-* `high_action` - (Required) string, readOnly: true, Mitigation action configured for low risk requests - in UPPER CASE.
+* `endpoint_id` - (Required) string, Endpoint ID associated with this request.
+* `mitigation_action_for_low_risk` - (Required) string, Mitigation action configured for low risk requests - in UPPER CASE.
+* `mitigation_action_for_medium_risk` - (Required) string, Mitigation action configured for low risk requests - in UPPER CASE.
+* `mitigation_action_for_high_risk` - (Required) string, Mitigation action configured for low risk requests - in UPPER CASE.
 
 ##### Mitigation action can be one of : 
   - NONE 

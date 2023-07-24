@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
+	"net/http"
 	"strconv"
 )
 
@@ -71,7 +72,7 @@ func resourceATOSiteAllowlistRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	accountId := d.Get("account_id").(int)
-	atoAllowlistDTO, err := client.GetAtoSiteAllowlistWithRetries(accountId, siteId)
+	atoAllowlistDTO, status, err := client.GetAtoSiteAllowlistWithRetries(accountId, siteId)
 
 	// Handle fetch error
 	if err != nil {
@@ -79,31 +80,39 @@ func resourceATOSiteAllowlistRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// Initialize the data map that terraform uses
-	var atoAllowlistMap = make(map[string]interface{})
+	var atoAllowlistEntry = make(map[string]interface{})
 
 	// Assign values from our received DTO to the map that terraform understands.
-	atoAllowlistMap["site_id"] = atoAllowlistDTO.SiteId
+	atoAllowlistEntry["site_id"] = atoAllowlistDTO.SiteId
 
 	// Assign the allowlist if present to the terraform compatible map
 	if atoAllowlistDTO.Allowlist != nil {
 
-		atoAllowlistMap["allowlist"] = make([]map[string]interface{}, len(atoAllowlistDTO.Allowlist))
+		atoAllowlistEntry["allowlist"] = make([]map[string]interface{}, len(atoAllowlistDTO.Allowlist))
 
 		for i, allowlistItem := range atoAllowlistDTO.Allowlist {
 			allowlistItemMap := make(map[string]interface{})
 			allowlistItemMap["ip"] = allowlistItem.Ip
 			allowlistItemMap["mask"] = allowlistItem.Mask
 			allowlistItemMap["desc"] = allowlistItem.Desc
-			atoAllowlistMap["allowlist"].([]map[string]interface{})[i] = allowlistItemMap
+			atoAllowlistEntry["allowlist"].([]map[string]interface{})[i] = allowlistItemMap
 
 		}
 
 	} else {
-		atoAllowlistMap["allowlist"] = make([]interface{}, 0)
+		atoAllowlistEntry["allowlist"] = make([]interface{}, 0)
 	}
 
-	d.SetId(strconv.Itoa(siteId))
-	err = d.Set("allowlist", atoAllowlistMap["allowlist"])
+	// Handle site does not exist in ATO. If this is a permissions issue, then let this be addressed in the update phase
+	if status == http.StatusUnauthorized {
+		// Remove this resource from the state file by setting empty ID as it does not exist. Terraform will remove it
+		d.Set("id", "")
+	} else {
+		// Set ID for all other cases as siteId
+		d.SetId(strconv.Itoa(siteId))
+	}
+
+	err = d.Set("allowlist", atoAllowlistEntry["allowlist"])
 	if err != nil {
 		e := fmt.Errorf("[Error] Error in reading allowlist values : %s", err)
 		return e

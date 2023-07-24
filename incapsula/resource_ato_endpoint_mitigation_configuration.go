@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
+	"net/http"
 	"strconv"
 	"strings"
 )
@@ -45,28 +46,31 @@ func ATOEndpointMitigationConfiguration() *schema.Resource {
 				Description: "Account ID that the site belongs to.",
 				Type:        schema.TypeInt,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"site_id": {
 				Description: "Site ID to get the allowlist for.",
 				Type:        schema.TypeInt,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"endpoint_id": {
 				Description: "Endpoint ID associated with this request",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
-			"low_action": {
+			"mitigation_action_for_low_risk": {
 				Description: "Mitigation action configured for low risk requests - in UPPER CASE.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"medium_action": {
+			"mitigation_action_for_medium_risk": {
 				Description: "Mitigation action configured for medium risk requests - in UPPER CASE.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"high_action": {
+			"mitigation_action_for_high_risk": {
 				Description: "Mitigation action configured for high risk requests - in UPPER CASE.",
 				Type:        schema.TypeString,
 				Required:    true,
@@ -109,23 +113,32 @@ func resourceATOEndpointMitigationConfigurationRead(d *schema.ResourceData, m in
 		return fmt.Errorf("endpoint_id should be of type string. Received : %s", d.Get("endpoint_id"))
 	}
 
-	atoEndpointMitigationConfigurationDTO, err := client.GetAtoEndpointMitigationConfigurationWithRetries(accountId, siteId, endpointId)
+	atoEndpointMitigationConfigurationDTO, status, err := client.GetAtoEndpointMitigationConfigurationWithRetries(accountId, siteId, endpointId)
 
 	// Handle fetch error
 	if err != nil {
 		return fmt.Errorf("[Error] getting ATO site mitigation configuration for site : %d Error : : %s", siteId, err)
 	}
 
-	// Assign ID
-	d.SetId(fmt.Sprintf("%d/%d/%s", accountId, siteId, endpointId))
+	// Handle site does not exist in ATO. If this is a permissions issue, then let this be addressed in the update phase
+	if status == http.StatusUnauthorized {
+		// Remove this resource from the state file by setting empty ID as it does not exist. Terraform will remove it
+		d.Set("id", "")
+	} else {
+		// Assign ID
+		d.SetId(fmt.Sprintf("%d/%d/%s", accountId, siteId, endpointId))
+	}
 
 	// Assign the mitigation configuration if present to the terraform compatible map
 	if atoEndpointMitigationConfigurationDTO != nil {
 		d.Set("site_id", atoEndpointMitigationConfigurationDTO.SiteId)
 		d.Set("endpoint_id", atoEndpointMitigationConfigurationDTO.EndpointId)
-		d.Set("low_action", atoEndpointMitigationConfigurationDTO.LowAction)
-		d.Set("medium_action", atoEndpointMitigationConfigurationDTO.MediumAction)
-		d.Set("high_action", atoEndpointMitigationConfigurationDTO.HighAction)
+		d.Set("mitigation_action_for_low_risk", atoEndpointMitigationConfigurationDTO.LowAction)
+		d.Set("mitigation_action_for_medium_risk", atoEndpointMitigationConfigurationDTO.MediumAction)
+		d.Set("mitigation_action_for_high_risk", atoEndpointMitigationConfigurationDTO.HighAction)
+	} else {
+		// Setting empty ID as it does not exist. Terraform will remove it
+		d.Set("id", "")
 	}
 
 	return nil
@@ -162,24 +175,24 @@ func ATOEndpointMitigationConfigurationUpdate(d *schema.ResourceData, m interfac
 	}
 
 	// Extract low action
-	lowAction, ok := d.Get("low_action").(string)
+	lowAction, ok := d.Get("mitigation_action_for_low_risk").(string)
 
 	if !ok {
-		return fmt.Errorf("low_action should be of type string. Received : %s", d.Get("low_action"))
+		return fmt.Errorf("mitigation_action_for_low_risk should be of type string. Received : %s", d.Get("mitigation_action_for_low_risk"))
 	}
 
 	// Extract medium action
-	mediumAction, ok := d.Get("medium_action").(string)
+	mediumAction, ok := d.Get("mitigation_action_for_medium_risk").(string)
 
 	if !ok {
-		return fmt.Errorf("medium_action should be of type string. Received : %s", d.Get("medium_action"))
+		return fmt.Errorf("mitigation_action_for_medium_risk should be of type string. Received : %s", d.Get("mitigation_action_for_medium_risk"))
 	}
 
 	// Extract high action
-	highAction, ok := d.Get("high_action").(string)
+	highAction, ok := d.Get("mitigation_action_for_high_risk").(string)
 
 	if !ok {
-		return fmt.Errorf("high_action should be of type string. Received : %s", d.Get("high_action"))
+		return fmt.Errorf("mitigation_action_for_high_risk should be of type string. Received : %s", d.Get("mitigation_action_for_high_risk"))
 	}
 
 	// convert terraform compatible map to ATOEndpointMitigationConfigurationDTO
@@ -197,10 +210,6 @@ func ATOEndpointMitigationConfigurationUpdate(d *schema.ResourceData, m interfac
 
 	err := client.UpdateATOEndpointMitigationConfigurationWithRetries(&atoMitigationConfigurationDTO)
 	if err != nil {
-		// If endpoints do not exist return the appropriate error
-		if strings.Contains(err.Error(), `Endpoints`) && strings.Contains(err.Error(), `do not exist`) {
-			return fmt.Errorf("[ERROR] Endpoints do not exist for updating mitigation configuration")
-		}
 		// Return the error from the api call
 		e := fmt.Errorf("[ERROR] Could not update ATO site mitigation configuration for site ID : %d Error : %s \n", atoMitigationConfigurationDTO.SiteId, err)
 		return e

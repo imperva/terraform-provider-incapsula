@@ -132,7 +132,7 @@ func formAtoAllowlistDTOFromMap(atoAllowlistMap map[string]interface{}) (*ATOAll
 	return &atoAllowlistDTO, nil
 }
 
-func (c *Client) GetAtoSiteAllowlistWithRetries(accountId, siteId int) (*ATOAllowlistDTO, error) {
+func (c *Client) GetAtoSiteAllowlistWithRetries(accountId, siteId int) (*ATOAllowlistDTO, int, error) {
 	// Since the newly created site can take upto 30 seconds to be fully configured, we per.si a simple backoff
 	var backoffSchedule = []time.Duration{
 		5 * time.Second,
@@ -144,17 +144,17 @@ func (c *Client) GetAtoSiteAllowlistWithRetries(accountId, siteId int) (*ATOAllo
 	var lastError error
 
 	for _, backoff := range backoffSchedule {
-		atoAllowlistDTO, err := c.GetAtoSiteAllowlist(accountId, siteId)
+		atoAllowlistDTO, status, err := c.GetAtoSiteAllowlist(accountId, siteId)
 		if err == nil {
-			return atoAllowlistDTO, nil
+			return atoAllowlistDTO, status, nil
 		}
 		lastError = err
 		time.Sleep(backoff)
 	}
-	return nil, lastError
+	return nil, 0, lastError
 }
 
-func (c *Client) GetAtoSiteAllowlist(accountId, siteId int) (*ATOAllowlistDTO, error) {
+func (c *Client) GetAtoSiteAllowlist(accountId, siteId int) (*ATOAllowlistDTO, int, error) {
 	log.Printf("[INFO] Getting IP allowlist for (Site Id: %d)\n", siteId)
 
 	// Get request to ATO
@@ -166,7 +166,7 @@ func (c *Client) GetAtoSiteAllowlist(accountId, siteId int) (*ATOAllowlistDTO, e
 	}
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadATOSiteAllowlistOperation)
 	if err != nil {
-		return nil, fmt.Errorf("[Error] Error executing get ATO allowlist request for site with id %d: %s", siteId, err)
+		return nil, 0, fmt.Errorf("[Error] Error executing get ATO allowlist request for site with id %d: %s", siteId, err)
 	}
 
 	// Read the body
@@ -184,10 +184,10 @@ func (c *Client) GetAtoSiteAllowlist(accountId, siteId int) (*ATOAllowlistDTO, e
 	atoAllowlistDTO.AccountId = accountId
 	atoAllowlistDTO.Allowlist = atoAllowlistItems
 	if err != nil {
-		return nil, fmt.Errorf("[Error] Q Error parsing ATO allowlist response for site with ID: %d %s\nresponse: %s", siteId, err, string(responseBody))
+		return nil, resp.StatusCode, fmt.Errorf("[Error] Q Error parsing ATO allowlist response for site with ID: %d %s\nresponse: %s", siteId, err, string(responseBody))
 	}
 
-	return &atoAllowlistDTO, nil
+	return &atoAllowlistDTO, resp.StatusCode, nil
 }
 
 func (c *Client) UpdateATOSiteAllowlistWithRetries(atoSiteAllowlistDTO *ATOAllowlistDTO) error {

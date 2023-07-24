@@ -20,7 +20,7 @@ func TestATOSiteMitigationConfigurationBadConnection(t *testing.T) {
 	accountId := 55
 	endpointId := "123"
 
-	ret, err := client.GetAtoEndpointMitigationConfiguration(accountId, siteId, endpointId)
+	ret, _, err := client.GetAtoEndpointMitigationConfiguration(accountId, siteId, endpointId)
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -69,7 +69,7 @@ func TestATOSiteMitigationConfigurationErrorResponse(t *testing.T) {
 	config := &Config{APIID: apiId, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	ret, err := client.GetAtoEndpointMitigationConfiguration(accountId, siteId, endpointId)
+	ret, _, err := client.GetAtoEndpointMitigationConfiguration(accountId, siteId, endpointId)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -113,7 +113,7 @@ func TestATOSiteAMitigationConfigurationInvalidResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	ret, err := client.GetAtoEndpointMitigationConfiguration(accountId, siteId, endpointId)
+	ret, _, err := client.GetAtoEndpointMitigationConfiguration(accountId, siteId, endpointId)
 	if err == nil {
 		t.Errorf("Should have received an error")
 		return
@@ -174,7 +174,7 @@ func TestATOSiteMitigationConfigurationResponse(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	// Fetch the mitigation configuration for the site
-	mitigationConfigurationItem, err := client.GetAtoEndpointMitigationConfigurationWithRetries(accountId, siteId, endpointId)
+	mitigationConfigurationItem, _, err := client.GetAtoEndpointMitigationConfigurationWithRetries(accountId, siteId, endpointId)
 
 	// Check for no value edge cases
 	if err != nil {

@@ -24,7 +24,7 @@ func TestATOSiteAllowlistConfigBadConnection(t *testing.T) {
 	siteId := 42
 	accountId := 55
 
-	ret, err := client.GetAtoSiteAllowlist(accountId, siteId)
+	ret, _, err := client.GetAtoSiteAllowlist(accountId, siteId)
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -72,7 +72,7 @@ func TestATOSiteAllowlistConfigErrorResponse(t *testing.T) {
 	config := &Config{APIID: apiId, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	ret, err := client.GetAtoSiteAllowlist(accountId, siteId)
+	ret, _, err := client.GetAtoSiteAllowlist(accountId, siteId)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -115,7 +115,7 @@ func TestATOSiteAllowlistConfigInvalidResponse(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	ret, err := client.GetAtoSiteAllowlist(accountId, siteId)
+	ret, _, err := client.GetAtoSiteAllowlist(accountId, siteId)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -170,7 +170,7 @@ func TestATOSiteAllowlistConfigResponse(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	// Fetch the allowlist for the site
-	response, err := client.GetAtoSiteAllowlistWithRetries(accountId, siteId)
+	response, _, err := client.GetAtoSiteAllowlistWithRetries(accountId, siteId)
 
 	// Check for no value edge cases
 	if err != nil {

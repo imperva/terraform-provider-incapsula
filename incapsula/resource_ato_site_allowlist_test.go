@@ -67,7 +67,7 @@ func testCheckATOSiteAllowlistConfigExists(name string) resource.TestCheckFunc {
 		}
 
 		client := testAccProvider.Meta().(*Client)
-		aTOAllowlistDTO, err := client.GetAtoSiteAllowlistWithRetries(accountId, siteId)
+		aTOAllowlistDTO, _, err := client.GetAtoSiteAllowlistWithRetries(accountId, siteId)
 		if err != nil {
 			return fmt.Errorf("Error in fetching ATO allowlist for site ID %d, Error : %s", siteId, err)
 		}
@@ -119,7 +119,7 @@ func testACCStateATOSiteAllowlistConfigDestroy(s *terraform.State) error {
 		accountId := rs.Primary.Attributes["account_id"]
 		accountIdInt, _ := strconv.Atoi(accountId)
 
-		atoAllowlistDTO, _ := client.GetAtoSiteAllowlist(accountIdInt, siteIdInt)
+		atoAllowlistDTO, _, _ := client.GetAtoSiteAllowlist(accountIdInt, siteIdInt)
 		if err != nil && atoAllowlistDTO != nil && atoAllowlistDTO.Allowlist != nil && len(atoAllowlistDTO.Allowlist) > 0 {
 			return fmt.Errorf("resource %s for ATO site allowlist : Api Id %s, site ID %d still exists", atoSiteAllowlistResourceType, rs.Primary.ID, siteIdInt)
 		}
