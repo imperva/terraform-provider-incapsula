@@ -1,3 +1,11 @@
+## 3.20.0 (Jul 26, 2023)
+
+FEATURES:
+
+* **New Resource:** `incapsula_ato_site_allowlist`
+* **New Resource:** `incapsula_ato_endpoint_mitigation_configuration`
+
+
 ## 3.19.0 (Jul 12, 2023)
 
 FEATURES:
