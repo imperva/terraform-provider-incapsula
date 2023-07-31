@@ -100,7 +100,7 @@ Required:
 
 Optional:
 
-- `enable_mitigation` (Boolean) Enables the ABP mitigation for this website. Defaults to true.
+- `enable_mitigation` (Boolean) Enables the ABP conditions for this website. Defaults to true.
 
 Read-Only:
 

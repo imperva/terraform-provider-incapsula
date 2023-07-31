@@ -130,7 +130,7 @@ func resourceAbpWebsites() *schema.Resource {
 										Type:        schema.TypeBool,
 										Optional:    true,
 										Default:     true,
-										Description: "Enables the ABP mitigation for this website. Defaults to true.",
+										Description: "Enables the ABP conditions for this website. Defaults to true.",
 									},
 								},
 							},
