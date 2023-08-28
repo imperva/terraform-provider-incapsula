@@ -181,7 +181,7 @@ The following Data Center arguments are supported:
 For each `data_center` sub resource, at least one `origin_server` sub resource must be defined.
 The following Origin Server arguments are supported: 
 
-* `address` - (Required) Server Address specified as: ipv4, ipv6, or DNS server name. 
+* `address` - (Required) Server Address. If Data Center's ip_mode = 'SINGLE_IP', then a valid IP address must be specified. Otherwise, Host / DNS name can be specified as well. 
 * `weight` - (Optional) When dc_lb_algorithm = WEIGHTED, the weight in percentage of this Origin Server. Then, total weight of all Data Center's Origin Servers must be 100.
 * `is_enabled` - (Optional) When true (the default), this Origin Server is enabled. I.e. can serve requests.
 * `is_active` - (Optional) When true (the default), this Origin Server is active. When false, this Origin Server will Standby until failover is performed.

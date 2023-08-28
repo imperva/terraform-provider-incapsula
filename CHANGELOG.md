@@ -1,4 +1,58 @@
-## 3.16.0 (Mar 22, 2023)
+## 3.20.0 (Jul 26, 2023)
+
+FEATURES:
+
+* **New Resource:** `incapsula_ato_site_allowlist`
+* **New Resource:** `incapsula_ato_endpoint_mitigation_configuration`
+
+
+## 3.19.0 (Jul 12, 2023)
+
+FEATURES:
+
+* **New Resource:** `incapsula_abp_websites`
+
+IMPROVEMENTS:
+
+* Adding CSP for SIEM Log configuration producer and the accompanying datasets ([#334](https://github.com/imperva/terraform-provider-incapsula/pull/334))
+
+## 3.18.3 (Jul 05, 2023)
+
+BUG FIXES:
+
+* Incapsula_account resource changes: allow to edit account_name + map naked_domain_san_for_new_www_sites value on Read ([#325](https://github.com/imperva/terraform-provider-incapsula/pull/325)
+
+
+## 3.18.2 (Jun 26, 2023)
+
+BUG FIXES:
+
+* Policy resource - fix bug with empty policyDataExceptions array in local resource always shows diff ([#322](https://github.com/imperva/terraform-provider-incapsula/pull/322)
+
+
+## 3.18.1 (Jun 11, 2023)
+
+BUG FIXES:
+
+* Fix documentation site_ssl_settings resource ([#317](https://github.com/imperva/terraform-provider-incapsula/pull/317))
+* Fix import for site_ssl_settings resource ([#318](https://github.com/imperva/terraform-provider-incapsula/pull/318))
+* Fix rewrite_existing cannot be set to false in incap_rule resource ([#319](https://github.com/imperva/terraform-provider-incapsula/pull/319))
+
+
+## 3.18.0 (May 29, 2023)
+
+FEATURES:
+
+* **New Resource:** `incapsula_site_ssl_settings`
+
+## 3.17.0 (May 17, 2023)
+
+IMPROVEMENTS:
+
+* incapsula_account - support managing consent ([#307](https://github.com/imperva/terraform-provider-incapsula/pull/307))
+* incapsula_siem_log_configuration - Support ATO and AUDIT_TRAIL  ([#308](https://github.com/imperva/terraform-provider-incapsula/pull/308))
+
+## 3.16.1 (Mar 22, 2023)
 
 IMPROVEMENTS:
 

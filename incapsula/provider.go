@@ -6,12 +6,14 @@ import (
 
 var baseURL string
 var baseURLRev2 string
+var baseURLRev3 string
 var baseURLAPI string
 var descriptions map[string]string
 
 func init() {
 	baseURL = "https://my.incapsula.com/api/prov/v1"
 	baseURLRev2 = "https://my.imperva.com/api/prov/v2"
+	baseURLRev3 = "https://my.imperva.com/api/prov/v3"
 	baseURLAPI = "https://api.imperva.com"
 
 	descriptions = map[string]string{
@@ -27,6 +29,8 @@ func init() {
 
 		"base_url_rev_2": "The base URL (revision 2) for API operations. Used for provider development.",
 
+		"base_url_rev_3": "The base URL (revision 3) for API operations. Used for provider development.",
+
 		"base_url_api": "The base URL (same as v2 but with different subdomain) for API operations. Used for provider development.",
 	}
 }
@@ -37,6 +41,7 @@ func providerConfigure(d *schema.ResourceData, terraformVersion string) (interfa
 		APIKey:      d.Get("api_key").(string),
 		BaseURL:     d.Get("base_url").(string),
 		BaseURLRev2: d.Get("base_url_rev_2").(string),
+		BaseURLRev3: d.Get("base_url_rev_3").(string),
 		BaseURLAPI:  d.Get("base_url_api").(string),
 	}
 
@@ -70,6 +75,12 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("INCAPSULA_BASE_URL_REV_2", baseURLRev2),
 				Description: descriptions["base_url_rev_2"],
+			},
+			"base_url_rev_3": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("INCAPSULA_BASE_URL_REV_3", baseURLRev3),
+				Description: descriptions["base_url_rev_3"],
 			},
 			"base_url_api": {
 				Type:        schema.TypeString,
@@ -111,8 +122,11 @@ func Provider() *schema.Provider {
 			"incapsula_api_security_api_config":                                resourceApiSecurityApiConfig(),
 			"incapsula_api_security_endpoint_config":                           resourceApiSecurityEndpointConfig(),
 			"incapsula_notification_center_policy":                             resourceNotificationCenterPolicy(),
+			"incapsula_site_ssl_settings":                                      resourceSiteSSLSettings(),
 			"incapsula_csp_site_configuration":                                 resourceCSPSiteConfiguration(),
 			"incapsula_csp_site_domain":                                        resourceCSPSiteDomain(),
+			"incapsula_ato_site_allowlist":                                     resourceATOSiteAllowlist(),
+			"incapsula_ato_endpoint_mitigation_configuration":                  ATOEndpointMitigationConfiguration(),
 			"incapsula_application_delivery":                                   resourceApplicationDelivery(),
 			"incapsula_site_monitoring":                                        resourceSiteMonitoring(),
 			"incapsula_account_ssl_settings":                                   resourceAccountSSLSettings(),
@@ -128,6 +142,7 @@ func Provider() *schema.Provider {
 			"incapsula_siem_connection":                                        resourceSiemConnection(),
 			"incapsula_siem_log_configuration":                                 resourceSiemLogConfiguration(),
 			"incapsula_waiting_room":                                           resourceWaitingRoom(),
+			"incapsula_abp_websites":                                           resourceAbpWebsites(),
 		},
 	}
 

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# AUTHOR: Pablo S. Martinez 
+# AUTHOR: Pablo S. Martinez
 # STAKEHOLDERS: Imperva TF Provider developers
-# DESCRIPTION: Following script is an automation on top of provider make commands 
+# DESCRIPTION: Following script is an automation on top of provider make commands
 # and it aims to automate and wrap up manual iterative configurations
 # Run ./tf-provider-incap-orch.sh to see the menu options and script usage, in brief
 # script currently supports the following capabilities:
@@ -12,7 +12,7 @@
 #2. Creates plugin directory
 #3. Builds provider and copies binary to plugin destination folder
 #4. Creates go mapper to plugin destination
-#5. Creates terraform directory and intial configuration files 
+#5. Creates terraform directory and intial configuration files
 
 #Update
 #1. Builds provider and copies binary to plugin destination folder
@@ -43,18 +43,18 @@ T_FLAG="false"
 A_FLAG="false"
 C_FLAG="false"
 
-export INCAPSULA_API_ID=$2
-export INCAPSULA_API_KEY=$3
-export GO111MODULE="on" 
+export INCAPSULA_API_ID=${2:-$INCAPSULA_API_ID}
+export INCAPSULA_API_KEY=${3:-$INCAPSULA_API_KEY}
+export GO111MODULE="on"
 
 print_usage() {
   printf "\n****************************\n
 Usage: ./tf-provider-incap-orch.sh <option-character> <optional-API-ID> <optional-API-Key> \n
 Options:\n
  -i Install, usage example: ./tf-provider-incap-orch.sh -i \"12345\" \"a1fsa2f-fas24fsaf\" \n
- -b Build, usage example: ./tf-provider-incap-orch.sh -b \n 
- -t Unit Tests, usage example: /tf-provider-incap-orch.sh -t \"12345\" \"a1fsa2f-fas24fsaf\"  \n 
- -a Acceptance Tests, usage example: /tf-provider-incap-orch.sh -a \"12345\" \"a1fsa2f-fas24fsaf\"  \n 
+ -b Build, usage example: ./tf-provider-incap-orch.sh -b \n
+ -t Unit Tests, usage example: /tf-provider-incap-orch.sh -t \"12345\" \"a1fsa2f-fas24fsaf\"  \n
+ -a Acceptance Tests, usage example: /tf-provider-incap-orch.sh -a \"12345\" \"a1fsa2f-fas24fsaf\"  \n
  -c Clean, usage example: ./tf-provider-incap-orch.sh -c \n\n****************************\n"
 }
 
@@ -63,28 +63,28 @@ validation(){
     if [ ! -f "`which brew`" ]; then log_error ${FUNCNAME[0]} 'Brew is not installed'; exit 1; fi;
 }
 
-install(){      
+install(){
     log_entry ${FUNCNAME[0]}
     validation
 
-    if [ ! -f "`which go`" ]; 
-    then 
+    if [ ! -f "`which go`" ];
+    then
         log_info "${FUNCNAME[0]}" "Installing Golang..."
-        brew install go; 
+        brew install go;
     else
         log_info "${FUNCNAME[0]}" "Golang detected"
     fi;
 
-    if [ ! -f "`which git`" ];   
-    then 
+    if [ ! -f "`which git`" ];
+    then
         log_info "${FUNCNAME[0]}" "Installing GIT..."
-        brew install git; 
+        brew install git;
     else
         log_info "${FUNCNAME[0]}" "GIT detected"
     fi;
 
-    if [ ! -f "`which terraform`" ];   
-    then 
+    if [ ! -f "`which terraform`" ];
+    then
         log_info "${FUNCNAME[0]}" "Installing Terraform local client..."
         brew tap hashicorp/tap
         brew install hashicorp/tap/terraform
@@ -101,18 +101,18 @@ install(){
 
     log_info "${FUNCNAME[0]}" "Terraform GIT path $PROVIDER_GIT_LOCAL"
 
-    if [ -d "$PROVIDER_GIT_LOCAL" ]; 
-    then 
+    if [ -d "$PROVIDER_GIT_LOCAL" ];
+    then
         log_info "${FUNCNAME[0]}" "Pulling repo terraform-provider-incapsula"
         git --git-dir=$PROVIDER_GIT_LOCAL/.git config core.fileMode false
         git --git-dir=$PROVIDER_GIT_LOCAL/.git pull
-    else 
+    else
         log_info "${FUNCNAME[0]}" "Cloning repo terraform-provider-incapsula"
         git clone $PROVIDER_GIT $PROVIDER_GIT_LOCAL
     fi
 
     log_info "${FUNCNAME[0]}" "Creating ~/.terraformrc file"
-    
+
     echo "provider_installation {
   filesystem_mirror {
     path    = \"/Users/$USER/.terraform.d/plugins\"
@@ -124,10 +124,10 @@ install(){
     log_info "${FUNCNAME[0]}" "Git provider version $PROVIDER_VERSION"
 
     log_info "${FUNCNAME[0]}" "Building local provider..."
-    make -C $PROVIDER_GIT_LOCAL fmt && make -C $PROVIDER_GIT_LOCAL install    
-   
-    if [ ! -f "$MAIN_TF" ]; 
-    then 
+    make -C $PROVIDER_GIT_LOCAL fmt && make -C $PROVIDER_GIT_LOCAL install
+
+    if [ ! -f "$MAIN_TF" ];
+    then
         log_info "${FUNCNAME[0]}" "Created file $MAIN_TF"
         echo "terraform {
   required_providers {
@@ -137,12 +137,12 @@ install(){
     }
   }
 }
- 
+
 variable \"incapsula_api_id\" {
   type        = number
   description = \"API ID\"
 }
- 
+
 variable \"incapsula_api_key\" {
   type        = string
   description = \"API KEY\"
@@ -156,11 +156,11 @@ provider \"incapsula\" {
         chmod 777 $MAIN_TF
     fi;
 
-    if [ ! -f "$VARS_TF" ]; 
-    then 
+    if [ ! -f "$VARS_TF" ];
+    then
         log_info "${FUNCNAME[0]}" "Created file $VARS_TF"
         echo "incapsula_api_key = \"$INCAPSULA_API_KEY\"
-incapsula_api_id = $INCAPSULA_API_ID" > $VARS_TF 
+incapsula_api_id = $INCAPSULA_API_ID" > $VARS_TF
         chmod 777 $VARS_TF
     fi;
 }
@@ -201,11 +201,11 @@ log(){
 }
 
 log_info(){
-    log "$MSG_INFO" "$1" "$2" 
+    log "$MSG_INFO" "$1" "$2"
 }
 
 log_error(){
-    log "$MSG_ERROR" "$1" "$2" 
+    log "$MSG_ERROR" "$1" "$2"
 }
 
 log_entry(){
@@ -227,20 +227,20 @@ while getopts 'ibtac' flag; do
 done
 
 if [ "$I_FLAG" == 'true' ]
-then 
-    install; 
+then
+    install;
 elif [ "$B_FLAG" == 'true' ]
-then 
+then
     build;
 elif [ "$T_FLAG" == 'true' ]
-then 
+then
     unit;
 elif [ "$A_FLAG" == 'true' ]
-then 
+then
     acceptance;
 elif [ "$C_FLAG" == 'true' ]
-then 
+then
     clean;
-else 
+else
     print_usage;
 fi;
