@@ -1,3 +1,9 @@
+## 3.20.1 (Jul 28, 2023)
+
+* Incapsula_data_center_configuration resource: fix documentation ([#341](https://github.com/imperva/terraform-provider-incapsula/pull/341)
+* Incapsula_account_ssl_settings resource: fix documentation ([#342](https://github.com/imperva/terraform-provider-incapsula/pull/342)
+
+
 ## 3.20.0 (Jul 26, 2023)
 
 FEATURES:
