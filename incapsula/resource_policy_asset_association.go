@@ -93,7 +93,7 @@ func resourcePolicyAssetAssociationRead(d *schema.ResourceData, m interface{}) e
 
 	if !isAssociated {
 		log.Printf("[ERROR] Could not find Incapsula Policy Asset Association: %s-%s-%s\n", policyID, assetID, assetType)
-		return fmt.Printf("Incapsula Policy Asset Association doesn't exisits: policy id:%s asset id:%s asset type:%s\n", policyID, assetID, assetType)
+		return fmt.Errorf("Incapsula Policy Asset Association doesn't exisits: policy id:%s asset id:%s asset type:%s\n", policyID, assetID, assetType)
 	}
 
 	log.Printf("[INFO] Successfully read Policy Asset Association exist: %s-%s-%s\n", policyID, assetID, assetType)
