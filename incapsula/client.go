@@ -83,7 +83,7 @@ func (c *Client) Verify() (*AccountStatusResponse, error) {
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
 	// Dump JSON
-	log.Printf("[DEBUG] Incapsula account JSON response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] Successful test of API credentials.")
 
 	// Parse the JSON
 	var accountStatusResponse AccountStatusResponse
