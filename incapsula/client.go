@@ -34,7 +34,7 @@ type Client struct {
 func NewClient(config *Config) *Client {
 	client := &http.Client{}
 
-	return &Client{config: config, httpClient: client, providerVersion: "3.20.1"}
+	return &Client{config: config, httpClient: client, providerVersion: "3.20.2"}
 }
 
 func (c *Client) CreateFormDataBody(bodyMap map[string]interface{}) ([]byte, string) {
