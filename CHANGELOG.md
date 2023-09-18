@@ -1,3 +1,8 @@
+## 3.20.3 (Sep 18, 2023)
+
+* Incapsula_account_policy_association and client resources bug fixes ([#351](https://github.com/imperva/terraform-provider-incapsula/pull/351)
+
+
 ## 3.20.2 (Sep 10, 2023)
 
 * incapsula_bots_configuration resource documentation fix ([#345](https://github.com/imperva/terraform-provider-incapsula/pull/345)
