@@ -7,7 +7,7 @@ description: |- Provides a Incapsula Notification Policy resource.
 
 # incapsula_notification_policy
 
-Provides an Incapsula Notification Policy resource.
+Provides an Incapsula Notification Policy resource. This resource enables you to define a policy for which notifications to receive, and the list of recipients to receive them.
 
 ## Example Usage
 Notification policy that applies on sub-accounts
@@ -67,7 +67,7 @@ The following arguments are supported:
 * `policy_name` - (Required) The name of the policy. Cannot contain special characters
 * `status` - (Optional) Indicates whether the policy is enabled or disabled. Possible
   values: `ENABLE` (default value), `DISABLE`.
-* `sub_category` - (Required) The sub category of notifications that the notification policy will apply on. Possible
+* `sub_category` - (Required) The sub category of notifications that the policy will apply to. Possible
   values: `ACCOUNT_NOTIFICATIONS`, `SITE_NOTIFICATIONS`, `CERTIFICATE_MANAGEMENT`, `SUBSCRIPTION`, `SIEM_STORAGE`,
   `WAF_ALERTS`, `WEBSITE_DDOS`, `WEBSITE_GROUP_DDOS`, `DNS_PROTECTION`, `INDIVIDUAL_IP_PROTECTION`,
   `NETWORK_PROTECTION`, `NETWORK_CONNECTIVITY`, `NETWORK_MONITORING`.
