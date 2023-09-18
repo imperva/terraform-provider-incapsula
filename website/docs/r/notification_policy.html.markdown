@@ -80,12 +80,12 @@ The following arguments are supported:
   We recommend always setting this field's value to `FALSE`, to disable automatic updates of assets on the policy, so you
   have full control over your resources.
 * `policy_type` - (Optional) If the value is `ACCOUNT`, the policy will apply only to the current account that is 
-  specified in the account_id. If the value is `SUB_ACCOUNT` the policy applies to the sub accounts only,
-  and the parent account will receive notifications for activity in the sub accounts that are specified in the 
-  `sub_account_list` parameter. This parameter is available only in accounts that can contain sub accounts.
+  specified by the account_id. If the value is `SUB_ACCOUNT` the policy applies to the sub accounts only.
+  The parent account will receive notifications for activity in the sub accounts that are specified in the 
+  `sub_account_list` parameter. This `sub_account_list` is available only in accounts that can contain sub accounts.
   Possible values: `ACCOUNT` (default value), `SUB_ACCOUNT`.
-* `sub_account_list` - (Optional) List of Numeric identifiers of sub accounts of this account. The parent account will
-  receive notifications for activity in the specified sub accounts. Should be set if the `policy_type` is `SUB_ACCOUNT`.
+* `sub_account_list` - (Optional) List of Numeric identifiers of sub accounts of this account for which the parent account will
+  receive notifications. Should be set if the `policy_type` is `SUB_ACCOUNT`.
 * `apply_to_new_sub_accounts` - (Optional) If value is `TRUE`, all newly onboarded sub accounts are automatically added
   to the notification policy's sub account list. Possible values: `TRUE`, `FALSE` (default value)\
   Relevant if the `policy_type` is `SUB_ACCOUNT`.\
