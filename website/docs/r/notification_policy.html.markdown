@@ -84,7 +84,7 @@ The following arguments are supported:
   The parent account will receive notifications for activity in the sub accounts that are specified in the 
   `sub_account_list` parameter. This `sub_account_list` is available only in accounts that can contain sub accounts.
   Possible values: `ACCOUNT` (default value), `SUB_ACCOUNT`.
-* `sub_account_list` - (Optional) List of Numeric identifiers of sub accounts of this account for which the parent account will
+* `sub_account_list` - (Optional) List of numeric identifiers of sub accounts of this account for which the parent account will
   receive notifications. Should be set if the `policy_type` is `SUB_ACCOUNT`.
 * `apply_to_new_sub_accounts` - (Optional) If value is `TRUE`, all newly onboarded sub accounts are automatically added
   to the notification policy's sub account list. Possible values: `TRUE`, `FALSE` (default value)\
@@ -94,8 +94,9 @@ The following arguments are supported:
 
 
 Under the following conditions, you need to define at least 1 asset:\
-If the `policy_type` argument is `ACCOUNT`, and the chosen `sub_category` requires configuration of assets, and the 
+If the `policy_type` argument is `ACCOUNT`, and the selected `sub_category` requires that the policy be applied to assets in the account, and the 
 argument `apply_to_new_assets` is `FALSE`, then at least 1 asset must be defined.\
+For example, when configuring a policy for the `SITE_NOTIFICATIONS` `sub_category`, if the argument `apply_to_new_assets` is FALSE, at least one SITE asset must be specified.
 The arguments that are supported in `asset` sub resource are:
 * `asset_type` - Indicates the Imperva-protected entity that triggers the notification. Possible values: `SITE`, `IP_RANGE`, `EDGE_IP`, `ORIGIN_CONNECTIVITY`,
   `NETFLOW_EXPORTER`, `DOMAIN`.
