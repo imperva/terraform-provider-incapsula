@@ -74,7 +74,9 @@ func resourceAbpWebsites() *schema.Resource {
 			},
 		},
 
-		Description: "Provides an Incapsula ABP (Advanced Bot Protection) website resource. Allows you to enable and configure ABP for given websites.",
+		Description: "Provides an Incapsula ABP (Advanced Bot Protection) website resource. Allows you to enable and configure ABP for given websites.\n" +
+			"\n" +
+			"NOTE: Due to limitations in ABP, the API key/id used to deploy this resource must match the `account_id` used in the resource (API key/id for a parent account do not work). All Incapsula sites associated with the resource must also be defined in that account.",
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {

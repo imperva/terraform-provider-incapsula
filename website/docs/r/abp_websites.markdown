@@ -4,11 +4,14 @@ page_title: "incapsula_abp_websites Resource - terraform-provider-incapsula"
 subcategory: ""
 description: |-
   Provides an Incapsula ABP (Advanced Bot Protection) website resource. Allows you to enable and configure ABP for given websites.
+  NOTE: Due to limitations in ABP, the API key/id used to deploy this resource must match the account_id used in the resource (API key/id for a parent account do not work). All Incapsula sites associated with the resource must also be defined in that account.
 ---
 
 # incapsula_abp_websites (Resource)
 
 Provides an Incapsula ABP (Advanced Bot Protection) website resource. Allows you to enable and configure ABP for given websites.
+
+NOTE: Due to limitations in ABP, the API key/id used to deploy this resource must match the `account_id` used in the resource (API key/id for a parent account do not work). All Incapsula sites associated with the resource must also be defined in that account.
 
 ## Example Usage
 
