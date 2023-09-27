@@ -1,3 +1,9 @@
+## 3.20.4 (Sep 27, 2023)
+
+* Incapsula_notification_policy documentation fixes ([#355](https://github.com/imperva/terraform-provider-incapsula/pull/355)
+* Incapsula_abp_websites documentation fixes ([#356](https://github.com/imperva/terraform-provider-incapsula/pull/356q)
+
+
 ## 3.20.3 (Sep 18, 2023)
 
 * Incapsula_account_policy_association and client resources bug fixes ([#351](https://github.com/imperva/terraform-provider-incapsula/pull/351)
