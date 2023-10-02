@@ -54,6 +54,36 @@ func TestAccIncapsulaApplicationDelivery_basic(t *testing.T) {
 				),
 			},
 			{
+				Config: testAccCheckApplicationDeliveryIgnoreHttp2(t),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckApplicationDeliveryExists(applicationDeliveryResource),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "file_compression", "true"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "compression_type", "GZIP"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "minify_css", "true"), //value wasn't set by tf resurce. checking default value from server
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "minify_js", "true"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "minify_static_html", "false"),
+
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "aggressive_compression", "true"),
+
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "compress_jpeg", "true"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "compress_png", "true"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "aggressive_compression", "true"),
+
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "enable_http2", "false"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "http2_to_origin", "false"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "origin_connection_reuse", "false"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "port_to", "225"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "ssl_port_to", "443"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "support_non_sni_clients", "true"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "tcp_pre_pooling", "false"),
+
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "redirect_http_to_https", "false"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "redirect_naked_to_full", "false"),
+
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "error_access_denied", customErrorPageBasic),
+				),
+			},
+			{
 				ResourceName:      applicationDeliveryResource,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -114,6 +144,32 @@ resource "%s" "%s" {
   support_non_sni_clients = true
   enable_http2 = false
   http2_to_origin = false
+  origin_connection_reuse = false
+  port_to = 225
+  tcp_pre_pooling = false
+  redirect_naked_to_full = false
+  redirect_http_to_https = false
+  error_access_denied         = %s
+}`,
+		applicationDeliveryResourceName, applicationDeliveryName, siteResourceName, customErrorPageInput,
+	)
+}
+
+func testAccCheckApplicationDeliveryIgnoreHttp2(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+resource "%s" "%s" {
+  site_id = incapsula_site.testacc-terraform-site.id
+  depends_on = ["%s"]
+  file_compression = true
+  compression_type = "GZIP"
+  compress_jpeg = true
+  minify_static_html = false
+  aggressive_compression = true
+  progressive_image_rendering = false
+  support_non_sni_clients = true
+  enable_http2 = true
+  http2_to_origin = true
+  is_skip_http2_changes = true
   origin_connection_reuse = false
   port_to = 225
   tcp_pre_pooling = false

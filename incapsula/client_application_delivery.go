@@ -42,8 +42,8 @@ type Network struct {
 	TcpPrePooling         bool    `json:"tcp_pre_pooling"`
 	OriginConnectionReuse bool    `json:"origin_connection_reuse"`
 	SupportNonSniClients  bool    `json:"support_non_sni_clients"`
-	EnableHttp2           bool    `json:"enable_http2"`
-	Http2ToOrigin         bool    `json:"http2_to_origin"`
+	EnableHttp2           *bool   `json:"enable_http2"`
+	Http2ToOrigin         *bool   `json:"http2_to_origin"`
 	Port                  Port    `json:"port"`
 	SslPort               SslPort `json:"ssl_port"`
 }
