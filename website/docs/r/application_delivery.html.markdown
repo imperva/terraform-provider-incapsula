@@ -58,9 +58,8 @@ The following arguments are supported:
 * `tcp_pre_pooling` - (Optional) Maintain a set of idle TCP connections to the origin server to eliminate the latency associated with opening new connections or new requests (TCP handshake). Default: true
 * `origin_connection_reuse` - (Optional) TCP connections that are opened for a client request remain open for a short time to handle additional requests that may arrive. Default: true
 * `support_non_sni_clients` - (Optional) By default, non-SNI clients are supported. Disable this option to block non-SNI clients. Default: true
-* `enable_http2` - (Optional) Allows supporting browsers to take advantage of the performance enhancements provided by HTTP/2 for your website. Non-supporting browsers can connect via HTTP/1.0 or HTTP/1.1. Default:false. **Note:** this field won't be sent to the backend if the value of `is_skip_http2_changes` is `true`
-* `http2_to_origin` - (Optional) Enables HTTP/2 for the connection between Imperva and your origin server. (HTTP/2 must also be supported by the origin server.) Default: false. **Note:** this field won't be sent to the backend if the value of `is_skip_http2_changes` is `true`
-* `is_skip_http2_changes` - (Optional) If field set to true, will skip the new changes value of http2_to_origin and enable_http2 in the body.
+* `enable_http2` - (Optional) Allows supporting browsers to take advantage of the performance enhancements provided by HTTP/2 for your website. Non-supporting browsers can connect via HTTP/1.0 or HTTP/1.1. Default:false
+* `http2_to_origin` - (Optional) Enables HTTP/2 for the connection between Imperva and your origin server. (HTTP/2 must also be supported by the origin server.) Default: false.
 * `port_to` - (Optional) The port number.
 * `ssl_port_to` - (Optional) The port number to rewrite default SSL port to.
 * `redirect_naked_to_full` - (Optional) Redirect all visitors to your site’s full domain (which includes www). This option is displayed only for a naked domain. Default: false
