@@ -12,11 +12,11 @@ import (
 const applicationDeliveryResourceName = "incapsula_application_delivery"
 const applicationDeliveryResource = applicationDeliveryResourceName + "." + applicationDeliveryName
 const applicationDeliveryName = "testacc-terraform-application_delivery"
-
 const customErrorPageBasic = "<!DOCTYPE html>\n<html lang=‘en’>\n  <head>\n    <meta charset=‘UTF-8’>\n    <meta name=‘viewport’ content=‘width=device-width, initial-scale=1.0’>\n    <meta http-equiv=‘X-UA-Compatible’ content=‘ie=edge’>\n    <link href=‘https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap’ rel=‘stylesheet’>\n    <title>[Error Title]</title>\n      </head>\n  <body>\n    <div class=‘container’>\n      <div class=‘container-inner’>\n        <div class=‘header’>\n          <div class=‘error-description’>\n            $TITLE$\n          </div>\n        </div>\n        <div class=‘main’>\n          <div class=‘troubleshooting’>\n            <div class=‘content’>\n              $BODY$\n            </div>\n\t    <h1>custom edited error</h1>\n          </div>\n        </div>\n      </div>\n    </div>\n  </body>\n</html>"
 const customErrorPageInput = "<<-EOT\n" + customErrorPageBasic + "\nEOT"
 
 func TestAccIncapsulaApplicationDelivery_basic(t *testing.T) {
+	var domainName = GenerateTestDomain(t)
 	log.Printf("======================== BEGIN TEST ========================")
 	log.Printf("[DEBUG] Running test resource_application_delivery_test.TestAccIncapsulaApplicationDelivery_basic")
 	resource.Test(t, resource.TestCase{
@@ -24,7 +24,37 @@ func TestAccIncapsulaApplicationDelivery_basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckApplicationDeliveryBasic(t),
+				Config: testAccCheckApplicationDeliveryBasic(domainName),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckApplicationDeliveryExists(applicationDeliveryResource),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "file_compression", "true"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "compression_type", "GZIP"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "minify_css", "true"), //value wasn't set by tf resurce. checking default value from server
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "minify_js", "true"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "minify_static_html", "false"),
+
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "aggressive_compression", "true"),
+
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "compress_jpeg", "true"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "compress_png", "true"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "aggressive_compression", "true"),
+
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "enable_http2", "false"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "http2_to_origin", "false"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "origin_connection_reuse", "false"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "port_to", "225"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "ssl_port_to", "443"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "support_non_sni_clients", "true"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "tcp_pre_pooling", "false"),
+
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "redirect_http_to_https", "false"),
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "redirect_naked_to_full", "false"),
+
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "error_access_denied", customErrorPageBasic),
+				),
+			},
+			{
+				Config: testAccCheckApplicationDeliveryIgnoreHttp2(domainName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckApplicationDeliveryExists(applicationDeliveryResource),
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "file_compression", "true"),
@@ -100,8 +130,8 @@ func testACCStateApplicationDeliveryID(s *terraform.State) (string, error) {
 	return "", fmt.Errorf("Error finding site_id argument in Application Delivery resource test")
 }
 
-func testAccCheckApplicationDeliveryBasic(t *testing.T) string {
-	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+func testAccCheckApplicationDeliveryBasic(domainName string) string {
+	return testAccCheckIncapsulaSiteConfigBasic(domainName) + fmt.Sprintf(`
 resource "%s" "%s" {
   site_id = incapsula_site.testacc-terraform-site.id
   depends_on = ["%s"]
@@ -114,6 +144,29 @@ resource "%s" "%s" {
   support_non_sni_clients = true
   enable_http2 = false
   http2_to_origin = false
+  origin_connection_reuse = false
+  port_to = 225
+  tcp_pre_pooling = false
+  redirect_naked_to_full = false
+  redirect_http_to_https = false
+  error_access_denied         = %s
+}`,
+		applicationDeliveryResourceName, applicationDeliveryName, siteResourceName, customErrorPageInput,
+	)
+}
+
+func testAccCheckApplicationDeliveryIgnoreHttp2(domainName string) string {
+	return testAccCheckIncapsulaSiteConfigBasic(domainName) + fmt.Sprintf(`
+resource "%s" "%s" {
+  site_id = incapsula_site.testacc-terraform-site.id
+  depends_on = ["%s"]
+  file_compression = true
+  compression_type = "GZIP"
+  compress_jpeg = true
+  minify_static_html = false
+  aggressive_compression = true
+  progressive_image_rendering = false
+  support_non_sni_clients = true
   origin_connection_reuse = false
   port_to = 225
   tcp_pre_pooling = false

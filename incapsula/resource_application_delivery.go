@@ -124,13 +124,17 @@ func resourceApplicationDelivery() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Allows supporting browsers to take advantage of the performance enhancements provided by HTTP/2 for your website. Non-supporting browsers can connect via HTTP/1.0 or HTTP/1.1.",
 				Optional:    true,
-				Default:     false,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return d.GetRawConfig().GetAttr("enable_http2").IsNull()
+				},
 			},
 			"http2_to_origin": {
 				Type:        schema.TypeBool,
 				Description: "Enables HTTP/2 for the connection between Imperva and your origin server. (HTTP/2 must also be supported by the origin server.)",
 				Optional:    true,
-				Default:     false,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return d.GetRawConfig().GetAttr("http2_to_origin").IsNull()
+				},
 			},
 			"port_to": {
 				Type:        schema.TypeInt,
@@ -314,8 +318,15 @@ func resourceApplicationDeliveryRead(d *schema.ResourceData, m interface{}) erro
 	d.Set("tcp_pre_pooling", applicationDelivery.Network.TcpPrePooling)
 	d.Set("origin_connection_reuse", applicationDelivery.Network.OriginConnectionReuse)
 	d.Set("support_non_sni_clients", applicationDelivery.Network.SupportNonSniClients)
-	d.Set("enable_http2", applicationDelivery.Network.EnableHttp2)
-	d.Set("http2_to_origin", applicationDelivery.Network.Http2ToOrigin)
+
+	if applicationDelivery.Network.EnableHttp2 != nil {
+		d.Set("enable_http2", applicationDelivery.Network.EnableHttp2)
+	}
+
+	if applicationDelivery.Network.Http2ToOrigin != nil {
+		d.Set("http2_to_origin", applicationDelivery.Network.Http2ToOrigin)
+	}
+
 	d.Set("port_to", getPortTo(applicationDelivery.Network.Port.To, defaultPortTo))
 	d.Set("ssl_port_to", getPortTo(applicationDelivery.Network.SslPort.To, defaultSslPortTo))
 
@@ -338,6 +349,26 @@ func resourceApplicationDeliveryRead(d *schema.ResourceData, m interface{}) erro
 func resourceApplicationDeliveryUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteID := d.Get("site_id").(int)
+	http2 := new(bool)
+	http2ToOrigin := new(bool)
+
+	rawConfig := d.GetRawConfig().GetAttr("enable_http2")
+
+	if rawConfig.IsNull() {
+		http2 = nil
+		http2ToOrigin = nil
+	} else {
+		if !d.Get("enable_http2").(bool) && d.Get("http2_to_origin").(bool) {
+			log.Printf("[ERROR] error in Application Delivery resource - " +
+				"HTTP/2 to Origin support requires that HTTP/2 will be enabled for your website")
+
+			return fmt.Errorf("error in Application Delivery resource - " +
+				"HTTP/2 to Origin support requires that HTTP/2 will be enabled for your website")
+		} else {
+			*http2 = d.Get("enable_http2").(bool)
+			*http2ToOrigin = d.Get("http2_to_origin").(bool)
+		}
+	}
 
 	compression := Compression{
 		FileCompression:  d.Get("file_compression").(bool),
@@ -358,8 +389,8 @@ func resourceApplicationDeliveryUpdate(d *schema.ResourceData, m interface{}) er
 		TcpPrePooling:         d.Get("tcp_pre_pooling").(bool),
 		OriginConnectionReuse: d.Get("origin_connection_reuse").(bool),
 		SupportNonSniClients:  d.Get("support_non_sni_clients").(bool),
-		EnableHttp2:           d.Get("enable_http2").(bool),
-		Http2ToOrigin:         d.Get("http2_to_origin").(bool),
+		EnableHttp2:           http2,
+		Http2ToOrigin:         http2ToOrigin,
 		Port:                  Port{To: strconv.Itoa(d.Get("port_to").(int))},
 		SslPort:               SslPort{To: strconv.Itoa(d.Get("ssl_port_to").(int))},
 	}
