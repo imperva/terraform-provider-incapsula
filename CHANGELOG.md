@@ -1,3 +1,7 @@
+## 3.20.5 (Oct 18, 2023)
+
+* Incapsula_application_delivery - fix http2 flag([#359](https://github.com/imperva/terraform-provider-incapsula/pull/359)
+
 ## 3.20.4 (Sep 27, 2023)
 
 * Incapsula_notification_policy documentation fixes ([#355](https://github.com/imperva/terraform-provider-incapsula/pull/355)
