@@ -70,7 +70,7 @@ func resourceWAFSecurityRule() *schema.Resource {
 
 			// Required for rule_id: api.threats.ddos
 			"activation_mode": {
-				Description: "The mode of activation for ddos on a site. Possible values: off, auto, on.",
+				Description: "The mode of activation for ddos on a site. Possible values: api.threats.ddos.activation_mode.off, api.threats.ddos.activation_mode.auto, api.threats.ddos.activation_mode.on.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
