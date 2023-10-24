@@ -10,12 +10,8 @@ import (
 )
 
 func (c *Client) ReadIncapRulePriorities(siteID string, catagorie utils.RuleType) ([]utils.RuleDetails, int, error) {
-
 	log.Printf("[INFO] Getting Incapsula Incap catagorie Rule %s for Site ID %s\n", catagorie.String(), siteID)
 
-	if !catagorie.ValidRule() {
-		return nil, 0, fmt.Errorf("invalid rule catagorie")
-	}
 	reqURL := fmt.Sprintf("%s/sites/%s/delivery-rules-configuration?category=%s", c.config.BaseURLRev3, siteID, catagorie.String())
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadIncapRule)
 
