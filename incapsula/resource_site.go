@@ -343,7 +343,7 @@ func resourceSite() *schema.Resource {
 				Computed:    true,
 			},
 			"dns_record_name": {
-				Description: "The TXT record that needs to be updated with the `domain_verification` value.",
+				Description: "The DNS Record type TXT that should be created and set to the `domain_verification` output value.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
