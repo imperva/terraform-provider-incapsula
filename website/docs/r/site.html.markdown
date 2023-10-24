@@ -114,7 +114,7 @@ The following attributes are exported:
 * `dns_a_record_name` - The A record name.
 * `dns_a_record_value` - The A record value.
 * `domain_verification` - The domain verification (e.g. GlobalSign verification, HTML meta tag).
-* `dns_record_name` - The TXT record that needs to be updated with the `domain_verification` value.
+* `dns_record_name` - The DNS Record type TXT that should be created and set to the `domain_verification` output value.
 * `original_data_center_id` - Numeric representation of the data center created with the site. This parameter is
   deprecated. Please, use data_source_data_center instead.
 
