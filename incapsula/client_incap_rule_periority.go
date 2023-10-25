@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func (c *Client) ReadIncapRulePriorities(siteID string, catagorie utils.RuleType) ([]utils.RuleDetails, int, error) {
+func (c *Client) ReadIncapRulePriorities(siteID string, catagorie utils.RuleType) (*utils.Response, int, error) {
 	log.Printf("[INFO] Getting Incapsula Incap catagorie Rule %s for Site ID %s\n", catagorie.String(), siteID)
 
 	reqURL := fmt.Sprintf("%s/sites/%s/delivery-rules-configuration?category=%s", c.config.BaseURLRev3, siteID, catagorie.String())
@@ -24,14 +24,14 @@ func (c *Client) ReadIncapRulePriorities(siteID string, catagorie utils.RuleType
 	if resp.StatusCode != 200 {
 		return nil, resp.StatusCode, fmt.Errorf("error status code %d from Incapsula service when reading Incap Rule Catagorie %s for Site ID %s: %s", resp.StatusCode, catagorie.String(), siteID, string(responseBody))
 	}
-	var rulesPriorities []utils.RuleDetails
+	var rulesPriorities utils.Response
 	err = json.Unmarshal(responseBody, &rulesPriorities)
 	if err != nil {
 		return nil, 0, fmt.Errorf("Error parsing Incap Rule Catagorie %s JSON response for Site ID %s: %s\nresponse: %s", catagorie.String(), siteID, err, string(responseBody))
 	}
 	log.Printf("[INFO] Getting Incapsula Incap catagorie Rule %s for Site ID %s\n - finished", catagorie.String(), siteID)
 
-	return rulesPriorities, resp.StatusCode, nil
+	return &rulesPriorities, resp.StatusCode, nil
 }
 
 func (c *Client) UpdateIncapRulePriorities(siteID string, catagorie utils.RuleType, rule []utils.RuleDetails) ([]utils.RuleDetails, error) {

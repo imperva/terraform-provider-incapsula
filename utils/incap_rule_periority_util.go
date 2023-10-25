@@ -153,6 +153,9 @@ func RuleActionFromString(ruleAction string) (RuleAction, error) {
 	}
 }
 
+type Response struct {
+	RuleDetails []RuleDetails `json:"data"`
+}
 type RuleDetails struct {
 	Filter          string     `json:"filter"`
 	From            string     `json:"from"`
