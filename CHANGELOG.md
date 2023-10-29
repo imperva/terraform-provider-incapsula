@@ -1,3 +1,9 @@
+## 3.20.6 (Oct 29, 2023)
+
+* Vulnerabilities fixes ([#361](https://github.com/imperva/terraform-provider-incapsula/pull/361)([#365](https://github.com/imperva/terraform-provider-incapsula/pull/365)
+* Incapsula_site documentation fixes ([#363](https://github.com/imperva/terraform-provider-incapsula/pull/363)
+* Incapsula_waf_security_rule documentation fixes ([#362](https://github.com/imperva/terraform-provider-incapsula/pull/362)
+
 ## 3.20.5 (Oct 18, 2023)
 
 * Incapsula_application_delivery - fix http2 flag([#359](https://github.com/imperva/terraform-provider-incapsula/pull/359)
