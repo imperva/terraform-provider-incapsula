@@ -130,7 +130,3 @@ func TestClientUpdateIncapRulePriorityBadJSON(t *testing.T) {
 		t.Errorf("Should have received a nil updateIncapRuleResponse instance")
 	}
 }
-
-// todo
-//fix json body
-//add more test thats check the son body.
