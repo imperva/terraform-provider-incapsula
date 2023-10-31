@@ -156,14 +156,29 @@ func RuleActionFromString(ruleAction string) (RuleAction, error) {
 type Response struct {
 	RuleDetails []RuleDetails `json:"data"`
 }
+
 type RuleDetails struct {
-	Filter          string     `json:"filter"`
-	From            string     `json:"from"`
-	To              string     `json:"to"`
-	HeaderName      string     `json:"header_name"`
-	RewriteExisting bool       `json:"rewrite_existing"`
-	AddIfMissing    bool       `json:"add_if_missing"`
-	Name            string     `json:"name"`
-	Action          RuleAction `json:"action"`
-	Enabled         bool       `json:"enabled"`
+	Name                  string     `json:"name"`
+	Action                RuleAction `json:"action"`
+	Filter                string     `json:"filter,omitempty"`
+	AddMissing            bool       `json:"add_missing,omitempty"`
+	From                  string     `json:"from,omitempty"`
+	To                    string     `json:"to,omitempty"`
+	ResponseCode          int        `json:"response_code,omitempty"`
+	RewriteExisting       *bool      `json:"rewrite_existing,omitempty"`
+	RewriteName           string     `json:"rewrite_name,omitempty"`
+	DCID                  *int       `json:"dc_id,omitempty"`
+	PortForwardingContext string     `json:"port_forwarding_context,omitempty"`
+	PortForwardingValue   string     `json:"port_forwarding_value,omitempty"`
+	RateContext           string     `json:"rate_context,omitempty"`
+	RateInterval          *int       `json:"rate_interval,omitempty"`
+	ErrorType             string     `json:"error_type,omitempty"`
+	ErrorResponseFormat   string     `json:"error_response_format,omitempty"`
+	ErrorResponseData     string     `json:"error_response_data,omitempty"`
+	MultipleDeletions     *bool      `json:"multiple_deletions,omitempty"`
+	OverrideWafRule       string     `json:"overrideWafRule,omitempty"`
+	OverrideWafAction     string     `json:"overrideWafAction,omitempty"`
+	Enabled               *bool      `json:"enabled"`
 }
+
+// define big json that contain all the value and use pointers.
