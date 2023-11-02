@@ -19,12 +19,12 @@ func TestClientAReadIncaRulePriorityBadConnection(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
 
-	addIncapRuleResponse, _, err := client.ReadIncapRulePriorities(siteID, 8)
-	if err == nil {
+	addIncapRuleResponse, _, diags := client.ReadIncapRulePriorities(siteID, "Test")
+	if diags == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when adding Incap Rule for Site ID %s", siteID)) {
-		t.Errorf("Should have received an client error, got: %s", err)
+	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error from Incapsula service when adding Incap Rule for Site ID %s", siteID)) {
+		t.Errorf("Should have received an client error, got: %s", diags[0].Detail)
 	}
 	if addIncapRuleResponse != nil {
 		t.Errorf("Should have received a nil addIncapRuleResponse instance")
@@ -47,15 +47,52 @@ func TestClientAReadIncaRulePriorityBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev3: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	readIncapRuleResponse, _, err := client.ReadIncapRulePriorities(siteID, 60)
-	if err == nil {
+	readIncapRuleResponse, _, diags := client.ReadIncapRulePriorities(siteID, "REDIRECT")
+	if diags == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing JSON response for Site ID %d", siteID)) {
-		t.Errorf("Should have received a JSON parse error, got: %s", err)
+	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error parsing JSON response for Site ID %d", siteID)) {
+		t.Errorf("Should have received a JSON parse error, got: %s", diags[0].Detail)
 	}
 	if readIncapRuleResponse != nil {
 		t.Errorf("Should have received a nil readIncapRuleResponse instance")
+	}
+}
+
+func TestClient_ReadIncapRulePrioritiesValidRule(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := "42"
+
+	endpoint := fmt.Sprintf("/sites/%s/delivery-rules-configuration?category=%s", siteID, "REDIRECT")
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(200)
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		}
+		rw.Write([]byte(`"{data": [{"filter":"Full-URL == \"/someurl\"","id":290109,"rule_name":"rule","action":"RULE_ACTION_REDIRECT","enabled":true }]}`))
+	}))
+	defer server.Close()
+
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+	readIncapRuleResponse, statusCode, err := client.ReadIncapRulePriorities(siteID, "REDIRECT")
+	if err != nil {
+		t.Errorf("Should not have received an error")
+	}
+	if readIncapRuleResponse == nil {
+		t.Errorf("Should not have received a nil readIncapRuleResponse instance")
+	}
+	if statusCode != 200 {
+		t.Errorf("Should not have received a 200 status code")
+	}
+	if *readIncapRuleResponse.RuleDetails[0].Id == 0 {
+		t.Errorf("Should not have received an empty rule ID")
+	}
+	if *readIncapRuleResponse.RuleDetails[0].Enabled != true {
+		t.Errorf("Should not have received disabled rule")
 	}
 }
 
@@ -79,12 +116,12 @@ func TestClientUpdateIncapRulePriorityBadConnection(t *testing.T) {
 		},
 	}
 
-	updateIncapRuleResponse, err := client.UpdateIncapRulePriorities(siteID, utils.REWRITE, rule)
+	updateIncapRuleResponse, err := client.UpdateIncapRulePriorities(siteID, "REWRITE", rule)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when updating Incap Rule %d for Site ID %s", ruleID, siteID)) {
-		t.Errorf("Should have received an client error, got: %s", err)
+	if !strings.HasPrefix(err[0].Detail, fmt.Sprintf("Error from Incapsula service when updating Incap Rule %d for Site ID %s", ruleID, siteID)) {
+		t.Errorf("Should have received an client error, got: %s", err[0].Detail)
 	}
 	if updateIncapRuleResponse != nil {
 		t.Errorf("Should have received a nil updateIncapRuleResponse instance")
@@ -106,7 +143,7 @@ func TestClientUpdateIncapRulePriorityBadJSON(t *testing.T) {
 		},
 	}
 
-	endpoint := fmt.Sprintf("%s/sites/%s/delivery-rules-configuration?category=%s", siteID, utils.REWRITE.String())
+	endpoint := fmt.Sprintf("%s/sites/%s/delivery-rules-configuration?category=%s", siteID, "REWRITE")
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -119,12 +156,12 @@ func TestClientUpdateIncapRulePriorityBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	updateIncapRuleResponse, err := client.UpdateIncapRulePriorities(siteID, utils.REWRITE, rule)
-	if err == nil {
+	updateIncapRuleResponse, diags := client.UpdateIncapRulePriorities(siteID, "REWRITE", rule)
+	if diags == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing Incap Rule %d JSON response for Site ID %s", ruleID, siteID)) {
-		t.Errorf("Should have received a JSON parse error, got: %s", err)
+	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error parsing Incap Rule %d JSON response for Site ID %s", ruleID, siteID)) {
+		t.Errorf("Should have received a JSON parse error, got: %s", diags[0].Detail)
 	}
 	if updateIncapRuleResponse != nil {
 		t.Errorf("Should have received a nil updateIncapRuleResponse instance")
