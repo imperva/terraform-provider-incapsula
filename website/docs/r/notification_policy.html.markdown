@@ -7,7 +7,7 @@ description: |- Provides a Incapsula Notification Policy resource.
 
 # incapsula_notification_policy
 
-Provides an Incapsula Notification Policy resource.
+Provides an Incapsula Notification Policy resource. This resource enables you to define a policy for which notifications to receive, and the list of recipients to receive them.
 
 ## Example Usage
 Notification policy that applies on sub-accounts
@@ -67,7 +67,7 @@ The following arguments are supported:
 * `policy_name` - (Required) The name of the policy. Cannot contain special characters
 * `status` - (Optional) Indicates whether the policy is enabled or disabled. Possible
   values: `ENABLE` (default value), `DISABLE`.
-* `sub_category` - (Required) The sub category of notifications that the notification policy will apply on. Possible
+* `sub_category` - (Required) The sub category of notifications that the policy will apply to. Possible
   values: `ACCOUNT_NOTIFICATIONS`, `SITE_NOTIFICATIONS`, `CERTIFICATE_MANAGEMENT`, `SUBSCRIPTION`, `SIEM_STORAGE`,
   `WAF_ALERTS`, `WEBSITE_DDOS`, `WEBSITE_GROUP_DDOS`, `DNS_PROTECTION`, `INDIVIDUAL_IP_PROTECTION`,
   `NETWORK_PROTECTION`, `NETWORK_CONNECTIVITY`, `NETWORK_MONITORING`.
@@ -80,12 +80,12 @@ The following arguments are supported:
   We recommend always setting this field's value to `FALSE`, to disable automatic updates of assets on the policy, so you
   have full control over your resources.
 * `policy_type` - (Optional) If the value is `ACCOUNT`, the policy will apply only to the current account that is 
-  specified in the account_id. If the value is `SUB_ACCOUNT` the policy applies to the sub accounts only,
-  and the parent account will receive notifications for activity in the sub accounts that are specified in the 
-  `sub_account_list` parameter. This parameter is available only in accounts that can contain sub accounts.
+  specified by the account_id. If the value is `SUB_ACCOUNT` the policy applies to the sub accounts only.
+  The parent account will receive notifications for activity in the sub accounts that are specified in the 
+  `sub_account_list` parameter. This `sub_account_list` is available only in accounts that can contain sub accounts.
   Possible values: `ACCOUNT` (default value), `SUB_ACCOUNT`.
-* `sub_account_list` - (Optional) List of Numeric identifiers of sub accounts of this account. The parent account will
-  receive notifications for activity in the specified sub accounts. Should be set if the `policy_type` is `SUB_ACCOUNT`.
+* `sub_account_list` - (Optional) List of numeric identifiers of sub accounts of this account for which the parent account will
+  receive notifications. Should be set if the `policy_type` is `SUB_ACCOUNT`.
 * `apply_to_new_sub_accounts` - (Optional) If value is `TRUE`, all newly onboarded sub accounts are automatically added
   to the notification policy's sub account list. Possible values: `TRUE`, `FALSE` (default value)\
   Relevant if the `policy_type` is `SUB_ACCOUNT`.\
@@ -94,8 +94,9 @@ The following arguments are supported:
 
 
 Under the following conditions, you need to define at least 1 asset:\
-If the `policy_type` argument is `ACCOUNT`, and the chosen `sub_category` requires configuration of assets, and the 
+If the `policy_type` argument is `ACCOUNT`, and the selected `sub_category` requires that the policy be applied to assets in the account, and the 
 argument `apply_to_new_assets` is `FALSE`, then at least 1 asset must be defined.\
+For example, when configuring a policy for the `SITE_NOTIFICATIONS` `sub_category`, if the argument `apply_to_new_assets` is FALSE, at least one SITE asset must be specified.
 The arguments that are supported in `asset` sub resource are:
 * `asset_type` - Indicates the Imperva-protected entity that triggers the notification. Possible values: `SITE`, `IP_RANGE`, `EDGE_IP`, `ORIGIN_CONNECTIVITY`,
   `NETFLOW_EXPORTER`, `DOMAIN`.

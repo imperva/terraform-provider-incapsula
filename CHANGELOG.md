@@ -1,3 +1,36 @@
+## 3.20.6 (Oct 29, 2023)
+
+* Vulnerabilities fixes ([#361](https://github.com/imperva/terraform-provider-incapsula/pull/361)([#365](https://github.com/imperva/terraform-provider-incapsula/pull/365)
+* Incapsula_site documentation fixes ([#363](https://github.com/imperva/terraform-provider-incapsula/pull/363)
+* Incapsula_waf_security_rule documentation fixes ([#362](https://github.com/imperva/terraform-provider-incapsula/pull/362)
+
+## 3.20.5 (Oct 18, 2023)
+
+* Incapsula_application_delivery - fix http2 flag([#359](https://github.com/imperva/terraform-provider-incapsula/pull/359)
+
+## 3.20.4 (Sep 27, 2023)
+
+* Incapsula_notification_policy documentation fixes ([#355](https://github.com/imperva/terraform-provider-incapsula/pull/355)
+* Incapsula_abp_websites documentation fixes ([#356](https://github.com/imperva/terraform-provider-incapsula/pull/356q)
+
+
+## 3.20.3 (Sep 18, 2023)
+
+* Incapsula_account_policy_association and client resources bug fixes ([#351](https://github.com/imperva/terraform-provider-incapsula/pull/351)
+
+
+## 3.20.2 (Sep 10, 2023)
+
+* incapsula_bots_configuration resource documentation fix ([#345](https://github.com/imperva/terraform-provider-incapsula/pull/345)
+* Incapsula_account_policy_association resource documentation fix ([#346](https://github.com/imperva/terraform-provider-incapsula/pull/346)
+
+
+## 3.20.1 (Aug 28, 2023)
+
+* Incapsula_data_center_configuration resource: fix documentation ([#341](https://github.com/imperva/terraform-provider-incapsula/pull/341)
+* Incapsula_account_ssl_settings resource: fix documentation ([#342](https://github.com/imperva/terraform-provider-incapsula/pull/342)
+
+
 ## 3.20.0 (Jul 26, 2023)
 
 FEATURES:
