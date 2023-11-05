@@ -9,8 +9,8 @@ import (
 	"net/http"
 )
 
-type DeliveryRulesListResponseDTO struct {
-	RuleDetails []DeliveryRuleDto `json:"data"`
+type DeliveryRulesListDTO struct {
+	RulesList []DeliveryRuleDto `json:"data"`
 	Errors      []APIErrors       `json:"errors"`
 }
 
@@ -38,7 +38,7 @@ type DeliveryRuleDto struct {
 
 var diags diag.Diagnostics
 
-func (c *Client) ReadIncapRulePriorities(siteID string, category string) (*DeliveryRulesListResponseDTO, int, diag.Diagnostics) {
+func (c *Client) ReadIncapRulePriorities(siteID string, category string) (*DeliveryRulesListDTO, diag.Diagnostics) {
 	log.Printf("[INFO] Getting Delivery rules Type Rule %s for Site ID %s\n", category, siteID)
 
 	reqURL := fmt.Sprintf("%s/sites/%s/delivery-rules-configuration?category=%s", c.config.BaseURLRev3, siteID, category)
@@ -47,10 +47,10 @@ func (c *Client) ReadIncapRulePriorities(siteID string, category string) (*Deliv
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  "error from Incapsula service when reading Incap Rule Categories :" + category,
-			Detail:   fmt.Sprintf("error from Incapsula service when reading Incap Rule Catagories %s for Site ID %s: %s", category, siteID, err),
+			Summary:  "Error from Incapsula service when reading Delivery Rules for category :" + category,
+			Detail:   fmt.Sprintf("Error from Incapsula service when reading Delivery Rules of category %s for Site ID %s: %s", category, siteID, err),
 		})
-		return nil, 0, diags
+		return nil, diags
 	}
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
@@ -61,27 +61,27 @@ func (c *Client) ReadIncapRulePriorities(siteID string, category string) (*Deliv
 			Summary:  "error status code from Incapsula service when reading Incap Rule Catagorie",
 			Detail:   fmt.Sprintf("error status code %d from Incapsula service when reading Incap Rule Catagorie %s for Site ID %s: %s", resp.StatusCode, category, siteID, string(responseBody)),
 		})
-		return nil, resp.StatusCode, diags
+		return nil, diags
 	}
-	var rulesPriorities DeliveryRulesListResponseDTO
+	var rulesPriorities DeliveryRulesListDTO
 	err = json.Unmarshal(responseBody, &rulesPriorities)
 
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  fmt.Sprintf("Error parsing Incap Rule Catagorie %s JSON response", category),
-			Detail:   fmt.Sprintf("Error parsing Incap Rule Catagorie %s JSON response for Site ID %s: %s\nresponse: %s", category, siteID, err, string(responseBody)),
+			Summary:  fmt.Sprintf("Error parsing Delivery Rules JSON response of categorie %s", category),
+			Detail:   fmt.Sprintf("Error parsing Delivery Rules JSON response of categorie %s JSON response for Site ID %s: %s\nresponse: %s", category, siteID, err, string(responseBody)),
 		})
-		return nil, 0, diags
+		return nil, diags
 	}
 	log.Printf("[INFO] Getting Delivery rules Type Rule %s for Site ID %s\n - finished", category, siteID)
 
-	return &rulesPriorities, resp.StatusCode, nil
+	return &rulesPriorities, nil
 }
 
-func (c *Client) UpdateIncapRulePriorities(siteID string, category string, rule []DeliveryRuleDto) (*DeliveryRulesListResponseDTO, diag.Diagnostics) {
+func (c *Client) UpdateIncapRulePriorities(siteID string, category string, rulesList *DeliveryRulesListDTO) (*DeliveryRulesListDTO, diag.Diagnostics) {
 	log.Printf("[INFO] Updating Delivery rules Type %s for Site ID %s\n", category, siteID)
-	ruleJSON, err := json.Marshal(rule)
+	ruleJSON, err := json.Marshal(rulesList)
 
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -120,7 +120,7 @@ func (c *Client) UpdateIncapRulePriorities(siteID string, category string, rule 
 		})
 		return nil, diags
 	}
-	var rulesPriorities DeliveryRulesListResponseDTO
+	var rulesPriorities DeliveryRulesListDTO
 	err = json.Unmarshal(responseBody, &rulesPriorities)
 
 	if err != nil {

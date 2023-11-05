@@ -143,6 +143,7 @@ func Provider() *schema.Provider {
 			"incapsula_siem_log_configuration":                                 resourceSiemLogConfiguration(),
 			"incapsula_waiting_room":                                           resourceWaitingRoom(),
 			"incapsula_abp_websites":                                           resourceAbpWebsites(),
+			"incapsula_delivery_rules_configuration":                           resourceDeliveryRulesConfiguration(),
 		},
 	}
 
