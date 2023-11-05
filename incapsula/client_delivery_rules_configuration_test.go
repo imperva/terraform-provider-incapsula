@@ -2,7 +2,6 @@ package incapsula
 
 import (
 	"fmt"
-	"github.com/terraform-providers/terraform-provider-incapsula/utils"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -51,7 +50,7 @@ func TestClientAReadIncaRulePriorityBadJSON(t *testing.T) {
 	if diags == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error parsing JSON response for Site ID %d", siteID)) {
+	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error parsing JSON response for Site ID %s", siteID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", diags[0].Detail)
 	}
 	if readIncapRuleResponse != nil {
@@ -88,10 +87,8 @@ func TestClient_ReadIncapRulePrioritiesValidRule(t *testing.T) {
 	if statusCode != 200 {
 		t.Errorf("Should not have received a 200 status code")
 	}
-	if *readIncapRuleResponse.RuleDetails[0].Id == 0 {
-		t.Errorf("Should not have received an empty rule ID")
-	}
-	if *readIncapRuleResponse.RuleDetails[0].Enabled != true {
+
+	if readIncapRuleResponse.RuleDetails[0].Enabled != true {
 		t.Errorf("Should not have received disabled rule")
 	}
 }
@@ -107,12 +104,12 @@ func TestClientUpdateIncapRulePriorityBadConnection(t *testing.T) {
 	ruleID := 62
 
 	isEnable := false
-	rule := []utils.RuleDetails{
+	rule := []DeliveryRuleDto{
 		{
 			From:    "http://www.a.com",
 			To:      "http://www.b.com",
 			Filter:  "",
-			Enabled: &isEnable,
+			Enabled: isEnable,
 		},
 	}
 
@@ -135,15 +132,16 @@ func TestClientUpdateIncapRulePriorityBadJSON(t *testing.T) {
 	ruleID := 62
 
 	isEnable := false
-	rule := []utils.RuleDetails{
-		{From: "http://www.a.com",
+	rule := []DeliveryRuleDto{
+		{
+			From:    "http://www.a.com",
 			To:      "http://www.b.com",
 			Filter:  "",
-			Enabled: &isEnable,
+			Enabled: isEnable,
 		},
 	}
 
-	endpoint := fmt.Sprintf("%s/sites/%s/delivery-rules-configuration?category=%s", siteID, "REWRITE")
+	endpoint := fmt.Sprintf("/sites/%s/delivery-rules-configuration?category=%s", siteID, "REWRITE")
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
