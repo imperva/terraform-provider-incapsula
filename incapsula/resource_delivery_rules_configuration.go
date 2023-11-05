@@ -196,21 +196,37 @@ func resourceDeliveryRulesConfigurationRead(ctx context.Context, data *schema.Re
 		return diags
 	}
 
-	// Update all of the properties
-	//d.Set("name", rule.Name)
-
-	//action := d.Get("action").(string)
-
-	//if action == "RULE_ACTION_RESPONSE_REWRITE_HEADER" || action == "RULE_ACTION_REWRITE_HEADER" || action == "RULE_ACTION_REWRITE_COOKIE" {
-	//	if rule.RewriteExisting != nil {
-	//		d.Set("rewrite_existing", *rule.RewriteExisting)
-	//	}
-	//} else {
-	//	//align with schema default to avoid diff when importing resources
-	//	d.Set("rewrite_existing", true)
-	//}
+	serializeDeliveryRule(data, *deliveryRulesListDTO)
 
 	return nil
+}
+
+func serializeDeliveryRule(data *schema.ResourceData, DeliveryRule DeliveryRulesListDTO) {
+	RulesList := make([]interface{}, len(DeliveryRule.RulesList), len(DeliveryRule.RulesList))
+	for i, rule := range DeliveryRule.RulesList {
+		RuleSlice := make(map[string]interface{})
+		RuleSlice["rule_name"] = rule.Name
+		RuleSlice["action"] = rule.Action
+		RuleSlice["filter"] = rule.Filter
+		RuleSlice["add_if_missing"] = rule.AddMissing
+		RuleSlice["from"] = rule.From
+		RuleSlice["to"] = rule.To
+		RuleSlice["response_code"] = rule.ResponseCode
+		RuleSlice["rewrite_existing"] = rule.RewriteExisting
+		RuleSlice["rewrite_name"] = rule.RewriteName
+		RuleSlice["cookie_name"] = rule.CookieName
+		RuleSlice["header_name"] = rule.HeaderName
+		RuleSlice["dc_id"] = rule.DCID
+		RuleSlice["port_forwarding_context"] = rule.PortForwardingContext
+		RuleSlice["port_forwarding_value"] = rule.PortForwardingValue
+		RuleSlice["error_type"] = rule.ErrorType
+		RuleSlice["error_response_format"] = rule.ErrorResponseFormat
+		RuleSlice["error_response_data"] = rule.ErrorResponseData
+		RuleSlice["multiple_headers_deletion"] = rule.MultipleHeaderDeletions
+		RuleSlice["enabled"] = rule.Enabled
+		RulesList[i] = RuleSlice
+	}
+	data.Set("rule", RulesList)
 }
 
 func resourceDeliveryRulesConfigurationDelete(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -220,7 +236,7 @@ func resourceDeliveryRulesConfigurationDelete(ctx context.Context, data *schema.
 	category := data.Get("category").(string)
 
 	emptyRulesList := DeliveryRulesListDTO{
-		RulesList:       []DeliveryRuleDto{},
+		RulesList: []DeliveryRuleDto{},
 	}
 	_, diags = client.UpdateIncapRulePriorities(siteID, category, &emptyRulesList)
 	if diags != nil && diags.HasError() {
