@@ -35,7 +35,7 @@ func TestClientADReadIncaRulePriorityBadJSON(t *testing.T) {
 	apiKey := "bar"
 	siteID := "42"
 	category := "REDIRECT"
-	endpoint := fmt.Sprintf("/sites/%s/delivery-rules-configuration?category=%s", siteID, "REDIRECT")
+	endpoint := fmt.Sprintf("/sites/%s/delivery-rules-configuration?category=%s", siteID, category)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != endpoint {
@@ -64,8 +64,9 @@ func TestClient_ReadIncapRulePrioritiesValidRule(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
+	category := "REDIRECT"
 
-	endpoint := fmt.Sprintf("/sites/%s/delivery-rules-configuration?category=%s", siteID, "REDIRECT")
+	endpoint := fmt.Sprintf("/sites/%s/delivery-rules-configuration?category=%s", siteID, category)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -103,7 +104,7 @@ func TestClientUpdateIncapRulePriorityBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLRev3: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
-	ruleID := 62
+	category := "REDIRECT"
 
 	isEnable := false
 	rule := []DeliveryRuleDto{
@@ -118,12 +119,12 @@ func TestClientUpdateIncapRulePriorityBadConnection(t *testing.T) {
 		RulesList: rule,
 	}
 
-	updateIncapRuleResponse, err := client.UpdateIncapRulePriorities(siteID, "REWRITE", &rulesList)
-	if err == nil {
+	updateIncapRuleResponse, diags := client.UpdateIncapRulePriorities(siteID, "REWRITE", &rulesList)
+	if diags == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err[0].Detail, fmt.Sprintf("Error from Incapsula service when updating Incap Rule %d for Site ID %s", ruleID, siteID)) {
-		t.Errorf("Should have received an client error, got: %s", err[0].Detail)
+	if !strings.HasPrefix(diags[0].Detail, fmt.Sprintf("Error from Incapsula service when reading Delivery Rules of category %s for Site ID %s:", category, siteID)) {
+		t.Errorf("Should have received an client error, got: %s", diags[0].Detail)
 	}
 	if updateIncapRuleResponse != nil {
 		t.Errorf("Should have received a nil updateIncapRuleResponse instance")
@@ -136,13 +137,12 @@ func TestClientUpdateIncapRulePriorityBadJSON(t *testing.T) {
 	siteID := "42"
 	ruleID := 62
 
-	isEnable := false
 	rule := []DeliveryRuleDto{
 		{
 			From:    "http://www.a.com",
 			To:      "http://www.b.com",
 			Filter:  "",
-			Enabled: isEnable,
+			Enabled: false,
 		},
 	}
 	rulesList := DeliveryRulesListDTO{

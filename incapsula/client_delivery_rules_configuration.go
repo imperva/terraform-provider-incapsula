@@ -11,7 +11,7 @@ import (
 
 type DeliveryRulesListDTO struct {
 	RulesList []DeliveryRuleDto `json:"data"`
-	Errors      []APIErrors       `json:"errors"`
+	Errors    []APIErrors       `json:"errors"`
 }
 
 type DeliveryRuleDto struct {
