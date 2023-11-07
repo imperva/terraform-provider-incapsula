@@ -73,6 +73,7 @@ The following arguments are supported:
 * `error_ssl_failed`- (Optional) The HTML template for 'Unable to establish SSL connection' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.
 * `error_deny_and_captcha`- (Optional) The HTML template for 'Initial connection denied - CAPTCHA required' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.
 * `error_no_ssl_config`- (Optional) The HTML template for 'Site not configured for SSL' error. $TITLE$ and $BODY$ placeholders are required. Set empty value to return to default.
+* `error_abp_identification_failed`- (Optional) The HTML template for 'ABP identification failed' error. Only HTML elements located inside the body tag are supported. Set empty value to return to default.
 
 
 ## Attributes Reference

@@ -77,14 +77,15 @@ type RedirectionStr struct {
 }
 
 type CustomErrorPageTemplates struct {
-	ErrorConnectionTimeout string `json:"error.type.connection_timeout"`
-	ErrorAccessDenied      string `json:"error.type.access_denied"`
-	ErrorParseReqError     string `json:"error.type.parse_req_error"`
-	ErrorParseRespError    string `json:"error.type.parse_resp_error"`
-	ErrorConnectionFailed  string `json:"error.type.connection_failed"`
-	ErrorSslFailed         string `json:"error.type.ssl_failed"`
-	ErrorDenyAndCaptcha    string `json:"error.type.deny_and_captcha"`
-	ErrorTypeNoSslConfig   string `json:"error.type.no_ssl_config"`
+	ErrorConnectionTimeout       string `json:"error.type.connection_timeout"`
+	ErrorAccessDenied            string `json:"error.type.access_denied"`
+	ErrorParseReqError           string `json:"error.type.parse_req_error"`
+	ErrorParseRespError          string `json:"error.type.parse_resp_error"`
+	ErrorConnectionFailed        string `json:"error.type.connection_failed"`
+	ErrorSslFailed               string `json:"error.type.ssl_failed"`
+	ErrorDenyAndCaptcha          string `json:"error.type.deny_and_captcha"`
+	ErrorTypeNoSslConfig         string `json:"error.type.no_ssl_config"`
+	ErrorAbpIdentificationFailed string `json:"error.type.abp_identification_failed"`
 }
 
 type CustomErrorPage struct {
