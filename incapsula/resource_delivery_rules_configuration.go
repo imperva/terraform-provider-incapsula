@@ -224,12 +224,13 @@ func resourceDeliveryRulesConfigurationRead(ctx context.Context, data *schema.Re
 		return diags
 	}
 
-	serializeDeliveryRule(data, *deliveryRulesListDTO)
+	data.Set("rule", serializeDeliveryRule(data, *deliveryRulesListDTO))
+	data.SetId(siteID + "/" + category)
 
 	return nil
 }
 
-func serializeDeliveryRule(data *schema.ResourceData, DeliveryRule DeliveryRulesListDTO) {
+func serializeDeliveryRule(data *schema.ResourceData, DeliveryRule DeliveryRulesListDTO) []interface{} {
 	RulesList := make([]interface{}, len(DeliveryRule.RulesList))
 	for i, rule := range DeliveryRule.RulesList {
 		RuleSlice := make(map[string]interface{})
@@ -259,7 +260,7 @@ func serializeDeliveryRule(data *schema.ResourceData, DeliveryRule DeliveryRules
 		}
 		RulesList[i] = RuleSlice
 	}
-	data.Set("rule", RulesList)
+	return RulesList
 }
 
 func resourceDeliveryRulesConfigurationDelete(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
