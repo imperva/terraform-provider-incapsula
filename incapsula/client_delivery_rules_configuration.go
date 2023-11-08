@@ -3,42 +3,42 @@ package incapsula
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
 type DeliveryRulesListDTO struct {
 	RulesList []DeliveryRuleDto `json:"data"`
-	Errors    []APIErrors       `json:"errors"`
+	Errors    []APIErrors       `json:"errors,omitempty"`
 }
 
 type DeliveryRuleDto struct {
-	Name                    string `json:"rule_name"`
-	Action                  string `json:"action"`
+	RuleName                string `json:"rule_name,omitempty"`
+	Action                  string `json:"action,omitempty"`
 	Filter                  string `json:"filter,omitempty"`
 	AddMissing              bool   `json:"add_if_missing,omitempty"`
 	From                    string `json:"from,omitempty"`
 	To                      string `json:"to,omitempty"`
 	ResponseCode            int    `json:"response_code,omitempty"`
-	RewriteExisting         bool   `json:"rewrite_existing,omitempty"`
-	RewriteName             string `json:"rewrite_name,omitempty"`
-	CookieName              string `json:"cookie_name"`
-	HeaderName              string `json:"header_name"`
+	RewriteExisting         *bool  `json:"rewrite_existing,omitempty"`
+	CookieName              string `json:"cookie_name,omitempty"`
+	HeaderName              string `json:"header_name,omitempty"`
 	DCID                    int    `json:"dc_id,omitempty"`
 	PortForwardingContext   string `json:"port_forwarding_context,omitempty"`
 	PortForwardingValue     string `json:"port_forwarding_value,omitempty"`
 	ErrorType               string `json:"error_type,omitempty"`
 	ErrorResponseFormat     string `json:"error_response_format,omitempty"`
 	ErrorResponseData       string `json:"error_response_data,omitempty"`
-	MultipleHeaderDeletions bool   `json:"multiple_headers_deletion"`
-	Enabled                 bool   `json:"enabled"`
+	MultipleHeaderDeletions bool   `json:"multiple_headers_deletion,omitempty"`
+	Enabled                 bool   `json:"enabled,omitempty"`
 }
 
 var diags diag.Diagnostics
 
-func (c *Client) ReadIncapRulePriorities(siteID string, category string) (*DeliveryRulesListDTO, diag.Diagnostics) {
+func (c *Client) ReadDeliveryRuleConfiguration(siteID string, category string) (*DeliveryRulesListDTO, diag.Diagnostics) {
 	log.Printf("[INFO] Getting Delivery rules Type Rule %s for Site ID %s\n", category, siteID)
 
 	reqURL := fmt.Sprintf("%s/sites/%s/delivery-rules-configuration?category=%s", c.config.BaseURLRev3, siteID, category)
@@ -79,7 +79,7 @@ func (c *Client) ReadIncapRulePriorities(siteID string, category string) (*Deliv
 	return &rulesPriorities, nil
 }
 
-func (c *Client) UpdateIncapRulePriorities(siteID string, category string, rulesList *DeliveryRulesListDTO) (*DeliveryRulesListDTO, diag.Diagnostics) {
+func (c *Client) UpdateDeliveryRuleConfiguration(siteID string, category string, rulesList *DeliveryRulesListDTO) (*DeliveryRulesListDTO, diag.Diagnostics) {
 	log.Printf("[INFO] Updating Delivery rules Type %s for Site ID %s\n", category, siteID)
 	ruleJSON, err := json.Marshal(rulesList)
 
