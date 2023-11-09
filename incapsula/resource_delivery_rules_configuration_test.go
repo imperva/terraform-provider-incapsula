@@ -2,10 +2,11 @@ package incapsula
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"log"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 const deliveryRuleResourceName = "incapsula_delivery_rules_configuration.testacc-terraform-delivery_rules_configuration"
@@ -26,7 +27,7 @@ func TestAccIncapsulaDeliveryRule_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckIncapsulaDeliveryRuleDestroy,
 		Steps: []resource.TestStep{
-			Config: testAccCheckIncapsulaDeliveryRedirectRuleConfigBasic(t),
+			Config : testAccCheckIncapsulaDeliveryRedirectRuleConfigBasic(t), // working json validation
 			Check: resource.ComposeTestCheckFunc(
 				testCheckIncapsulaIncapRuleExists(deliveryRuleResourceName),
 				resource.TestCheckResourceAttr(redirectRuleName, "name", redirectRuleName),
