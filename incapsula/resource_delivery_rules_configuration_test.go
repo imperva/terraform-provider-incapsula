@@ -179,7 +179,6 @@ resource "incapsula_delivery_rules_configuration" "testacc-terraform-ewrite-rule
     to = "cookie2"
     rewrite_existing = "true"
     add_if_missing = "false"
-    rule_name = "New delivery rule"
     action = "RULE_ACTION_REWRITE_COOKIE"
     enabled = "true"
  }
