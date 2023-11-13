@@ -14,9 +14,9 @@ import (
 
 func resourceDeliveryRulesConfiguration() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceDeliveryRulesConfigurationCreate,
+		CreateContext: resourceDeliveryRulesConfigurationUpdate,
 		ReadContext:   resourceDeliveryRulesConfigurationRead,
-		UpdateContext: resourceDeliveryRulesConfigurationCreate,
+		UpdateContext: resourceDeliveryRulesConfigurationUpdate,
 		DeleteContext: resourceDeliveryRulesConfigurationDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(data *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
@@ -117,6 +117,12 @@ func resourceDeliveryRulesConfiguration() *schema.Resource {
 							Description: "Apply rewrite rule even if the header/cookie already exists",
 							Optional:    true,
 							Default:     true,
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								//aesthetic only - prevent showing default value for irrelevant action types
+								pathParts := strings.Split(k, ".")
+								action, _ := d.GetOk(pathParts[0] + "." + pathParts[1] + ".action")
+								return !contains(ruleArgsToActionMap["rewrite_existing"], action.(string))
+							},
 						},
 
 						"add_if_missing": {
@@ -145,10 +151,9 @@ func resourceDeliveryRulesConfiguration() *schema.Resource {
 						},
 
 						"error_type": {
-							Type:             schema.TypeString,
-							Description:      "The error that triggers the rule",
-							Optional:         true,
-							ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"error.type.all", "error.type.connection_timeout", "error.type.access_denied", "error.type.parse_req_error", "error.type.parse_resp_error", "error.type.connection_failed", "error.type.deny_and_retry", "error.type.ssl_failed", "error.type.deny_and_captcha", "error.type.2fa_required", "error.type.no_ssl_config", "error.type.no_ipv6_config", "error.type.waiting_room", "error.type.abp_identification_failed"}, false)),
+							Type:        schema.TypeString,
+							Description: "The error that triggers the rule",
+							Optional:    true,
 						},
 
 						"dc_id": {
@@ -176,10 +181,15 @@ func resourceDeliveryRulesConfiguration() *schema.Resource {
 	}
 }
 
-func resourceDeliveryRulesConfigurationCreate(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceDeliveryRulesConfigurationUpdate(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	siteID := data.Get("site_id").(string)
 	category := data.Get("category").(string)
+
+	diags := validateConfig(data)
+	if diags != nil && diags.HasError() {
+		return diags
+	}
 
 	rulesListDTO := DeliveryRulesListDTO{
 		RulesList: createRulesListFromState(data),
@@ -255,9 +265,9 @@ func serializeDeliveryRule(data *schema.ResourceData, DeliveryRule DeliveryRules
 		if rule.Action == "RULE_ACTION_RESPONSE_REWRITE_HEADER" || rule.Action == "RULE_ACTION_REWRITE_HEADER" || rule.Action == "RULE_ACTION_REWRITE_COOKIE" {
 			RuleSlice["rewrite_existing"] = *rule.RewriteExisting
 		} else {
-			//align with schema default to avoid diff
-			RuleSlice["rewrite_existing"] = true
+			RuleSlice["rewrite_existing"] = false
 		}
+
 		RulesList[i] = RuleSlice
 	}
 	return RulesList
@@ -272,6 +282,7 @@ func resourceDeliveryRulesConfigurationDelete(ctx context.Context, data *schema.
 	emptyRulesList := DeliveryRulesListDTO{
 		RulesList: []DeliveryRuleDto{},
 	}
+
 	_, diags = client.UpdateDeliveryRuleConfiguration(siteID, category, &emptyRulesList)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] Failed to delete delivery rules in category %s for Site ID %s", category, siteID)
@@ -364,4 +375,53 @@ func createRulesListFromState(data *schema.ResourceData) []DeliveryRuleDto {
 	}
 
 	return deliveryRulesListDTO
+}
+
+func validateConfig(data *schema.ResourceData) diag.Diagnostics {
+	diags := []diag.Diagnostic{}
+	rulesList := data.GetRawConfig().GetAttr("rule").AsValueSlice()
+
+	for i := 0; i < len(data.Get("rule").([]interface{})); i++ {
+		ruleAction := rulesList[i].GetAttr("action").AsString()
+
+		for attr, allowedActions := range ruleArgsToActionMap {
+			if !rulesList[i].GetAttr(attr).IsNull() && !contains(allowedActions, ruleAction) {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  fmt.Sprintf("Configuration argument '%s' is not applicable to action %s", attr, ruleAction),
+					Detail:   fmt.Sprintf("rule[%d].%s", i, attr),
+				})
+			}
+		}
+	}
+
+	return diags
+}
+
+var ruleArgsToActionMap = map[string][]string{
+	"from":                      {"RULE_ACTION_REDIRECT", "RULE_ACTION_SIMPLIFIED_REDIRECT", "RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_RESPONSE_REWRITE_HEADER", "RULE_ACTION_REWRITE_URL"},
+	"to":                        {"RULE_ACTION_REDIRECT", "RULE_ACTION_SIMPLIFIED_REDIRECT", "RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_RESPONSE_REWRITE_HEADER", "RULE_ACTION_REWRITE_URL"},
+	"response_code":             {"RULE_ACTION_REDIRECT", "RULE_ACTION_SIMPLIFIED_REDIRECT", "RULE_ACTION_REWRITE_URL", "RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE", "RULE_ACTION_CUSTOM_ERROR_RESPONSE"},
+	"header_name":               {"RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_DELETE_HEADER", "RULE_ACTION_RESPONSE_REWRITE_HEADER", "RULE_ACTION_RESPONSE_DELETE_HEADER"},
+	"cookie_name":               {"RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_DELETE_COOKIE"},
+	"rewrite_existing":          {"RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_RESPONSE_REWRITE_HEADER"},
+	"add_if_missing":            {"RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_RESPONSE_REWRITE_HEADER"},
+	"multiple_headers_deletion": {"RULE_ACTION_DELETE_HEADER", "RULE_ACTION_RESPONSE_DELETE_HEADER"},
+	"error_response_format":     {"RULE_ACTION_CUSTOM_ERROR_RESPONSE"},
+	"error_response_data":       {"RULE_ACTION_CUSTOM_ERROR_RESPONSE"},
+	"error_type":                {"RULE_ACTION_CUSTOM_ERROR_RESPONSE"},
+	"port_forwarding_context":   {"RULE_ACTION_FORWARD_TO_PORT"},
+	"port_forwarding_value":     {"RULE_ACTION_FORWARD_TO_PORT"},
+	"dc_id":                     {"RULE_ACTION_FORWARD_TO_DC"},
+	"filter":                    {"RULE_ACTION_REDIRECT", "RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_REWRITE_URL", "RULE_ACTION_DELETE_HEADER", "RULE_ACTION_DELETE_COOKIE", "RULE_ACTION_RESPONSE_REWRITE_HEADER", "RULE_ACTION_RESPONSE_DELETE_HEADER", "RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE", "RULE_ACTION_CUSTOM_ERROR_RESPONSE", "RULE_ACTION_FORWARD_TO_DC", "RULE_ACTION_FORWARD_TO_PORT"},
+}
+
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
 }

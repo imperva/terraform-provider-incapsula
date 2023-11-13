@@ -105,7 +105,7 @@ func testAccCheckIncapsulaDeliveryRuleDestroy(state *terraform.State) error {
 			return fmt.Errorf("Rule category does not exist for Site ID is : %s ", siteID)
 		}
 
-		deliveryRulesListDTO, diags := client.ReadIncapRulePriorities(siteID, category)
+		deliveryRulesListDTO, diags := client.ReadDeliveryRuleConfiguration(siteID, category)
 
 		if diags != nil {
 			log.Printf("[ERROR] Failed to read delivery rules in category %s for Site ID %s", category, siteID)
@@ -136,7 +136,7 @@ func testCheckIncapsulaDeliveryRuleExists(name string) resource.TestCheckFunc {
 
 		client := testAccProvider.Meta().(*Client)
 		category, ok := res.Primary.Attributes["category"]
-		deliveryRulesListDTO, diags := client.ReadIncapRulePriorities(siteID, category)
+		deliveryRulesListDTO, diags := client.ReadDeliveryRuleConfiguration(siteID, category)
 
 		if !ok {
 			return fmt.Errorf("Rule category : %s ,does not exist for Site ID is : %s ", siteID, category)
