@@ -3,6 +3,7 @@ package incapsula
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -84,6 +85,12 @@ func TestAccIncapsulaDeliveryRule_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(deliveryRuleResourceName, "rule.1.port_forwarding_value", "1234"),
 				),
 			},
+			{
+				ResourceName:      deliveryRuleResourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testAccGetDeliveryRulesConfigurationImportString,
+			},
 		},
 	})
 }
@@ -109,16 +116,14 @@ func testAccCheckIncapsulaDeliveryRuleDestroy(state *terraform.State) error {
 
 		if diags != nil {
 			log.Printf("[ERROR] Failed to read delivery rules in category %s for Site ID %s", category, siteID)
-			return fmt.Errorf("Failed to read delivery rules in category %s for Site ID %s\", category, siteID")
+			return fmt.Errorf("failed to read delivery rules in category %s for Site ID %s\"", category, siteID)
 		}
 
-		if deliveryRulesListDTO != nil && deliveryRulesListDTO.Errors != nil && deliveryRulesListDTO.Errors[0].Status == 404 {
-			log.Printf("[INFO] Incapsula Site with ID %s has already been deleted\n", siteID)
-			return nil
+		if deliveryRulesListDTO == nil || deliveryRulesListDTO.Errors != nil || deliveryRulesListDTO.RulesList == nil || len(deliveryRulesListDTO.RulesList) != 0 {
+			log.Printf("The DTO response shouldnt be \"empty\" or \"nil\" or has errors site ID: %s", siteID)
+			return fmt.Errorf("the DTO response shouldnt be \"empty\" or \"nil\" or has errors site ID: %s", siteID)
 		}
-
 	}
-
 	return nil
 }
 
@@ -219,4 +224,25 @@ rule {
   }
 }`, forwardCategory, forwardRuleName1, forwardRuleName2,
 	)
+}
+
+func testAccGetDeliveryRulesConfigurationImportString(state *terraform.State) (string, error) {
+	fmt.Println(state)
+	fmt.Println(state.RootModule().Resources)
+	for _, rs := range state.RootModule().Resources {
+		if rs.Type != "incapsula_delivery_rules_configuration" {
+			continue
+		}
+		category, err := strconv.Atoi(rs.Primary.ID)
+		if err != nil {
+			return "", fmt.Errorf("Error parsing ID %s to int", rs.Primary.ID)
+		}
+		siteID, err := strconv.Atoi(rs.Primary.Attributes["site_id"])
+		if err != nil {
+			return "", fmt.Errorf("error parsing site_id %s to int", rs.Primary.Attributes["site_id"])
+		}
+		return fmt.Sprintf("%s/%d", category, siteID), nil
+	}
+
+	return "", fmt.Errorf("error finding Delivery Rule Resource")
 }
