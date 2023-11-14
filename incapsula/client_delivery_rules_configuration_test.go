@@ -19,7 +19,7 @@ func TestClientADReadIncaRulePriorityBadConnection(t *testing.T) {
 	siteID := "42"
 	category := "Test"
 
-	addIncapRuleResponse, diags := client.ReadIncapRulePriorities(siteID, category)
+	addIncapRuleResponse, diags := client.ReadDeliveryRuleConfiguration(siteID, category)
 	if diags == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -48,7 +48,7 @@ func TestClientADReadIncaRulePriorityBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev3: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	readIncapRuleResponse, diags := client.ReadIncapRulePriorities(siteID, category)
+	readIncapRuleResponse, diags := client.ReadDeliveryRuleConfiguration(siteID, category)
 	if diags == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -80,7 +80,7 @@ func TestClient_ReadIncapRulePrioritiesValidRule(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	readIncapRuleResponse, err := client.ReadIncapRulePriorities(siteID, "REDIRECT")
+	readIncapRuleResponse, err := client.ReadDeliveryRuleConfiguration(siteID, "REDIRECT")
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
@@ -119,7 +119,7 @@ func TestClientUpdateIncapRulePriorityBadConnection(t *testing.T) {
 		RulesList: rule,
 	}
 
-	updateIncapRuleResponse, diags := client.UpdateIncapRulePriorities(siteID, "REWRITE", &rulesList)
+	updateIncapRuleResponse, diags := client.UpdateDeliveryRuleConfiguration(siteID, "REWRITE", &rulesList)
 	if diags == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -162,7 +162,7 @@ func TestClientUpdateIncapRulePriorityBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURLRev3: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	updateIncapRuleResponse, diags := client.UpdateIncapRulePriorities(siteID, "REWRITE", &rulesList)
+	updateIncapRuleResponse, diags := client.UpdateDeliveryRuleConfiguration(siteID, "REWRITE", &rulesList)
 	if diags == nil {
 		t.Errorf("Should have received an error")
 	}

@@ -2,19 +2,21 @@ package incapsula
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"log"
-	"strings"
 )
 
 func resourceDeliveryRulesConfiguration() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceDeliveryRulesConfigurationCreate,
+		CreateContext: resourceDeliveryRulesConfigurationUpdate,
 		ReadContext:   resourceDeliveryRulesConfigurationRead,
-		UpdateContext: resourceDeliveryRulesConfigurationCreate,
+		UpdateContext: resourceDeliveryRulesConfigurationUpdate,
 		DeleteContext: resourceDeliveryRulesConfigurationDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(data *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
@@ -40,14 +42,14 @@ func resourceDeliveryRulesConfiguration() *schema.Resource {
 			},
 
 			"category": {
-				Description:  "How to load balance between multiple Data Centers.",
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validation.StringInSlice([]string{"REDIRECT", "SIMPLIFIED_REDIRECT", "REWRITE", "REWRITE_RESPONSE", "FORWARD"}, false),
+				Description:      "How to load balance between multiple Data Centers.",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"REDIRECT", "SIMPLIFIED_REDIRECT", "REWRITE", "REWRITE_RESPONSE", "FORWARD"}, false)),
 			},
 
-			"rules": {
+			"rule": {
 				Description: "A set of Data Centers and their Origin Servers",
 				Optional:    true,
 				Type:        schema.TypeList,
@@ -60,10 +62,10 @@ func resourceDeliveryRulesConfiguration() *schema.Resource {
 						},
 
 						"action": {
-							Type:         schema.TypeString,
-							Description:  "Rule action",
-							Required:     true,
-							ValidateFunc: validation.StringInSlice([]string{"RULE_ACTION_REDIRECT", "RULE_ACTION_SIMPLIFIED_REDIRECT", "RULE_ACTION_REWRITE_URL", "RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_DELETE_HEADER", "RULE_ACTION_DELETE_COOKIE", "RULE_ACTION_FORWARD_TO_DC", "RULE_ACTION_FORWARD_TO_PORT", "RULE_ACTION_RESPONSE_REWRITE_HEADER", "RULE_ACTION_RESPONSE_DELETE_HEADER", "RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE", "RULE_ACTION_CUSTOM_ERROR_RESPONSE"}, false),
+							Type:             schema.TypeString,
+							Description:      "Rule action",
+							Required:         true,
+							ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"RULE_ACTION_REDIRECT", "RULE_ACTION_SIMPLIFIED_REDIRECT", "RULE_ACTION_REWRITE_URL", "RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_DELETE_HEADER", "RULE_ACTION_DELETE_COOKIE", "RULE_ACTION_FORWARD_TO_DC", "RULE_ACTION_FORWARD_TO_PORT", "RULE_ACTION_RESPONSE_REWRITE_HEADER", "RULE_ACTION_RESPONSE_DELETE_HEADER", "RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE", "RULE_ACTION_CUSTOM_ERROR_RESPONSE"}, false)),
 						},
 
 						"enabled": {
@@ -92,9 +94,10 @@ func resourceDeliveryRulesConfiguration() *schema.Resource {
 						},
 
 						"response_code": {
-							Type:        schema.TypeInt,
-							Description: "Rule's response code",
-							Optional:    true,
+							Type:             schema.TypeInt,
+							Description:      "Rule's response code",
+							Optional:         true,
+							ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(1, 999)),
 						},
 
 						"cookie_name": {
@@ -109,10 +112,17 @@ func resourceDeliveryRulesConfiguration() *schema.Resource {
 							Optional:    true,
 						},
 
-						"dont_rewrite_existing": {
+						"rewrite_existing": {
 							Type:        schema.TypeBool,
-							Description: "Do no apply rewrite rule if the header/cookie already exists",
+							Description: "Apply rewrite rule even if the header/cookie already exists",
 							Optional:    true,
+							Default:     true,
+							DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+								//aesthetic only - prevent showing default value for irrelevant action types
+								pathParts := strings.Split(k, ".")
+								action, _ := d.GetOk(pathParts[0] + "." + pathParts[1] + ".action")
+								return !contains(ruleArgsToActionMap["rewrite_existing"], action.(string))
+							},
 						},
 
 						"add_if_missing": {
@@ -128,10 +138,10 @@ func resourceDeliveryRulesConfiguration() *schema.Resource {
 						},
 
 						"error_response_format": {
-							Type:         schema.TypeString,
-							Description:  "The format of the given error response in the error_response_data field",
-							Optional:     true,
-							ValidateFunc: validation.StringInSlice([]string{"JSON", "XML"}, false),
+							Type:             schema.TypeString,
+							Description:      "The format of the given error response in the error_response_data field",
+							Optional:         true,
+							ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"JSON", "XML"}, false)),
 						},
 
 						"error_response_data": {
@@ -141,10 +151,9 @@ func resourceDeliveryRulesConfiguration() *schema.Resource {
 						},
 
 						"error_type": {
-							Type:         schema.TypeString,
-							Description:  "The error that triggers the rule",
-							Optional:     true,
-							ValidateFunc: validation.StringInSlice([]string{"error.type.all", "error.type.connection_timeout", "error.type.access_denied", "error.type.parse_req_error", "error.type.parse_resp_error", "error.type.connection_failed", "error.type.deny_and_retry", "error.type.ssl_failed", "error.type.deny_and_captcha", "error.type.2fa_required", "error.type.no_ssl_config", "error.type.no_ipv6_config", "error.type.waiting_room", "error.type.abp_identification_failed"}, false),
+							Type:        schema.TypeString,
+							Description: "The error that triggers the rule",
+							Optional:    true,
 						},
 
 						"dc_id": {
@@ -154,10 +163,10 @@ func resourceDeliveryRulesConfiguration() *schema.Resource {
 						},
 
 						"port_forwarding_context": {
-							Type:         schema.TypeString,
-							Description:  "Context for port forwarding",
-							Optional:     true,
-							ValidateFunc: validation.StringInSlice([]string{"Use Port Value", "Use Header Name"}, false),
+							Type:             schema.TypeString,
+							Description:      "Context for port forwarding",
+							Optional:         true,
+							ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"Use Port Value", "Use Header Name"}, false)),
 						},
 
 						"port_forwarding_value": {
@@ -172,8 +181,37 @@ func resourceDeliveryRulesConfiguration() *schema.Resource {
 	}
 }
 
-func resourceDeliveryRulesConfigurationCreate(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
-	return nil
+func resourceDeliveryRulesConfigurationUpdate(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+	client := m.(*Client)
+	siteID := data.Get("site_id").(string)
+	category := data.Get("category").(string)
+
+	diags := validateConfig(data)
+	if diags != nil && diags.HasError() {
+		return diags
+	}
+
+	rulesListDTO := DeliveryRulesListDTO{
+		RulesList: createRulesListFromState(data),
+	}
+
+	deliveryRulesListDTO, diags := client.UpdateDeliveryRuleConfiguration(siteID, category, &rulesListDTO)
+
+	if diags != nil && diags.HasError() {
+		log.Printf("[ERROR] Failed to update delivery rules of category %s for Site ID %s", category, siteID)
+		return diags
+	} else if deliveryRulesListDTO.Errors != nil {
+		errors, _ := json.Marshal(deliveryRulesListDTO.Errors)
+		log.Printf("[ERROR] Failed to update delivery rules of category %s for Site ID %s: %s", category, siteID, string(errors[:]))
+		return []diag.Diagnostic{{
+			Severity: diag.Error,
+			Summary:  "Failed to update delivery rules",
+			Detail:   fmt.Sprintf("Failed to update delivery rules of category %s for Site ID %s: %s", category, siteID, string(errors[:])),
+		}}
+	}
+
+	diags = append(diags, resourceDeliveryRulesConfigurationRead(ctx, data, m)[:]...)
+	return diags
 }
 
 func resourceDeliveryRulesConfigurationRead(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -182,7 +220,7 @@ func resourceDeliveryRulesConfigurationRead(ctx context.Context, data *schema.Re
 	siteID := data.Get("site_id").(string)
 	category := data.Get("category").(string)
 
-	deliveryRulesListDTO, diags := client.ReadIncapRulePriorities(siteID, category)
+	deliveryRulesListDTO, diags := client.ReadDeliveryRuleConfiguration(siteID, category)
 
 	fmt.Println(deliveryRulesListDTO)
 
@@ -196,24 +234,23 @@ func resourceDeliveryRulesConfigurationRead(ctx context.Context, data *schema.Re
 		return diags
 	}
 
-	serializeDeliveryRule(data, *deliveryRulesListDTO)
+	data.Set("rule", serializeDeliveryRule(data, *deliveryRulesListDTO))
+	data.SetId(siteID + "/" + category)
 
 	return nil
 }
 
-func serializeDeliveryRule(data *schema.ResourceData, DeliveryRule DeliveryRulesListDTO) {
-	RulesList := make([]interface{}, len(DeliveryRule.RulesList), len(DeliveryRule.RulesList))
+func serializeDeliveryRule(data *schema.ResourceData, DeliveryRule DeliveryRulesListDTO) []interface{} {
+	RulesList := make([]interface{}, len(DeliveryRule.RulesList))
 	for i, rule := range DeliveryRule.RulesList {
 		RuleSlice := make(map[string]interface{})
-		RuleSlice["rule_name"] = rule.Name
+		RuleSlice["rule_name"] = rule.RuleName
 		RuleSlice["action"] = rule.Action
 		RuleSlice["filter"] = rule.Filter
 		RuleSlice["add_if_missing"] = rule.AddMissing
 		RuleSlice["from"] = rule.From
 		RuleSlice["to"] = rule.To
 		RuleSlice["response_code"] = rule.ResponseCode
-		RuleSlice["rewrite_existing"] = rule.RewriteExisting
-		RuleSlice["rewrite_name"] = rule.RewriteName
 		RuleSlice["cookie_name"] = rule.CookieName
 		RuleSlice["header_name"] = rule.HeaderName
 		RuleSlice["dc_id"] = rule.DCID
@@ -224,9 +261,16 @@ func serializeDeliveryRule(data *schema.ResourceData, DeliveryRule DeliveryRules
 		RuleSlice["error_response_data"] = rule.ErrorResponseData
 		RuleSlice["multiple_headers_deletion"] = rule.MultipleHeaderDeletions
 		RuleSlice["enabled"] = rule.Enabled
+
+		if rule.Action == "RULE_ACTION_RESPONSE_REWRITE_HEADER" || rule.Action == "RULE_ACTION_REWRITE_HEADER" || rule.Action == "RULE_ACTION_REWRITE_COOKIE" {
+			RuleSlice["rewrite_existing"] = *rule.RewriteExisting
+		} else {
+			RuleSlice["rewrite_existing"] = false
+		}
+
 		RulesList[i] = RuleSlice
 	}
-	data.Set("rule", RulesList)
+	return RulesList
 }
 
 func resourceDeliveryRulesConfigurationDelete(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -238,7 +282,8 @@ func resourceDeliveryRulesConfigurationDelete(ctx context.Context, data *schema.
 	emptyRulesList := DeliveryRulesListDTO{
 		RulesList: []DeliveryRuleDto{},
 	}
-	_, diags = client.UpdateIncapRulePriorities(siteID, category, &emptyRulesList)
+
+	_, diags = client.UpdateDeliveryRuleConfiguration(siteID, category, &emptyRulesList)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] Failed to delete delivery rules in category %s for Site ID %s", category, siteID)
 		return diags
@@ -246,4 +291,137 @@ func resourceDeliveryRulesConfigurationDelete(ctx context.Context, data *schema.
 
 	data.SetId("")
 	return diags
+}
+
+func createRulesListFromState(data *schema.ResourceData) []DeliveryRuleDto {
+	deliveryRulesListConf := data.Get("rule").([]interface{})
+	deliveryRulesListDTO := make([]DeliveryRuleDto, len(deliveryRulesListConf))
+
+	for i, deliveryRuleRaw := range deliveryRulesListConf {
+		deliveryRule := deliveryRuleRaw.(map[string]interface{})
+
+		action := deliveryRule["action"].(string)
+
+		deliveryRuleDTO := DeliveryRuleDto{
+			RuleName: deliveryRule["rule_name"].(string),
+			Action:   action,
+			Enabled:  deliveryRule["enabled"].(bool),
+		}
+
+		if action != "RULE_ACTION_SIMPLIFIED_REDIRECT" {
+			deliveryRuleDTO.Filter = deliveryRule["filter"].(string)
+		}
+
+		rewriteExisting := new(bool)
+		//rewrite_existing mustn't be set for other rule types
+		if action == "RULE_ACTION_RESPONSE_REWRITE_HEADER" || action == "RULE_ACTION_REWRITE_HEADER" || action == "RULE_ACTION_REWRITE_COOKIE" {
+			*rewriteExisting = deliveryRule["rewrite_existing"].(bool)
+		} else {
+			rewriteExisting = nil
+		}
+
+		switch deliveryRule["action"] {
+		case "RULE_ACTION_REDIRECT":
+			deliveryRuleDTO.From = deliveryRule["from"].(string)
+			deliveryRuleDTO.To = deliveryRule["to"].(string)
+			deliveryRuleDTO.ResponseCode = deliveryRule["response_code"].(int)
+		case "RULE_ACTION_SIMPLIFIED_REDIRECT":
+			deliveryRuleDTO.From = deliveryRule["from"].(string)
+			deliveryRuleDTO.To = deliveryRule["to"].(string)
+			deliveryRuleDTO.ResponseCode = deliveryRule["response_code"].(int)
+		case "RULE_ACTION_REWRITE_URL":
+			deliveryRuleDTO.From = deliveryRule["from"].(string)
+			deliveryRuleDTO.To = deliveryRule["to"].(string)
+		case "RULE_ACTION_REWRITE_HEADER":
+			deliveryRuleDTO.HeaderName = deliveryRule["header_name"].(string)
+			deliveryRuleDTO.From = deliveryRule["from"].(string)
+			deliveryRuleDTO.To = deliveryRule["to"].(string)
+			deliveryRuleDTO.RewriteExisting = rewriteExisting
+			deliveryRuleDTO.AddMissing = deliveryRule["add_if_missing"].(bool)
+		case "RULE_ACTION_RESPONSE_REWRITE_HEADER":
+			deliveryRuleDTO.HeaderName = deliveryRule["header_name"].(string)
+			deliveryRuleDTO.From = deliveryRule["from"].(string)
+			deliveryRuleDTO.To = deliveryRule["to"].(string)
+			deliveryRuleDTO.RewriteExisting = rewriteExisting
+			deliveryRuleDTO.AddMissing = deliveryRule["add_if_missing"].(bool)
+		case "RULE_ACTION_REWRITE_COOKIE":
+			deliveryRuleDTO.CookieName = deliveryRule["cookie_name"].(string)
+			deliveryRuleDTO.From = deliveryRule["from"].(string)
+			deliveryRuleDTO.To = deliveryRule["to"].(string)
+			deliveryRuleDTO.RewriteExisting = rewriteExisting
+			deliveryRuleDTO.AddMissing = deliveryRule["add_if_missing"].(bool)
+		case "RULE_ACTION_DELETE_HEADER":
+			deliveryRuleDTO.HeaderName = deliveryRule["header_name"].(string)
+			deliveryRuleDTO.MultipleHeaderDeletions = deliveryRule["multiple_headers_deletion"].(bool)
+		case "RULE_ACTION_RESPONSE_DELETE_HEADER":
+			deliveryRuleDTO.HeaderName = deliveryRule["header_name"].(string)
+			deliveryRuleDTO.MultipleHeaderDeletions = deliveryRule["multiple_headers_deletion"].(bool)
+		case "RULE_ACTION_DELETE_COOKIE":
+			deliveryRuleDTO.CookieName = deliveryRule["cookie_name"].(string)
+		case "RULE_ACTION_FORWARD_TO_DC":
+			deliveryRuleDTO.DCID = deliveryRule["dc_id"].(int)
+		case "RULE_ACTION_FORWARD_TO_PORT":
+			deliveryRuleDTO.PortForwardingContext = deliveryRule["port_forwarding_context"].(string)
+			deliveryRuleDTO.PortForwardingValue = deliveryRule["port_forwarding_value"].(string)
+		case "RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE":
+			deliveryRuleDTO.ResponseCode = deliveryRule["response_code"].(int)
+		case "RULE_ACTION_CUSTOM_ERROR_RESPONSE":
+			deliveryRuleDTO.ErrorType = deliveryRule["error_type"].(string)
+			deliveryRuleDTO.ErrorResponseFormat = deliveryRule["error_response_format"].(string)
+			deliveryRuleDTO.ErrorResponseData = deliveryRule["error_response_data"].(string)
+			deliveryRuleDTO.ResponseCode = deliveryRule["response_code"].(int)
+		}
+		deliveryRulesListDTO[i] = deliveryRuleDTO
+	}
+
+	return deliveryRulesListDTO
+}
+
+func validateConfig(data *schema.ResourceData) diag.Diagnostics {
+	diags := []diag.Diagnostic{}
+	rulesList := data.GetRawConfig().GetAttr("rule").AsValueSlice()
+
+	for i := 0; i < len(data.Get("rule").([]interface{})); i++ {
+		ruleAction := rulesList[i].GetAttr("action").AsString()
+
+		for attr, allowedActions := range ruleArgsToActionMap {
+			if !rulesList[i].GetAttr(attr).IsNull() && !contains(allowedActions, ruleAction) {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  fmt.Sprintf("Configuration argument '%s' is not applicable to action %s", attr, ruleAction),
+					Detail:   fmt.Sprintf("rule[%d].%s", i, attr),
+				})
+			}
+		}
+	}
+
+	return diags
+}
+
+var ruleArgsToActionMap = map[string][]string{
+	"from":                      {"RULE_ACTION_REDIRECT", "RULE_ACTION_SIMPLIFIED_REDIRECT", "RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_RESPONSE_REWRITE_HEADER", "RULE_ACTION_REWRITE_URL"},
+	"to":                        {"RULE_ACTION_REDIRECT", "RULE_ACTION_SIMPLIFIED_REDIRECT", "RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_RESPONSE_REWRITE_HEADER", "RULE_ACTION_REWRITE_URL"},
+	"response_code":             {"RULE_ACTION_REDIRECT", "RULE_ACTION_SIMPLIFIED_REDIRECT", "RULE_ACTION_REWRITE_URL", "RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE", "RULE_ACTION_CUSTOM_ERROR_RESPONSE"},
+	"header_name":               {"RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_DELETE_HEADER", "RULE_ACTION_RESPONSE_REWRITE_HEADER", "RULE_ACTION_RESPONSE_DELETE_HEADER"},
+	"cookie_name":               {"RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_DELETE_COOKIE"},
+	"rewrite_existing":          {"RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_RESPONSE_REWRITE_HEADER"},
+	"add_if_missing":            {"RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_RESPONSE_REWRITE_HEADER"},
+	"multiple_headers_deletion": {"RULE_ACTION_DELETE_HEADER", "RULE_ACTION_RESPONSE_DELETE_HEADER"},
+	"error_response_format":     {"RULE_ACTION_CUSTOM_ERROR_RESPONSE"},
+	"error_response_data":       {"RULE_ACTION_CUSTOM_ERROR_RESPONSE"},
+	"error_type":                {"RULE_ACTION_CUSTOM_ERROR_RESPONSE"},
+	"port_forwarding_context":   {"RULE_ACTION_FORWARD_TO_PORT"},
+	"port_forwarding_value":     {"RULE_ACTION_FORWARD_TO_PORT"},
+	"dc_id":                     {"RULE_ACTION_FORWARD_TO_DC"},
+	"filter":                    {"RULE_ACTION_REDIRECT", "RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_REWRITE_URL", "RULE_ACTION_DELETE_HEADER", "RULE_ACTION_DELETE_COOKIE", "RULE_ACTION_RESPONSE_REWRITE_HEADER", "RULE_ACTION_RESPONSE_DELETE_HEADER", "RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE", "RULE_ACTION_CUSTOM_ERROR_RESPONSE", "RULE_ACTION_FORWARD_TO_DC", "RULE_ACTION_FORWARD_TO_PORT"},
+}
+
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
 }
