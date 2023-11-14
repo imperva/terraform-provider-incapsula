@@ -169,10 +169,10 @@ func testCheckIncapsulaDeliveryRuleExists(name string, numRules int) resource.Te
 	}
 }
 func testAccCheckIncapsulaDeliveryRedirectRuleConfigBasic(t *testing.T) string {
-	return fmt.Sprintf(`
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "%s" "%s" {
   category = "%s"
-  site_id = "1657653"
+  site_id = "${incapsula_site.testacc-terraform-site.id}"
   rule {
   	rule_name = "%s"
   	filter = "ASN == 1"
@@ -186,10 +186,10 @@ resource "%s" "%s" {
 	)
 }
 func testAccCheckIncapsulaDeliveryRewriteRuleConfigBasic(t *testing.T) string {
-	return fmt.Sprintf(`
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "%s" "%s" {
   category = "%s"
-  site_id = "1657653"
+  site_id = "${incapsula_site.testacc-terraform-site.id}"
   rule {
    	rule_name = "%s"
     filter = "ASN == 2"
@@ -215,9 +215,9 @@ resource "%s" "%s" {
 	)
 }
 func testAccCheckIncapsulaDeliveryForwardRuleConfigBasic(t *testing.T) string {
-	return fmt.Sprintf(`
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "%s" "%s" {
-  site_id = "1657653"
+  site_id = "${incapsula_site.testacc-terraform-site.id}"
   category = "%s"
   rule {
   	rule_name = "%s"
