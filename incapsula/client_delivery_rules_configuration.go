@@ -58,8 +58,8 @@ func (c *Client) ReadDeliveryRuleConfiguration(siteID string, category string) (
 	if resp.StatusCode != 200 {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  "error status code from Incapsula service when reading Incap Rule Catagorie",
-			Detail:   fmt.Sprintf("error status code %d from Incapsula service when reading Incap Rule Catagorie %s for Site ID %s: %s", resp.StatusCode, category, siteID, string(responseBody)),
+			Summary:  "error status code from Incapsula service when reading delivery rules Catagorie",
+			Detail:   fmt.Sprintf("error status code %d from Incapsula service when reading delivery rules Catagorie %s for Site ID %s: %s", resp.StatusCode, category, siteID, string(responseBody)),
 		})
 		return nil, diags
 	}
@@ -86,8 +86,8 @@ func (c *Client) UpdateDeliveryRuleConfiguration(siteID string, category string,
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  fmt.Sprintf("failed to JSON marshal IncapRule priority"),
-			Detail:   fmt.Sprintf("failed to JSON marshal IncapRule: %s", err),
+			Summary:  fmt.Sprintf("failed to update delivery rules category %s", category),
+			Detail:   fmt.Sprintf("failed to update delivery rules category %s for site ID %s: %s", category, siteID, err),
 		})
 		return nil, diags
 	}
@@ -99,8 +99,8 @@ func (c *Client) UpdateDeliveryRuleConfiguration(siteID string, category string,
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  fmt.Sprintf("Error from Incapsula service when updating Incap Rule category : %s", category),
-			Detail:   fmt.Sprintf("Error from Incapsula service when updating Incap Rule category %s for Site ID %s: %s", category, siteID, err),
+			Summary:  fmt.Sprintf("Error from Incapsula service when updating delivery rules category : %s", category),
+			Detail:   fmt.Sprintf("Error from Incapsula service when updating delivery rules category %s for Site ID %s: %s", category, siteID, err),
 		})
 		return nil, diags
 	}
@@ -109,14 +109,14 @@ func (c *Client) UpdateDeliveryRuleConfiguration(siteID string, category string,
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
 	// Dump JSON
-	log.Printf("[DEBUG] Incapsula Update Incap Rule JSON response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] Incapsula Update delivery rules JSON response: %s\n", string(responseBody))
 
 	// Check the response code
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  fmt.Sprintf("error status code %d from Incapsula service", resp.StatusCode),
-			Detail:   fmt.Sprintf("error status code %d from Incapsula service when updating Incap Rule category %s for Site ID %s: %s", resp.StatusCode, category, siteID, string(responseBody)),
+			Detail:   fmt.Sprintf("error status code %d from Incapsula service when updating delivery rules category %s for Site ID %s: %s", resp.StatusCode, category, siteID, string(responseBody)),
 		})
 		return nil, diags
 	}
@@ -126,8 +126,8 @@ func (c *Client) UpdateDeliveryRuleConfiguration(siteID string, category string,
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  fmt.Sprintf("Error parsing Incap Rule category %s JSON response", category),
-			Detail:   fmt.Sprintf("Error parsing Incap Rule category %s JSON response for Site ID %s: %s\nresponse: %s", category, siteID, err, string(responseBody)),
+			Summary:  fmt.Sprintf("Error parsing delivery rules category %s JSON response", category),
+			Detail:   fmt.Sprintf("Error parsing delivery rules category %s JSON response for Site ID %s: %s\nresponse: %s", category, siteID, err, string(responseBody)),
 		})
 		return nil, diags
 	}
