@@ -17,7 +17,7 @@ Currently there are 5 possible types of delivery rule:
 * **REWRITE_RESPONSE** - Modify, add, and remove different response attributes such as headers, statuc code and error responses.
 * **FORWARD** - Forward the request to a specific data-center or port.
 
-**Important Note:**: When using this resource, the rule names within each category must be unique. When multiple rules have the same name, the update would fail with an error message specifying the index of the offending rules.
+**Important Note:** When using this resource, the rule names within each category must be unique. When multiple rules have the same name, the update would fail with an error message specifying the index of the offending rules.
 
 
 ## Example Usage
