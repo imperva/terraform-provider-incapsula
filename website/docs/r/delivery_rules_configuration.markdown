@@ -291,7 +291,7 @@ The following arguments are supported:
 
 ## Import
 
-Delivery rules configuration can be imported using the role site_id and category separated by /, e.g.:
+Delivery rules configuration can be imported using the site_id and category separated by /, e.g.:
 
 ```
 $ terraform import delivery_rules_configuration.demo site_id/category
