@@ -260,7 +260,7 @@ resource "incapsula_delivery_rules_configuration" "rewrite-forward-rules" {
     action = "RULE_ACTION_FORWARD_TO_DC"
     enabled = "true"
   }
-  
+
   rule {
     filter = "ASN == 1"
     port_forwarding_context = "[Use Header Name/Use Port Value]"
@@ -291,7 +291,7 @@ The following arguments are supported:
 
 ## Import
 
-Delivery Rule can be imported using the role site_id and category separated by /, e.g.:
+Delivery rules configuration can be imported using the role site_id and category separated by /, e.g.:
 
 ```
 $ terraform import delivery_rules_configuration.demo site_id/category
