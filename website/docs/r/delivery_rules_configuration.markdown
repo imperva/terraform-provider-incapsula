@@ -44,7 +44,7 @@ resource "incapsula_delivery_rules_configuration" "redirect-rules" {
 }
 ```
 
-## Argument Reference
+### Argument Reference
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `category` - (Required) Category of rules - `REDIRECT`.
 * `rule_name` - (Required) Rule name.
@@ -78,7 +78,7 @@ resource "incapsula_delivery_rules_configuration" "simplified-redirect-rules" {
 }
 ```
 
-## Argument Reference
+### Argument Reference
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `category` - (Required) Category of rules - `SIMPLIFIED_REDIRECT`.
 * `rule_name` - (Required) Rule name.
@@ -145,7 +145,7 @@ resource "incapsula_delivery_rules_configuration" "rewrite-request-rules" {
 }
 ```
 
-## Argument Reference
+### Argument Reference
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `category` - (Required) Category of rules - `REWRITE`.
@@ -213,7 +213,7 @@ resource "incapsula_delivery_rules_configuration" "rewrite-response-rules" {
 }
 ```
 
-## Argument Reference
+### Argument Reference
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `category` - (Required) Category of rules - `REWRITE`.
@@ -261,7 +261,7 @@ resource "incapsula_delivery_rules_configuration" "rewrite-forward-rules" {
 }
 ```
 
-## Argument Reference
+### Argument Reference
 
 The following arguments are supported:
 
