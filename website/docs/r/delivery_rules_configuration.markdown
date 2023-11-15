@@ -29,6 +29,7 @@ Currently there are 5 possible types of delivery rule:
 resource "incapsula_delivery_rules_configuration" "redirect-rules" {
   category = "REDIRECT"
   site_id  = incapsula_site.example-site.id
+
   rule {
     rule_name     = "New delivery rule",
     filter        = "ASN == 1"
@@ -38,6 +39,7 @@ resource "incapsula_delivery_rules_configuration" "redirect-rules" {
     action        = "RULE_ACTION_REDIRECT"
     enabled       = "true"
   }
+
   rule {
     ...
   }
@@ -72,6 +74,7 @@ resource "incapsula_delivery_rules_configuration" "simplified-redirect-rules" {
     action = "RULE_ACTION_SIMPLIFIED_REDIRECT"
     enabled = "true"
   }
+
   rule {
     ...
   }
@@ -108,6 +111,7 @@ resource "incapsula_delivery_rules_configuration" "rewrite-request-rules" {
     action = "RULE_ACTION_REWRITE_COOKIE"
     enabled = "true"
   }
+
   rule {
     filter = "ASN == 1"
     header_name = "headerName"
@@ -119,6 +123,7 @@ resource "incapsula_delivery_rules_configuration" "rewrite-request-rules" {
     action = "RULE_ACTION_REWRITE_HEADER"
     enabled = "true"
   }
+
   rule {
     filter = "ASN == 1"
     from = "/folder1"
@@ -127,6 +132,7 @@ resource "incapsula_delivery_rules_configuration" "rewrite-request-rules" {
     action = "RULE_ACTION_REWRITE_URL"
     enabled = "true"
   }
+
   rule {
     filter = "ASN == 1"
     header_name = "headerName"
@@ -135,6 +141,7 @@ resource "incapsula_delivery_rules_configuration" "rewrite-request-rules" {
     action = "RULE_ACTION_DELETE_HEADER"
     enabled = "true"
   }
+
   rule {
     filter = "ASN == 1"
     cookie_name = "cookieName"
@@ -182,6 +189,7 @@ resource "incapsula_delivery_rules_configuration" "rewrite-response-rules" {
     action = "RULE_ACTION_RESPONSE_DELETE_HEADER"
     enabled = "true"
   }
+
   rule {
     filter = "ASN == 1"
     header_name = "abc"
@@ -193,6 +201,7 @@ resource "incapsula_delivery_rules_configuration" "rewrite-response-rules" {
     action = "RULE_ACTION_RESPONSE_REWRITE_HEADER"
     enabled = "true"
   }
+
   rule {
     filter = "ASN == 1"
     response_code = "302"
@@ -200,6 +209,7 @@ resource "incapsula_delivery_rules_configuration" "rewrite-response-rules" {
     action = "RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE"
     enabled = "true" 
   }
+
   rule {
     filter = "ASN == 1"
     error_response_format = "[JSON|XML]"
@@ -250,6 +260,7 @@ resource "incapsula_delivery_rules_configuration" "rewrite-forward-rules" {
     action = "RULE_ACTION_FORWARD_TO_DC"
     enabled = "true"
   }
+  
   rule {
     filter = "ASN == 1"
     port_forwarding_context = "[Use Header Name/Use Port Value]"
