@@ -11,11 +11,11 @@ description: |-
 Provides the delivery rules configuration for a specific site. The order of rules execution (a.k.a. priority) is the same as the order they are defined in the resource configuration. 
 
 Currently there are 5 possible types of delivery rule:
-* REDIRECT - Redirect requests with 30X response.
-* SIMPLIFIED_REDIRECT - Redirect requests with 30X response. (this category doesn't support condition triggers, and needs to be enbled at the account level before being used)
-* REWRITE - Modify, add, and remove different request attributes such as URL, headers and cookies.
-* REWRITE_RESPONSE - Modify, add, and remove different response attributes such as headers, statuc code and error responses.
-* FORWARD - Forward the request to a specific data-center or port.
+* **REDIRECT** - Redirect requests with 30X response.
+* **SIMPLIFIED_REDIRECT** - Redirect requests with 30X response. (this category doesn't support condition triggers, and needs to be enbled at the account level before being used)
+* **REWRITE** - Modify, add, and remove different request attributes such as URL, headers and cookies.
+* **REWRITE_RESPONSE** - Modify, add, and remove different response attributes such as headers, statuc code and error responses.
+* **FORWARD** - Forward the request to a specific data-center or port.
 
 **Important Note:**: When using this resource, the rule names within each category must be unique. When multiple rules have the same name, the update would fail with an error message specifying the index of the offending rules.
 
