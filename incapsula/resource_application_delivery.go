@@ -287,6 +287,20 @@ func resourceApplicationDelivery() *schema.Resource {
 					return false
 				},
 			},
+			"error_abp_identification_failed": {
+				Type:        schema.TypeString,
+				Description: "The inner HTML template for 'ABP identification failed' error. Only HTML elements located inside the body tag are supported. Set empty value to return to default.",
+				Optional:    true,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					oldT := strings.ReplaceAll(strings.TrimSpace(old), "'", "\"")
+					newT := strings.ReplaceAll(strings.TrimSpace(new), "'", "\"")
+					if strings.TrimSpace(oldT) == strings.TrimSpace(newT) {
+						log.Printf("will supress error_ssl_failed¬")
+						return true
+					}
+					return false
+				},
+			},
 		},
 	}
 }
@@ -342,6 +356,7 @@ func resourceApplicationDeliveryRead(d *schema.ResourceData, m interface{}) erro
 	d.Set("error_ssl_failed", strings.ReplaceAll(applicationDelivery.CustomErrorPage.CustomErrorPageTemplates.ErrorSslFailed, "'", "\""))
 	d.Set("error_deny_and_captcha", strings.ReplaceAll(applicationDelivery.CustomErrorPage.CustomErrorPageTemplates.ErrorDenyAndCaptcha, "'", "\""))
 	d.Set("error_no_ssl_config", strings.ReplaceAll(applicationDelivery.CustomErrorPage.CustomErrorPageTemplates.ErrorTypeNoSslConfig, "'", "\""))
+	d.Set("error_abp_identification_failed", strings.ReplaceAll(applicationDelivery.CustomErrorPage.CustomErrorPageTemplates.ErrorAbpIdentificationFailed, "'", "\""))
 
 	return nil
 }
@@ -402,14 +417,15 @@ func resourceApplicationDeliveryUpdate(d *schema.ResourceData, m interface{}) er
 	customErrorPage := CustomErrorPage{
 		DefaultErrorPage: d.Get("default_error_page_template").(string),
 		CustomErrorPageTemplates: CustomErrorPageTemplates{
-			ErrorConnectionTimeout: d.Get("error_connection_timeout").(string),
-			ErrorAccessDenied:      d.Get("error_access_denied").(string),
-			ErrorParseReqError:     d.Get("error_parse_req_error").(string),
-			ErrorParseRespError:    d.Get("error_parse_resp_error").(string),
-			ErrorConnectionFailed:  d.Get("error_connection_failed").(string),
-			ErrorSslFailed:         d.Get("error_ssl_failed").(string),
-			ErrorDenyAndCaptcha:    d.Get("error_deny_and_captcha").(string),
-			ErrorTypeNoSslConfig:   d.Get("error_no_ssl_config").(string),
+			ErrorConnectionTimeout:       d.Get("error_connection_timeout").(string),
+			ErrorAccessDenied:            d.Get("error_access_denied").(string),
+			ErrorParseReqError:           d.Get("error_parse_req_error").(string),
+			ErrorParseRespError:          d.Get("error_parse_resp_error").(string),
+			ErrorConnectionFailed:        d.Get("error_connection_failed").(string),
+			ErrorSslFailed:               d.Get("error_ssl_failed").(string),
+			ErrorDenyAndCaptcha:          d.Get("error_deny_and_captcha").(string),
+			ErrorTypeNoSslConfig:         d.Get("error_no_ssl_config").(string),
+			ErrorAbpIdentificationFailed: d.Get("error_abp_identification_failed").(string),
 		},
 	}
 
@@ -442,14 +458,15 @@ func resourceApplicationDeliveryDelete(d *schema.ResourceData, m interface{}) er
 	customErrorPage := CustomErrorPage{
 		DefaultErrorPage: "",
 		CustomErrorPageTemplates: CustomErrorPageTemplates{
-			ErrorConnectionTimeout: "",
-			ErrorAccessDenied:      "",
-			ErrorParseReqError:     "",
-			ErrorParseRespError:    "",
-			ErrorConnectionFailed:  "",
-			ErrorSslFailed:         "",
-			ErrorDenyAndCaptcha:    "",
-			ErrorTypeNoSslConfig:   "",
+			ErrorConnectionTimeout:       "",
+			ErrorAccessDenied:            "",
+			ErrorParseReqError:           "",
+			ErrorParseRespError:          "",
+			ErrorConnectionFailed:        "",
+			ErrorSslFailed:               "",
+			ErrorDenyAndCaptcha:          "",
+			ErrorTypeNoSslConfig:         "",
+			ErrorAbpIdentificationFailed: "",
 		},
 	}
 
