@@ -1,3 +1,10 @@
+## 3.21.0 (Nov 20, 2023)
+
+IMPROVEMENTS:
+
+* Add ABP identification failed error page to application delivery resource ([#370](https://github.com/imperva/terraform-provider-incapsula/pull/370))
+
+
 ## 3.20.6 (Nov 7, 2023)
 
 * Incapsula_Api_Security_API_Config bug fix - missing base path in update method ([#368](https://github.com/imperva/terraform-provider-incapsula/pull/368))
