@@ -46,11 +46,11 @@ func resourceDeliveryRulesConfiguration() *schema.Resource {
 				Type:             schema.TypeString,
 				Required:         true,
 				ForceNew:         true,
-				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"REDIRECT", "SIMPLIFIED_REDIRECT", "REWRITE", "REWRITE_RESPONSE", "FORWARD"}, false)),
+				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"REDIRECT", "REWRITE", "REWRITE_RESPONSE", "FORWARD"}, false)),
 			},
 
 			"rule": {
-				Description: "A set of Data Centers and their Origin Servers",
+				Description: "List of delivery rules",
 				Optional:    true,
 				Type:        schema.TypeList,
 				Elem: &schema.Resource{
@@ -65,7 +65,7 @@ func resourceDeliveryRulesConfiguration() *schema.Resource {
 							Type:             schema.TypeString,
 							Description:      "Rule action",
 							Required:         true,
-							ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"RULE_ACTION_REDIRECT", "RULE_ACTION_SIMPLIFIED_REDIRECT", "RULE_ACTION_REWRITE_URL", "RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_DELETE_HEADER", "RULE_ACTION_DELETE_COOKIE", "RULE_ACTION_FORWARD_TO_DC", "RULE_ACTION_FORWARD_TO_PORT", "RULE_ACTION_RESPONSE_REWRITE_HEADER", "RULE_ACTION_RESPONSE_DELETE_HEADER", "RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE", "RULE_ACTION_CUSTOM_ERROR_RESPONSE"}, false)),
+							ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"RULE_ACTION_REDIRECT", "RULE_ACTION_REWRITE_URL", "RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_DELETE_HEADER", "RULE_ACTION_DELETE_COOKIE", "RULE_ACTION_FORWARD_TO_DC", "RULE_ACTION_FORWARD_TO_PORT", "RULE_ACTION_RESPONSE_REWRITE_HEADER", "RULE_ACTION_RESPONSE_DELETE_HEADER", "RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE", "RULE_ACTION_CUSTOM_ERROR_RESPONSE"}, false)),
 						},
 
 						"enabled": {
@@ -306,10 +306,7 @@ func createRulesListFromState(data *schema.ResourceData) []DeliveryRuleDto {
 			RuleName: deliveryRule["rule_name"].(string),
 			Action:   action,
 			Enabled:  deliveryRule["enabled"].(bool),
-		}
-
-		if action != "RULE_ACTION_SIMPLIFIED_REDIRECT" {
-			deliveryRuleDTO.Filter = deliveryRule["filter"].(string)
+			Filter:   deliveryRule["filter"].(string),
 		}
 
 		rewriteExisting := new(bool)
@@ -322,10 +319,6 @@ func createRulesListFromState(data *schema.ResourceData) []DeliveryRuleDto {
 
 		switch deliveryRule["action"] {
 		case "RULE_ACTION_REDIRECT":
-			deliveryRuleDTO.From = deliveryRule["from"].(string)
-			deliveryRuleDTO.To = deliveryRule["to"].(string)
-			deliveryRuleDTO.ResponseCode = deliveryRule["response_code"].(int)
-		case "RULE_ACTION_SIMPLIFIED_REDIRECT":
 			deliveryRuleDTO.From = deliveryRule["from"].(string)
 			deliveryRuleDTO.To = deliveryRule["to"].(string)
 			deliveryRuleDTO.ResponseCode = deliveryRule["response_code"].(int)
@@ -399,9 +392,9 @@ func validateConfig(data *schema.ResourceData) diag.Diagnostics {
 }
 
 var ruleArgsToActionMap = map[string][]string{
-	"from":                      {"RULE_ACTION_REDIRECT", "RULE_ACTION_SIMPLIFIED_REDIRECT", "RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_RESPONSE_REWRITE_HEADER", "RULE_ACTION_REWRITE_URL"},
-	"to":                        {"RULE_ACTION_REDIRECT", "RULE_ACTION_SIMPLIFIED_REDIRECT", "RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_RESPONSE_REWRITE_HEADER", "RULE_ACTION_REWRITE_URL"},
-	"response_code":             {"RULE_ACTION_REDIRECT", "RULE_ACTION_SIMPLIFIED_REDIRECT", "RULE_ACTION_REWRITE_URL", "RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE", "RULE_ACTION_CUSTOM_ERROR_RESPONSE"},
+	"from":                      {"RULE_ACTION_REDIRECT", "RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_RESPONSE_REWRITE_HEADER", "RULE_ACTION_REWRITE_URL"},
+	"to":                        {"RULE_ACTION_REDIRECT", "RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_RESPONSE_REWRITE_HEADER", "RULE_ACTION_REWRITE_URL"},
+	"response_code":             {"RULE_ACTION_REDIRECT", "RULE_ACTION_REWRITE_URL", "RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE", "RULE_ACTION_CUSTOM_ERROR_RESPONSE"},
 	"header_name":               {"RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_DELETE_HEADER", "RULE_ACTION_RESPONSE_REWRITE_HEADER", "RULE_ACTION_RESPONSE_DELETE_HEADER"},
 	"cookie_name":               {"RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_DELETE_COOKIE"},
 	"rewrite_existing":          {"RULE_ACTION_REWRITE_HEADER", "RULE_ACTION_REWRITE_COOKIE", "RULE_ACTION_RESPONSE_REWRITE_HEADER"},
