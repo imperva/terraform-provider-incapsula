@@ -12,7 +12,6 @@ Provides the delivery rules configuration for a specific site. The order of rule
 
 Currently there are 5 possible types of delivery rule:
 * **REDIRECT** - Redirect requests with 30X response.
-* **SIMPLIFIED_REDIRECT** - Redirect requests with 30X response. (this category doesn't support condition triggers, and needs to be enbled at the account level before being used)
 * **REWRITE** - Modify, add, and remove different request attributes such as URL, headers and cookies.
 * **REWRITE_RESPONSE** - Modify, add, and remove different response attributes such as headers, statuc code and error responses.
 * **FORWARD** - Forward the request to a specific data-center or port.
@@ -57,41 +56,6 @@ resource "incapsula_delivery_rules_configuration" "redirect-rules" {
 * `from` - (Required) URL pattern to rewrite.
 * `to` - (Required) URL pattern to change to.
 * `enabled` - (Optional) Boolean that enables the rule. Default value is true.
-
-
-## `SIMPLIFIED_REDIRECT` RULES
-
-```hcl
-resource "incapsula_delivery_rules_configuration" "simplified-redirect-rules" {
-  category = "SIMPLIFIED_REDIRECT"
-  site_id = incapsula_site.example-site.id
-
-  rule {
-    from = "/1"
-    to = "$scheme://www.example.com/$city"
-    response_code = "302"
-    rule_name = "New delivery rule",
-    action = "RULE_ACTION_SIMPLIFIED_REDIRECT"
-    enabled = "true"
-  }
-
-  rule {
-    ...
-  }
-}
-```
-
-### Argument Reference
-* `site_id` - (Required) Numeric identifier of the site to operate on.
-* `category` - (Required) Category of rules - `SIMPLIFIED_REDIRECT`.
-* `rule_name` - (Required) Rule name.
-* `action` - (Required) Rule action. Possible value:
-  * `RULE_ACTION_SIMPLIFIED_REDIRECT` - Redirects incoming requests.
-* `response_code` - (Required) Redirect status code. Valid values are `302`, `301`, `303`, `307`, `308`.
-* `from` - (Required) URL pattern to rewrite. **Note**: this field must be unique among other rules of the same category.
-* `to` - (Required) URL pattern to change to.
-* `enabled` - (Optional) Boolean that enables the rule. Default value is true.
-
 
 ## `REWRITE` RULES
 
