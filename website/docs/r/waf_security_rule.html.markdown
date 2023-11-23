@@ -22,30 +22,6 @@ resource "incapsula_waf_security_rule" "example-waf-backdoor-rule" {
   security_rule_action = "api.threats.action.quarantine_url" # (api.threats.action.quarantine_url (default) | api.threats.action.alert | api.threats.action.disabled | api.threats.action.quarantine_url)
 }
 
-resource "incapsula_waf_security_rule" "example-waf-cross-site-scripting-rule" {
-  site_id = incapsula_site.example-site.id
-  rule_id = "api.threats.cross_site_scripting"
-  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
-}
-
-resource "incapsula_waf_security_rule" "example-waf-illegal-resource-rule" {
-  site_id = incapsula_site.example-site.id
-  rule_id = "api.threats.illegal_resource_access"
-  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
-}
-
-resource "incapsula_waf_security_rule" "example-waf-remote-file-inclusion-rule" {
-  site_id = incapsula_site.example-site.id
-  rule_id = "api.threats.remote_file_inclusion"
-  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
-}
-
-resource "incapsula_waf_security_rule" "example-waf-sql-injection-rule" {
-  site_id = incapsula_site.example-site.id
-  rule_id = "api.threats.sql_injection"
-  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
-}
-
 resource "incapsula_waf_security_rule" "example-waf-bot-access-control-rule" {
   site_id = incapsula_site.example-site.id
   rule_id = "api.threats.bot_access_control"
