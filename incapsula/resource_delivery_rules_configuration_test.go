@@ -172,7 +172,7 @@ func testAccCheckIncapsulaDeliveryRedirectRuleConfigBasic(t *testing.T) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "%s" "%s" {
   category = "%s"
-  site_id = "${incapsula_site.testacc-terraform-site.id}"
+  site_id = %s.id
   rule {
   	rule_name = "%s"
   	filter = "ASN == 1"
@@ -182,14 +182,14 @@ resource "%s" "%s" {
     from = "*/1"
     to = "$1/2"
   }
-}`, deliveryRuleResourceName, redirectRulesConfigurationName, "REDIRECT", "Redirect Delivery Rule Test",
+}`, deliveryRuleResourceName, redirectRulesConfigurationName, siteResourceName, "REDIRECT", "Redirect Delivery Rule Test",
 	)
 }
 func testAccCheckIncapsulaDeliveryRewriteRuleConfigBasic(t *testing.T) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "%s" "%s" {
   category = "%s"
-  site_id = "${incapsula_site.testacc-terraform-site.id}"
+  site_id = %s.id
   rule {
    	rule_name = "%s"
     filter = "ASN == 2"
@@ -211,13 +211,13 @@ resource "%s" "%s" {
     action = "RULE_ACTION_REWRITE_HEADER"
     enabled = "true"
   }
-}`, deliveryRuleResourceName, rewriteRulesConfigurationName, "REWRITE", "rewrite Delivery Rule Test 1", "rewrite Delivery Rule Test 2",
+}`, deliveryRuleResourceName, rewriteRulesConfigurationName, siteResourceName, "REWRITE", "rewrite Delivery Rule Test 1", "rewrite Delivery Rule Test 2",
 	)
 }
 func testAccCheckIncapsulaDeliveryForwardRuleConfigBasic(t *testing.T) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "%s" "%s" {
-  site_id = "${incapsula_site.testacc-terraform-site.id}"
+  site_id = %s.id
   category = "%s"
   rule {
   	rule_name = "%s"
@@ -227,7 +227,7 @@ resource "%s" "%s" {
     action = "RULE_ACTION_FORWARD_TO_PORT"
     enabled = "true"
   }
-}`, deliveryRuleResourceName, forwardRulesConfigurationName, "FORWARD", "forward Delivery Rule Test 1",
+}`, deliveryRuleResourceName, forwardRulesConfigurationName, siteResourceName, "FORWARD", "forward Delivery Rule Test 1",
 	)
 }
 

@@ -2,15 +2,16 @@ package incapsula
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"log"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 const deliverySimplifiedRedirectRulesResourceName = "incapsula_simplified_redirect_rules_configuration"
 const simplifiedRedirectRulesConfigurationName = "testacc-terraform-simplified-redirect-rules"
-const simplifiedRedirectRulesResourceName = simplifiedRedirectRulesConfigurationName + "." + deliverySimplifiedRedirectRulesResourceName
+const simplifiedRedirectRulesResourceName = deliverySimplifiedRedirectRulesResourceName + "." + simplifiedRedirectRulesConfigurationName
 
 func TestAccIncapsulaDeliverySimplifiedRedirectRule_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -19,29 +20,38 @@ func TestAccIncapsulaDeliverySimplifiedRedirectRule_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaDeliverySimplifiedRedirectRuleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaDeliverySimplifiedRedirectRuleConfigBasic(t),
+				Config: testAccCheckSimplifiedRedirectRuleConfigBasic(t),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckIncapsulaDeliveryRuleExists(deliverySimplifiedRedirectRulesResourceName, 2),
-					resource.TestCheckResourceAttr(deliverySimplifiedRedirectRulesResourceName, "rule.0.rule_name", "Simplified Redirect Delivery Rule Test 1"),
-					resource.TestCheckResourceAttr(deliverySimplifiedRedirectRulesResourceName, "rule.0.enabled", "true"),
-					resource.TestCheckResourceAttr(deliverySimplifiedRedirectRulesResourceName, "rule.0.action", "RULE_ACTION_SIMPLIFIED_REDIRECT"),
-					resource.TestCheckResourceAttr(deliverySimplifiedRedirectRulesResourceName, "rule.0.response_code", "302"),
-					resource.TestCheckResourceAttr(deliverySimplifiedRedirectRulesResourceName, "rule.0.from", "*/1"),
-					resource.TestCheckResourceAttr(deliverySimplifiedRedirectRulesResourceName, "rule.0.to", "$1/2"),
-
-					resource.TestCheckResourceAttr(deliverySimplifiedRedirectRulesResourceName, "rule.1.rule_name", "Simplified Redirect Delivery Rule Test 2"),
-					resource.TestCheckResourceAttr(deliverySimplifiedRedirectRulesResourceName, "rule.1.enabled", "false"),
-					resource.TestCheckResourceAttr(deliverySimplifiedRedirectRulesResourceName, "rule.1.action", "RULE_ACTION_SIMPLIFIED_REDIRECT"),
-					resource.TestCheckResourceAttr(deliverySimplifiedRedirectRulesResourceName, "rule.1.response_code", "302"),
-					resource.TestCheckResourceAttr(deliverySimplifiedRedirectRulesResourceName, "rule.1.from", "*/1"),
-					resource.TestCheckResourceAttr(deliverySimplifiedRedirectRulesResourceName, "rule.1.to", "$1/2"),
+					testCheckSimplifiedRedirectRuleExists(simplifiedRedirectRulesResourceName, 1),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.0.rule_name", "Simplified Redirect Delivery Rule Test 2"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.0.enabled", "false"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.0.response_code", "302"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.0.from", "/1"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.0.to", "$scheme://www.example.com/$city"),
+				),
+			},
+			{
+				Config: testAccCheckSimplifiedRedirectRulesDiff(t),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSimplifiedRedirectRuleExists(simplifiedRedirectRulesResourceName, 1),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.0.rule_name", "Simplified Redirect Delivery Rule Test 2"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.0.enabled", "true"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.0.response_code", "301"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.0.from", "/1"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.0.to", "$scheme://www.example.com/$city"),
+				),
+			},
+			{
+				Config: testAccCheckMultipleSimplifiedRedirectRulesConfig(t),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSimplifiedRedirectRuleExists(simplifiedRedirectRulesResourceName, 2),
 				),
 			},
 			{
 				ResourceName:      simplifiedRedirectRulesResourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: testAccGetDeliverySimplifiedRedirectRulesConfigurationImportString,
+				ImportStateIdFunc: testAccGetSimplifiedRedirectRulesImportString,
 			},
 		},
 	})
@@ -64,8 +74,8 @@ func testAccCheckIncapsulaDeliverySimplifiedRedirectRuleDestroy(state *terraform
 		deliveryRulesListDTO, diags := client.ReadDeliveryRuleConfiguration(siteID, category)
 
 		if diags != nil {
-			log.Printf("[ERROR] Failed to read delivery simplified redirect rules in category %s for Site ID %s", category, siteID)
-			return fmt.Errorf("failed to read delivery simplified redirect rules in category %s for Site ID %s\"", category, siteID)
+			log.Printf("[ERROR] Failed to read simplified redirect rules in category %s for Site ID %s", category, siteID)
+			return fmt.Errorf("failed to read simplified redirect rules in category %s for Site ID %s\"", category, siteID)
 		}
 
 		if deliveryRulesListDTO == nil || deliveryRulesListDTO.Errors != nil || deliveryRulesListDTO.RulesList == nil || len(deliveryRulesListDTO.RulesList) != 0 {
@@ -76,30 +86,56 @@ func testAccCheckIncapsulaDeliverySimplifiedRedirectRuleDestroy(state *terraform
 	return nil
 }
 
-func testAccCheckIncapsulaDeliverySimplifiedRedirectRuleConfigBasic(t *testing.T) string {
+func testAccCheckSimplifiedRedirectRuleConfigBasic(t *testing.T) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "%s" "%s" {
-  site_id = "${incapsula_site.testacc-terraform-site.id}"
-  rule {
-  	rule_name = "%s"
-	response_code = "302"
-	action = "RULE_ACTION_SIMPLIFIED_REDIRECT"
-  	enabled = true
-    from = "*/1"
-    to = "$1/2"
-  }
+  site_id = %s.id
 rule {
   	rule_name = "%s"
-	response_code = "302"
-	action = "RULE_ACTION_SIMPLIFIED_REDIRECT"
+	response_code = 302
   	enabled = false
-    from = "*/1"
-    to = "$1/2"
+    from = "/1"
+    to = "$scheme://www.example.com/$city"
   }
-}`, deliverySimplifiedRedirectRulesResourceName, simplifiedRedirectRulesConfigurationName, "Simplified Redirect Delivery Rule Test 1", "Simplified Redirect Delivery Rule Test 2",
+}`, deliverySimplifiedRedirectRulesResourceName, simplifiedRedirectRulesConfigurationName, siteResourceName, "Simplified Redirect Delivery Rule Test 2",
 	)
 }
-func testAccGetDeliverySimplifiedRedirectRulesConfigurationImportString(state *terraform.State) (string, error) {
+func testAccCheckSimplifiedRedirectRulesDiff(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+resource "%s" "%s" {
+  site_id = %s.id
+rule {
+  	rule_name = "%s"
+	response_code = 301
+  	enabled = true
+    from = "/1"
+    to = "$scheme://www.example.com/$city"
+  }
+}`, deliverySimplifiedRedirectRulesResourceName, simplifiedRedirectRulesConfigurationName, siteResourceName, "Simplified Redirect Delivery Rule Test 2",
+	)
+}
+func testAccCheckMultipleSimplifiedRedirectRulesConfig(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+resource "%s" "%s" {
+  site_id = %s.id
+  rule {
+		rule_name = "%s"
+	  response_code = 301
+		enabled = true
+	  from = "/1"
+	  to = "$scheme://www.example.com/$city"
+	}
+rule {
+  	rule_name = "%s"
+	response_code = 301
+  	enabled = true
+    from = "/2"
+    to = "$scheme://www.example.com/$city"
+  }
+}`, deliverySimplifiedRedirectRulesResourceName, simplifiedRedirectRulesConfigurationName, siteResourceName, "Simplified Redirect Delivery Rule Test 1", "Simplified Redirect Delivery Rule Test 2",
+	)
+}
+func testAccGetSimplifiedRedirectRulesImportString(state *terraform.State) (string, error) {
 	fmt.Println(state)
 	fmt.Println(state.RootModule().Resources)
 	for _, rs := range state.RootModule().Resources {
@@ -109,5 +145,34 @@ func testAccGetDeliverySimplifiedRedirectRulesConfigurationImportString(state *t
 		return rs.Primary.ID, nil
 	}
 
-	return "", fmt.Errorf("error finding Delivery simplified redirect Rule Resource")
+	return "", fmt.Errorf("error finding simplified redirect Rule Resource")
+}
+
+func testCheckSimplifiedRedirectRuleExists(name string, numRules int) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		res, ok := state.RootModule().Resources[name]
+		if !ok {
+			return fmt.Errorf("Incapsula Delivery Rule resource not found: %s", name)
+		}
+
+		siteID, ok := res.Primary.Attributes["site_id"]
+		if !ok || siteID == "" {
+			return fmt.Errorf("Incapsula Site ID does not exist ")
+		}
+
+		client := testAccProvider.Meta().(*Client)
+		deliveryRulesListDTO, diags := client.ReadDeliveryRuleConfiguration(siteID, "SIMPLIFIED_REDIRECT")
+
+		if !ok {
+			return fmt.Errorf("Rule category : %s ,does not exist for Site ID is : SIMPLIFIED_REDIRECT ", siteID)
+		}
+		if diags != nil {
+			return fmt.Errorf("Incapsula Delivery Rule: SIMPLIFIED_REDIRECT (site id: %s) returned error", siteID)
+		}
+		if deliveryRulesListDTO.RulesList == nil || len(deliveryRulesListDTO.RulesList) != numRules {
+			return fmt.Errorf("Incapsula Delivery Rule: SIMPLIFIED_REDIRECT (site id: %s) should have %d rules", siteID, numRules)
+		}
+
+		return nil
+	}
 }

@@ -26,6 +26,7 @@ func resourceSimplifiedRedirectRulesConfiguration() *schema.Resource {
 				}
 
 				data.Set("site_id", idSlice[0])
+				data.SetId(idSlice[0])
 
 				return []*schema.ResourceData{data}, nil
 			},
@@ -44,7 +45,6 @@ func resourceSimplifiedRedirectRulesConfiguration() *schema.Resource {
 				Description: "List of simplified redirect rules",
 				Optional:    true,
 				Type:        schema.TypeSet,
-				Set:         resourceSimplifiedRedirectConfigurationHashFunction,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"rule_name": {
@@ -132,7 +132,7 @@ func resourceSimplifiedRedirectRulesConfigurationRead(ctx context.Context, data 
 	}
 
 	data.Set("rule", serializeSimplifiedRedirectRule(data, *simplifiedRediectRulesListDTO))
-	data.SetId(siteID + "/SIMPLIFIED_REDIRECT")
+	data.SetId(siteID)
 
 	return nil
 }
@@ -141,9 +141,8 @@ func serializeSimplifiedRedirectRule(data *schema.ResourceData, DeliveryRule Del
 	simplifiedRedirectRules := &schema.Set{F: resourceSimplifiedRedirectConfigurationHashFunction}
 
 	for _, rule := range DeliveryRule.RulesList {
-		simplifiedRedirectRule := make(map[string]interface{})
+		simplifiedRedirectRule := map[string]interface{}{}
 		simplifiedRedirectRule["rule_name"] = rule.RuleName
-		simplifiedRedirectRule["action"] = rule.Action
 		simplifiedRedirectRule["from"] = rule.From
 		simplifiedRedirectRule["to"] = rule.To
 		simplifiedRedirectRule["response_code"] = rule.ResponseCode
