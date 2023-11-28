@@ -250,7 +250,7 @@ The following arguments are supported:
 * `dc_id` - (Required) ID of the data center to forward the request to.
 * `port_forwarding_context` - (Required) Context for port forwarding. Possible values: `Use Port Value` or `Use Header Name`.
 * `port_forwarding_value` - (Required) Port number or header name for port forwarding. When using a header, its value should be of format IP:PORT.
-* `enabled` - (Optional) Boolean that enables the rule. Possible values: true, false. Default value is true.
+* `enabled` - (Optional) Boolean that enables the rule. Possible values: true, `false`. Default value is true.
 
 
 ## Import
