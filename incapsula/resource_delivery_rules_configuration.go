@@ -166,7 +166,7 @@ func resourceDeliveryRulesConfiguration() *schema.Resource {
 							Type:             schema.TypeString,
 							Description:      "Context for port forwarding",
 							Optional:         true,
-							ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"Use Port Value", "Use Header Name"}, false)),
+							ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice([]string{"port", "header"}, true)),
 						},
 
 						"port_forwarding_value": {

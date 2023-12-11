@@ -33,7 +33,7 @@ type DeliveryRuleDto struct {
 	ErrorResponseFormat     string `json:"error_response_format,omitempty"`
 	ErrorResponseData       string `json:"error_response_data,omitempty"`
 	MultipleHeaderDeletions bool   `json:"multiple_headers_deletion,omitempty"`
-	Enabled                 bool   `json:"enabled,omitempty"`
+	Enabled                 bool   `json:"enabled"`
 }
 
 var diags diag.Diagnostics

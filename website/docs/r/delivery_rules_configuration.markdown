@@ -55,7 +55,7 @@ resource "incapsula_delivery_rules_configuration" "redirect-rules" {
 * `response_code` - (Required) Redirect status code. Valid values are `302`, `301`, `303`, `307`, `308`.
 * `from` - (Required) URL pattern to rewrite.
 * `to` - (Required) URL pattern to change to.
-* `enabled` - (Optional) Boolean that enables the rule. Default value is true.
+* `enabled` - (Optional) Boolean that enables the rule. Default value is `true`.
 
 ## `REWRITE` RULES
 
@@ -135,7 +135,7 @@ resource "incapsula_delivery_rules_configuration" "rewrite-request-rules" {
 * `add_missing` - (Optional) When rewriting cookie or header, add it if it doesn't exist.
 * `rewrite_existing` - (Optional) Rewrite cookie or header even if it exists already.
 * `multiple_headers_deletion` - (Optional) Delete all header occurrences.
-* `enabled` - (Optional) Boolean that enables the rule. Default value is true.
+* `enabled` - (Optional) Boolean that enables the rule. Default value is `true`.
 
 
 ## `REWRITE_RESPONSE` RULES
@@ -204,11 +204,11 @@ resource "incapsula_delivery_rules_configuration" "rewrite-response-rules" {
 * `add_missing` - (Optional) When rewriting a header, add it if it doesn't exist.
 * `rewrite_existing` - (Optional) Rewrite a header even it if it exists already.
 * `multiple_headers_deletion` - (Optional) Delete all header occurrences.
-* `response_code` - (Required) HTTP status code. For `RULE_ACTION_CUSTOM_ERROR_RESPONSE`, valid values are `400`, `401`, `402`, `403`, `404`, `405`, `406`, `407`, `408`, `409`, `410`, `411`, `412`, `413`, `414`, `415`, `416`, `417`, `419`, `420`, `422`, `423`, `424`, `500`, `501`, `502`, `503`, `504`, `505`, `507`.
-* `error_type` - (Optional) The error that triggers the rule. `error.type.all` triggers the rule regardless of the error type. Possible values: `error.type.all`, `error.type.connection_timeout`, `error.type.access_denied`, `error.type.parse_req_error`, `error.type.parse_resp_error`, `error.type.connection_failed`, `error.type.deny_and_retry`, `error.type.ssl_failed`, `error.type.deny_and_captcha`, `error.type.2fa_required`, `error.type.no_ssl_config`, `error.type.no_ipv6_config`.
+* `response_code` - (Required) HTTP status code. For `RULE_ACTION_CUSTOM_ERROR_RESPONSE`, values are limited to `400`, `401`, `402`, `403`, `404`, `405`, `406`, `407`, `408`, `409`, `410`, `411`, `412`, `413`, `414`, `415`, `416`, `417`, `419`, `420`, `422`, `423`, `424`, `500`, `501`, `502`, `503`, `504`, `505`, `507`, `200`.
+* `error_type` - (Optional) The error that triggers the rule. `error.type.all` triggers the rule regardless of the error type. Possible values: `error.type.all`, `error.type.connection_timeout`, `error.type.access_denied`, `error.type.parse_req_error`, `error.type.parse_resp_error`, `error.type.connection_failed`, `error.type.deny_and_retry`, `error.type.ssl_failed`, `error.type.deny_and_captcha`, `error.type.2fa_required`, `error.type.no_ssl_config`, `error.type.no_ipv6_config`, `error.type.waiting_room`.
 * `error_response_format` - (Optional) The format of the given error response in the error_response_data field. Possible values: `json`, `xml`.
 * `error_response_data` - (Optional) The response returned when the request matches the filter and is blocked.
-* `enabled` - (Optional) Boolean that enables the rule. Default value is true.
+* `enabled` - (Optional) Boolean that enables the rule. Default value is `true`.
 
 
 ## `FORWARD` RULES
@@ -250,7 +250,7 @@ The following arguments are supported:
 * `dc_id` - (Required) ID of the data center to forward the request to.
 * `port_forwarding_context` - (Required) Context for port forwarding. Possible values: `Use Port Value` or `Use Header Name`.
 * `port_forwarding_value` - (Required) Port number or header name for port forwarding. When using a header, its value should be of format IP:PORT.
-* `enabled` - (Optional) Boolean that enables the rule. Possible values: true, false. Default value is true.
+* `enabled` - (Optional) Boolean that enables the rule. Possible values: `true`, `false`. Default value is `true`.
 
 
 ## Import
