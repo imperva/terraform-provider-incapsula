@@ -93,7 +93,7 @@ func TestAccIncapsulaDeliveryRule_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(forwardRulesResourceName, "rule.0.enabled", "true"),
 					resource.TestCheckResourceAttr(forwardRulesResourceName, "rule.0.action", "RULE_ACTION_FORWARD_TO_PORT"),
 					resource.TestCheckResourceAttr(forwardRulesResourceName, "rule.0.filter", "ASN == 1"),
-					resource.TestCheckResourceAttr(forwardRulesResourceName, "rule.0.port_forwarding_context", "Use Port Value"),
+					resource.TestCheckResourceAttr(forwardRulesResourceName, "rule.0.port_forwarding_context", "port"),
 					resource.TestCheckResourceAttr(forwardRulesResourceName, "rule.0.port_forwarding_value", "1234"),
 				),
 			},

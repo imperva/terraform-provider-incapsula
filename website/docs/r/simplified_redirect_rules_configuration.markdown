@@ -8,7 +8,7 @@ description: |-
 
 # incapsula_simplified_redirect_rules_configuration
 
-Provides simplified redirect rules, Similar to REDIRECT rules in `incapsula_delivery_rules_configuration` but with the following limitations:
+Provides simplified redirect rules. The functionality is similar to REDIRECT rules in `incapsula_delivery_rules_configuration` but with the following limitations:
 * They cannot specify a `filter` (logical predicate tested before executing the rule)
 * There cannot be 2 rules with the same origin (`from`) argument
 * Wildcards cannot be used in the origin (`from`) argument
@@ -16,7 +16,7 @@ Provides simplified redirect rules, Similar to REDIRECT rules in `incapsula_deli
 
 Due to their simplicity, the limits of simplified redirect rules per sites is much higher than normal rules (currently 20,000, compared to only 500 for other delivery rules).
 
-**Note:** Simplified redirect rules should be enabled in the account options before being able to use them. 
+**Note:** Simplified redirect rules should be enabled in the account settings before being able to use them. 
 
 ## Example Usage
 
@@ -44,7 +44,7 @@ resource "incapsula_simplified_redirect_rules_configuration" "simplified-redirec
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `rule_name` - (Required) Rule name.
 * `response_code` - (Required) Redirect status code. Valid values are `302`, `301`, `303`, `307`, `308`.
-* `from` - (Required) URL to rewrite. **Note**: this field must be unique among other rules of the same category.
+* `from` - (Required) URL to rewrite.
 * `to` - (Required) URL to change to.
 * `enabled` - (Optional) Boolean that enables the rule. Default value is `true`.
 
