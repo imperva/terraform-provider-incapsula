@@ -1,7 +1,7 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: custom-certificate"
-sidebar_current: "docs-incapsula-resource-custom-certificate"
+page_title: "incapsula_custom_certificate"
 description: |-
   Provides a Incapsula Custom Certificate resource.
 ---

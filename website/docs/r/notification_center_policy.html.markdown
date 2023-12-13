@@ -1,16 +1,18 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: notification-policy"
-sidebar_current: "docs-incapsula-resource-notification-policy"
-description: |- Provides a Incapsula Notification Policy resource.
+page_title: "incapsula_notification_center_policy"
+description: |-
+  Provides a Incapsula Notification Center Policy resource.
 ---
 
-# incapsula_notification_policy
+# incapsula_notification_center_policy
 
-Provides an Incapsula Notification Policy resource.
+Provides an Incapsula Notification Center Policy resource.
 
 ## Example Usage
-Notification policy that applies on sub-accounts
+Notification center policy that applies on subaccounts
+
 ```hcl
 resource "incapsula_notification_center_policy" "notification-policy-subaccount" {
   account_id = 12345
@@ -18,7 +20,7 @@ resource "incapsula_notification_center_policy" "notification-policy-subaccount"
   status = "ENABLE"
   sub_category = "SITE_NOTIFICATIONS"
   emailchannel_user_recipient_list = [1111, 2222]
-  emailchannel_external_recipient_list=["john.doe@company.com", "another.exernal.email@company.com"]      
+  emailchannel_external_recipient_list=["john.doe@company.com", "another.email@company.com"]      
   policy_type = "SUB_ACCOUNT"
   sub_account_list = [123456, incapsula_subaccount.tmp-subaccount.id]
 }
@@ -47,8 +49,7 @@ resource "incapsula_notification_center_policy" "notification-policy-account-wit
 ```
 Notification policy on sub-category with no relevance to assets
 ```hcl
-resource "incapsula_notification_policy" "demo-terraform-notification-policy" {
-  resource "incapsula_notification_center_policy" "notification-policy-account-without-assets" { 
+resource "incapsula_notification_center_policy" "notification-policy-account-without-assets" { 
   account_id = 12345
   policy_name = "Terraform policy account without assets"
   status = "ENABLE"
@@ -93,7 +94,7 @@ The following arguments are supported:
   so you have full control over your resources.
 
 
-Under the following conditions, you need to define at least 1 asset:\
+Under the following conditions, you need to define at least 1 asset:
 If the `policy_type` argument is `ACCOUNT`, and the chosen `sub_category` requires configuration of assets, and the 
 argument `apply_to_new_assets` is `FALSE`, then at least 1 asset must be defined.\
 The arguments that are supported in `asset` sub resource are:
@@ -112,5 +113,5 @@ The following attributes are exported:
 Notification Policy can be imported using the account_id/policy_id
 
 ```
-$ terraform import incapsula_notification_policy.demo-terraform-notification-policy 12345/9999
+$ terraform import incapsula_notification_center_policy.notification-policy-account-without-assets 12345/9999
 ```

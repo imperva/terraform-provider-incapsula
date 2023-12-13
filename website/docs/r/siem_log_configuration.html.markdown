@@ -1,29 +1,20 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: incapsula-siem-log-configuration"
-sidebar_current: "docs-incapsula-siem-log-configuration"
-description: |-
-Provides a Log Configuration resource.
+page_title: "incapsula_siem_log_configuration"
+description: |- 
+    Provides a Log Configuration resource.
 ---
 
 # incapsula_siem_log_configuration
 
-Provides a log configuration resource.
-This resource is used to manage log configurations which describe the desired log types
-and the destination for the log files. The destination is defined by the <connection ID>.
-[Learn more](https://docs.imperva.com/bundle/cloud-application-security/page/siem-log-configuration.htm)
+Provides a resource to configure a log connection.
 
+Dependency is on existing connection, created using the `incapsula_siem_connection` resource.
 
 ## Example Usage
 
 ```hcl
-resource "incapsula_siem_connection" "example_siem_connection_basic_auth"{
-	accountId = "1234567"
-	connectionName = "CWAF SIEM-LOGS CONNECTION"
-  	storageType = "CUSTOMER_S3_ARN"
-  	path = "myBucket/siem/logs"
-}
-
 resource "incapsula_siem_log_configuration" "example_siem_log_configuration_abp"{
     accountId = 1234567
   	configurationName = "ABP SIEM-LOGS configuration"

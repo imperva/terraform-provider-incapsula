@@ -1,8 +1,9 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: incap-api-security-endpoint-config"
-sidebar_current: "docs-incapsula-resource-api-security-endpoint-config"
-description: |- Provides a Incapsula API Security Endpoint Config resource.
+page_title: "incapsula_api_security_endpoint_config"
+description: |-
+  Provides a Incapsula API Security Endpoint Config resource.
 ---
 
 # incapsula_api_security_endpoint_config

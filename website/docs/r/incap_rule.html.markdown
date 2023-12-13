@@ -1,15 +1,11 @@
 ---
-layout: "incapsula"
-page_title: "Incapsula: incap-rule"
-sidebar_current: "docs-incapsula-resource-incap-rule"
-description: |-
+Provider Reference
   Provides a Incapsula Incap Rule resource.
 ---
 
 # incapsula_incap_rule
 
-Provides a Incapsula Incap Rule resource. 
-Incap Rules include security, delivery, and rate rules.
+Provides a resource to create security, delivery, and rate rules.
 
 ## Example Usage
 

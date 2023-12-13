@@ -1,17 +1,15 @@
 ---
+subcategory: "Deprecated"
 layout: "incapsula"
-page_title: "Incapsula: data-center-server"
-sidebar_current: "docs-incapsula-resource-data-center-server"
+page_title: "incapsula_data_center_server"
 description: |-
   Provides a Incapsula Data Center Server resource.
 ---
 
-# incapsula_data_center_server
+-> DEPRECATED: incapsula_data_center_server
 
-Provides a Incapsula Data Center Server resource. 
-
-This resource is deprecated. It will be removed in a future version. 
-Please use resource incapsula_data_centers_configuration instead.
+This resource has been deprecated. It will be removed in a future version. 
+Please use the current `incapsula_data_centers_configuration` resource instead.
 
 ## Example Usage
 

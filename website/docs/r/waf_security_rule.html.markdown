@@ -1,17 +1,14 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: waf-security-rule"
-sidebar_current: "docs-incapsula-resource-waf-security-rule"
+page_title: "incapsula_waf_security_rule"
 description: |-
   Provides a Incapsula WAF Security Rule resource.
 ---
 
 # incapsula_waf_security_rule
 
-Provides a Incapsula WAF Security Rule resource. 
-
-**Note**: We are currently rolling out the new WAF Rules policy feature. After it is enabled for your account, the related settings are no longer available on this page. For more details, see
- [Create and Manage Policies](https://docs.imperva.com/bundle/cloud-application-security/page/policies.htm).
+Provides a resource to create a subset of WAF security rules.  See, `incapsula_policy` resource for additional WAF security rule types.
 
 ## Example Usage
 
@@ -20,30 +17,6 @@ resource "incapsula_waf_security_rule" "example-waf-backdoor-rule" {
   site_id = incapsula_site.example-site.id
   rule_id = "api.threats.backdoor"
   security_rule_action = "api.threats.action.quarantine_url" # (api.threats.action.quarantine_url (default) | api.threats.action.alert | api.threats.action.disabled | api.threats.action.quarantine_url)
-}
-
-resource "incapsula_waf_security_rule" "example-waf-cross-site-scripting-rule" {
-  site_id = incapsula_site.example-site.id
-  rule_id = "api.threats.cross_site_scripting"
-  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
-}
-
-resource "incapsula_waf_security_rule" "example-waf-illegal-resource-rule" {
-  site_id = incapsula_site.example-site.id
-  rule_id = "api.threats.illegal_resource_access"
-  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
-}
-
-resource "incapsula_waf_security_rule" "example-waf-remote-file-inclusion-rule" {
-  site_id = incapsula_site.example-site.id
-  rule_id = "api.threats.remote_file_inclusion"
-  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
-}
-
-resource "incapsula_waf_security_rule" "example-waf-sql-injection-rule" {
-  site_id = incapsula_site.example-site.id
-  rule_id = "api.threats.sql_injection"
-  security_rule_action = "api.threats.action.block_ip" # (api.threats.action.disabled | api.threats.action.alert | api.threats.action.block_request | api.threats.action.block_user | api.threats.action.block_ip)
 }
 
 resource "incapsula_waf_security_rule" "example-waf-bot-access-control-rule" {

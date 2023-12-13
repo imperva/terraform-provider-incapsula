@@ -1,12 +1,17 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: account-policy-association"
-sidebar_current: "docs-incapsula-resource-account-policy-association"
+page_title: "incapsula_account_policy_association"
 description: |-
 Provides an Incapsula Account Policy Association resource.
 ---
+
 # incapsula_account_policy_association
+
 Provides an Incapsula Account Policy Association resource.
+
+Dependency is on existing policies, created using the `incapsula_policy` resource.
+
 ## Example Usage 
 
 ### Basic Usage - Account Policy Association for account before migration - `default_waf_policy_id` is not set

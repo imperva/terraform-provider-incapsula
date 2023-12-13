@@ -1,8 +1,8 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: subaccount"
-sidebar_current: "docs-incapsula-resource-subaccount"
-description: |-
+page_title: "incapsula_subaccount"
+description: |- 
   Provides a Incapsula SubAccount resource.
 ---
 
@@ -35,8 +35,11 @@ The following arguments are supported:
 * `log_level` - (Optional) The log level. Options are `full`, `security`, `none`, `default`.
 * `data_storage_region` - (Optional) Default data region of the sub-account for newly created sites. Options are `APAC`, `EU`, `US` and `AU`. Defaults to `US`.
 
-SubAccount can be imported using the `id`, e.g.:
+## Attributes Reference
 
+The following attributes are exported:
+
+* `id` - Unique identifier in the API for the Sub Account ID.
 ```
 $ terraform import incapsula_subaccount.demo 1234
 ```

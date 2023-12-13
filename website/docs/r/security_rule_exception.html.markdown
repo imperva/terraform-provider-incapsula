@@ -1,17 +1,14 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: security-rule-exception"
-sidebar_current: "docs-incapsula-resource-security-rule-exception"
-description: |-
+page_title: "incapsula_security_rule_exception"
+description: |- 
   Provides a Incapsula Security Rule Exception resource.
 ---
 
 # incapsula_security_rule_exception
 
-Provides a Incapsula Security Rule Exception resource.  Important to note that based on the rule_id the exception is being created for, that there are rule specific parameters that apply to each.  The example resources listed below include all of the supported resources for each rule_id or rule type, although it is not required to use all listed parameters when creating an exception. Exception parameters are optional but at least one is required.
-
-**Note**: We are currently rolling out the new WAF Rules policy feature. After it is enabled for your account, the related settings are no longer available on this page. For more details, see
- [Create and Manage Policies](https://docs.imperva.com/bundle/cloud-application-security/page/policies.htm).
+This resource enables you to configure exceptions to WAF security rules and policies.
 
 ## Example Usage
 
@@ -101,6 +98,7 @@ resource "incapsula_security_rule_exception" "example-waf-sql-injection-rule-exc
 ## Argument Reference
 
 The following arguments are supported:
+At least one Optional argument is required.
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `rule_id` - (Required) The identifier of the WAF rule, e.g api.threats.cross_site_scripting.

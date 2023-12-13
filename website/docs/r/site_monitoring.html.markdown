@@ -1,8 +1,9 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: site_monitoring"
-sidebar_current: "docs-incapsula-resource-site_monitoring"
-description: |- Provides a Incapsula Site Monitoring resource.
+page_title: "incapsula_site_monitoring"
+description: |- 
+  Provides a Incapsula Site Monitoring resource.
 ---
 
 # incapsula_site_monitoring
