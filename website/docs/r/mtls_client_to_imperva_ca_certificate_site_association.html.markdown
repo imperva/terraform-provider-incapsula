@@ -1,9 +1,9 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: site-mtls-client-to-imperva-ca-certificate-site-association"
-sidebar_current: "docs-incapsula-mtls-client-to-imperva-ca-certificate-site-association"
+page_title: "incapsula_mtls_client_to_imperva_ca_certificate_site_association"
 description: |-
-Provides an Incapsula Site to Mutual TLS Client to Imperva CA Certificate Association resource.
+    Provides an Incapsula Site to Mutual TLS Client to Imperva CA Certificate Association resource.
 ---
 
 # incapsula_mtls_client_to_imperva_ca_certificate_site_association

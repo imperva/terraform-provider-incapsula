@@ -1,8 +1,8 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: site-domains-configuration"
-sidebar_current: "docs-incapsula-resource-site-domains-configuration"
-description:
+page_title: "incapsula_site_domain_configuration"
+description: |- 
   Provides an Incapsula Site Domains Configuration resource.
 ---
 

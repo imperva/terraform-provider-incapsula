@@ -1,8 +1,9 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: application_delivery"
-sidebar_current: "docs-incapsula-resource-application_delivery"
-description: |- Provides a Incapsula Application Delivery resource.
+page_title: "incapsula_application_delivery"
+description: |-
+  Provides a Incapsula Application Delivery resource.
 ---
 
 # incapsula_application_delivery
@@ -22,8 +23,8 @@ resource "incapsula_application_delivery" "example_application_delivery" {
 	minify_css                  = true
 	minify_js                   = true
 	minify_static_html          = false
-	default_error_page_template = "<html><body><h1>default_error_page_template</h1><div>1</div></body></html>"
-	error_access_denied         = "<html><body><h1>error_access_denied</h1><div>/div></body></html>"
+	default_error_page_template = "<html><body><h1>$TITLE$</h1><p>$BODY$</p><div>1</div></body></html>"
+	error_access_denied         = "<html><body><h1>$TITLE$</h1><p>$BODY$</p><div>1</div></body></html>"
 	error_connection_failed     = "${file("error_page_example.txt")}"
 	aggressive_compression      = true
 	compress_jpeg               = false

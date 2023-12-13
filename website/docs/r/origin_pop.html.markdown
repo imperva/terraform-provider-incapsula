@@ -1,7 +1,7 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: origin-pop"
-sidebar_current: "docs-incapsula-resource-origin-pop"
+page_title: "incapsula_origin_pop"
 description: |-
   Provides a Incapsula Data Center Origin POP association resource.
 ---

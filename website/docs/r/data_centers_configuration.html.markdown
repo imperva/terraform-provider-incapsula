@@ -1,7 +1,7 @@
 ---
+subcategory: "Deprecated"
 layout: "incapsula"
-page_title: "Incapsula: data-centers-configuration"
-sidebar_current: "docs-incapsula-resource-data-centers-configuration"
+page_title: "incapsula_data_centers_configuration"
 description: |-
   Provides a Incapsula Data Centers Configuration resource.
 ---

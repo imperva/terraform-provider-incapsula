@@ -1,8 +1,9 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: mtls-client-to-incapsula-ca-certificate-site-settings"
-sidebar_current: "docs-incapsula-resource-mtls-client-to-incapsula-ca-certificate-site-settings"
-description: |- Provides an Incapsula MTLS Client to Imperva Certificate Site Settings resource.
+page_title: "incapsula_mtls_client_to_imperva_ca_certificate_site_settings"
+description: |-
+  Provides an Incapsula MTLS Client to Imperva Certificate Site Settings resource.
 ---
 
 # incapsula_mtls_client_to_imperva_ca_certificate_site_settings
