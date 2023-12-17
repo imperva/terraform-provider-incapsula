@@ -227,7 +227,7 @@ resource "incapsula_delivery_rules_configuration" "rewrite-forward-rules" {
 
   rule {
     filter = "ASN == 1"
-    port_forwarding_context = "[Use Header Name/Use Port Value]"
+    port_forwarding_context = "[header|port]"
     port_forwarding_value = 1234
     rule_name = "New delivery rule"
     action = "RULE_ACTION_FORWARD_TO_PORT"

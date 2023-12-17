@@ -222,7 +222,7 @@ resource "%s" "%s" {
   rule {
   	rule_name = "%s"
 	filter = "ASN == 1"
-    port_forwarding_context = "Use Port Value"
+    port_forwarding_context = "port"
     port_forwarding_value = "1234"
     action = "RULE_ACTION_FORWARD_TO_PORT"
     enabled = "true"
