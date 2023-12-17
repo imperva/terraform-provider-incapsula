@@ -80,7 +80,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - Unique identifier in the API for the data centers configuration. The id is identical to Site id.
+* `id` - Unique identifier in the API for the application delivery configuration. The id is identical to Site id.
 
 ## Import
 
