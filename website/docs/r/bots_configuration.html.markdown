@@ -8,14 +8,14 @@ description: |-
 
 # incapsula_bots_configuration
 
-Provides an Incapsula BOT Access Control Configuration resource.
-Each Site has a Good Bots list and a Bad Bots list already configured. This resource allows you to customize them.
+Provides an Incapsula Bot Access Control Configuration resource.
+Each site has a Good Bots list and a Bad Bots list already configured. This resource allows you to customize these lists.
 <br/>
-<strong>canceled_good_bots</strong> list is used to cancel (uncheck in UI) the default Good Bots.
+The <strong>canceled_good_bots</strong> list is used to remove bots from the default Good Bots list.
 <br/>
-<strong>bad_bots</strong> list is used to customize additional Bad Bots
-from Imperva’s predefined list of bad bots.
+The <strong>bad_bots</strong> list is used to add additional bots to Imperva’s predefined list of bad bots.
 
+The client application names and their Imperva IDs are needed for customizing the good bot and bad bot lists. 
 In order to get the latest list, use the <b>/api/integration/v1/clapps</b> found in the <b>Integration</b> section of the 
 [Cloud Application Security v1/v3 API Definition page.](https://docs.imperva.com/bundle/cloud-application-security/page/cloud-v1-api-definition.htm)
 
@@ -24,7 +24,7 @@ In order to get the latest list, use the <b>/api/integration/v1/clapps</b> found
 
 ### Basic Usage - Lists
 
-The basic usage is to use lists of client application ids.
+The basic usage is to use lists of the client application Imperva IDs.
 
 ```hcl
 resource "incapsula_bots_configuration" "example-basic-bots-configuration" {
@@ -36,7 +36,7 @@ resource "incapsula_bots_configuration" "example-basic-bots-configuration" {
 
 ### Data Sources Usage
 
-Using `incapsula_client_apps_data` data sources we can use Client Application names that is more "human-readable".
+Using `incapsula_client_apps_data` data sources we can use the "human-readable" client application names instead of the Imperva IDs.
 
 Both lists (canceled_good_bots and bad_bots) can access the data sources in 2 ways:
 * `ids` - Contains the Ids of each Client Application name set in `filter` argument (if set in the data source)
@@ -91,13 +91,13 @@ The following arguments are supported:
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 
-* `canceled_good_bots` - (Optional) List of Bot IDs taken from Imperva’s predefined list of bad bots
+* `canceled_good_bots` - (Optional) List of bot IDs taken from Imperva’s predefined list of bad bots
 
-  Default value is an empty list - Will restore the default Canceled Good Bots list
+  Default value is an empty list. This restores the default <strong>Canceled Good Bots</strong> list.
 
 * `bad_bots` - (Optional) List of Bot IDs taken from Imperva’s predefined list of bad bots
 
-  Default value is an empty list - Will restore the default Bad Bots list (empty list)
+  Default value is an empty list. This restores the default <strong>Bad Bots</strong> list (empty).
 
 ## Attributes Reference
 
@@ -107,8 +107,7 @@ The following attributes are exported:
 
 ## Import
 
-Bots Configuration can be imported using the `id` -
-the id is identical to Site id, e.g.:
+The bot configuration can be imported using the `id`. The ID is identical to site ID. For example:
 ```
 $ terraform import incapsula_bots_configuration.demo 1234
 ```

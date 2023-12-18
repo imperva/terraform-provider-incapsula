@@ -117,6 +117,16 @@ const ReadCspSiteDomain = "read_csp_site_domain"
 const UpdateCspSiteDomain = "update_csp_site_domain"
 const DeleteCspSiteDomain = "delete_csp_site_domain"
 
+const CreateATOSiteAllowlistOperation = "create_ato_site_allowlist"
+const ReadATOSiteAllowlistOperation = "read_ato_site_allowlist"
+const UpdateATOSiteAllowlistOperation = "read_ato_site_allowlist"
+const DeleteATOSiteAllowlistOperation = "read_ato_site_allowlist"
+
+const CreateATOSiteMitigationConfigurationOperation = "create_ato_site_mitigation_configuration"
+const ReadATOSiteMitigationConfigurationOperation = "read_ato_site_mitigation_configuration"
+const UpdateATOSiteMitigationConfigurationOperation = "read_ato_site_mitigation_configuration"
+const DeleteATOSiteMitigationConfigurationOperation = "read_ato_site_mitigation_configuration"
+
 const CreateNotificationCenterPolicy = "create_notification_center_policy"
 const ReadNotificationCenterPolicy = "read_notification_center_policy"
 const UpdateNotificationCenterPolicy = "update_notification_center_policy"
@@ -146,6 +156,8 @@ const DeleteMtlsClientToImpervaCertifiateSiteAssociation = "delete_mtls_client_t
 
 const CreateSiteTlsSettings = "create_site_tls_settings"
 const ReadSiteTlsSettings = "read_site_tls_settings"
+const UpdateSiteSSLSettings = "update_site_ssl_settings"
+const ReadSiteSSLSettings = "read_site_ssl_settings"
 
 const CreateAccountRole = "create_account_role"
 const ReadAccountRole = "read_account_role"
@@ -179,3 +191,8 @@ const CreateWaitingRoom = "create_waiting_room"
 const ReadWaitingRoom = "read_waiting_room"
 const UpdateWaitingRoom = "update_waiting_room"
 const DeleteWaitingRoom = "delete_waiting_room"
+
+const CreateAbpWebsites = "create_abp_websites"
+const ReadAbpWebsites = "read_abp_websites"
+const UpdateAbpWebsites = "update_abp_websites"
+const DeleteAbpWebsites = "delete_abp_websites"

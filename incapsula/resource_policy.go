@@ -44,10 +44,12 @@ func resourcePolicy() *schema.Resource {
 					oldValue = strings.ReplaceAll(oldValue, " ", "")
 					oldValue = strings.ReplaceAll(oldValue, "\n", "")
 					oldValue = strings.ReplaceAll(oldValue, ",\"data\":{}", "")
+					oldValue = strings.ReplaceAll(oldValue, ",\"policyDataExceptions\":[]", "")
 
 					newValue = strings.ReplaceAll(newValue, " ", "")
 					newValue = strings.ReplaceAll(newValue, "\n", "")
 					newValue = strings.ReplaceAll(newValue, ",\"data\":{}", "")
+					newValue = strings.ReplaceAll(newValue, ",\"policyDataExceptions\":[]", "")
 					return suppressEquivalentJSONStringDiffs(k, oldValue, newValue, d)
 				},
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {

@@ -85,7 +85,7 @@ The following arguments are supported:
 * `perf_key_comply_vary` - (Optional) Comply with Vary. Cache resources in accordance with the Vary response header.
 * `perf_key_unite_naked_full_cache` - (Optional) Use the Same Cache for Full and Naked Domains. For example, use the same cached resource for www.example.com/a and example.com/a.
 * `perf_mode_https` - (Optional) The resources that are cached over HTTPS, the general level applies. Options are `disabled`, `dont_include_html`, `include_html`, and `include_all_resources`.
-* `perf_mode_level` - (Optional) Caching level. Options are `disabled`, `standard`, `smart`, and `all_resources`.
+* `perf_mode_level` - (Optional) Caching level. Options are `disabled`, `custom_cache_rules_only`, `standard`, `smart`, and `all_resources`.
 * `perf_mode_time` - (Optional) The time, in seconds, that you set for this option determines how often the cache is refreshed. Relevant for the `include_html` and `include_all_resources` levels only.
 * `perf_response_cache_300x` - (Optional) When this option is checked Imperva will cache 301, 302, 303, 307, and 308 redirect response headers containing the target URI.
 * `perf_response_cache_404_enabled` - (Optional) Whether or not to cache 404 responses.
@@ -114,7 +114,7 @@ The following attributes are exported:
 * `dns_a_record_name` - The A record name.
 * `dns_a_record_value` - The A record value.
 * `domain_verification` - The domain verification (e.g. GlobalSign verification, HTML meta tag).
-* `dns_record_name` - The TXT record that needs to be updated with the `domain_verification` value.
+* `dns_record_name` - The DNS Record type TXT that should be created and set to the `domain_verification` output value.
 * `original_data_center_id` - Numeric representation of the data center created with the site. This parameter is
   deprecated. Please, use data_source_data_center instead.
 

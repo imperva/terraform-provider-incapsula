@@ -69,6 +69,7 @@ func resourceIncapRule() *schema.Resource {
 				Description: "Rewrite cookie or header if it exists.",
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     true,
 			},
 			"from": {
 				Description: "Pattern to rewrite. For `RULE_ACTION_REWRITE_URL` - Url to rewrite. For `RULE_ACTION_REWRITE_HEADER` and `RULE_ACTION_RESPONSE_REWRITE_HEADER` - Header value to rewrite. For `RULE_ACTION_REWRITE_COOKIE` - Cookie value to rewrite.",
@@ -153,14 +154,23 @@ func resourceIncapRule() *schema.Resource {
 
 func resourceIncapRuleCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
+	rewriteExisting := new(bool)
+	action := d.Get("action").(string)
+
+	//#MY-15714 rewrite_existing mustn't be set for other rule types
+	if action == "RULE_ACTION_RESPONSE_REWRITE_HEADER" || action == "RULE_ACTION_REWRITE_HEADER" || action == "RULE_ACTION_REWRITE_COOKIE" {
+		*rewriteExisting = d.Get("rewrite_existing").(bool)
+	} else {
+		rewriteExisting = nil
+	}
 
 	rule := IncapRule{
 		Name:                  d.Get("name").(string),
-		Action:                d.Get("action").(string),
+		Action:                action,
 		Filter:                d.Get("filter").(string),
 		ResponseCode:          d.Get("response_code").(int),
 		AddMissing:            d.Get("add_missing").(bool),
-		rewriteExisting:       d.Get("rewrite_existing").(bool),
+		RewriteExisting:       rewriteExisting,
 		From:                  d.Get("from").(string),
 		To:                    d.Get("to").(string),
 		RewriteName:           d.Get("rewrite_name").(string),
@@ -216,7 +226,6 @@ func resourceIncapRuleRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("filter", rule.Filter)
 	d.Set("response_code", rule.ResponseCode)
 	d.Set("add_missing", rule.AddMissing)
-	d.Set("rewrite_existing", rule.rewriteExisting)
 	d.Set("from", rule.From)
 	d.Set("to", rule.To)
 	d.Set("rewrite_name", rule.RewriteName)
@@ -233,19 +242,39 @@ func resourceIncapRuleRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("override_waf_action", rule.OverrideWafAction)
 	d.Set("enabled", rule.Enabled)
 
+	action := d.Get("action").(string)
+
+	if action == "RULE_ACTION_RESPONSE_REWRITE_HEADER" || action == "RULE_ACTION_REWRITE_HEADER" || action == "RULE_ACTION_REWRITE_COOKIE" {
+		if rule.RewriteExisting != nil {
+			d.Set("rewrite_existing", *rule.RewriteExisting)
+		}
+	} else {
+		//align with schema default to avoid diff when importing resources
+		d.Set("rewrite_existing", true)
+	}
+
 	return nil
 }
 
 func resourceIncapRuleUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
+	rewriteExisting := new(bool)
+	action := d.Get("action").(string)
+
+	//#MY-15714 rewrite_existing mustn't be set for other rule types
+	if action == "RULE_ACTION_RESPONSE_REWRITE_HEADER" || action == "RULE_ACTION_REWRITE_HEADER" || action == "RULE_ACTION_REWRITE_COOKIE" {
+		*rewriteExisting = d.Get("rewrite_existing").(bool)
+	} else {
+		rewriteExisting = nil
+	}
 
 	rule := IncapRule{
 		Name:                  d.Get("name").(string),
-		Action:                d.Get("action").(string),
+		Action:                action,
 		Filter:                d.Get("filter").(string),
 		ResponseCode:          d.Get("response_code").(int),
 		AddMissing:            d.Get("add_missing").(bool),
-		rewriteExisting:       d.Get("rewrite_existing").(bool),
+		RewriteExisting:       rewriteExisting,
 		From:                  d.Get("from").(string),
 		To:                    d.Get("to").(string),
 		RewriteName:           d.Get("rewrite_name").(string),

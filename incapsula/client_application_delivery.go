@@ -42,8 +42,8 @@ type Network struct {
 	TcpPrePooling         bool    `json:"tcp_pre_pooling"`
 	OriginConnectionReuse bool    `json:"origin_connection_reuse"`
 	SupportNonSniClients  bool    `json:"support_non_sni_clients"`
-	EnableHttp2           bool    `json:"enable_http2"`
-	Http2ToOrigin         bool    `json:"http2_to_origin"`
+	EnableHttp2           *bool   `json:"enable_http2"`
+	Http2ToOrigin         *bool   `json:"http2_to_origin"`
 	Port                  Port    `json:"port"`
 	SslPort               SslPort `json:"ssl_port"`
 }
@@ -77,14 +77,15 @@ type RedirectionStr struct {
 }
 
 type CustomErrorPageTemplates struct {
-	ErrorConnectionTimeout string `json:"error.type.connection_timeout"`
-	ErrorAccessDenied      string `json:"error.type.access_denied"`
-	ErrorParseReqError     string `json:"error.type.parse_req_error"`
-	ErrorParseRespError    string `json:"error.type.parse_resp_error"`
-	ErrorConnectionFailed  string `json:"error.type.connection_failed"`
-	ErrorSslFailed         string `json:"error.type.ssl_failed"`
-	ErrorDenyAndCaptcha    string `json:"error.type.deny_and_captcha"`
-	ErrorTypeNoSslConfig   string `json:"error.type.no_ssl_config"`
+	ErrorConnectionTimeout       string `json:"error.type.connection_timeout"`
+	ErrorAccessDenied            string `json:"error.type.access_denied"`
+	ErrorParseReqError           string `json:"error.type.parse_req_error"`
+	ErrorParseRespError          string `json:"error.type.parse_resp_error"`
+	ErrorConnectionFailed        string `json:"error.type.connection_failed"`
+	ErrorSslFailed               string `json:"error.type.ssl_failed"`
+	ErrorDenyAndCaptcha          string `json:"error.type.deny_and_captcha"`
+	ErrorTypeNoSslConfig         string `json:"error.type.no_ssl_config"`
+	ErrorAbpIdentificationFailed string `json:"error.type.abp_identification_failed"`
 }
 
 type CustomErrorPage struct {

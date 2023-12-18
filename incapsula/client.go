@@ -34,7 +34,7 @@ type Client struct {
 func NewClient(config *Config) *Client {
 	client := &http.Client{}
 
-	return &Client{config: config, httpClient: client, providerVersion: "3.16.0"}
+	return &Client{config: config, httpClient: client, providerVersion: "3.21.0"}
 }
 
 func (c *Client) CreateFormDataBody(bodyMap map[string]interface{}) ([]byte, string) {
@@ -83,7 +83,7 @@ func (c *Client) Verify() (*AccountStatusResponse, error) {
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
 	// Dump JSON
-	log.Printf("[DEBUG] Incapsula account JSON response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] Successful test of API credentials.")
 
 	// Parse the JSON
 	var accountStatusResponse AccountStatusResponse
