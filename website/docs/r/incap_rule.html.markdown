@@ -8,8 +8,7 @@ description: |-
 
 # incapsula_incap_rule
 
-Provides a Incapsula Incap Rule resource. 
-Incap Rules include security, delivery, and rate rules.
+Create your own security, delivery, and access control rules on top of Imperva's existing security and application delivery logic.
 
 ## Example Usage
 

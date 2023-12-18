@@ -156,6 +156,7 @@ func resourceApiSecurityAPIConfigUpdate(d *schema.ResourceData, m interface{}) e
 		ValidateHost:     false,
 		Description:      d.Get("description").(string),
 		ApiSpecification: d.Get("api_specification").(string),
+		BasePath:         d.Get("base_path").(string),
 		ViolationActions: ViolationActions{
 			InvalidUrlViolationAction:        d.Get("invalid_url_violation_action").(string),
 			InvalidMethodViolationAction:     d.Get("invalid_method_violation_action").(string),
