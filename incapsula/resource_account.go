@@ -110,6 +110,13 @@ func resourceAccount() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"inactivity_timeout": {
+				Description:  "Duration of inactivity in minutes before timeout. Options are 15,30,60,90,120.",
+				Type:         schema.TypeInt,
+				Default:      15,
+				Optional:     true,
+				ValidateFunc: validation.IntInSlice([]int{15, 30, 60, 90, 120}),
+			},
 
 			// Computed Attributes
 			"support_level": {
@@ -210,6 +217,7 @@ func resourceAccountRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("wildcard_san_for_new_sites", accountStatusResponse.Account.WildcardSANForNewSites)
 	d.Set("naked_domain_san_for_new_www_sites", strconv.FormatBool(accountStatusResponse.Account.NakedDomainSANForNewWWWSites))
 	d.Set("consent_required", accountStatusResponse.ConsentRequired)
+	d.Set("inactivity_timeout", accountStatusResponse.Account.InactivityTimeout)
 
 	// Get the performance settings for the site
 	defaultAccountDataStorageRegion, err := client.GetAccountDataStorageRegion(d.Id())
@@ -226,7 +234,6 @@ func resourceAccountRead(d *schema.ResourceData, m interface{}) error {
 
 func resourceAccountUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-
 	updateParams := [7]string{"email", "plan_id", "ref_id", "error_page_template", "support_all_tls_versions", "naked_domain_san_for_new_www_sites", "wildcard_san_for_new_sites"}
 	for i := 0; i < len(updateParams); i++ {
 		param := updateParams[i]
@@ -283,7 +290,8 @@ func resourceAccountDelete(d *schema.ResourceData, m interface{}) error {
 
 func updateAdditionalAccountProperties(client *Client, d *schema.ResourceData) error {
 	consentRequiredParam := "consent_required"
-	updateParams := [6]string{"account_name", "error_page_template", "support_all_tls_versions", "naked_domain_san_for_new_www_sites", "wildcard_san_for_new_sites", consentRequiredParam}
+	defaultInactivityTimeout := "15"
+	updateParams := [7]string{"account_name", "error_page_template", "support_all_tls_versions", "naked_domain_san_for_new_www_sites", "wildcard_san_for_new_sites", consentRequiredParam, "inactivity_timeout"}
 	for i := 0; i < len(updateParams); i++ {
 		param := updateParams[i]
 		if d.HasChange(param) {
@@ -291,6 +299,12 @@ func updateAdditionalAccountProperties(client *Client, d *schema.ResourceData) e
 
 			if param == consentRequiredParam {
 				paramValStr = strconv.FormatBool(d.Get(param).(bool))
+			} else if param == "inactivity_timeout" {
+				if d.Get(param).(int) == 0 {
+					paramValStr = defaultInactivityTimeout
+				} else {
+					paramValStr = strconv.Itoa(d.Get(param).(int))
+				}
 			} else {
 				paramValStr = d.Get(param).(string)
 			}

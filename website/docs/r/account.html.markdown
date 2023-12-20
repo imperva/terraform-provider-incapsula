@@ -23,6 +23,7 @@ resource "incapsula_account" "example-account" {
   logs_account_id                    = "456"
   log_level                          = "full"
   consent_required                   = true
+  inactivity_timeout                 = 15
 
   data_storage_region                = "US"
 
@@ -52,6 +53,7 @@ The following arguments are supported:
 * `wildcard_san_for_new_sites` - (Optional) Add wildcard SAN to Incapsula SSL certificates for new sites. Options are `true`, `false` and `default`. Defaults to `default`.  
                                Note: This argument is deprecated. Use use_wild_card_san_instead_of_fqdn in the account_ssl_settings resource instead.
 * `error_page_template` - (Optional) Base64 encoded template for an error page.
+* `inactivity_timeout` - (Optional) Duration of inactivity in minutes before timeout. Options are 15,30,60,90,120. Defaults to 15 (recommended and compliance with regulatory requirements).
 
 ## Attributes Reference
 
