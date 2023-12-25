@@ -258,5 +258,5 @@ The following arguments are supported:
 Delivery rules configuration can be imported using the site_id and category separated by /, e.g.:
 
 ```
-$ terraform import delivery_rules_configuration.demo site_id/category
+$ terraform import incapsula_delivery_rules_configuration.demo site_id/category
 ```
