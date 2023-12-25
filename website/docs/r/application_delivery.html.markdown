@@ -2,7 +2,8 @@
 layout: "incapsula"
 page_title: "Incapsula: application_delivery"
 sidebar_current: "docs-incapsula-resource-application_delivery"
-description: |- Provides a Incapsula Application Delivery resource.
+description: |-
+  Provides a Incapsula Application Delivery resource.
 ---
 
 # incapsula_application_delivery
