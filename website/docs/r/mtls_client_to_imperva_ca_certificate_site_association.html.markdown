@@ -33,12 +33,12 @@ resource "incapsula_mtls_client_to_imperva_ca_certificate" "client_ca_certificat
 }
 
 resource "incapsula_mtls_client_to_imperva_ca_certificate_site_association" "site_certificate_association_1" {
-    certificate_id     = incapsula_mtls_client_to_imperva_certificate.client_ca_certificate_1.id
+    certificate_id     = incapsula_mtls_client_to_imperva_ca_certificate.client_ca_certificate_1.id
     site_id            = incapsula_site.example-site-1.id
 }
 
 resource "incapsula_mtls_client_to_imperva_ca_certificate_site_association" "site_certificate_association_2" {
-    certificate_id     = incapsula_mtls_client_to_imperva_certificate.client_ca_certificate_2.id
+    certificate_id     = incapsula_mtls_client_to_imperva_ca_certificate.client_ca_certificate_2.id
     site_id            = incapsula_site.example-site-1.id
 }
 ```
