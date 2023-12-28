@@ -90,7 +90,7 @@ func resourceAccountUser() *schema.Resource {
 		},
 
 		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
-			// UM-9256/UM-9900 - wrong 'role_names' value after update roles on a user
+			// Wrong 'role_names' value after update roles on a user
 			// Root cause is a known issue on Computed attributes with TypeSet type
 			// Solution: https://github.com/hashicorp/terraform-provider-aws/issues/17161#issuecomment-762942937
 			if diff.HasChange("role_ids") {
