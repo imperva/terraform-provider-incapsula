@@ -11,7 +11,7 @@ import (
 
 func TestUpdateSiteSSLSettingsHandleBadConnection(t *testing.T) {
 	// arrange
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURLRev3: "badness.incapsula.com"}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLRev3: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	sslSettingsDTO := getUpdateSiteSSLSettingsDTO()
 
@@ -34,7 +34,7 @@ func TestUpdateSiteSSLSettingsHandleResponseCodeNotSuccess(t *testing.T) {
 	apiKey := "bar"
 	siteID := 42
 
-	endpoint := fmt.Sprintf("/sites/%d/settings/TLSConfiguration", siteID)
+	endpoint := fmt.Sprintf("/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(406)
@@ -71,7 +71,7 @@ func TestUpdateSiteSSLSettingsHandleInvalidResponseBody(t *testing.T) {
 	apiKey := "bar"
 	siteID := 42
 
-	endpoint := fmt.Sprintf("/sites/%d/settings/TLSConfiguration", siteID)
+	endpoint := fmt.Sprintf("/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", siteID)
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
 
@@ -110,7 +110,7 @@ func TestUpdateSiteSSLSettingsSuccess(t *testing.T) {
 
 	validResponse := getValidJSONResponse()
 
-	endpoint := fmt.Sprintf("/sites/%d/settings/TLSConfiguration", siteID)
+	endpoint := fmt.Sprintf("/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", siteID)
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
 
@@ -163,7 +163,7 @@ func TestReadSiteSSLSettingsHandleResponseCodeNotSuccess(t *testing.T) {
 	apiKey := "bar"
 	siteID := 42
 
-	endpoint := fmt.Sprintf("/sites/%d/settings/TLSConfiguration", siteID)
+	endpoint := fmt.Sprintf("/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(406)
@@ -199,7 +199,7 @@ func TestReadSiteSSLSettingsHandleInvalidResponseBody(t *testing.T) {
 	apiKey := "bar"
 	siteID := 42
 
-	endpoint := fmt.Sprintf("/sites/%d/settings/TLSConfiguration", siteID)
+	endpoint := fmt.Sprintf("/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", siteID)
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
 
@@ -237,7 +237,7 @@ func TestReadSiteSSLSettingsSuccess(t *testing.T) {
 
 	var validResponse = getValidJSONResponse()
 
-	endpoint := fmt.Sprintf("/sites/%d/settings/TLSConfiguration", siteID)
+	endpoint := fmt.Sprintf("/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", siteID)
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
 
@@ -265,9 +265,9 @@ func TestReadSiteSSLSettingsSuccess(t *testing.T) {
 	}
 }
 
-func getUpdateSiteSSLSettingsDTO() SSLSettingsDTO {
-	var sslSettingsDTO = SSLSettingsDTO{
-		Data: []Data{
+func getUpdateSiteSSLSettingsDTO() SSLSettingsResponse {
+	var sslSettingsDTO = SSLSettingsResponse{
+		Data: []SSLSettingsDTO{
 			{
 				HstsConfiguration: HSTSConfiguration{
 					PreLoaded:          true,
@@ -275,10 +275,30 @@ func getUpdateSiteSSLSettingsDTO() SSLSettingsDTO {
 					SubDomainsIncluded: true,
 					IsEnabled:          true,
 				},
+				InboundTLSSettingsConfiguration: &InboundTLSSettingsConfiguration{
+					ConfigurationProfile: "CUSTOM",
+					TLSConfigurations: []TLSConfiguration{
+						{
+							TLSVersion: "TLS 1.1",
+							CiphersSupport: []string{
+								"TLS_AES_128_GCM_SHA256",
+								"TLS_AES_128_GCM_SHA256",
+							},
+						},
+						{
+							TLSVersion: "TLS 1.2",
+							CiphersSupport: []string{
+								"TLS_AES_128_GCM_SHA256",
+								"TLS_AES_128_GCM_SHA256",
+							},
+						},
+					},
+				},
 				// add more setting types here
 			},
 		},
 	}
+
 	return sslSettingsDTO
 }
 
@@ -295,7 +315,7 @@ func getClientTestConfig(apiID string, apiKey string, server *httptest.Server) *
 }
 
 func getValidJSONResponse() string {
-	var invalidResponse = `{
+	var validResponse = `{
 			"data":[
 				{
 					"hstsConfiguration":{
@@ -303,9 +323,21 @@ func getValidJSONResponse() string {
 						"maxAge":31536000,
 						"subDomainsIncluded":true,
 						"preLoaded":false
-					}
+					},
+                    "inboundTlsSettings": {
+                        "configurationProfile": "CUSTOM",
+                        "tlsConfiguration": [
+                            {
+                                "tlsVersion": "TLS 1.1",
+                                "ciphersSupport": [
+                                    "TLS_AES_128_GCM_SHA256",
+                                    "TLS_AES_128_GCM_SHA256"
+                                ]
+                            }
+                        ]
+                    }
 				}
 			]
 		}`
-	return invalidResponse
+	return validResponse
 }
