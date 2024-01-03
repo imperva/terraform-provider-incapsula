@@ -1,6 +1,9 @@
 ---
-Provider Reference
-  Provides a Incapsula Incap Rule resource.
+subcategory: "Provider Reference"
+layout: "incapsula"
+page_title: "incapsula_incap_rule"
+description: |-
+  Provides a Incapsula Rule resource.
 ---
 
 # incapsula_incap_rule
