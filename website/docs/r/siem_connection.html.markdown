@@ -1,16 +1,16 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: incapsula-siem-connection"
-sidebar_current: "docs-incapsula-siem-connection"
-description: |-
+page_title: "incapsula_siem_connection"
+description: |- 
 Provides a customer S3 connection configuration resource.
 ---
 
 # incapsula_siem_connection
 
 Provides a customer S3 connection configuration resource.
-This resource is used to manage the connection to the customer’s AWS S3 bucket.
-[Learn more](https://docs.imperva.com/bundle/cloud-application-security/page/siem-log-configuration.htm)
+
+The follow-on action is to use the `incapsula_siem_log_configuration` resource, to configure the connection.
 
 ## Example Usage
 

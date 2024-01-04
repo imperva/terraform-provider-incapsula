@@ -1,8 +1,9 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: application_delivery"
-sidebar_current: "docs-incapsula-resource-application_delivery"
-description: |- Provides a Incapsula Application Delivery resource.
+page_title: "incapsula_application_delivery"
+description: |-
+  Provides a Incapsula Application Delivery resource.
 ---
 
 # incapsula_application_delivery
@@ -22,8 +23,8 @@ resource "incapsula_application_delivery" "example_application_delivery" {
 	minify_css                  = true
 	minify_js                   = true
 	minify_static_html          = false
-	default_error_page_template = "<html><body><h1>default_error_page_template</h1><div>1</div></body></html>"
-	error_access_denied         = "<html><body><h1>error_access_denied</h1><div>/div></body></html>"
+	default_error_page_template = "<html><body><h1>$TITLE$</h1><p>$BODY$</p><div>1</div></body></html>"
+	error_access_denied         = "<html><body><h1>$TITLE$</h1><p>$BODY$</p><div>1</div></body></html>"
 	error_connection_failed     = "${file("error_page_example.txt")}"
 	aggressive_compression      = true
 	compress_jpeg               = false
@@ -58,8 +59,8 @@ The following arguments are supported:
 * `tcp_pre_pooling` - (Optional) Maintain a set of idle TCP connections to the origin server to eliminate the latency associated with opening new connections or new requests (TCP handshake). Default: true
 * `origin_connection_reuse` - (Optional) TCP connections that are opened for a client request remain open for a short time to handle additional requests that may arrive. Default: true
 * `support_non_sni_clients` - (Optional) By default, non-SNI clients are supported. Disable this option to block non-SNI clients. Default: true
-* `enable_http2` - (Optional) Allows supporting browsers to take advantage of the performance enhancements provided by HTTP/2 for your website. Non-supporting browsers can connect via HTTP/1.0 or HTTP/1.1. Default:false
-* `http2_to_origin` - (Optional) Enables HTTP/2 for the connection between Imperva and your origin server. (HTTP/2 must also be supported by the origin server.) Default: false.
+* `enable_http2` - (Optional) Allows supporting browsers to take advantage of the performance enhancements provided by HTTP/2 for your website. Non-supporting browsers can connect via HTTP/1.0 or HTTP/1.1.
+* `http2_to_origin` - (Optional) Enables HTTP/2 for the connection between Imperva and your origin server. (HTTP/2 must also be supported by the origin server.)
 * `port_to` - (Optional) The port number.
 * `ssl_port_to` - (Optional) The port number to rewrite default SSL port to.
 * `redirect_naked_to_full` - (Optional) Redirect all visitors to your site’s full domain (which includes www). This option is displayed only for a naked domain. Default: false
@@ -80,7 +81,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - Unique identifier in the API for the data centers configuration. The id is identical to Site id.
+* `id` - Unique identifier in the API for the application delivery configuration. The id is identical to Site id.
 
 ## Import
 

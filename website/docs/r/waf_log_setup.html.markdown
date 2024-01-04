@@ -1,9 +1,9 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: waf_log_setup"
-sidebar_current: "docs-incapsula-resource-waf_log_setup"
+page_title: "incapsula_waf_log_setup"
 description: |-
-Provides an Incapsula WAF Log Setup resource.
+    Provides an Incapsula WAF Log Setup resource.
 ---
 
 # incapsula_waf_log_setup

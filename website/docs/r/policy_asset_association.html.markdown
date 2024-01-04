@@ -1,14 +1,16 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: policy-asset-association"
-sidebar_current: "docs-incapsula-resource-policy-asset-association"
+page_title: "incapsula_policy_asset_association"
 description: |-
   Provides a Incapsula Policy Asset Association resource.
 ---
 
 # incapsula_policy_asset_association
 
-Provides an Incapsula Policy Asset Association resource. This resource enables you to apply policies to assets in your account.
+Provides an Incapsula Policy Asset Association resource. This resource enables you to apply existing policies to assets in your account.
+
+Dependency is on existing policies, created using the `incapsula_policy` resource.
 
 ## Example Usage
 

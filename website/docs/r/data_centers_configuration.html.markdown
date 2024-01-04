@@ -1,7 +1,7 @@
 ---
+subcategory: "Deprecated"
 layout: "incapsula"
-page_title: "Incapsula: data-centers-configuration"
-sidebar_current: "docs-incapsula-resource-data-centers-configuration"
+page_title: "incapsula_data_centers_configuration"
 description: |-
   Provides a Incapsula Data Centers Configuration resource.
 ---
@@ -167,7 +167,11 @@ At least one `data_center` sub resource must be defined.
 The following Data Center arguments are supported: 
 
 * `name` - (Required) Data Center Name. Must be unique within a Site. 
-* `ip_mode` - (Optional) SINGLE_IP supports multiple processes on same origin server each listening to a different port, MULTIPLE_IP (the default) support multiple origin servers all listening to same port.
+
+* `ip_mode` - (Optional) Load-balancing mode. Possible values:
+  * **SINGLE_IP** - Use it only when you need to support multiple ports. Allows a single active server listening on multiple ports, plus the option of a single standby server. Traffic is distributed across the server ports. **Note:** The server address must be a valid IP address (i.e. not host/domain name). **SINGLE_IP** is applicable only for datacenters, It may not be used when dataCenterMode = **‘SINGLE_SERVER’**.
+  * **MULTIPLE_IP** – Allows one or more origin servers having a single webserver and listening port per server. Traffic is distributed across servers.
+
 * `web_servers_per_server` - (Optional) When IP mode = SINGLE_IP, number of web servers (processes) per server. Each web server listens to different port. E.g. when web_servers_per_server = 5, HTTP traffic will use ports 80-84 while HTTPS traffic will use ports 443-447. Default: 1.
 * `dc_lb_algorithm` - (Optional) How to load balance between the servers of this data center. One of: LB_LEAST_PENDING_REQUESTS (the default), LB_LEAST_OPEN_CONNECTIONS, LB_SOURCE_IP_HASH, RANDOM, WEIGHTED.
 * `weight` - (Optional) When site_lb_algorithm = WEIGHTED_LB, the weight in percentage of this Data Center. Then, total weight of all Data Centers must be 100.

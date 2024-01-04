@@ -1,7 +1,7 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: cache-rule"
-sidebar_current: "docs-incapsula-resource-cache-rule"
+page_title: "incapsula_cache_rule"
 description: |-
   Provides a Incapsula Cache Rule resource.
 ---

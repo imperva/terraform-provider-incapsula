@@ -1,17 +1,14 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: waf-security-rule"
-sidebar_current: "docs-incapsula-resource-waf-security-rule"
+page_title: "incapsula_waf_security_rule"
 description: |-
   Provides a Incapsula WAF Security Rule resource.
 ---
 
 # incapsula_waf_security_rule
 
-Provides a Incapsula WAF Security Rule resource. 
-
-**Note**: We are currently rolling out the new WAF Rules policy feature. After it is enabled for your account, the related settings are no longer available on this page. For more details, see
- [Create and Manage Policies](https://docs.imperva.com/bundle/cloud-application-security/page/policies.htm).
+Provides a resource to create a subset of WAF security rules.  See, `incapsula_policy` resource for additional WAF security rule types.
 
 ## Example Usage
 

@@ -1,14 +1,14 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: incap-rule"
-sidebar_current: "docs-incapsula-resource-incap-rule"
+page_title: "incapsula_incap_rule"
 description: |-
-  Provides a Incapsula Incap Rule resource.
+  Provides a Incapsula Rule resource.
 ---
 
 # incapsula_incap_rule
 
-Create your own security, delivery, and access control rules on top of Imperva's existing security and application delivery logic.
+Provides a resource to create security, delivery, and rate rules.
 
 ## Example Usage
 

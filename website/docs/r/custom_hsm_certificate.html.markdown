@@ -1,7 +1,7 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: custom-hsm-certifcate"
-sidebar_current: "docs-incapsula-resource-custom-hsm-certificate"
+page_title: "incapsula_custom_hsm_certificate"
 description: |-
   Provides a Incapsula Custom HSM Certificate resource.
 ---

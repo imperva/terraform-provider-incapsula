@@ -1,19 +1,24 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: incap-site-ssl-settings"
-sidebar_current: "docs-incapsula-resource-site-ssl-settings"
-description: |- Provides an Incapsula Site SSL Settings resource.
+page_title: "incapsula_site_ssl_settings"
+description: |- 
+  Provides an Incapsula Site SSL Settings resource.
 ---
 # incapsula_site_ssl_settings
 
 Provides an Incapsula Site SSL Settings resource.
 
-If you run the same resource from a site for which SSL is not yet enabled and **approved** will result in the following error response:
+In this resource you can configure:
+- HSTS: A security mechanism enabling websites to announce themselves as accessible only via HTTPS. 
+For more information about HSTS, click [here](https://www.imperva.com/blog/hsts-strict-transport-security/).
+- TLS settings: Define the supported TLS version and cipher suites used for encryption of the TLS handshake between client and Imperva. 
+For more information about supported TLS versions and ciphers, click [here](https://docs.imperva.com/bundle/cloud-application-security/page/cipher-suites.htm).
+
+If you run the SSL settings resource from a site for which SSL is not yet enabled and the SSL certificate is not approved, it will result in the following error response:
 - `status:` 406 
 - `message:` Site does not have SSL configured
 - To enable this feature for your site, you must first configure its SSL settings including a valid certificate.
-
-For more information what HSTS is click [here](https://www.imperva.com/blog/hsts-strict-transport-security/).
 
 ## Example Usage
 
@@ -27,6 +32,18 @@ resource "incapsula_site_ssl_settings" "example"  {
     sub_domains_included = true
     pre_loaded = false
   }
+  inbound_tls_settings { 
+    configuration_profile     = "CUSTOM"
+
+    tls_configuration { 
+      tls_version             = "TLS_1_2"
+      ciphers_support         = ["TLS_CHACHA20_POLY1305_SHA256", "TLS_AES_256_GCM_SHA384"]
+    }
+    tls_configuration { 
+      tls_version             = "TLS_1_3"
+      ciphers_support         = ["TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"]
+    }
+  }
 }
 ```
 
@@ -37,6 +54,8 @@ The following arguments are supported:
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `hsts` - (Optional): HTTP Strict Transport Security (HSTS) configuration settings for the site.
     - Type: `set` of `hsts_config` resource (defined below)
+* `inbound_tls_settings` - (Optional): Transport Layer Security (TLS) configuration settings for the site.
+  - Type: `set` of `inbound_tls_settings` resource (defined below)
 
 ## Schema of `hsts_config` resource
 
@@ -54,6 +73,23 @@ The `hsts_config` resource represents the configuration settings for HTTP Strict
 * `pre_loaded` - (Optional): Whether the site is preloaded in the HSTS preload list maintained by browsers.
     - Type: `bool`
     - Default: `false`
+
+## Schema of `inbound_tls_settings` resource
+
+The `inbound_tls_settings` resource represents the configuration settings for Transport Layer Security (TLS).
+
+* `configuration_profile` - (Required): Where to use a pre-defined or custom configuration for TLS settings.
+  - Type: `string`
+* `tls_configuration` - (Optional): List supported TLS versions and ciphers.
+  - Type: `List`
+
+### Nested Schema for `tls_configuration`
+
+* `tls_version` - (Required): TLS supported versions.
+  - Type: `string`
+* `ciphers_support` - (Required): List of ciphers to use for this TLS version.
+  - Type: `List`
+
 
 ## Attributes Reference
 

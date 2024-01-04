@@ -1,7 +1,7 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: waiting-room"
-sidebar_current: "docs-incapsula-waiting-room"
+page_title: "incapsula_waiting_room"
 description: |-
   Provides a Incapsula Waiting Room resource.
 ---
