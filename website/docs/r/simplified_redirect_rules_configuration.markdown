@@ -50,7 +50,7 @@ resource "incapsula_simplified_redirect_rules_configuration" "simplified-redirec
 
 ## Import
 
-Delivery rules configuration can be imported using the site_id, e.g.:
+Simplified redirect rules configuration can be imported using the site_id, e.g.:
 
 ```
 $ terraform import incapsula_simplified_redirect_rules_configuration.demo site_id
