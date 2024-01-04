@@ -1,7 +1,7 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: application_delivery"
-sidebar_current: "docs-incapsula-resource-application_delivery"
+page_title: "incapsula_application_delivery"
 description: |-
   Provides a Incapsula Application Delivery resource.
 ---

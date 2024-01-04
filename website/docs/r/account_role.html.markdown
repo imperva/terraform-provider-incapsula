@@ -1,7 +1,7 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: account-role"
-sidebar_current: "docs-incapsula-resource-account-role"
+page_title: "incapsula_account_role"
 description: |-
   Provides a Incapsula Account Role resource.
 ---

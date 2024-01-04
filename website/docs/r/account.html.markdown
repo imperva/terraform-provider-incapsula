@@ -1,7 +1,7 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: account"
-sidebar_current: "docs-incapsula-resource-account"
+page_title: "incapsula_account"
 description: |-
   Provides a Incapsula Account resource.
 ---

@@ -1,8 +1,8 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: txt-record"
-sidebar_current: "docs-incapsula-resource-txt-record"
-description: |-
+page_title: "incapsula_txt_record"
+description: |- 
   Provides a Incapsula TXT Record(s) association resource.
 ---
 

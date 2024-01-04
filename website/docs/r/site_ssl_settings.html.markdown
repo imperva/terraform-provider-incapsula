@@ -1,8 +1,9 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: incap-site-ssl-settings"
-sidebar_current: "docs-incapsula-resource-site-ssl-settings"
-description: |- Provides an Incapsula Site SSL Settings resource.
+page_title: "incapsula_site_ssl_settings"
+description: |- 
+  Provides an Incapsula Site SSL Settings resource.
 ---
 # incapsula_site_ssl_settings
 

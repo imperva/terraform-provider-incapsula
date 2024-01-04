@@ -1,8 +1,9 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: incap-csp-site-configuration"
-sidebar_current: "docs-incapsula-resource-csp-site-configuration"
-description: |- Provides an Incapsula CSP site configuration resource.
+page_title: "incapsula_csp_site_configuration"
+description: |- 
+  Provides an Incapsula CSP site configuration resource.
 ---
 
 # incapsula_csp_site_configuration
