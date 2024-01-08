@@ -1,5 +1,5 @@
 ---
-subcategory: "Provider Reference"
+subcategory: "Deprecated"
 layout: "incapsula"
 page_title: "incapsula_data_center"
 description: |-
