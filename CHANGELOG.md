@@ -1,3 +1,11 @@
+## 3.21.1 (Jan 8, 2024)
+
+- Documentation fixes
+- Incapsula_account: fix bug of roles name ([#378](https://github.com/imperva/terraform-provider-incapsula/pull/378))
+- incapsula_mtls_client_to_imperva_ca_certificate: fix parameter name ([#379](https://github.com/imperva/terraform-provider-incapsula/pull/379))
+- incapsula_security_rule_exception: fix bug ([#380](https://github.com/imperva/terraform-provider-incapsula/pull/380))
+
+
 ## 3.21.0 (Nov 20, 2023)
 
 IMPROVEMENTS:
