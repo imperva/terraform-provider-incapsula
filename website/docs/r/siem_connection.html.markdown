@@ -3,7 +3,7 @@ subcategory: "Provider Reference"
 layout: "incapsula"
 page_title: "incapsula_siem_connection"
 description: |- 
-Provides a customer S3 connection configuration resource.
+    Provides a customer S3 connection configuration resource.
 ---
 
 # incapsula_siem_connection
