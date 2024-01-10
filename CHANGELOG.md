@@ -1,3 +1,8 @@
+## 3.21.2 (Jan 10, 2024)
+
+- Documentation fixes
+
+
 ## 3.21.1 (Jan 8, 2024)
 
 - Documentation fixes
