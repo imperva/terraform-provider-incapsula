@@ -3,7 +3,7 @@ subcategory: "Provider Reference"
 layout: "incapsula"
 page_title: "incapsula_account_policy_association"
 description: |-
-Provides an Incapsula Account Policy Association resource.
+  Provides an Incapsula Account Policy Association resource.
 ---
 
 # incapsula_account_policy_association
