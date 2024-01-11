@@ -164,7 +164,7 @@ The following arguments are supported:
 * `to` - (Optional) Pattern to change to. `RULE_ACTION_REWRITE_URL` - Url to change to. `RULE_ACTION_REWRITE_HEADER` and `RULE_ACTION_RESPONSE_REWRITE_HEADER` - Header value to change to. `RULE_ACTION_REWRITE_COOKIE` - Cookie value to change to.
 * `rewrite_name` - (Optional) Name of cookie or header to rewrite. Applies only for `RULE_ACTION_REWRITE_COOKIE`, `RULE_ACTION_REWRITE_HEADER` and `RULE_ACTION_RESPONSE_REWRITE_HEADER`.
 * `dc_id` - (Optional) Data center to forward request to. Applies only for `RULE_ACTION_FORWARD_TO_DC`.
-* `port_forwarding_context` - (Optional) Context for port forwarding. \"port\" or \"header\". Applies only for `RULE_ACTION_FORWARD_TO_PORT`.
+* `port_forwarding_context` - (Optional) Context for port forwarding. \"Use Port Value\" or \"Use Header Name\". Applies only for `RULE_ACTION_FORWARD_TO_PORT`.
 * `port_forwarding_value` - (Optional) Port number or header name for port forwarding. Applies only for `RULE_ACTION_FORWARD_TO_PORT`.
 * `rate_context` - (Optional) The context of the rate counter. Possible values `IP` or `Session`. Applies only to rules using `RULE_ACTION_RATE`.
 * `rate_interval` - (Optional) The interval in seconds of the rate counter. Possible values is a multiple of `10`; minimum `10` and maximum `300`. Applies only to rules using `RULE_ACTION_RATE`.
