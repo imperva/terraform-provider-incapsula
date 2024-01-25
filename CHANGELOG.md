@@ -1,3 +1,8 @@
+## 3.21.3 (Jan 25, 2024)
+
+- incapsula_site_ssl_settings: Revert last changes ([#386](https://github.com/imperva/terraform-provider-incapsula/pull/386))
+
+
 ## 3.21.2 (Jan 10, 2024)
 
 - Documentation fixes

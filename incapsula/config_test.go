@@ -57,8 +57,8 @@ func TestMissingBaseURLRev2(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error, got a client: %q", client)
 	}
-	if err.Error() != missingBaseURLRev2Message {
-		t.Errorf("Should have received missing Base URL Revision 2 message, got: %s", err)
+	if err.Error() != missingBaseURLRev3Message {
+		t.Errorf("Should have received missing Base URL Revision 3 message, got: %s", err)
 	}
 }
 
