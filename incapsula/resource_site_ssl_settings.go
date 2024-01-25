@@ -32,35 +32,6 @@ var hstsConfigResource = schema.Resource{
 	},
 }
 
-var inboundTLSSettingsResource = schema.Resource{
-	Schema: map[string]*schema.Schema{
-
-		"configuration_profile": {
-			Type:     schema.TypeString,
-			Required: true,
-		},
-		"tls_configuration": &schema.Schema{
-			Type:     schema.TypeList,
-			Optional: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"tls_version": {
-						Type:     schema.TypeString,
-						Required: true,
-					},
-					"ciphers_support": {
-						Type:     schema.TypeList,
-						Required: true,
-						Elem: &schema.Schema{
-							Type: schema.TypeString,
-						},
-					},
-				},
-			},
-		},
-	},
-}
-
 func resourceSiteSSLSettings() *schema.Resource {
 	return &schema.Resource{
 		Read:   resourceSiteSSLSettingsRead,
@@ -92,12 +63,6 @@ func resourceSiteSSLSettings() *schema.Resource {
 				Optional: true,
 				Elem:     &hstsConfigResource,
 				Set:      schema.HashResource(&hstsConfigResource),
-			},
-			"inbound_tls_settings": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem:     &inboundTLSSettingsResource,
-				Set:      schema.HashResource(&inboundTLSSettingsResource),
 			},
 		},
 	}
@@ -136,8 +101,7 @@ func resourceSiteSSLSettingsRead(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId(fmt.Sprintf("site_ssl_settings_%d", d.Get("site_id").(int)))
 
-	mapHSTSResponseToHSTSResource(d, settingsData)
-	mapInboundTLSSettingsResponseToResource(d, settingsData)
+	mapHSTSDTOtoHSTSResource(d, settingsData)
 	// map other settings here
 
 	return nil
@@ -146,10 +110,9 @@ func resourceSiteSSLSettingsRead(d *schema.ResourceData, m interface{}) error {
 func resourceSiteSSLSettingsDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	// currently only disables HSTS and set default InboundTLSSettings
+	// currently only disables HSTS
 	// If more settings are implemented in the endpoint, add delete logic for them here.
 	setting := prepareDisableHSTSStructure()
-	prepareDefaultTLSStructure(&setting)
 	var _, err = client.UpdateSiteSSLSettings(d.Get("site_id").(int), setting)
 
 	if err != nil {
@@ -159,31 +122,21 @@ func resourceSiteSSLSettingsDelete(d *schema.ResourceData, m interface{}) error 
 	return nil
 }
 
-func prepareDisableHSTSStructure() SSLSettingsResponse {
+func prepareDisableHSTSStructure() SSLSettingsDTO {
 	disableHSTSSetting := HSTSConfiguration{
 		IsEnabled: false,
 	}
 
-	return SSLSettingsResponse{
-		[]SSLSettingsDTO{
+	return SSLSettingsDTO{
+		[]Data{
 			{
 				HstsConfiguration: disableHSTSSetting,
-				// add more setting types here
 			},
 		},
 	}
 }
 
-func prepareDefaultTLSStructure(settingsData *SSLSettingsResponse) {
-	defaultTLSSettings := &InboundTLSSettingsConfiguration{
-		ConfigurationProfile: "DEFAULT",
-		TLSConfigurations:    []TLSConfiguration{},
-	}
-
-	settingsData.Data[0].InboundTLSSettingsConfiguration = defaultTLSSettings
-}
-
-func mapHSTSResponseToHSTSResource(d *schema.ResourceData, settingsData *SSLSettingsResponse) {
+func mapHSTSDTOtoHSTSResource(d *schema.ResourceData, settingsData *SSLSettingsDTO) {
 	// handle HSTS remote configuration mapping
 	var hstsSettingsFromServer HSTSConfiguration
 	hstsSettingsFromServer = settingsData.Data[0].HstsConfiguration
@@ -215,94 +168,15 @@ func mapHSTSResourceToHSTSDTO(d *schema.ResourceData) HSTSConfiguration {
 	}
 }
 
-func mapInboundTLSSettingsResponseToResource(d *schema.ResourceData, settingsData *SSLSettingsResponse) {
-
-	var inboundTLSSettingsFromServer *InboundTLSSettingsConfiguration
-	inboundTLSSettingsFromServer = settingsData.Data[0].InboundTLSSettingsConfiguration
-
-	if inboundTLSSettingsFromServer == nil {
-		return
-	}
-	inboundTLSSettingsMap := make(map[string]interface{})
-	inboundTLSSettingsMap["configuration_profile"] = inboundTLSSettingsFromServer.ConfigurationProfile
-
-	tlsConfigurations := make([]map[string]interface{}, 0)
-	for _, tlsConfig := range inboundTLSSettingsFromServer.TLSConfigurations {
-		tlsConfigMap := make(map[string]interface{})
-		tlsConfigMap["tls_version"] = tlsConfig.TLSVersion
-		tlsConfigMap["ciphers_support"] = toStringInterfaceSlice(tlsConfig.CiphersSupport)
-
-		tlsConfigurations = append(tlsConfigurations, tlsConfigMap)
-	}
-
-	inboundTLSSettingsMap["tls_configuration"] = tlsConfigurations
-
-	d.Set("inbound_tls_settings", []map[string]interface{}{inboundTLSSettingsMap})
-
-}
-
-func mapInboundTLSSettingsResourceToDTO(resourceData *schema.ResourceData) *InboundTLSSettingsConfiguration {
-	inboundTLSSettings, ok := resourceData.Get("inbound_tls_settings").(*schema.Set)
-	if !ok || inboundTLSSettings.Len() == 0 {
-		return nil
-	}
-	inboundTLSSettingsList := inboundTLSSettings.List()
-	inboundTLSSettingsMap := inboundTLSSettingsList[0].(map[string]interface{})
-
-	dto := &InboundTLSSettingsConfiguration{
-		ConfigurationProfile: inboundTLSSettingsMap["configuration_profile"].(string),
-		TLSConfigurations:    make([]TLSConfiguration, 0),
-	}
-
-	if tlsConfigurations, ok := inboundTLSSettingsMap["tls_configuration"].([]interface{}); ok {
-		for _, tlsConfig := range tlsConfigurations {
-			tlsConfigMap := tlsConfig.(map[string]interface{})
-			tlsVersion := tlsConfigMap["tls_version"].(string)
-			ciphersSupport := tlsConfigMap["ciphers_support"].([]interface{})
-
-			tlsConfigDTO := TLSConfiguration{
-				TLSVersion:     tlsVersion,
-				CiphersSupport: toStringSlice(ciphersSupport),
-			}
-
-			dto.TLSConfigurations = append(dto.TLSConfigurations, tlsConfigDTO)
-		}
-	}
-
-	return dto
-}
-
-// Helper function to convert []interface{} to []string
-func toStringSlice(slice []interface{}) []string {
-	result := make([]string, len(slice))
-	for i, v := range slice {
-		result[i] = v.(string)
-	}
-	return result
-}
-
-// Helper function to convert []string to []interface{}
-func toStringInterfaceSlice(slice []string) []interface{} {
-	result := make([]interface{}, len(slice))
-	for i, v := range slice {
-		result[i] = v
-	}
-	return result
-}
-
-func getSSLSettingsDTO(d *schema.ResourceData) SSLSettingsResponse {
-
+func getSSLSettingsDTO(d *schema.ResourceData) SSLSettingsDTO {
 	// setup hsts config structure
 	hstsSettings := mapHSTSResourceToHSTSDTO(d)
-	// setup inbound TLS settings structure
-	inboundTLSSettings := mapInboundTLSSettingsResourceToDTO(d)
 	// scale - add other structures here...
 
-	return SSLSettingsResponse{
-		[]SSLSettingsDTO{
+	return SSLSettingsDTO{
+		[]Data{
 			{
-				HstsConfiguration:               hstsSettings,
-				InboundTLSSettingsConfiguration: inboundTLSSettings,
+				HstsConfiguration: hstsSettings,
 				// add more setting types here
 			},
 		},
