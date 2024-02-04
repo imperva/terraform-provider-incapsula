@@ -3,7 +3,7 @@ subcategory: "Provider Reference"
 layout: "incapsula"
 page_title: "incapsula_certificate_signing_request"
 description: |-
-  Provides a Incapsula Custom Certificate resource.
+  Provides a Incapsula Certificate Signing Request resource.
 ---
 
 # incapsula_certificate_signing_request
