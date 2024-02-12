@@ -136,7 +136,7 @@ func resourceUserCreate(d *schema.ResourceData, m interface{}) error {
 
 	// Set the User ID
 	d.SetId(fmt.Sprintf("%s/%s", strconv.Itoa(accountId), email))
-	log.Printf("[INFO] Created Incapsula user for email: %s userid: %s\n", email, UserAddResponse.Data.UserID)
+	log.Printf("[INFO] Created Incapsula user for email: %s userid: %s\n", email, UserAddResponse.Data[0].UserID)
 
 	// There may be a timing/race condition here
 	// Set an arbitrary period to sleep
@@ -165,17 +165,17 @@ func resourceUserRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	log.Printf("[INFO]listRoles : %v\n", userStatusResponse.Data.Roles)
+	log.Printf("[INFO]listRoles : %v\n", userStatusResponse.Data[0].Roles)
 
-	listRolesIds := make([]int, len(userStatusResponse.Data.Roles))
-	listRolesNames := make([]string, len(userStatusResponse.Data.Roles))
-	for i, v := range userStatusResponse.Data.Roles {
+	listRolesIds := make([]int, len(userStatusResponse.Data[0].Roles))
+	listRolesNames := make([]string, len(userStatusResponse.Data[0].Roles))
+	for i, v := range userStatusResponse.Data[0].Roles {
 		listRolesIds[i] = v.RoleID
 		listRolesNames[i] = v.RoleName
 	}
 
-	d.Set("email", userStatusResponse.Data.Email)
-	d.Set("account_id", userStatusResponse.Data.AccountID)
+	d.Set("email", userStatusResponse.Data[0].Email)
+	d.Set("account_id", userStatusResponse.Data[0].AccountID)
 
 	accountStatusResponse, err := client.AccountStatus(accountID, ReadAccount)
 	if accountStatusResponse != nil && accountStatusResponse.AccountType == "Sub Account" {
@@ -183,8 +183,8 @@ func resourceUserRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("first_name", nil)
 		d.Set("last_name", nil)
 	} else {
-		d.Set("first_name", userStatusResponse.Data.FirstName)
-		d.Set("last_name", userStatusResponse.Data.LastName)
+		d.Set("first_name", userStatusResponse.Data[0].FirstName)
+		d.Set("last_name", userStatusResponse.Data[0].LastName)
 	}
 	d.Set("role_ids", listRolesIds)
 	d.Set("role_names", listRolesNames)
