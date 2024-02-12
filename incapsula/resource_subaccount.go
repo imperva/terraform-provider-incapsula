@@ -59,6 +59,18 @@ func resourceSubAccount() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"APAC", "EU", "US", "AU"}, false),
 			},
+			"enable_http2_for_new_sites": {
+				Description: "Enable HTTP/2 for traffic between end-users (visitors) and Imperva for newly created SSL sites. Options are `true` and `false`. Defaults to `true`",
+				Type:        schema.TypeString,
+				Default:     "true",
+				Optional:    true,
+			},
+			"enable_http2_to_origin_for_new_sites": {
+				Description: "Enable HTTP/2 support for traffic between Imperva and your origin server for newly created SSL sites. This option can only be 'true' once 'enable_http2_for_new_sites' is enabled for newly created sites. Options are `true` and `false`. Defaults to `false`",
+				Type:        schema.TypeString,
+				Default:     "false",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -92,6 +104,11 @@ func resourceSubAccountCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Created Incapsula subaccount %s\n", subAccountName)
 
 	err = updateDefaultDataStorageRegion(client, d)
+	if err != nil {
+		return err
+	}
+
+	err = updateHttp2Properties(client, d)
 	if err != nil {
 		return err
 	}
@@ -138,6 +155,8 @@ func resourceSubAccountRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	d.Set("data_storage_region", defaultAccountDataStorageRegion.Region)
+	d.Set("enable_http2_for_new_sites", strconv.FormatBool(accountStatusResponse.Account.EnableHttp2ForNewSites))
+	d.Set("enable_http2_to_origin_for_new_sites", strconv.FormatBool(accountStatusResponse.Account.EnableHttp2ToOriginForNewSites))
 
 	log.Printf("[INFO] Finished reading Incapsula account for account ud: %d\n", accountID)
 
@@ -183,6 +202,11 @@ func resourceSubAccountUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	err := updateDefaultDataStorageRegion(client, d)
+	if err != nil {
+		return err
+	}
+
+	err = updateHttp2Properties(client, d)
 	if err != nil {
 		return err
 	}

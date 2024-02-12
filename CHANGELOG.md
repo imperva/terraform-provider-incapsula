@@ -1,3 +1,19 @@
+## 3.21.4 (Feb 4, 2024)
+
+IMPROVEMENTS:
+
+- Add HTTP2 attributes in account and sub-account resources ([#388](https://github.com/imperva/terraform-provider-incapsula/pull/388))
+
+## 3.21.3 (Jan 25, 2024)
+
+- incapsula_site_ssl_settings: Revert last changes ([#386](https://github.com/imperva/terraform-provider-incapsula/pull/386))
+
+
+## 3.21.2 (Jan 10, 2024)
+
+- Documentation fixes
+
+
 ## 3.21.1 (Jan 8, 2024)
 
 - Documentation fixes

@@ -56,10 +56,12 @@ type AccountStatusResponse struct {
 			Email         string  `json:"email"`
 			EmailVerified bool    `json:"email_verified"`
 		} `json:"logins"`
-		SupportLevel                 string `json:"support_level"`
-		SupportAllTLSVersions        bool   `json:"supprt_all_tls_versions"`
-		WildcardSANForNewSites       string `json:"wildcard_san_for_new_sites"`
-		NakedDomainSANForNewWWWSites bool   `json:"naked_domain_san_for_new_www_sites"`
+		SupportLevel                   string `json:"support_level"`
+		SupportAllTLSVersions          bool   `json:"supprt_all_tls_versions"`
+		WildcardSANForNewSites         string `json:"wildcard_san_for_new_sites"`
+		NakedDomainSANForNewWWWSites   bool   `json:"naked_domain_san_for_new_www_sites"`
+		EnableHttp2ForNewSites         bool   `json:"enable_http2_for_new_sites"`
+		EnableHttp2ToOriginForNewSites bool   `json:"enable_http2_to_origin_for_new_sites"`
 	} `json:"account"`
 	ParentID    int    `json:"parent_id"`
 	Email       string `json:"email"`

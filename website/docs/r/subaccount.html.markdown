@@ -17,10 +17,12 @@ while non-supported terraform dependent resources won't auto create
 
 ```hcl
 resource "incapsula_subaccount" "example-subaccount" {
-  sub_account_name                   = "Example SubAccount"
-  logs_account_id                    = "789"
-  log_level                          = "full"
-  data_storage_region                = "US"
+  sub_account_name                     = "Example SubAccount"
+  logs_account_id                      = "789"
+  log_level                            = "full"
+  data_storage_region                  = "US"
+  enable_http2_for_new_sites           = true
+  enable_http2_to_origin_for_new_sites = true
 }
 ```
 
@@ -34,6 +36,8 @@ The following arguments are supported:
 * `logs_account_id` - (Optional) Account where logs should be stored. Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `log_level` - (Optional) The log level. Options are `full`, `security`, `none`, `default`.
 * `data_storage_region` - (Optional) Default data region of the sub-account for newly created sites. Options are `APAC`, `EU`, `US` and `AU`. Defaults to `US`.
+* `enable_http2_for_new_sites` - (Optional) Use this option to enable HTTP/2 support for traffic between end-users (visitors) and Imperva for newly created SSL sites. Options are `true` and `false`. Defaults to `true`.
+* `enable_http2_to_origin_for_new_sites` - (Optional) Use this option to enable HTTP/2 support for traffic between Imperva and your origin server for newly created SSL sites. This option can only be 'true' once 'enable_http2_for_new_sites' is enabled for newly created sites. Options are `true` and `false`. Defaults to `false`.
 
 ## Attributes Reference
 
