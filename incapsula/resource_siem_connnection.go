@@ -141,7 +141,7 @@ func resourceSiemConnectionCreate(d *schema.ResourceData, m interface{}) error {
 		AssetID:        d.Get("account_id").(string),
 		ConnectionName: d.Get("connection_name").(string),
 		StorageType:    d.Get("storage_type").(string),
-		ConnectionInfo: ConnectionInfo{
+		ConnectionInfo: S3ConnectionInfo{
 			AccessKey: d.Get("access_key").(string),
 			SecretKey: d.Get("secret_key").(string),
 			Path:      d.Get("path").(string),
@@ -175,10 +175,11 @@ func resourceSiemConnectionRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("connection_name", connection.ConnectionName)
 		d.Set("storage_type", connection.StorageType)
 		if connection.StorageType == StorageTypeCustomerS3 {
-			d.Set("access_key", connection.ConnectionInfo.AccessKey)
-			d.Set("input_hash", connection.ConnectionInfo.SecretKey)
+			connectionInfo := connection.ConnectionInfo.(S3ConnectionInfo)
+			d.Set("access_key", connectionInfo.AccessKey)
+			d.Set("input_hash", connectionInfo.SecretKey)
 		}
-		d.Set("path", connection.ConnectionInfo.Path)
+		d.Set("path", connection.ConnectionInfo.(S3ConnectionInfo).Path)
 		return nil
 	} else {
 		return fmt.Errorf("[ERROR] Unsupported operation. Response status code: %d", *statusCode)
@@ -197,7 +198,7 @@ func resourceSiemConnectionUpdate(d *schema.ResourceData, m interface{}) error {
 		AssetID:        d.Get("account_id").(string),
 		ConnectionName: d.Get("connection_name").(string),
 		StorageType:    d.Get("storage_type").(string),
-		ConnectionInfo: ConnectionInfo{
+		ConnectionInfo: S3ConnectionInfo{
 			AccessKey: d.Get("access_key").(string),
 			SecretKey: d.Get("secret_key").(string),
 			Path:      d.Get("path").(string),
