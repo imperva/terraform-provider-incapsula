@@ -21,7 +21,7 @@ type S3ConnectionInfo struct {
 type SplunkConnectionInfo struct {
 	Host                    string `json:"host"`
 	Port                    int    `json:"port"`
-	Token                   string `json:"token"`
+	Token                   string `json:"token,omitempty"`
 	DisableCertVerification bool   `json:"disableCertVerification"`
 }
 
