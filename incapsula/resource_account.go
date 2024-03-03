@@ -110,7 +110,18 @@ func resourceAccount() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
-
+			"enable_http2_for_new_sites": {
+				Description: "Enable HTTP/2 for traffic between end-users (visitors) and Imperva for newly created SSL sites. Options are `true` and `false`. Defaults to `true`",
+				Type:        schema.TypeString,
+				Default:     "true",
+				Optional:    true,
+			},
+			"enable_http2_to_origin_for_new_sites": {
+				Description: "Enable HTTP/2 support for traffic between Imperva and your origin server for newly created SSL sites. This option can only be 'true' once 'enable_http2_for_new_sites' is enabled for newly created sites. Options are `true` and `false`. Defaults to `false`",
+				Type:        schema.TypeString,
+				Default:     "false",
+				Optional:    true,
+			},
 			// Computed Attributes
 			"support_level": {
 				Description: "Account support level",
@@ -201,15 +212,16 @@ func resourceAccountRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("plan_id", accountStatusResponse.Account.PlanID)
 	d.Set("plan_name", accountStatusResponse.Account.PlanName)
 	d.Set("trial_end_date", accountStatusResponse.Account.TrialEndDate)
-	d.Set("account_id", accountStatusResponse.Account.AccountID)
 	d.Set("ref_id", accountStatusResponse.Account.RefID)
 	d.Set("user_name", accountStatusResponse.Account.UserName)
 	d.Set("account_name", accountStatusResponse.Account.AccountName)
 	d.Set("support_level", accountStatusResponse.Account.SupportLevel)
-	d.Set("support_all_tls_versions", accountStatusResponse.Account.SupportAllTLSVersions)
+	d.Set("support_all_tls_versions", strconv.FormatBool(accountStatusResponse.Account.SupportAllTLSVersions))
 	d.Set("wildcard_san_for_new_sites", accountStatusResponse.Account.WildcardSANForNewSites)
 	d.Set("naked_domain_san_for_new_www_sites", strconv.FormatBool(accountStatusResponse.Account.NakedDomainSANForNewWWWSites))
 	d.Set("consent_required", accountStatusResponse.ConsentRequired)
+	d.Set("enable_http2_for_new_sites", strconv.FormatBool(accountStatusResponse.Account.EnableHttp2ForNewSites))
+	d.Set("enable_http2_to_origin_for_new_sites", strconv.FormatBool(accountStatusResponse.Account.EnableHttp2ToOriginForNewSites))
 
 	// Get the performance settings for the site
 	defaultAccountDataStorageRegion, err := client.GetAccountDataStorageRegion(d.Id())
@@ -307,7 +319,7 @@ func updateAdditionalAccountProperties(client *Client, d *schema.ResourceData) e
 		}
 	}
 
-	return nil
+	return updateHttp2Properties(client, d)
 }
 
 func replaceAccountNameParamName(param string) string {

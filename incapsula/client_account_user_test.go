@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -36,8 +35,8 @@ func TestClientAddUserBadConnection(t *testing.T) {
 func TestClientAddUserBadJSON(t *testing.T) {
 	accountID := 123
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s?caid=%d", endpointAccountUserAdd, accountID) {
-			t.Errorf("Should have have hit /%s?caid=%d endpoint. Got: %s", endpointAccountUserAdd, accountId, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s?caid=%d", endpointUserOperationNew, accountID) {
+			t.Errorf("Should have have hit /%s?caid=%d endpoint. Got: %s", endpointUserOperationNew, accountId, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
@@ -85,8 +84,8 @@ func TestClientUserStatusBadJSON(t *testing.T) {
 	accountID := 123
 	email := "example@example.com"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s?caid=%d&email=%s", endpointUserStatus, accountID, url.QueryEscape(email)) {
-			t.Errorf("Should have have hit /%s?caid=%d&email=%s endpoint. Got: %s", endpointUserStatus, accountID, email, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s/%s?caid=%d", endpointUserOperationNew, email, accountID) {
+			t.Errorf("Should have have hit /%s/%s?caid=%d endpoint. Got: %s", endpointUserOperationNew, email, accountID, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
@@ -128,8 +127,8 @@ func TestClientDeleteUserBadJSON(t *testing.T) {
 	accountID := 123
 	email := "example@example.com"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s?caid=%d&email=%s", endpointUserDelete, accountID, url.QueryEscape(email)) {
-			t.Errorf("Should have have hit /%s?caid=%d&email=%s endpoint. Got: %s", endpointUserDelete, accountID, email, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s/%s?caid=%d", endpointUserOperationNew, email, accountID) {
+			t.Errorf("Should have have hit /%s/%s?caid=%d endpoint. Got: %s", endpointUserOperationNew, email, accountID, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
@@ -171,15 +170,16 @@ func TestClientUpdateUserBadConnection(t *testing.T) {
 
 func TestClientUpdateUserBadJSON(t *testing.T) {
 	accountID := 123
+	email := "example@example.com"
+
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s?caid=%d", endpointUserUpdate, accountID) {
-			t.Errorf("Should have have hit /%s?caid=%d endpoint. Got: %s", endpointAccountUpdate, accountID, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s/%s?caid=%d", endpointUserOperationNew, email, accountID) {
+			t.Errorf("Should have have hit /%s/%s?caid=%d endpoint. Got: %s", endpointAccountUpdate, email, accountID, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
 	defer server.Close()
 
-	email := "example@example.com"
 	roleIds := make([]interface{}, 1)
 	roleIds[0] = 10
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}

@@ -11,6 +11,8 @@ description: |-
 
 Provides an ABP (Advanced Bot Protection) website resource. Allows you to enable and configure ABP for given websites.
 
+This represents the canonical configuration of the ABP website groups and websites, if there are existing website groups or website, or they have different settings those will be removed or changed and not added as additional items.
+
 NOTE: Due to limitations in ABP, the API key/id used to deploy this resource must match the `account_id` used in the resource (API key/id for a parent account do not work). All Incapsula sites associated with the resource must also be defined in that account.
 
 ## Example Usage
