@@ -59,7 +59,6 @@ func TestAccSiemSplunkConnection(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemSplunkConnectionExists(splunkSiemConnectionResource),
 					resource.TestCheckResourceAttr(splunkSiemConnectionResource, "connection_name", splunkSiemConnectionName),
-					resource.TestCheckResourceAttr(splunkSiemConnectionResource, "storage_type", StorageTypeCustomerSplunk),
 				),
 			},
 			{
@@ -90,7 +89,6 @@ func TestAccSiemSplunkConnection_Update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemSplunkConnectionExists(splunkSiemConnectionResource),
 					resource.TestCheckResourceAttr(splunkSiemConnectionResource, "connection_name", splunkSiemConnectionName),
-					resource.TestCheckResourceAttr(splunkSiemConnectionResource, "storage_type", StorageTypeCustomerSplunk),
 				),
 			},
 			{
@@ -99,7 +97,6 @@ func TestAccSiemSplunkConnection_Update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemSplunkConnectionExists(splunkSiemConnectionResource),
 					resource.TestCheckResourceAttr(splunkSiemConnectionResource, "connection_name", splunkSiemConnectionNameUpdated),
-					resource.TestCheckResourceAttr(splunkSiemConnectionResource, "storage_type", StorageTypeCustomerSplunk),
 				),
 			},
 		},
@@ -112,7 +109,6 @@ func getAccIncapsulaSplunkSiemConnectionConfig(splunkSiemConnectionName string) 
 	resource := fmt.Sprintf(`
 		resource "%s" "%s" {	
 			connection_name = "%s"
-  			storage_type = "%s"
   			host = "%s"
   			port = %s
   			token = "%s"
@@ -121,7 +117,6 @@ func getAccIncapsulaSplunkSiemConnectionConfig(splunkSiemConnectionName string) 
 		siemSplunkConnectionResourceType,
 		splunkSiemConnectionResourceName,
 		splunkSiemConnectionName,
-		StorageTypeCustomerSplunk,
 		os.Getenv("SIEM_CONNECTION_SPLUNK_HOST"),
 		os.Getenv("SIEM_CONNECTION_SPLUNK_PORT"),
 		os.Getenv("SIEM_CONNECTION_SPLUNK_TOKEN"),

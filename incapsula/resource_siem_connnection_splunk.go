@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"strings"
 )
 
@@ -45,12 +44,6 @@ func resourceSiemSplunkConnection() *schema.Resource {
 				Description: "Name of the connection.",
 				Type:        schema.TypeString,
 				Required:    true,
-			},
-			"storage_type": {
-				Description:  "Type of the storage.",
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{StorageTypeCustomerSplunk}, false),
 			},
 			"token": {
 				Description: "Splunk access token.",
@@ -107,13 +100,11 @@ func resourceSiemSplunkConnection() *schema.Resource {
 }
 
 func siemSplunkConnectionResourceValidation(d *schema.ResourceData) error {
-	storageType := d.Get("storage_type").(string)
 	host := d.Get("host").(string)
-	//port := d.Get("port").(int)
+	portExists := d.Get("port")
 	token := d.Get("token").(string)
-	//disableCertVerification := d.Get("disableCertVerification").(bool)
-	if storageType == StorageTypeCustomerSplunk && (host == "" || /*port == nil ||*/ token == "") {
-		return fmt.Errorf("[ERROR] access_key and secret_key should be provided for storage_type=%s", storageType)
+	if host == "" || portExists == false || token == "" {
+		return fmt.Errorf("[ERROR] host, port and token should be provided for incapsula_siem_splunk_connection")
 	}
 	return nil
 }
@@ -127,7 +118,7 @@ func resourceSiemSplunkConnectionCreate(d *schema.ResourceData, m interface{}) e
 	response, statusCode, err := client.CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
 		AssetID:        d.Get("account_id").(string),
 		ConnectionName: d.Get("connection_name").(string),
-		StorageType:    d.Get("storage_type").(string),
+		StorageType:    StorageTypeCustomerSplunk,
 		ConnectionInfo: SplunkConnectionInfo{
 			Host:                    d.Get("host").(string),
 			Port:                    d.Get("port").(int),
@@ -161,7 +152,6 @@ func resourceSiemSplunkConnectionRead(d *schema.ResourceData, m interface{}) err
 		var connection = response.Data[0]
 		d.Set("account_id", connection.AssetID)
 		d.Set("connection_name", connection.ConnectionName)
-		d.Set("storage_type", connection.StorageType)
 		connectionInfo := connection.ConnectionInfo.(SplunkConnectionInfo)
 		d.Set("host", connectionInfo.Host)
 		d.Set("port", connectionInfo.Port)
@@ -185,7 +175,7 @@ func resourceSiemSplunkConnectionUpdate(d *schema.ResourceData, m interface{}) e
 		ID:             d.Id(),
 		AssetID:        d.Get("account_id").(string),
 		ConnectionName: d.Get("connection_name").(string),
-		StorageType:    d.Get("storage_type").(string),
+		StorageType:    StorageTypeCustomerSplunk,
 		ConnectionInfo: SplunkConnectionInfo{
 			Host:                    d.Get("host").(string),
 			Port:                    d.Get("port").(int),

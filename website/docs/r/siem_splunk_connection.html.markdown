@@ -1,9 +1,9 @@
 ---
 subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "incapsula_siem_connection"
+page_title: "incapsula_siem_splunk_connection"
 description: |- 
-    Provides a customer S3 connection configuration resource.
+    Provides a customer Splunk connection configuration resource.
 ---
 
 # incapsula_siem_connection
@@ -18,7 +18,6 @@ The follow-on action is to use the `incapsula_siem_log_configuration` resource, 
 resource "incapsula_siem_splunk_connection" "example_siem_splunk_connection"{
 	account_id = "1234567"
 	connection_name = "APB siem-logs Splunk connection"
-	storage_type = "CUSTOMER_SPLUNK"
   	host = "my.splunk.com"
   	port = 8080
   	token = "9a98ceed-667f-41f8-8c71-334b2a6bd965"
@@ -37,7 +36,6 @@ Example of exported resource:
 resource "incapsula_siem_splunk_connection" "example_siem_splunk_connection"{
 	account_id = "1234567"
 	connection_name = "APB siem-logs Splunk connection"
-	storage_type = "CUSTOMER_SPLUNK"
   	host = "my.splunk.com"
   	port = 8080
   	token = "Sensitive data placeholder"
@@ -50,11 +48,10 @@ The following arguments are supported:
 
 * `connection_name` - (Required) Unique connection name.
 * `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
-* `storage_type` - (Required) Storage type. Possible values: `CUSTOMER_SPLUNK`
 * `host` - (Required) Splunk server host.
 * `port` - (Required) Splunk server port.
 * `token` - (Required) Splunk access token. 
-* `disable_cert_verification` - (Required) Flag to disable/enable server certificate.
+* `disable_cert_verification` - (Optional) Flag to disable/enable server certificate. Used when self-signed certificate applied on server side.
 
 ## Attributes Reference
 
