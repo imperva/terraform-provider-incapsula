@@ -20,7 +20,7 @@ resource "incapsula_siem_splunk_connection" "example_siem_splunk_connection"{
 	connection_name = "APB siem-logs Splunk connection"
   	host = "my.splunk.com"
   	port = 8080
-  	token = "9a98ceed-667f-41f8-8c71-334b2a6bd965"
+  	token = "Sensitive data placeholder"
   	disable_cert_verification = false
 }
 ```
@@ -50,7 +50,7 @@ The following arguments are supported:
 * `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `host` - (Required) Splunk server host.
 * `port` - (Required) Splunk server port.
-* `token` - (Required) Splunk access token. 
+* `token` - (Required) Splunk access token - Version 4 UUID format. 
 * `disable_cert_verification` - (Optional) Flag to disable/enable server certificate. Used when self-signed certificate applied on server side.
 
 ## Attributes Reference
