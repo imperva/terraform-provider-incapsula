@@ -44,7 +44,7 @@ func resourceSimplifiedRedirectRulesConfiguration() *schema.Resource {
 			"rule": {
 				Description: "List of simplified redirect rules",
 				Optional:    true,
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"rule_name": {
@@ -137,17 +137,17 @@ func resourceSimplifiedRedirectRulesConfigurationRead(ctx context.Context, data 
 	return nil
 }
 
-func serializeSimplifiedRedirectRule(data *schema.ResourceData, DeliveryRule DeliveryRulesListDTO) *schema.Set {
-	simplifiedRedirectRules := &schema.Set{F: resourceSimplifiedRedirectConfigurationHashFunction}
+func serializeSimplifiedRedirectRule(data *schema.ResourceData, DeliveryRule DeliveryRulesListDTO) []interface{} {
+	simplifiedRedirectRules := make([]interface{}, len(DeliveryRule.RulesList))
 
-	for _, rule := range DeliveryRule.RulesList {
-		simplifiedRedirectRule := map[string]interface{}{}
-		simplifiedRedirectRule["rule_name"] = rule.RuleName
-		simplifiedRedirectRule["from"] = rule.From
-		simplifiedRedirectRule["to"] = rule.To
-		simplifiedRedirectRule["response_code"] = rule.ResponseCode
-		simplifiedRedirectRule["enabled"] = rule.Enabled
-		simplifiedRedirectRules.Add(simplifiedRedirectRule)
+	for i, rule := range DeliveryRule.RulesList {
+		simplifiedRedirectRuleSlice := make(map[string]interface{})
+		simplifiedRedirectRuleSlice["rule_name"] = rule.RuleName
+		simplifiedRedirectRuleSlice["from"] = rule.From
+		simplifiedRedirectRuleSlice["to"] = rule.To
+		simplifiedRedirectRuleSlice["response_code"] = rule.ResponseCode
+		simplifiedRedirectRuleSlice["enabled"] = rule.Enabled
+		simplifiedRedirectRules[i] = simplifiedRedirectRuleSlice
 	}
 
 	return simplifiedRedirectRules
@@ -173,26 +173,22 @@ func resourceSimplifiedRedirectRulesConfigurationDelete(ctx context.Context, dat
 }
 
 func createSimplifiedRedirectRulesListFromState(data *schema.ResourceData) []DeliveryRuleDto {
-	simplifiedRediectRulesListConf := data.Get("rule").(*schema.Set)
-	simplifiedRediectRulesListDTO := make([]DeliveryRuleDto, len(simplifiedRediectRulesListConf.List()))
+	simplifiedRediectRulesListConf := data.Get("rule").([]interface{})
+	simplifiedRediectRulesListDTO := make([]DeliveryRuleDto, len(simplifiedRediectRulesListConf))
 
-	for i, deliveryRuleRaw := range simplifiedRediectRulesListConf.List() {
-		deliveryRule := deliveryRuleRaw.(map[string]interface{})
+	for i, simplifiedRediectRuleRaw := range simplifiedRediectRulesListConf {
+		simplifiedRediectRule := simplifiedRediectRuleRaw.(map[string]interface{})
 
-		deliveryRuleDTO := DeliveryRuleDto{
-			RuleName:     deliveryRule["rule_name"].(string),
+		simplifiedRediectRuleDTO := DeliveryRuleDto{
+			RuleName:     simplifiedRediectRule["rule_name"].(string),
 			Action:       "RULE_ACTION_SIMPLIFIED_REDIRECT",
-			Enabled:      deliveryRule["enabled"].(bool),
-			From:         deliveryRule["from"].(string),
-			To:           deliveryRule["to"].(string),
-			ResponseCode: deliveryRule["response_code"].(int),
+			Enabled:      simplifiedRediectRule["enabled"].(bool),
+			From:         simplifiedRediectRule["from"].(string),
+			To:           simplifiedRediectRule["to"].(string),
+			ResponseCode: simplifiedRediectRule["response_code"].(int),
 		}
-		simplifiedRediectRulesListDTO[i] = deliveryRuleDTO
+		simplifiedRediectRulesListDTO[i] = simplifiedRediectRuleDTO
 	}
 
 	return simplifiedRediectRulesListDTO
-}
-
-func resourceSimplifiedRedirectConfigurationHashFunction(v interface{}) int {
-	return schema.HashString(v.(map[string]interface{})["from"])
 }

@@ -44,7 +44,38 @@ func TestAccIncapsulaDeliverySimplifiedRedirectRule_Basic(t *testing.T) {
 			{
 				Config: testAccCheckMultipleSimplifiedRedirectRulesConfig(t),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckSimplifiedRedirectRuleExists(simplifiedRedirectRulesResourceName, 2),
+					testCheckSimplifiedRedirectRuleExists(simplifiedRedirectRulesResourceName, 5),
+
+					//Currently we use a list, so result is ordered
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.0.rule_name", "Simplified Redirect Delivery Rule Test 1"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.0.enabled", "true"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.0.response_code", "301"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.0.from", "/1"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.0.to", "$scheme://www.example.com/$city"),
+
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.1.rule_name", "Simplified Redirect Delivery Rule Test 2"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.1.enabled", "true"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.1.response_code", "301"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.1.from", "/2"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.1.to", "$scheme://www.example.com/$city"),
+
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.2.rule_name", "Simplified Redirect Delivery Rule Test 3"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.2.enabled", "true"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.2.response_code", "301"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.2.from", "/3"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.2.to", "$scheme://www.example.com/$city"),
+
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.3.rule_name", "Simplified Redirect Delivery Rule Test 4"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.3.enabled", "true"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.3.response_code", "301"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.3.from", "/4"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.3.to", "$scheme://www.example.com/$city"),
+
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.4.rule_name", "Simplified Redirect Delivery Rule Test 5"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.4.enabled", "true"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.4.response_code", "301"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.4.from", "/5"),
+					resource.TestCheckResourceAttr(simplifiedRedirectRulesResourceName, "rule.4.to", "$scheme://www.example.com/$city"),
 				),
 			},
 			{
@@ -118,21 +149,42 @@ func testAccCheckMultipleSimplifiedRedirectRulesConfig(t *testing.T) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "%s" "%s" {
   site_id = %s.id
-  rule {
-		rule_name = "%s"
-	  response_code = 301
+	rule {
+		rule_name = "Simplified Redirect Delivery Rule Test 1"
+		response_code = 301
 		enabled = true
-	  from = "/1"
-	  to = "$scheme://www.example.com/$city"
+		from = "/1"
+		to = "$scheme://www.example.com/$city"
 	}
-rule {
-  	rule_name = "%s"
-	response_code = 301
-  	enabled = true
-    from = "/2"
-    to = "$scheme://www.example.com/$city"
-  }
-}`, deliverySimplifiedRedirectRulesResourceName, simplifiedRedirectRulesConfigurationName, siteResourceName, "Simplified Redirect Delivery Rule Test 1", "Simplified Redirect Delivery Rule Test 2",
+	rule {
+		rule_name = "Simplified Redirect Delivery Rule Test 2"
+		response_code = 301
+		enabled = true
+		from = "/2"
+		to = "$scheme://www.example.com/$city"
+	}
+	rule {
+		rule_name = "Simplified Redirect Delivery Rule Test 3"
+		response_code = 301
+		enabled = true
+		from = "/3"
+		to = "$scheme://www.example.com/$city"
+	}
+	rule {
+		rule_name = "Simplified Redirect Delivery Rule Test 4"
+		response_code = 301
+		enabled = true
+		from = "/4"
+		to = "$scheme://www.example.com/$city"
+	}
+	rule {
+		rule_name = "Simplified Redirect Delivery Rule Test 5"
+		response_code = 301
+		enabled = true
+		from = "/5"
+		to = "$scheme://www.example.com/$city"
+	}
+}`, deliverySimplifiedRedirectRulesResourceName, simplifiedRedirectRulesConfigurationName, siteResourceName,
 	)
 }
 func testAccGetSimplifiedRedirectRulesImportString(state *terraform.State) (string, error) {
