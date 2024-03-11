@@ -1,3 +1,12 @@
+## 3.22.0 (Mar 10, 2024)
+
+FEATURES:
+
+* **New Resource:** `incapsula_siem_connnection_splunk`
+* **New Resource:** `incapsula_simplified_redirect_rules_configuration.go`
+* **New Resource:** `incapsula_delivery_rules_configuration.go`
+
+
 ## 3.21.5 (Feb 14, 2024)
 
 - Change account_user URLs (internal change) ([#391](https://github.com/imperva/terraform-provider-incapsula/pull/391))
