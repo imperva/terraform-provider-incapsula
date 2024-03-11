@@ -171,8 +171,8 @@ func testCheckIncapsulaDeliveryRuleExists(name string, numRules int) resource.Te
 func testAccCheckIncapsulaDeliveryRedirectRuleConfigBasic(t *testing.T) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "%s" "%s" {
-  category = "%s"
   site_id = %s.id
+  category = "%s"
   rule {
   	rule_name = "%s"
   	filter = "ASN == 1"
@@ -188,12 +188,12 @@ resource "%s" "%s" {
 func testAccCheckIncapsulaDeliveryRewriteRuleConfigBasic(t *testing.T) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 resource "%s" "%s" {
-  category = "%s"
   site_id = %s.id
+  category = "%s"
   rule {
-   	rule_name = "%s"
+    rule_name = "%s"
     filter = "ASN == 2"
-	cookie_name = "cookie_1"
+    cookie_name = "cookie_1"
     from = "cookie1"
     to = "cookie2"
     add_if_missing = "false"
@@ -201,7 +201,7 @@ resource "%s" "%s" {
     enabled = "true"
   }
   rule {
-  	rule_name = "%s"
+    rule_name = "%s"
     filter = "ASN == 3"
     header_name = "abc"
     from = "header1"
