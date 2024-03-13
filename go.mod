@@ -2,7 +2,10 @@ module github.com/terraform-providers/terraform-provider-incapsula
 
 go 1.19
 
-require github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.1
+require (
+	github.com/hashicorp/go-uuid v1.0.3
+	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.1
+)
 
 require (
 	github.com/agext/levenshtein v1.2.2 // indirect
@@ -18,7 +21,6 @@ require (
 	github.com/hashicorp/go-hclog v1.2.1 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-plugin v1.4.6 // indirect
-	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/hc-install v0.4.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.15.0 // indirect
@@ -49,5 +51,5 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
 	google.golang.org/grpc v1.56.3 // indirect
-	google.golang.org/protobuf v1.30.0 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 )
