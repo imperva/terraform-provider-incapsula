@@ -36,9 +36,8 @@ type DeliveryRuleDto struct {
 	Enabled                 bool   `json:"enabled"`
 }
 
-var diags diag.Diagnostics
-
 func (c *Client) ReadDeliveryRuleConfiguration(siteID string, category string) (*DeliveryRulesListDTO, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	log.Printf("[INFO] Getting Delivery rules Type Rule %s for Site ID %s\n", category, siteID)
 
 	reqURL := fmt.Sprintf("%s/sites/%s/delivery-rules-configuration?category=%s", c.config.BaseURLRev3, siteID, category)
@@ -55,6 +54,9 @@ func (c *Client) ReadDeliveryRuleConfiguration(siteID string, category string) (
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
+	// Dump JSON
+	log.Printf("[DEBUG] Incapsula Read Waiting Room JSON response: %s\n", string(responseBody))
+
 	if resp.StatusCode != 200 {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -70,7 +72,7 @@ func (c *Client) ReadDeliveryRuleConfiguration(siteID string, category string) (
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  fmt.Sprintf("Error parsing Delivery Rules JSON response of categorie %s", category),
-			Detail:   fmt.Sprintf("Error parsing Delivery Rules JSON response of categorie %s JSON response for Site ID %s: %s\nresponse: %s", category, siteID, err, string(responseBody)),
+			Detail:   fmt.Sprintf("Error parsing Delivery Rules JSON response of categorie %s for Site ID %s: %s\nresponse: %s", category, siteID, err, string(responseBody)),
 		})
 		return nil, diags
 	}
@@ -80,6 +82,7 @@ func (c *Client) ReadDeliveryRuleConfiguration(siteID string, category string) (
 }
 
 func (c *Client) UpdateDeliveryRuleConfiguration(siteID string, category string, rulesList *DeliveryRulesListDTO) (*DeliveryRulesListDTO, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	log.Printf("[INFO] Updating Delivery rules Type %s for Site ID %s\n", category, siteID)
 	ruleJSON, err := json.Marshal(rulesList)
 
@@ -126,8 +129,8 @@ func (c *Client) UpdateDeliveryRuleConfiguration(siteID string, category string,
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  fmt.Sprintf("Error parsing delivery rules category %s JSON response", category),
-			Detail:   fmt.Sprintf("Error parsing delivery rules category %s JSON response for Site ID %s: %s\nresponse: %s", category, siteID, err, string(responseBody)),
+			Summary:  fmt.Sprintf("Error parsing Delivery Rules JSON response of categorie %s", category),
+			Detail:   fmt.Sprintf("Error parsing Delivery Rules JSON response of categorie %s for Site ID %s: %s\nresponse: %s", category, siteID, err, string(responseBody)),
 		})
 		return nil, diags
 	}

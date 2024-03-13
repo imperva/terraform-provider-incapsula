@@ -10,6 +10,8 @@ description: |-
 
 Provides a resource to create security, delivery, and rate rules.
 
+**Note:** A newer resource for configuring delivery rules and their priority is available in `incapsula_delivery_rules_configuration`
+
 ## Example Usage
 
 ```hcl

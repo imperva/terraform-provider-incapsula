@@ -1,7 +1,7 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
 page_title: "Incapsula: delivery_rules_configuration"
-sidebar_current: "docs-incapsula-resource-delivery_rules_configuration"
 description: |-
   Provides a Incapsula delivery_rules_configuration resource.
 ---
@@ -15,8 +15,11 @@ Currently there are 5 possible types of delivery rule:
 * **REWRITE** - Modify, add, and remove different request attributes such as URL, headers and cookies.
 * **REWRITE_RESPONSE** - Modify, add, and remove different response attributes such as headers, statuc code and error responses.
 * **FORWARD** - Forward the request to a specific data-center or port.
+* **SIMPLIFIED_REDIRECT** - Available as a separate resource: `simplified_redirect_rules_configuration`
 
-**Important Note:** When using this resource, the rule names within each category must be unique. When multiple rules have the same name, the update would fail with an error message specifying the index of the offending rules.
+**Important Notes:** 
+* When using this resource, the rule names within each category must be unique. When multiple rules have the same name, the update would fail with an error message specifying the index of the offending rules.
+* This resource replaces all rules within the specified category, so existing rules that are not specified in the configuration will be deleted. In particular, this resource cannot be used with `incapsula_incap_rule` to configure rules for the same category type.
 
 
 ## Example Usage

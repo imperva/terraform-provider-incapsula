@@ -1,7 +1,7 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
 page_title: "Incapsula: simplified_redirect_rules_configuration"
-sidebar_current: "docs-incapsula-resource-simplified_redirect_rules_configuration"
 description: |-
   Provides a Incapsula simplified_redirect_rules_configuration resource.
 ---
@@ -16,7 +16,9 @@ Provides simplified redirect rules. The functionality is similar to REDIRECT rul
 
 Due to their simplicity, the limits of simplified redirect rules per sites is much higher than normal rules (currently 20,000, compared to only 500 for other delivery rules).
 
-**Note:** Simplified redirect rules should be enabled in the account settings before being able to use them. 
+**Notes:**
+* Simplified redirect rules should be enabled in the account settings before being able to use them. 
+* This resource replaces all simplified rules of the site, so existing rules that are not specified in the configuration will be deleted. In particular, this resource cannot cannot be used with `incapsula_incap_rule` to configure simplified redirect rules for the same site.
 
 ## Example Usage
 
