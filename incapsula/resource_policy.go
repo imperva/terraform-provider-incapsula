@@ -67,6 +67,7 @@ func resourcePolicy() *schema.Resource {
 			"account_id": {
 				Description: "The Account ID of the policy.",
 				Type:        schema.TypeInt,
+				Deprecated:  "Use the incapsula_account_policy_association resource instead",
 				Computed:    true,
 				Optional:    true,
 				ForceNew:    true,
