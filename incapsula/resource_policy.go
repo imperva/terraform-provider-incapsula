@@ -140,7 +140,6 @@ func resourcePolicyRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("policy_type", policyGetResponse.Value.PolicyType)
 	d.Set("description", policyGetResponse.Value.Description)
 	if d.Get("account_id") != nil {
-		log.Printf("[WARN] Incapsula policy account id attribute is deprecated - please remove it\n")
 		d.Set("account_id", d.Get("account_id"))
 	} else {
 		d.Set("account_id", policyGetResponse.Value.AccountID)
