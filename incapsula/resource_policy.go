@@ -138,7 +138,12 @@ func resourcePolicyRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("enabled", policyGetResponse.Value.Enabled)
 	d.Set("policy_type", policyGetResponse.Value.PolicyType)
 	d.Set("description", policyGetResponse.Value.Description)
-	d.Set("account_id", policyGetResponse.Value.AccountID)
+	if d.Get("account_id") != nil {
+		log.Printf("[WARN] Incapsula policy account id attribute is deprecated - please remove it\n")
+		d.Set("account_id", d.Get("account_id"))
+	} else {
+		d.Set("account_id", policyGetResponse.Value.AccountID)
+	}
 
 	// JSON encode policy settings
 	policySettingsJSONBytes, err := json.MarshalIndent(policyGetResponse.Value.PolicySettings, "", "    ")
@@ -158,7 +163,9 @@ func resourcePolicyUpdate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
-
+	if d.Get("account_id") != nil {
+		log.Printf("[WARN] Incapsula policy account id attribute is deprecated - please remove it\n")
+	}
 	policySettingsString := d.Get("policy_settings").(string)
 	var policySettings []PolicySetting
 	err = json.Unmarshal([]byte(policySettingsString), &policySettings)
