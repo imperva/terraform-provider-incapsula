@@ -1,8 +1,9 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: incapsula-ato-site-allowlist"
-sidebar_current: "docs-incapsula-resource-ato-site-allowlist"
-description: "Provides an Incapsula ATO site allowlist configuration resource"
+page_title: "incapsula_ato_site_allowlist"
+description: |- 
+  Provides an Incapsula ATO site allowlist configuration resource.
 ---
 
 # incapsula_ato_site_allowlist

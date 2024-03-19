@@ -6,19 +6,15 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
 )
 
 // Endpoints (unexported consts)
-const endpointAccountUserAdd = "identity-management/v3/users"
-const endpointSubAccountUserAdd = "identity-management/v3/users/sub-account"
-const endpointUserStatus = "identity-management/v3/users"
-const endpointUserDelete = "identity-management/v3/users"
-const endpointUserUpdate = "identity-management/v3/roles/assignments"
+
+const endpointUserOperationNew = "identity-management/v3/idm-users"
 
 // UserApisResponse contains the relevant user information when adding, getting or updating a user
 type UserApisResponse struct {
-	Data struct {
+	Data []struct {
 		UserID    string `json:"id"`
 		AccountID int    `json:"accountId"`
 		FirstName string `json:"firstName"`
@@ -53,9 +49,7 @@ type UserAddReq struct {
 }
 
 type UserUpdateReq struct {
-	UserEmail string `json:"email"`
-	AccountId int    `json:"accountId"`
-	RoleIds   []int  `json:"roleIds"`
+	RoleIds []int `json:"roleIds"`
 }
 
 // AddAccountUser adds a user to Incapsula Account
@@ -74,11 +68,11 @@ func (c *Client) AddAccountUser(accountID int, email, firstName, lastName string
 		return nil, fmt.Errorf("Failed to JSON marshal IncapRule: %s", err)
 	}
 
-	endpointUserAdd := endpointAccountUserAdd
+	endpointUserAdd := endpointUserOperationNew
 	operation := CreateAccountUser
 	accountStatusResponse, err := c.AccountStatus(accountID, ReadAccount)
 	if accountStatusResponse != nil && accountStatusResponse.AccountType == "Sub Account" {
-		endpointUserAdd = endpointSubAccountUserAdd
+		endpointUserAdd = endpointUserOperationNew + "/" + email
 		operation = CreateSubAccountUser
 	}
 
@@ -120,7 +114,7 @@ func (c *Client) GetAccountUser(accountID int, email string) (*UserApisResponse,
 	log.Printf("[INFO] Getting Incapsula user status for email id: %s\n", email)
 
 	// Get to Incapsula
-	reqURL := fmt.Sprintf("%s/%s?caid=%d&email=%s", c.config.BaseURLAPI, endpointUserStatus, accountID, url.QueryEscape(email))
+	reqURL := fmt.Sprintf("%s/%s/%s?caid=%d", c.config.BaseURLAPI, endpointUserOperationNew, email, accountID)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadAccountUser)
 
 	if err != nil {
@@ -152,24 +146,23 @@ func (c *Client) GetAccountUser(accountID int, email string) (*UserApisResponse,
 // UpdateAccountUser User Roles
 func (c *Client) UpdateAccountUser(accountID int, email string, roleIds []interface{}) (*UserApisUpdateResponse, error) {
 	log.Printf("[INFO] Update Incapsula User for email: %s (account ID %d)\n", email, accountID)
-
 	listRoles := make([]int, len(roleIds))
 	for i, v := range roleIds {
 		listRoles[i] = v.(int)
 	}
 
-	userUpdateReq := []UserUpdateReq{{AccountId: accountID, UserEmail: email, RoleIds: listRoles}}
+	userUpdateReq := UserUpdateReq{RoleIds: listRoles}
 
 	userJSON, err := json.Marshal(userUpdateReq)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to JSON marshal IncapRule: %s", err)
 	}
 
-	reqURL := fmt.Sprintf("%s/%s?caid=%d", c.config.BaseURLAPI, endpointUserUpdate, accountID)
+	reqURL := fmt.Sprintf("%s/%s/%s?caid=%d", c.config.BaseURLAPI, endpointUserOperationNew, email, accountID)
 
 	log.Printf("[INFO] Req: %s\n", reqURL)
 	log.Printf("[INFO] json: %s\n", userJSON)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, userJSON, UpdateAccountUser)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPatch, reqURL, userJSON, UpdateAccountUser)
 
 	if err != nil {
 		return nil, fmt.Errorf("Error updating user email %s: %s", email, err)
@@ -211,7 +204,7 @@ func (c *Client) DeleteAccountUser(accountID int, email string) error {
 
 	// Delete form to Incapsula
 
-	reqURL := fmt.Sprintf("%s/%s?caid=%d&email=%s", c.config.BaseURLAPI, endpointUserDelete, accountID, url.QueryEscape(email))
+	reqURL := fmt.Sprintf("%s/%s/%s?caid=%d", c.config.BaseURLAPI, endpointUserOperationNew, email, accountID)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteAccountUser)
 
 	if err != nil {

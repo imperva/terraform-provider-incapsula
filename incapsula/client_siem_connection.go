@@ -2,6 +2,7 @@ package incapsula
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -11,10 +12,38 @@ import (
 
 const endpointSiemConnection = "siem-config-service/v3/connections"
 
-type ConnectionInfo struct {
+type S3ConnectionInfo struct {
 	AccessKey string `json:"accessKey,omitempty"`
 	SecretKey string `json:"secretKey,omitempty"`
 	Path      string `json:"path"`
+}
+
+type SplunkConnectionInfo struct {
+	Host                    string `json:"host"`
+	Port                    int    `json:"port"`
+	Token                   string `json:"token,omitempty"`
+	DisableCertVerification bool   `json:"disableCertVerification"`
+}
+
+type ConnectionInfo interface {
+	getConnectionInfo() any
+}
+
+func (s SplunkConnectionInfo) getConnectionInfo() any {
+	return SplunkConnectionInfo{
+		Host:                    s.Host,
+		Port:                    s.Port,
+		Token:                   s.Token,
+		DisableCertVerification: s.DisableCertVerification,
+	}
+}
+
+func (s S3ConnectionInfo) getConnectionInfo() any {
+	return S3ConnectionInfo{
+		AccessKey: s.AccessKey,
+		SecretKey: s.SecretKey,
+		Path:      s.Path,
+	}
 }
 
 type SiemConnectionData struct {
@@ -23,6 +52,40 @@ type SiemConnectionData struct {
 	ConnectionName string         `json:"connectionName"`
 	StorageType    string         `json:"storageType"`
 	ConnectionInfo ConnectionInfo `json:"connectionInfo"`
+}
+
+func (s *SiemConnectionData) UnmarshalJSON(input []byte) error {
+	body := string(input)
+	var jsonMap map[string]interface{}
+	err := json.Unmarshal([]byte(body), &jsonMap)
+	if err != nil {
+		return err
+	}
+	s.ID = jsonMap["id"].(string)
+	s.ConnectionName = jsonMap["connectionName"].(string)
+	s.AssetID = jsonMap["assetId"].(string)
+	s.StorageType = jsonMap["storageType"].(string)
+	if s.StorageType == "CUSTOMER_S3" {
+		s.ConnectionInfo = S3ConnectionInfo{
+			AccessKey: jsonMap["connectionInfo"].(map[string]interface{})["accessKey"].(string),
+			SecretKey: jsonMap["connectionInfo"].(map[string]interface{})["secretKey"].(string),
+			Path:      jsonMap["connectionInfo"].(map[string]interface{})["path"].(string),
+		}
+	} else if s.StorageType == "CUSTOMER_S3_ARN" {
+		s.ConnectionInfo = S3ConnectionInfo{
+			Path: jsonMap["connectionInfo"].(map[string]interface{})["path"].(string),
+		}
+	} else if s.StorageType == "CUSTOMER_SPLUNK" {
+		s.ConnectionInfo = SplunkConnectionInfo{
+			Host:                    jsonMap["connectionInfo"].(map[string]interface{})["host"].(string),
+			Port:                    int(jsonMap["connectionInfo"].(map[string]interface{})["port"].(float64)),
+			Token:                   jsonMap["connectionInfo"].(map[string]interface{})["token"].(string),
+			DisableCertVerification: jsonMap["connectionInfo"].(map[string]interface{})["disableCertVerification"].(bool),
+		}
+	} else {
+		err = errors.New("unsupported ConnectionInfo type")
+	}
+	return error(err)
 }
 
 type SiemConnection struct {

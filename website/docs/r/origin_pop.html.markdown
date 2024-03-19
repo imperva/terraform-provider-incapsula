@@ -1,17 +1,15 @@
 ---
+subcategory: "Deprecated"
 layout: "incapsula"
-page_title: "Incapsula: origin-pop"
-sidebar_current: "docs-incapsula-resource-origin-pop"
+page_title: "incapsula_origin_pop"
 description: |-
   Provides a Incapsula Data Center Origin POP association resource.
 ---
 
-# incapsula_origin_pop
+-> DEPRECATED: incapsula_origin_pop
 
-Provides a Incapsula Origin POP association resource. 
-
-This resource is deprecated. It will be removed in a future version. 
-Please use resource incapsula_data_centers_configuration instead.
+This resource has been DEPRECATED. It will be removed in a future version. 
+Please use the current `incapsula_data_centers_configuration` resource instead.
 
 ## Example Usage
 

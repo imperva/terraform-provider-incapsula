@@ -1,7 +1,7 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: bots-configuration"
-sidebar_current: "docs-incapsula-resource-bots-configuration"
+page_title: "incapsula_bots_configuration"
 description: |-
   Provides a Incapsula BOT Access Control Configuration resource.
 ---

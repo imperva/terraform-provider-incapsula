@@ -2,6 +2,7 @@ package incapsula
 
 import (
 	"fmt"
+	"github.com/hashicorp/go-uuid"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -27,7 +28,7 @@ func TestClientCreateSiemConnectionBadConfig(t *testing.T) {
 		AssetID:        RandomNumbersExcludingZeroString(10),
 		ConnectionName: RandomLetterAndNumberString(20),
 		StorageType:    RandomCapitalLetterString(10),
-		ConnectionInfo: ConnectionInfo{
+		ConnectionInfo: S3ConnectionInfo{
 			AccessKey: RandomCapitalLetterAndNumberString(20),
 			SecretKey: RandomLetterAndNumberString(40),
 			Path:      RandomLowLetterString(20) + "/" + RandomLowLetterString(10),
@@ -72,7 +73,7 @@ func TestClientCreateSiemConnectionBadJSON(t *testing.T) {
 		AssetID:        assetId,
 		ConnectionName: RandomLetterAndNumberString(20),
 		StorageType:    RandomCapitalLetterString(10),
-		ConnectionInfo: ConnectionInfo{
+		ConnectionInfo: S3ConnectionInfo{
 			AccessKey: RandomCapitalLetterAndNumberString(20),
 			SecretKey: RandomLetterAndNumberString(40),
 			Path:      RandomLowLetterString(20) + "/" + RandomLowLetterString(10),
@@ -158,7 +159,7 @@ func TestClientCreateSiemConnectionBadRequest(t *testing.T) {
 			AssetID:        assetId,
 			ConnectionName: RandomLetterAndNumberString(20),
 			StorageType:    storageType,
-			ConnectionInfo: ConnectionInfo{
+			ConnectionInfo: S3ConnectionInfo{
 				AccessKey: RandomCapitalLetterAndNumberString(20),
 				SecretKey: RandomLetterAndNumberString(40),
 				Path:      RandomLowLetterString(20) + "/" + RandomLowLetterString(10),
@@ -226,7 +227,7 @@ func TestClientCreateValidSiemConnection(t *testing.T) {
 		AssetID:        assetId,
 		ConnectionName: RandomLetterAndNumberString(20),
 		StorageType:    RandomCapitalLetterString(10),
-		ConnectionInfo: ConnectionInfo{
+		ConnectionInfo: S3ConnectionInfo{
 			AccessKey: RandomCapitalLetterAndNumberString(20),
 			SecretKey: RandomLetterAndNumberString(40),
 			Path:      RandomLowLetterString(20) + "/" + RandomLowLetterString(10),
@@ -407,7 +408,7 @@ func TestClientUpdateExistingS3SiemConnection(t *testing.T) {
 		AssetID:        responseAssetId,
 		ConnectionName: responseConnectionName,
 		StorageType:    responseStorageType,
-		ConnectionInfo: ConnectionInfo{
+		ConnectionInfo: S3ConnectionInfo{
 			AccessKey: RandomCapitalLetterAndNumberString(20),
 			SecretKey: RandomLetterAndNumberString(40),
 			Path:      responsePath1 + "/" + responsePath2,
@@ -424,7 +425,7 @@ func TestClientUpdateExistingS3SiemConnection(t *testing.T) {
 	}
 
 	var received = siemConnection.Data[0]
-	if (received.ID != sent.ID) || (received.AssetID != sent.AssetID) || (received.StorageType != sent.StorageType) || (received.ConnectionName != sent.ConnectionName) || (received.ConnectionInfo.Path != sent.ConnectionInfo.Path) || (received.ConnectionInfo.AccessKey == sent.ConnectionInfo.AccessKey) || (received.ConnectionInfo.SecretKey == sent.ConnectionInfo.SecretKey) {
+	if (received.ID != sent.ID) || (received.AssetID != sent.AssetID) || (received.StorageType != sent.StorageType) || (received.ConnectionName != sent.ConnectionName) || (received.ConnectionInfo.(S3ConnectionInfo).Path != sent.ConnectionInfo.(S3ConnectionInfo).Path) || (received.ConnectionInfo.(S3ConnectionInfo).AccessKey == sent.ConnectionInfo.(S3ConnectionInfo).AccessKey) || (received.ConnectionInfo.(S3ConnectionInfo).SecretKey == sent.ConnectionInfo.(S3ConnectionInfo).SecretKey) {
 		t.Errorf("Returned data should be same as sent data with different accessKey and secretKey")
 	}
 }
@@ -482,7 +483,7 @@ func TestClientUpdateExistingS3ArnSiemConnection(t *testing.T) {
 		AssetID:        responseAssetId,
 		ConnectionName: responseConnectionName,
 		StorageType:    responseStorageType,
-		ConnectionInfo: ConnectionInfo{
+		ConnectionInfo: S3ConnectionInfo{
 			Path: responsePath1 + "/" + responsePath2,
 		},
 	}
@@ -597,4 +598,224 @@ func ClientDeleteSiemConnectionBase(t *testing.T, responseStatusCode int) error 
 	client := &Client{config: config, httpClient: &http.Client{}}
 	_, err := client.DeleteSiemConnection(ID, "")
 	return err
+}
+
+func TestClientCreateValidSiemSplunkConnection(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	host := "test.splunk.com"
+	port := 8080
+	token, _ := uuid.GenerateUUID()
+
+	apiID := RandomCapitalLetterAndNumberString(20)
+	apiKey := RandomLetterAndNumberString(40)
+	assetId := RandomNumbersExcludingZeroString(10)
+	endpoint := fmt.Sprintf("/%s/?caid=%s", endpointSiemConnection, assetId)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		}
+		rw.WriteHeader(201)
+		_, err := rw.Write([]byte(fmt.Sprintf(`{
+												"data": [
+													{
+														"id": "%s",
+														"connectionName": "%s",
+														"assetId": "%s",
+														"storageType": "CUSTOMER_SPLUNK",
+														"connectionInfo": {
+															"host": "%s",
+															"port": %d,
+															"token": "%s",
+															"disableCertVerification": %t
+														}
+													}
+												]
+											}`,
+			RandomLowLetterAndNumberString(24),
+			RandomLetterAndNumberString(20),
+			RandomNumbersExcludingZeroString(10),
+			host,
+			port,
+			token,
+			true)))
+		if err != nil {
+			return
+		}
+	}))
+
+	defer server.Close()
+
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+	siemConnection, _, err := client.CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
+		AssetID:        assetId,
+		ConnectionName: RandomLetterAndNumberString(20),
+		StorageType:    RandomCapitalLetterString(10),
+		ConnectionInfo: SplunkConnectionInfo{
+			Host:                    host,
+			Port:                    port,
+			Token:                   token,
+			DisableCertVerification: true,
+		},
+	}}})
+
+	if err != nil {
+		t.Errorf("Should not have received an error")
+	}
+	if siemConnection == nil {
+		t.Errorf("Should not have received a nil SiemConnection instance")
+	}
+}
+
+func TestClientReadExistingSiemSplunkConnection(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	host := "test.splunk.com"
+	port := 8080
+	token, _ := uuid.GenerateUUID()
+	disableCertVerification := true
+
+	apiID := RandomCapitalLetterAndNumberString(20)
+	apiKey := RandomLetterAndNumberString(40)
+	ID := RandomLowLetterAndNumberString(25)
+
+	endpoint := fmt.Sprintf("/%s/%s", endpointSiemConnection, ID)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		}
+		rw.WriteHeader(200)
+		_, err := rw.Write([]byte(fmt.Sprintf(`{
+												"data": [
+													{
+														"id": "%s",
+														"connectionName": "%s",
+														"assetId": "%s",
+														"storageType": "CUSTOMER_SPLUNK",
+														"connectionInfo": {
+															"host": "%s",
+															"port": %d,
+															"token": "%s",
+															"disableCertVerification": %t
+														}
+													}
+												]
+											}`,
+			RandomLowLetterAndNumberString(24),
+			RandomLetterAndNumberString(20),
+			RandomNumbersExcludingZeroString(10),
+			host,
+			port,
+			token,
+			disableCertVerification)))
+		if err != nil {
+			return
+		}
+	}))
+
+	defer server.Close()
+
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+	siemConnection, _, err := client.ReadSiemConnection(ID, "")
+
+	if err != nil {
+		t.Errorf("Should not have received an error")
+	}
+	if (siemConnection == nil) || (siemConnection != nil && len(siemConnection.Data) != 1) {
+		t.Errorf("Should have received only one SiemConnection")
+	}
+}
+
+func TestClientUpdateExistingSplunkSiemConnection(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	apiID := RandomCapitalLetterAndNumberString(20)
+	apiKey := RandomLetterAndNumberString(40)
+
+	responseID := RandomLowLetterAndNumberString(24)
+	responseConnectionName := RandomLetterAndNumberString(20)
+	responseStorageType := "CUSTOMER_SPLUNK"
+	responseAssetId := RandomNumbersExcludingZeroString(10)
+	responseHost := "splunk.test.com"
+	responsePort := 8080
+	responseToken, _ := uuid.GenerateUUID()
+	responseDisableCert := true
+
+	endpoint := fmt.Sprintf("/%s/%s?caid=%s", endpointSiemConnection, responseID, responseAssetId)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		}
+		rw.WriteHeader(200)
+		_, err := rw.Write([]byte(fmt.Sprintf(`{
+												"data": [
+													{
+														"id": "%s",	
+														"connectionName": "%s",
+														"assetId": "%s",
+														"storageType": "%s",
+														"connectionInfo": {
+															"host": "%s",
+															"port": %d,
+															"token": "%s",
+															"disableCertVerification": %t
+														}
+													}
+												]
+											}`,
+			responseID,
+			responseConnectionName,
+			responseAssetId,
+			responseStorageType,
+			responseHost,
+			responsePort,
+			responseToken,
+			responseDisableCert)))
+		if err != nil {
+			return
+		}
+	}))
+
+	defer server.Close()
+
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+	sent := SiemConnectionData{
+		ID:             responseID,
+		AssetID:        responseAssetId,
+		ConnectionName: responseConnectionName,
+		StorageType:    responseStorageType,
+		ConnectionInfo: SplunkConnectionInfo{
+			Host:                    responseHost,
+			Port:                    responsePort,
+			Token:                   responseToken,
+			DisableCertVerification: true,
+		},
+	}
+
+	siemConnection, _, err := client.UpdateSiemConnection(&SiemConnection{Data: []SiemConnectionData{sent}})
+
+	if err != nil {
+		t.Errorf("Should not have received an error")
+	}
+	if (siemConnection == nil) || (siemConnection != nil && len(siemConnection.Data) != 1) {
+		t.Errorf("Should have received only one SiemConnection")
+	}
+
+	var received = siemConnection.Data[0]
+	if (received.ID != sent.ID) ||
+		(received.AssetID != sent.AssetID) ||
+		(received.StorageType != sent.StorageType) ||
+		(received.ConnectionName != sent.ConnectionName) ||
+		(received.ConnectionInfo.(SplunkConnectionInfo).Host != sent.ConnectionInfo.(SplunkConnectionInfo).Host) ||
+		(received.ConnectionInfo.(SplunkConnectionInfo).Port != sent.ConnectionInfo.(SplunkConnectionInfo).Port) ||
+		(received.ConnectionInfo.(SplunkConnectionInfo).Token != sent.ConnectionInfo.(SplunkConnectionInfo).Token) ||
+		(received.ConnectionInfo.(SplunkConnectionInfo).DisableCertVerification != sent.ConnectionInfo.(SplunkConnectionInfo).DisableCertVerification) {
+		t.Errorf("Returned data should be same as sent data")
+	}
 }

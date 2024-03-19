@@ -1,8 +1,9 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: incap-api-security-site-config"
-sidebar_current: "docs-incapsula-resource-api-security-site-config"
-description: |- Provides a Incapsula API Security Site Config resource.
+page_title: "incapsula_api_security_site_config"
+description: |-
+  Provides a Incapsula API Security Site Config resource.
 ---
 
 # incapsula_api_security_site_config
