@@ -37,7 +37,6 @@ resource "incapsula_policy" "example-whitelist-ip-policy" {
 }
 
 resource "incapsula_policy" "example-acl-country-block-policy" {
-#    account_id      = var.account_id //should not be defined
     description     = "EXAMPLE ACL Block Countries based on attack."
     enabled         = true
     policy_type = "ACL"
