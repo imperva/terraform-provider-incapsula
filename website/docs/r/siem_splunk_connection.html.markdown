@@ -6,7 +6,7 @@ description: |-
     Provides a customer Splunk connection configuration resource.
 ---
 
-# incapsula_siem_connection
+# incapsula_siem_splunk_connection
 
 Provides a customer Splunk connection configuration resource.
 
