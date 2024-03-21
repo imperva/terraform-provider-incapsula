@@ -78,7 +78,7 @@ The `hsts_config` resource represents the configuration settings for HTTP Strict
 
 The `inbound_tls_settings` resource represents the configuration settings for Transport Layer Security (TLS).
 
-* `configuration_profile` - (Required): Where to use a pre-defined or custom configuration for TLS settings.
+* `configuration_profile` - (Required): Where to use a pre-defined or custom configuration for TLS settings. Possible values: DEFAULT, ENHANCED_SECURITY, CUSTOM.
   - Type: `string`
 * `tls_configuration` - (Optional): List supported TLS versions and ciphers.
   - Type: `List`

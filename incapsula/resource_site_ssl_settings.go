@@ -221,6 +221,7 @@ func mapInboundTLSSettingsResponseToResource(d *schema.ResourceData, settingsDat
 	inboundTLSSettingsFromServer = settingsData.Data[0].InboundTLSSettingsConfiguration
 
 	if inboundTLSSettingsFromServer == nil {
+		d.Set("inbound_tls_settings", nil)
 		return
 	}
 	inboundTLSSettingsMap := make(map[string]interface{})
