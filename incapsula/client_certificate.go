@@ -42,7 +42,7 @@ type CustomCertificate struct {
 }
 
 // AddCertificate adds a custom SSL certificate to a site in Incapsula
-func (c *Client) AddCertificate(siteID, certificate, privateKey, passphrase, authType, inputHash, string) (*CertificateAddResponse, error) {
+func (c *Client) AddCertificate(siteID, certificate, privateKey, passphrase, authType, inputHash string) (*CertificateAddResponse, error) {
 
 	log.Printf("[INFO] Adding custom certificate for site_id: %s", siteID)
 
