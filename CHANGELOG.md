@@ -1,3 +1,13 @@
+## 3.22.1 (Mar 25, 2024)
+
+IMPROVEMENTS:
+
+- Delivery rules configuration improvements ([#398](https://github.com/imperva/terraform-provider-incapsula/pull/398))
+- deprecating account id for incapsula_policy use incapsula_account_policy_association instead ([#400](https://github.com/imperva/terraform-provider-incapsula/pull/398))
+- siem_log_configuration: fix documentation ([#401](https://github.com/imperva/terraform-provider-incapsula/pull/401))
+
+
+
 ## 3.22.0 (Mar 10, 2024)
 
 FEATURES:
