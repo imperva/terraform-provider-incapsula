@@ -10,7 +10,7 @@ description: |-
 
 Provides a resource to configure a log connection.
 
-Dependency is on existing connection, created using the `incapsula_siem_connection` resource.
+Dependency is on existing connection, created using the `incapsula_siem_connection` or `incapsula_siem_splunk_connection` resource.
 
 ## Example Usage
 
@@ -78,13 +78,13 @@ The following arguments are supported:
 
 **Note**: The connection should be chosen according to conjunction of producer and dataset:
 
-| producer | allowed storage_type | datasets                        |
-|----------|----------------------|---------------------------------|
-| ABP      | CUSTOMER_S3          | ABP                             |
-| NETSEC   | CUSTOMER_S3          | CONNECTION, NETFLOW, IP, ATTACK |
-| ATO      | CUSTOMER_S3          | ATO                             |
-| AUDIT    | CUSTOMER_S3          | AUDIT_TRAIL                     |
-| CSP      | CUSTOMER_S3          | GOOGLE_ANALYTICS_IDS, SIGNIFICANT_DOMAIN_DISCOVERY          |
+| producer | datasets                                           |
+|----------|----------------------------------------------------|
+| ABP      | ABP                                                |
+| NETSEC   | CONNECTION, NETFLOW, IP, ATTACK                    |
+| ATO      | ATO                                                |
+| AUDIT    | AUDIT_TRAIL                                        |
+| CSP      | GOOGLE_ANALYTICS_IDS, SIGNIFICANT_DOMAIN_DISCOVERY |
 
 
 ## Attributes Reference
