@@ -1,8 +1,9 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: incap-account-ssl-settings"
-sidebar_current: "docs-incapsula-resource-account-ssl-settings"
-description: |- Provides an Incapsula Account SSL Settings resource.
+page_title: "incapsula_account_ssl_settings"
+description: |-
+  Provides an Incapsula Account SSL Settings resource.
 ---
 
 # incapsula_account_ssl_settings

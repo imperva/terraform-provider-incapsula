@@ -41,6 +41,47 @@ func TestAccIncapsulaSubAccount_Basic(t *testing.T) {
 	})
 }
 
+func TestAccIncapsulaSubAccount_HTTP2(t *testing.T) {
+	testIncapsulaSubAccountHttp2Client(t, true, true)
+}
+
+func TestIncapsulaSubAccount_Http2Defaults(t *testing.T) {
+	testIncapsulaSubAccountHttp2Client(t, true, false)
+}
+
+func TestIncapsulaSubAccount_Http2ClientAndOriginEnabled(t *testing.T) {
+	testIncapsulaSubAccountHttp2Client(t, false, false)
+}
+
+func testIncapsulaSubAccountHttp2Client(t *testing.T, enableHttp2ForNewSites bool, enableHttp2ToOriginForNewSites bool) {
+
+	log.Printf("========================BEGIN TEST========================")
+	log.Printf("[DEBUG]Running test resource_txt_settings.go.TestAccIncapsulaSubAccount_Basic")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccIncapsulaSubAccountDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: getAccIncapsulaSubAccountWithHttp2Config(enableHttp2ForNewSites, enableHttp2ToOriginForNewSites),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSubAccountExists(),
+					resource.TestCheckResourceAttr(subAccountResourceType+"."+subAccountResourceName, "sub_account_name", subAccountName),
+					resource.TestCheckResourceAttr(subAccountResourceType+"."+subAccountResourceName, "enable_http2_for_new_sites", strconv.FormatBool(enableHttp2ForNewSites)),
+					resource.TestCheckResourceAttr(subAccountResourceType+"."+subAccountResourceName, "enable_http2_to_origin_for_new_sites", strconv.FormatBool(enableHttp2ToOriginForNewSites)),
+				),
+			},
+			{
+				ResourceName:      subAccountResourceType + "." + subAccountResourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testACCStateSubAccountID,
+			},
+		},
+	})
+}
+
 func getAccIncapsulaSubAccountConfigBasic() string {
 	return fmt.Sprintf(`
 		resource "%s" "%s" {
@@ -48,6 +89,17 @@ func getAccIncapsulaSubAccountConfigBasic() string {
 			data_storage_region = "%s"
 		}`,
 		subAccountResourceType, subAccountResourceName, subAccountName, dataStorageRegionName,
+	)
+}
+
+func getAccIncapsulaSubAccountWithHttp2Config(enableHttp2ForNewSites bool, enableHttp2ToOriginForNewSites bool) string {
+	return fmt.Sprintf(`
+		resource "%s" "%s" {
+			sub_account_name = "%s"
+			enable_http2_for_new_sites = "%t"
+			enable_http2_to_origin_for_new_sites = "%t"
+		}`,
+		subAccountResourceType, subAccountResourceName, subAccountName, enableHttp2ForNewSites, enableHttp2ToOriginForNewSites,
 	)
 }
 

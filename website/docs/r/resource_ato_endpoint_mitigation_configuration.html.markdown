@@ -1,8 +1,9 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: incapsula-ato-endpoint-mitigation-configuration"
-sidebar_current: "docs-incapsula-resource-ato-endpoint-mitigation-configuration"
-description: "Provides an Incapsula ATO endpoint mitigation resource"
+page_title: "incapsula_ato_endpoint_mitigation_configuration"
+description: |-
+  Provides an Incapsula ATO endpoint mitigation resource.
 ---
 
 # incapsula_ato_endpoint_mitigation_configuration

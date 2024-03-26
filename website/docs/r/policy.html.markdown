@@ -1,27 +1,20 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: policy"
-sidebar_current: "docs-incapsula-resource-policy"
+page_title: "incapsula_policy"
 description: |-
   Provides a Incapsula Policy resource.
 ---
 
 # incapsula_policy
 
-Provides an Incapsula Policy resource. This resource enables you to define policies to centrally configure settings for assets in your account.
+Provides a resource to define WAF security, Whitelist, and ACL policies. All policies are created at the parent account level. 
 
-**Note**: We are currently rolling out the new WAF Rules policy type. It may not yet be available in your account.
-
-** When updating the WAF Rules policy (policy_type=WAF_RULES), all 4 setting types (policySettingType) are mandatory (REMOTE_FILE_INCLUSION, ILLEGAL_RESOURCE_ACCESS, CROSS_SITE_SCRIPTING, SQL_INJECTION).
+The follow-on action is to use the `incapsula_account_policy_association` resource, to assign the policy to a sub account.
 
 ## Example Usage
 
 ```hcl
-# policy_settings internal values:
-# policySettingType: IP, GEO, URL
-# settingsAction: BLOCK, ALLOW, ALERT, BLOCK_USER, BLOCK_IP, IGNORE
-# policySettings.data.url.pattern: CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS, NOT_PREFIX, NOT_SUFFIX, PREFIX, SUFFIX
-# exceptionType: GEO, IP, URL, CLIENT_ID, SITE_ID
 
 resource "incapsula_policy" "example-whitelist-ip-policy" {
     name        = "Example WHITELIST IP Policy"
@@ -43,6 +36,25 @@ resource "incapsula_policy" "example-whitelist-ip-policy" {
     POLICY
 }
 
+resource "incapsula_policy" "example-acl-country-block-policy" {
+    description     = "EXAMPLE ACL Block Countries based on attack."
+    enabled         = true
+    policy_type = "ACL"
+    name            = var.dynamic_country_block_policy_name
+    policy_settings = jsonencode(
+        [
+            {
+                data = {
+                    geo = {
+                        countries = var.countries
+                    }
+                }
+                policySettingType = "GEO"
+                settingsAction    = "BLOCK"
+            },
+        ]
+    )
+}
 
 resource "incapsula_policy" "example-waf-rule-illegal-resource-access-policy" {
     name        = "Example WAF-RULE ILLEGAL RESOURCE ACCESS Policy"
@@ -92,9 +104,13 @@ The following arguments are supported:
 
 * `name` - (Required) The policy name.
 * `enabled` - (Required) Enables the policy.
-* `policy_type` - (Required) The policy type. Possible values: ACL, WHITELIST, WAF_RULES.
+* `policy_type` - (Required) The policy type. Possible values: ACL, WHITELIST, WAF_RULES.  Note: For (policy_type=WAF_RULES), all 4 setting types (policySettingType) are mandatory (REMOTE_FILE_INCLUSION, ILLEGAL_RESOURCE_ACCESS, CROSS_SITE_SCRIPTING, SQL_INJECTION).
 * `policy_settings` - (Required) The policy settings as JSON string. See Imperva documentation for help with constructing a correct value.
-* `account_id` - (Optional) Account ID of the policy.
+Policy_settings internal values:
+policySettingType: IP, GEO, URL
+settingsAction: BLOCK, ALLOW, ALERT, BLOCK_USER, BLOCK_IP, IGNORE
+policySettings.data.url.pattern: CONTAINS, EQUALS, NOT_CONTAINS, NOT_EQUALS, NOT_PREFIX, NOT_SUFFIX, PREFIX, SUFFIX 
+exceptionType: GEO, IP, URL, CLIENT_ID, SITE_ID
 * `description` - (Optional) The policy description.
 
 ## Attributes Reference

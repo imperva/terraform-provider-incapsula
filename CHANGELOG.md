@@ -1,3 +1,51 @@
+## 3.22.1 (Mar 25, 2024)
+
+IMPROVEMENTS:
+
+- Delivery rules configuration improvements ([#398](https://github.com/imperva/terraform-provider-incapsula/pull/398))
+- deprecating account id for incapsula_policy use incapsula_account_policy_association instead ([#400](https://github.com/imperva/terraform-provider-incapsula/pull/398))
+- siem_log_configuration: fix documentation ([#401](https://github.com/imperva/terraform-provider-incapsula/pull/401))
+
+
+
+## 3.22.0 (Mar 10, 2024)
+
+FEATURES:
+
+* **New Resource:** `incapsula_siem_connnection_splunk`
+* **New Resource:** `incapsula_simplified_redirect_rules_configuration.go`
+* **New Resource:** `incapsula_delivery_rules_configuration.go`
+
+
+## 3.21.5 (Feb 14, 2024)
+
+- Change account_user URLs (internal change) ([#391](https://github.com/imperva/terraform-provider-incapsula/pull/391))
+
+
+## 3.21.4 (Feb 4, 2024)
+
+IMPROVEMENTS:
+
+- Add HTTP2 attributes in account and sub-account resources ([#388](https://github.com/imperva/terraform-provider-incapsula/pull/388))
+
+## 3.21.3 (Jan 25, 2024)
+
+- incapsula_site_ssl_settings: Revert last changes ([#386](https://github.com/imperva/terraform-provider-incapsula/pull/386))
+
+
+## 3.21.2 (Jan 10, 2024)
+
+- Documentation fixes
+
+
+## 3.21.1 (Jan 8, 2024)
+
+- Documentation fixes
+- Incapsula_account: fix bug of roles name ([#378](https://github.com/imperva/terraform-provider-incapsula/pull/378))
+- incapsula_mtls_client_to_imperva_ca_certificate: fix parameter name ([#379](https://github.com/imperva/terraform-provider-incapsula/pull/379))
+- incapsula_security_rule_exception: fix bug ([#380](https://github.com/imperva/terraform-provider-incapsula/pull/380))
+
+
 ## 3.21.0 (Nov 20, 2023)
 
 IMPROVEMENTS:

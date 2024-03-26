@@ -1,8 +1,9 @@
 ---
+subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "Incapsula: incap-csp-site-domain"
-sidebar_current: "docs-incapsula-resource-csp-site-domain"
-description: |- Provides an Incapsula CSP domain resource.
+page_title: "incapsula_csp_site_domain"
+description: |- 
+  Provides an Incapsula CSP domain resource.
 ---
 
 # incapsula_csp_site_domain
