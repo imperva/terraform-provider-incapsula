@@ -51,7 +51,6 @@ func resourceCertificate() *schema.Resource {
 				Description: "The authentication type of the certificate (RSA or ECC). Optional. If not provided, then RSA will be assume.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				Sensitive:   true,
 				Default:     "RSA",
 			},
 			"input_hash": {
