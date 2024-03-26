@@ -15,27 +15,38 @@ type HSTSConfiguration struct {
 	PreLoaded          bool `json:"preLoaded"`
 }
 
-type Data struct {
-	HstsConfiguration HSTSConfiguration `json:"hstsConfiguration"`
+type InboundTLSSettingsConfiguration struct {
+	ConfigurationProfile string             `json:"configurationProfile"`
+	TLSConfigurations    []TLSConfiguration `json:"tlsConfiguration"`
+}
+
+type TLSConfiguration struct {
+	TLSVersion     string   `json:"tlsVersion"`
+	CiphersSupport []string `json:"ciphersSupport"`
 }
 
 type SSLSettingsDTO struct {
-	Data []Data `json:"data"`
+	HstsConfiguration               HSTSConfiguration                `json:"hstsConfiguration"`
+	InboundTLSSettingsConfiguration *InboundTLSSettingsConfiguration `json:"inboundTlsSettings,omitempty"`
 }
 
-func (c *Client) UpdateSiteSSLSettings(siteID int, mySSLSettings SSLSettingsDTO) (*SSLSettingsDTO, error) {
+type SSLSettingsResponse struct {
+	Data []SSLSettingsDTO `json:"data"`
+}
+
+func (c *Client) UpdateSiteSSLSettings(siteID int, mySSLSettings SSLSettingsResponse) (*SSLSettingsResponse, error) {
 	log.Printf("[INFO] Updating Incapsula Site SSL settings for Site ID %d\n", siteID)
 
 	requestJSON, err := json.Marshal(mySSLSettings)
 	if err != nil {
-		return nil, fmt.Errorf("failed to JSON marshal HSTSConfiguration: %s", err)
+		return nil, fmt.Errorf("failed to JSON marshal SSLSettings: %s", err)
 	}
 
-	// Put request to Incapsula
-	reqURL := fmt.Sprintf("%s/sites/%d/settings/TLSConfiguration", c.config.BaseURLRev3, siteID)
-	log.Printf("[INFO] HSTS request json looks like this %s\n", requestJSON)
-	log.Printf("[INFO] HSTS request URL looks like this %s\n", reqURL)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, requestJSON, UpdateSiteSSLSettings)
+	// Patch request to Incapsula
+	reqURL := fmt.Sprintf("%s/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", c.config.BaseURLAPI, siteID)
+	log.Printf("[INFO] SSL Settings request json looks like this %s\n", requestJSON)
+	log.Printf("[INFO] SSL Settings request URL looks like this %s\n", reqURL)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPatch, reqURL, requestJSON, UpdateSiteSSLSettings)
 	if err != nil {
 		return nil, fmt.Errorf("error from Incapsula service when updating Site SSL settings %s for Site ID %d: %s", requestJSON, siteID, err)
 	}
@@ -53,20 +64,20 @@ func (c *Client) UpdateSiteSSLSettings(siteID int, mySSLSettings SSLSettingsDTO)
 	}
 
 	// Parse the JSON
-	var sslSettingsDTO SSLSettingsDTO
-	err = json.Unmarshal([]byte(responseBody), &sslSettingsDTO)
+	var sslSettingsResponse SSLSettingsResponse
+	err = json.Unmarshal([]byte(responseBody), &sslSettingsResponse)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing Incap Site settings JSON response for Site ID %d: %s\nresponse: %s", siteID, err, string(responseBody))
 	}
 
-	return &sslSettingsDTO, nil
+	return &sslSettingsResponse, nil
 }
 
-func (c *Client) ReadSiteSSLSettings(siteID int) (*SSLSettingsDTO, int, error) {
+func (c *Client) ReadSiteSSLSettings(siteID int) (*SSLSettingsResponse, int, error) {
 	log.Printf("[INFO] Getting Incapsula Incap SSL settings for Site ID %d\n", siteID)
 
-	// Post form to Incapsula
-	reqURL := fmt.Sprintf("%s/sites/%d/settings/TLSConfiguration", c.config.BaseURLRev3, siteID)
+	// Get form to Incapsula
+	reqURL := fmt.Sprintf("%s/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", c.config.BaseURLAPI, siteID)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadSiteSSLSettings)
 	if err != nil {
 		return nil, 0, fmt.Errorf("error from Incapsula service when reading SSL Settings for Site ID %d: %s", siteID, err)
@@ -85,11 +96,11 @@ func (c *Client) ReadSiteSSLSettings(siteID int) (*SSLSettingsDTO, int, error) {
 	}
 
 	// Parse the JSON
-	var sslSettingsDTO SSLSettingsDTO
-	err = json.Unmarshal([]byte(responseBody), &sslSettingsDTO)
+	var sslSettingsResponse SSLSettingsResponse
+	err = json.Unmarshal([]byte(responseBody), &sslSettingsResponse)
 	if err != nil {
 		return nil, resp.StatusCode, fmt.Errorf("error parsing Site SSL settings JSON response for Site ID %d: %s\nresponse: %s", siteID, err, string(responseBody))
 	}
 
-	return &sslSettingsDTO, resp.StatusCode, nil
+	return &sslSettingsResponse, resp.StatusCode, nil
 }
