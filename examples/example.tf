@@ -57,6 +57,7 @@ resource "incapsula_custom_certificate" "custom-certificate" {
   site_id     = incapsula_site.example-site.id
   certificate = file("path/to/your/cert.crt")
   private_key = file("path/to/your/private_key.key")
+  auth_type   = "RSA/ECC"
   passphrase  = "yourpassphrase"
 }
 
