@@ -191,7 +191,7 @@ func (c *Client) DeleteCertificate(siteID, authType string) error {
 	// Post form to Incapsula
 	values := url.Values{"site_id": {siteID}}
 
-	if passphrase != "" {
+	if authType != "" {
 		values.Set("auth_type", authType)
 	}
 

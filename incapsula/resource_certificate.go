@@ -52,6 +52,7 @@ func resourceCertificate() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Sensitive:   true,
+				Default:     "RSA",
 			},
 			"input_hash": {
 				Description: "inputHash",
