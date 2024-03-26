@@ -177,7 +177,7 @@ func createHash(d *schema.ResourceData) string {
 	return result
 }
 
-func calculateHash(certificate, passphrase, privateKey) string {
+func calculateHash(certificate, passphrase, privateKey string) string {
 	h := sha1.New()
 	stringForHash := certificate + privateKey + passphrase
 	h.Write([]byte(stringForHash))
