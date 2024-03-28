@@ -51,7 +51,7 @@ func resourceCertificate() *schema.Resource {
 				Description: "The authentication type of the certificate (RSA or ECC). Optional. If not provided, then RSA will be assume.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				Sensitive:   true,
+				Default:     "RSA",
 			},
 			"input_hash": {
 				Description: "inputHash",
@@ -172,15 +172,14 @@ func resourceCertificateDelete(d *schema.ResourceData, m interface{}) error {
 func createHash(d *schema.ResourceData) string {
 	certificate := d.Get("certificate").(string)
 	passphrase := d.Get("passphrase").(string)
-	authType := d.Get("auth_type").(string)
 	privateKey := d.Get("private_key").(string)
-	result := calculateHash(certificate, passphrase, privateKey, authType)
+	result := calculateHash(certificate, passphrase, privateKey)
 	return result
 }
 
-func calculateHash(certificate, passphrase, privateKey, authType string) string {
+func calculateHash(certificate, passphrase, privateKey string) string {
 	h := sha1.New()
-	stringForHash := certificate + privateKey + passphrase + authType
+	stringForHash := certificate + privateKey + passphrase
 	h.Write([]byte(stringForHash))
 	byteString := h.Sum(nil)
 	result := hex.EncodeToString(byteString)
