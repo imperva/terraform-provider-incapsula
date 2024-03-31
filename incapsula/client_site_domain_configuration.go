@@ -77,7 +77,7 @@ type ApiErrorResponse struct {
 
 func (c *Client) GetWebsiteDomains(siteId string) (*SiteDomainDetailsDto, error) {
 	reqURL := fmt.Sprintf("%s%s%s%s", c.config.BaseURLAPI, endpointDomainManagement, siteId, "/domains")
-	if siteId != "" {
+	if siteId == "" {
 		fmt.Errorf("[ERROR] site ID was not provided")
 	}
 	var params = map[string]string{}

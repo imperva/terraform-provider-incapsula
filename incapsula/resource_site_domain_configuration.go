@@ -16,13 +16,18 @@ func resourceSiteDomainConfiguration() *schema.Resource {
 		Delete: resourceDomainDelete,
 		Update: resourceDomainUpdate,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				d.Set("site_id", d.Id())
+				d.SetId(d.Id())
+				return []*schema.ResourceData{d}, nil
+			},
 		},
 		Schema: map[string]*schema.Schema{
 			"site_id": {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"cname_redirection_record": {
 				Description: "Cname record for traffic redirection. Point your domain's DNS to this record in order to forward the traffic to Imperva",
@@ -131,9 +136,11 @@ func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
 		domains.Add(domain)
 	}
 	d.SetId(d.Get("site_id").(string))
-	d.Set("site_id", d.Get("site_id"))
-	d.Set("cname_redirection_record", siteDomainDetailsDto.Data[0].CnameRedirectionRecord)
-	d.Set("domain", domains)
+	if len(siteDomainDetailsDto.Data) > 0 {
+		d.Set("cname_redirection_record", siteDomainDetailsDto.Data[0].CnameRedirectionRecord)
+		d.Set("domain", domains)
+	}
+
 	return nil
 }
 
