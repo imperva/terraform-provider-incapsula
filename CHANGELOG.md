@@ -1,4 +1,4 @@
-## 3.23.0 (Mar 25, 2024)
+## 3.23.0 (Mar 31, 2024)
 
 IMPROVEMENTS:
 - Add auth type to custom certificate resource ([#402](https://github.com/imperva/terraform-provider-incapsula/pull/402))
