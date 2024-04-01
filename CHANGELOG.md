@@ -1,3 +1,12 @@
+## 3.23.0 (Mar 31, 2024)
+
+IMPROVEMENTS:
+- Add auth type to custom certificate resource ([#402](https://github.com/imperva/terraform-provider-incapsula/pull/402))
+- Extending the site ssl settings resource and adding inbound TLS settings that will allow clients to configure which tls versions and which ciphers to use at the site level.
+  And extending the already existing ssl settings resource tests to cover inbound TLS settings. ([#406](https://github.com/imperva/terraform-provider-incapsula/pull/406))
+- Use different operation name for the new delivery rules resource ([#407](https://github.com/imperva/terraform-provider-incapsula/pull/407))
+
+
 ## 3.22.1 (Mar 25, 2024)
 
 IMPROVEMENTS:
