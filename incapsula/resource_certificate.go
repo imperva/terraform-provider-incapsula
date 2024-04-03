@@ -47,6 +47,12 @@ func resourceCertificate() *schema.Resource {
 				Optional:    true,
 				Sensitive:   true,
 			},
+			"auth_type": {
+				Description: "The authentication type of the certificate (RSA or ECC). Optional. If not provided, then RSA will be assume.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "RSA",
+			},
 			"input_hash": {
 				Description: "inputHash",
 				Type:        schema.TypeString,
@@ -71,6 +77,7 @@ func resourceCertificateCreate(d *schema.ResourceData, m interface{}) error {
 		d.Get("certificate").(string),
 		d.Get("private_key").(string),
 		d.Get("passphrase").(string),
+		d.Get("auth_type").(string),
 		inputHash,
 	)
 
@@ -131,6 +138,7 @@ func resourceCertificateUpdate(d *schema.ResourceData, m interface{}) error {
 		d.Get("certificate").(string),
 		d.Get("private_key").(string),
 		d.Get("passphrase").(string),
+		d.Get("auth_type").(string),
 		inputHash,
 	)
 
@@ -145,7 +153,10 @@ func resourceCertificateUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceCertificateDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	err := client.DeleteCertificate(d.Get("site_id").(string))
+	err := client.DeleteCertificate(
+		d.Get("site_id").(string),
+		d.Get("auth_type").(string),
+	)
 
 	if err != nil {
 		return err
