@@ -186,7 +186,6 @@ func resourcePolicyUpdate(d *schema.ResourceData, m interface{}) error {
 		Name:                d.Get("name").(string),
 		Enabled:             d.Get("enabled").(bool),
 		PolicyType:          d.Get("policy_type").(string),
-		AccountID:           d.Get("account_id").(int),
 		Description:         d.Get("description").(string),
 		DefaultPolicyConfig: policyGetResponse.Value.DefaultPolicyConfig,
 		PolicySettings:      policySettings,
