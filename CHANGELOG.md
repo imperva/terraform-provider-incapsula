@@ -1,3 +1,9 @@
+## 3.23.1 (Apr 1, 2024)
+
+- removing deprecated account id from policy dto upon update ([#411](https://github.com/imperva/terraform-provider-incapsula/pull/411))
+- fix client_certificate_test ([#412](https://github.com/imperva/terraform-provider-incapsula/pull/412))
+
+
 ## 3.23.0 (Mar 31, 2024)
 
 IMPROVEMENTS:
