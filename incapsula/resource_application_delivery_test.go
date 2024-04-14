@@ -99,16 +99,16 @@ func testCheckApplicationDeliveryExists(name string) resource.TestCheckFunc {
 		if !ok {
 			return fmt.Errorf("Incapsula Application Delivery resource not found: %s", name)
 		}
-		_, err := strconv.Atoi(res.Primary.ID)
+		siteId, err := strconv.Atoi(res.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("Incapsula Application Delivery testCheckApplicationDeliveryExists: Error parsing ID %v to int", res.Primary.ID)
 		}
 
-		// client := testAccProvider.Meta().(*Client)
-		// _, err = client.GetApplicationDelivery(siteId)
-		// if err != nil {
-		// 	fmt.Errorf("Incapsula Application Delivery doesn't exist")
-		// }
+		client := testAccProvider.Meta().(*Client)
+		_, err2 := client.GetApplicationDelivery(siteId)
+		if err2 != nil {
+			fmt.Errorf("Incapsula Application Delivery doesn't exist")
+		}
 
 		return nil
 	}
