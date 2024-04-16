@@ -425,21 +425,6 @@ func resourceApplicationDeliveryUpdate(ctx context.Context, d *schema.ResourceDa
 		RedirectHttpToHttps: d.Get("redirect_http_to_https").(bool),
 	}
 
-	customErrorPage := CustomErrorPage{
-		DefaultErrorPage: d.Get("default_error_page_template").(string),
-		CustomErrorPageTemplates: CustomErrorPageTemplates{
-			ErrorConnectionTimeout:       d.Get("error_connection_timeout").(string),
-			ErrorAccessDenied:            d.Get("error_access_denied").(string),
-			ErrorParseReqError:           d.Get("error_parse_req_error").(string),
-			ErrorParseRespError:          d.Get("error_parse_resp_error").(string),
-			ErrorConnectionFailed:        d.Get("error_connection_failed").(string),
-			ErrorSslFailed:               d.Get("error_ssl_failed").(string),
-			ErrorDenyAndCaptcha:          d.Get("error_deny_and_captcha").(string),
-			ErrorTypeNoSslConfig:         d.Get("error_no_ssl_config").(string),
-			ErrorAbpIdentificationFailed: d.Get("error_abp_identification_failed").(string),
-		},
-	}
-
 	payload := ApplicationDelivery{
 		Compression:      compression,
 		ImageCompression: imageCompression,
@@ -464,6 +449,22 @@ func resourceApplicationDeliveryUpdate(ctx context.Context, d *schema.ResourceDa
 		d.HasChange("error_deny_and_captcha") ||
 		d.HasChange("error_no_ssl_config") ||
 		d.HasChange("error_abp_identification_failed") {
+
+		customErrorPage := CustomErrorPage{
+			DefaultErrorPage: d.Get("default_error_page_template").(string),
+			CustomErrorPageTemplates: CustomErrorPageTemplates{
+				ErrorConnectionTimeout:       d.Get("error_connection_timeout").(string),
+				ErrorAccessDenied:            d.Get("error_access_denied").(string),
+				ErrorParseReqError:           d.Get("error_parse_req_error").(string),
+				ErrorParseRespError:          d.Get("error_parse_resp_error").(string),
+				ErrorConnectionFailed:        d.Get("error_connection_failed").(string),
+				ErrorSslFailed:               d.Get("error_ssl_failed").(string),
+				ErrorDenyAndCaptcha:          d.Get("error_deny_and_captcha").(string),
+				ErrorTypeNoSslConfig:         d.Get("error_no_ssl_config").(string),
+				ErrorAbpIdentificationFailed: d.Get("error_abp_identification_failed").(string),
+			},
+		}
+
 		_, diags := client.UpdateErrorPages(siteID, &customErrorPage)
 
 		if diags != nil {
