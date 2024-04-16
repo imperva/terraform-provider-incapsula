@@ -2,11 +2,12 @@ package incapsula
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"log"
 	"strconv"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 const applicationDeliveryResourceName = "incapsula_application_delivery"
@@ -50,6 +51,7 @@ func TestAccIncapsulaApplicationDelivery_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "redirect_http_to_https", "false"),
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "redirect_naked_to_full", "false"),
 
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "default_error_page_template", customErrorPageBasic+"\n"),
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "error_access_denied", customErrorPageBasic),
 				),
 			},
@@ -80,6 +82,7 @@ func TestAccIncapsulaApplicationDelivery_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "redirect_http_to_https", "false"),
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "redirect_naked_to_full", "false"),
 
+					resource.TestCheckResourceAttr(applicationDeliveryResource, "default_error_page_template", ""),
 					resource.TestCheckResourceAttr(applicationDeliveryResource, "error_access_denied", customErrorPageBasic),
 				),
 			},
@@ -149,9 +152,10 @@ resource "%s" "%s" {
   tcp_pre_pooling = false
   redirect_naked_to_full = false
   redirect_http_to_https = false
+  default_error_page_template = %s
   error_access_denied         = %s
 }`,
-		applicationDeliveryResourceName, applicationDeliveryName, siteResourceName, customErrorPageInput,
+		applicationDeliveryResourceName, applicationDeliveryName, siteResourceName, customErrorPageInput, customErrorPageInput,
 	)
 }
 

@@ -120,7 +120,7 @@ func CrudApplicationDelivery(action string, siteID int, httpMethod string, appli
 	// Read the body
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
-	log.Printf("[DEBUG] Incapsula %s Application Delivery JSON response: %s\n", action, string(responseBody))
+	log.Printf("[DEBUG] Incapsula %s Application Delivery JSON response: (%d) %s\n", action, resp.StatusCode, string(responseBody))
 
 	// Check the response code
 	if resp.StatusCode != 200 {
@@ -196,7 +196,7 @@ func CrudErrorPages(action string, siteID int, httpMethod string, errorPagesData
 	// Read the body
 	defer resp.Body.Close()
 	responseBody, _ := ioutil.ReadAll(resp.Body)
-	log.Printf("[DEBUG] Incapsula %s Error pages JSON response: %s\n", action, string(responseBody))
+	log.Printf("[DEBUG] Incapsula %s Error pages JSON response: (%d) %s\n", action, resp.StatusCode, string(responseBody))
 
 	// Check the response code
 	if resp.StatusCode != 200 {
