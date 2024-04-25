@@ -22,7 +22,7 @@ func GenerateTestDomain(t *testing.T) string {
 	}
 	s3 := rand.NewSource(time.Now().UnixNano())
 	r3 := rand.New(s3)
-	generatedDomain = "id" + os.Getenv("INCAPSULA_API_ID") + strconv.Itoa(r3.Intn(1000)) + ".examplewebsite.com"
+	generatedDomain = "id" + os.Getenv("INCAPSULA_API_ID") + strconv.Itoa(r3.Intn(1000)) + ".impervaproviderexamplewebsite.com"
 	return generatedDomain
 }
 
