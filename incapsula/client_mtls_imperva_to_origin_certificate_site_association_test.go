@@ -35,7 +35,7 @@ func TestClientGetSiteMtlsCertificateAssociationBadJSON(t *testing.T) {
 	siteID := 42
 	certifiateID := 100
 
-	endpoint := fmt.Sprintf("/certificates-ui/v3/mtls-origin/certificates/%d/associated-sites/%d", certifiateID, siteID)
+	endpoint := fmt.Sprintf("/certificates-ui/v3/mtls/origin/%d/associated-sites/%d", certifiateID, siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(406)
@@ -68,7 +68,7 @@ func TestClientGetSiteMtlsCertificateAssociationInvalidConfig(t *testing.T) {
 	siteID := 42
 	certifiateID := 100
 
-	endpoint := fmt.Sprintf("/certificates-ui/v3/mtls-origin/certificates/%d/associated-sites/%d", certifiateID, siteID)
+	endpoint := fmt.Sprintf("/certificates-ui/v3/mtls/origin/%d/associated-sites/%d", certifiateID, siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(400)
@@ -81,10 +81,10 @@ func TestClientGetSiteMtlsCertificateAssociationInvalidConfig(t *testing.T) {
            "status": 400,
            "id": "16d37a3dfb2b3aff",
            "source": {
-               "pointer": "/v3/mtls-origin/certificates"
+               "pointer": "/v3/mtls/origin"
            },
            "title": "Bad Request",
-           "detail": "handleRequest - Got response headers:org.springframework.web.reactive.function.client.DefaultClientResponse$DefaultHeaders@20c80d50, status: 400 BAD_REQUEST, body: {\"errors\":[{\"status\":400,\"id\":\"de31602becdf6d4b\",\"source\":{\"pointer\":\"/mtls-origin/certificates\"},\"title\":\"Bad Request\",\"detail\":\"Certificate already exists\"}]}"
+           "detail": "handleRequest - Got response headers:org.springframework.web.reactive.function.client.DefaultClientResponse$DefaultHeaders@20c80d50, status: 400 BAD_REQUEST, body: {\"errors\":[{\"status\":400,\"id\":\"de31602becdf6d4b\",\"source\":{\"pointer\":\"/mtls/origin\"},\"title\":\"Bad Request\",\"detail\":\"Certificate already exists\"}]}"
        }
    ]
 }
@@ -114,7 +114,7 @@ func TestClientGetSiteMtlsCertificateAssociationValidConfig(t *testing.T) {
 	siteID := 42
 	certifiateID := 100
 
-	endpoint := fmt.Sprintf("/certificates-ui/v3/mtls-origin/certificates/%d/associated-sites/%d", certifiateID, siteID)
+	endpoint := fmt.Sprintf("/certificates-ui/v3/mtls/origin/%d/associated-sites/%d", certifiateID, siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -177,10 +177,10 @@ func TestClientUpdateSiteMtlsCertificateAssociationInvalidConfig(t *testing.T) {
            "status": 400,
            "id": "16d37a3dfb2b3aff",
            "source": {
-               "pointer": "/v3/mtls-origin/certificates"
+               "pointer": "/v3/mtls/origin"
            },
            "title": "Bad Request",
-           "detail": "handleRequest - Got response headers:org.springframework.web.reactive.function.client.DefaultClientResponse$DefaultHeaders@20c80d50, status: 400 BAD_REQUEST, body: {\"errors\":[{\"status\":400,\"id\":\"de31602becdf6d4b\",\"source\":{\"pointer\":\"/mtls-origin/certificates\"},\"title\":\"Bad Request\",\"detail\":\"Certificate already exists\"}]}"
+           "detail": "handleRequest - Got response headers:org.springframework.web.reactive.function.client.DefaultClientResponse$DefaultHeaders@20c80d50, status: 400 BAD_REQUEST, body: {\"errors\":[{\"status\":400,\"id\":\"de31602becdf6d4b\",\"source\":{\"pointer\":\"/mtls/origin\"},\"title\":\"Bad Request\",\"detail\":\"Certificate already exists\"}]}"
        }
    ]
 }
@@ -240,7 +240,7 @@ func TestClientDeleteSiteMtlsCertificateAssociationInvalidConfig(t *testing.T) {
 		"status": 500,
 		"id": "cca667c1371c31ff",
 		"source": {
-		"pointer": "/v3/mtls-origin/certificates/111"
+		"pointer": "/v3/mtls/origin/111"
 	},
 		"title": "Internal Server Error",
 		"detail": "Internal Server Error"
