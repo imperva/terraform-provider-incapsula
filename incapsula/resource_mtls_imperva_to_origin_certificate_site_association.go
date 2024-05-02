@@ -32,7 +32,7 @@ func resourceMtlsImpervaToOriginCertificateSiteAssociation() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
 			"site_id": {
-				Description: "The certificate file in base64 format.",
+				Description: "Site id to assign to a given mTLS client certificate",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
