@@ -14,7 +14,7 @@ const siteDomainConfResourceName = "incapsula_site_domain_configuration"
 const siteDomainConfResource = "site_domain_conf"
 const rootModuleName = siteDomainConfResourceName + "." + siteDomainConfResource
 
-var domain = "a-" + strconv.FormatInt(time.Now().UnixNano()%99999, 10) + ".impervaproviderexamplewebsite.com"
+var domain = "a-" + strconv.FormatInt(time.Now().UnixNano()%99999, 10) + ".examplewebsite.com"
 
 func TestAccIncapsulaSiteDomainConfiguration_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
