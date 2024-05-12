@@ -1,3 +1,13 @@
+## 3.24.0 (May 12, 2024)
+
+FEATURES:
+* **New Resource:** `incapsula_certificate_signing_request`
+
+IMPROVEMENTS:
+- Change error pages to full-update endpoint ([#414](https://github.com/imperva/terraform-provider-incapsula/pull/414))
+- add docs for mtls imperva to origin resource ([#418](https://github.com/imperva/terraform-provider-incapsula/pull/418))
+
+
 ## 3.23.1 (Apr 1, 2024)
 
 - removing deprecated account id from policy dto upon update ([#411](https://github.com/imperva/terraform-provider-incapsula/pull/411))
