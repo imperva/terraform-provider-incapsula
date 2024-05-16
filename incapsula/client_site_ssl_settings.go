@@ -26,7 +26,7 @@ type TLSConfiguration struct {
 }
 
 type SSLSettingsDTO struct {
-	HstsConfiguration               HSTSConfiguration                `json:"hstsConfiguration"`
+	HstsConfiguration               *HSTSConfiguration               `json:"hstsConfiguration"`
 	InboundTLSSettingsConfiguration *InboundTLSSettingsConfiguration `json:"inboundTlsSettings,omitempty"`
 }
 
@@ -34,7 +34,7 @@ type SSLSettingsResponse struct {
 	Data []SSLSettingsDTO `json:"data"`
 }
 
-func (c *Client) UpdateSiteSSLSettings(siteID int, mySSLSettings SSLSettingsResponse) (*SSLSettingsResponse, error) {
+func (c *Client) UpdateSiteSSLSettings(siteID int, accountID int, mySSLSettings SSLSettingsResponse) (*SSLSettingsResponse, error) {
 	log.Printf("[INFO] Updating Incapsula Site SSL settings for Site ID %d\n", siteID)
 
 	requestJSON, err := json.Marshal(mySSLSettings)
@@ -44,6 +44,9 @@ func (c *Client) UpdateSiteSSLSettings(siteID int, mySSLSettings SSLSettingsResp
 
 	// Patch request to Incapsula
 	reqURL := fmt.Sprintf("%s/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", c.config.BaseURLAPI, siteID)
+	if accountID != 0 {
+		reqURL = fmt.Sprintf("%s?caid=%d", reqURL, accountID)
+	}
 	log.Printf("[INFO] SSL Settings request json looks like this %s\n", requestJSON)
 	log.Printf("[INFO] SSL Settings request URL looks like this %s\n", reqURL)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPatch, reqURL, requestJSON, UpdateSiteSSLSettings)
@@ -73,11 +76,15 @@ func (c *Client) UpdateSiteSSLSettings(siteID int, mySSLSettings SSLSettingsResp
 	return &sslSettingsResponse, nil
 }
 
-func (c *Client) ReadSiteSSLSettings(siteID int) (*SSLSettingsResponse, int, error) {
+func (c *Client) ReadSiteSSLSettings(siteID int, accountID int) (*SSLSettingsResponse, int, error) {
 	log.Printf("[INFO] Getting Incapsula Incap SSL settings for Site ID %d\n", siteID)
 
 	// Get form to Incapsula
 	reqURL := fmt.Sprintf("%s/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", c.config.BaseURLAPI, siteID)
+	if accountID != 0 {
+		reqURL = fmt.Sprintf("%s?caid=%d", reqURL, accountID)
+	}
+	log.Printf("[INFO] SSL Settings request URL looks like this %s\n", reqURL)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadSiteSSLSettings)
 	if err != nil {
 		return nil, 0, fmt.Errorf("error from Incapsula service when reading SSL Settings for Site ID %d: %s", siteID, err)
