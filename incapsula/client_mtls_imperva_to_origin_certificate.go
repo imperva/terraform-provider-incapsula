@@ -13,7 +13,7 @@ import (
 	//"io"
 )
 
-const endpointMTLSCertificate = "/certificates-ui/v3/mtls-origin/certificates"
+const endpointMTLSCertificate = "/certificates-ui/v3/mtls/origin"
 
 type MTLSCertificateGetById struct {
 	Hash      string `json:"hash"`
