@@ -2,10 +2,11 @@ package incapsula
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"log"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 const siemLogConfigurationResourceType = "incapsula_siem_log_configuration"
@@ -26,7 +27,7 @@ func TestSiemLogConfiguration_Basic(t *testing.T) {
 		CheckDestroy: testAccIncapsulaSiemLogConfigurationDestroy(siemLogConfigurationResourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\"", "\"ATO\"", "\"AUDIT_TRAIL\"", "\"GOOGLE_ANALYTICS_IDS\", \"SIGNIFICANT_DOMAIN_DISCOVERY\""),
+				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\"", "\"ATO\"", "\"AUDIT_TRAIL\"", "\"GOOGLE_ANALYTICS_IDS\", \"SIGNIFICANT_DOMAIN_DISCOVERY\", \"SIGNIFICANT_SCRIPT_DISCOVERY\", \"SIGNIFICANT_DATA_TRANSFER_DISCOVERY\""),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_abp"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
@@ -89,7 +90,7 @@ func TestSiemLogConfiguration_Update(t *testing.T) {
 		CheckDestroy: testAccIncapsulaSiemLogConfigurationDestroy(siemLogConfigurationResourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\"", "\"ATO\"", "\"AUDIT_TRAIL\"", "\"GOOGLE_ANALYTICS_IDS\", \"SIGNIFICANT_DOMAIN_DISCOVERY\""),
+				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\"", "\"ATO\"", "\"AUDIT_TRAIL\"", "\"GOOGLE_ANALYTICS_IDS\", \"SIGNIFICANT_DOMAIN_DISCOVERY\", \"SIGNIFICANT_SCRIPT_DISCOVERY\", \"SIGNIFICANT_DATA_TRANSFER_DISCOVERY\""),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_abp"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
@@ -104,7 +105,7 @@ func TestSiemLogConfiguration_Update(t *testing.T) {
 				),
 			},
 			{
-				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationNameUpdated, "\"ABP\"", "\"IP\", \"ATTACK\"", "\"ATO\"", "\"AUDIT_TRAIL\"", "\"GOOGLE_ANALYTICS_IDS\", \"SIGNIFICANT_DOMAIN_DISCOVERY\""),
+				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationNameUpdated, "\"ABP\"", "\"IP\", \"ATTACK\"", "\"ATO\"", "\"AUDIT_TRAIL\"", "\"GOOGLE_ANALYTICS_IDS\", \"SIGNIFICANT_DOMAIN_DISCOVERY\", \"SIGNIFICANT_SCRIPT_DISCOVERY\", \"SIGNIFICANT_DATA_TRANSFER_DISCOVERY\""),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_abp"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
