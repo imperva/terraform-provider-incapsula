@@ -1,4 +1,4 @@
-## 3.25.0 (May 12, 2024)
+## 3.25.0 (May 20, 2024)
 
 IMPROVEMENTS:
 - Added certificates-ui and certificates-handler to app_sec_cloud_waf_ssl_support ([#419](https://github.com/imperva/terraform-provider-incapsula/pull/420))
