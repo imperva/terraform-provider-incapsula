@@ -3,17 +3,17 @@ subcategory: "Provider Reference"
 layout: "incapsula"
 page_title: "incapsula_ato_site_allowlist"
 description: |- 
-  Provides an Incapsula ATO site allowlist configuration resource.
+  Provides an Incapsula ATO site allowlist resource.
 ---
 
 # incapsula_ato_site_allowlist
 
-Provides an Incapsula ATO site allowlist configuration resource.
+Provides an Incapsula ATO site allowlist resource.
 
 ## Example Usage
 
 ```hcl
-resource "incapsula_ato_site_allowlist_configuration" "demo-terraform-ato-site-allowlist-configuration" {
+resource "incapsula_ato_site_allowlist" "demo-terraform-ato-site-allowlist" {
   account_id      = incapsula_site.example-site.account_id
   site_id         = incapsula_site.example-site.id
   allowlist       = [ { "ip": "192.10.20.0", "mask": "24", "desc": "Test IP 1" }, { "ip": "192.10.20.1", "mask": "8", "desc": "Test IP 2" } ]

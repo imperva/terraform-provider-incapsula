@@ -1,3 +1,9 @@
+## 3.25.1 (May 26, 2024)
+
+IMPROVEMENTS:
+- Add optional account id parameter to the site ssl settings resource ([#424](https://github.com/imperva/terraform-provider-incapsula/pull/424))
+
+
 ## 3.25.0 (May 20, 2024)
 
 FEATURES:
