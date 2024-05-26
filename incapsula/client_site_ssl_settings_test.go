@@ -16,7 +16,7 @@ func TestUpdateSiteSSLSettingsHandleBadConnection(t *testing.T) {
 	sslSettingsDTO := getUpdateSiteSSLSettingsDTO()
 
 	// act
-	var res, err = client.UpdateSiteSSLSettings(123, sslSettingsDTO)
+	var res, err = client.UpdateSiteSSLSettings(123, 1234, sslSettingsDTO)
 
 	// assert
 	if err == nil {
@@ -33,6 +33,7 @@ func TestUpdateSiteSSLSettingsHandleResponseCodeNotSuccess(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
+	accountID := 1234
 
 	endpoint := fmt.Sprintf("/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", siteID)
 
@@ -53,7 +54,7 @@ func TestUpdateSiteSSLSettingsHandleResponseCodeNotSuccess(t *testing.T) {
 	var dto = getUpdateSiteSSLSettingsDTO()
 
 	// act
-	_, err := client.UpdateSiteSSLSettings(siteID, dto)
+	_, err := client.UpdateSiteSSLSettings(siteID, accountID, dto)
 
 	// assert
 	if err == nil {
@@ -70,6 +71,7 @@ func TestUpdateSiteSSLSettingsHandleInvalidResponseBody(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
+	accountID := 1234
 
 	endpoint := fmt.Sprintf("/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", siteID)
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -90,7 +92,7 @@ func TestUpdateSiteSSLSettingsHandleInvalidResponseBody(t *testing.T) {
 	var dto = getUpdateSiteSSLSettingsDTO()
 
 	// act
-	_, err := client.UpdateSiteSSLSettings(siteID, dto)
+	_, err := client.UpdateSiteSSLSettings(siteID, accountID, dto)
 
 	// assert
 	if err == nil {
@@ -107,6 +109,7 @@ func TestUpdateSiteSSLSettingsSuccess(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
+	accountID := 1234
 
 	validResponse := getValidJSONResponse()
 
@@ -127,7 +130,7 @@ func TestUpdateSiteSSLSettingsSuccess(t *testing.T) {
 	var dto = getUpdateSiteSSLSettingsDTO()
 
 	// act
-	_, err := client.UpdateSiteSSLSettings(siteID, dto)
+	_, err := client.UpdateSiteSSLSettings(siteID, accountID, dto)
 
 	// assert
 	if err != nil {
@@ -141,7 +144,7 @@ func TestReadSiteSSLSettingsHandleRequestError(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 
 	// act
-	var res, statusCode, err = client.ReadSiteSSLSettings(123)
+	var res, statusCode, err = client.ReadSiteSSLSettings(123, 1234)
 
 	// assert
 	if err == nil {
@@ -162,6 +165,7 @@ func TestReadSiteSSLSettingsHandleResponseCodeNotSuccess(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
+	accountID := 1234
 
 	endpoint := fmt.Sprintf("/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", siteID)
 
@@ -181,7 +185,7 @@ func TestReadSiteSSLSettingsHandleResponseCodeNotSuccess(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	// act
-	_, statusCode, err := client.ReadSiteSSLSettings(siteID)
+	_, statusCode, err := client.ReadSiteSSLSettings(siteID, accountID)
 
 	// assert
 	if err == nil {
@@ -198,6 +202,7 @@ func TestReadSiteSSLSettingsHandleInvalidResponseBody(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
+	accountID := 1234
 
 	endpoint := fmt.Sprintf("/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", siteID)
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -217,7 +222,7 @@ func TestReadSiteSSLSettingsHandleInvalidResponseBody(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	// act
-	_, _, err := client.ReadSiteSSLSettings(siteID)
+	_, _, err := client.ReadSiteSSLSettings(siteID, accountID)
 
 	// assert
 	if err == nil {
@@ -234,6 +239,7 @@ func TestReadSiteSSLSettingsSuccess(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
+	accountID := 1234
 
 	var validResponse = getValidJSONResponse()
 
@@ -253,7 +259,7 @@ func TestReadSiteSSLSettingsSuccess(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	// act
-	_, statusCode, err := client.ReadSiteSSLSettings(siteID)
+	_, statusCode, err := client.ReadSiteSSLSettings(siteID, accountID)
 
 	// assert
 	if err != nil {
@@ -269,7 +275,7 @@ func getUpdateSiteSSLSettingsDTO() SSLSettingsResponse {
 	var sslSettingsDTO = SSLSettingsResponse{
 		Data: []SSLSettingsDTO{
 			{
-				HstsConfiguration: HSTSConfiguration{
+				HstsConfiguration: &HSTSConfiguration{
 					PreLoaded:          true,
 					MaxAge:             1237,
 					SubDomainsIncluded: true,

@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
+	"strings"
 )
 
 var hstsConfigResource = schema.Resource{
@@ -69,13 +70,32 @@ func resourceSiteSSLSettings() *schema.Resource {
 		Delete: resourceSiteSSLSettingsDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				siteID, err := strconv.Atoi(d.Id())
-				if err != nil {
-					fmt.Errorf("failed to convert Site Id from import command, actual value: %s, expected numeric id", d.Id())
+				idSlice := strings.Split(d.Id(), "/")
+				log.Printf("[DEBUG] Starting to import site ssl settings. Parameters: %s\n", d.Id())
+
+				if len(idSlice) > 2 || idSlice[0] == "" {
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id or site_id/account_id", d.Id())
 				}
 
+				siteID, err := strconv.Atoi(idSlice[0])
+				if err != nil {
+					fmt.Errorf("failed to convert Site Id from import command, actual value: %s, expected numeric id", idSlice[0])
+				}
 				d.Set("site_id", siteID)
-				log.Printf("[DEBUG] Import  Site Config JSON for Site ID %d", siteID)
+
+				if len(idSlice) == 2 {
+					if idSlice[1] == "" {
+						return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id or site_id/account_id", d.Id())
+					}
+
+					accountID, err := strconv.Atoi(idSlice[1])
+					if err != nil {
+						fmt.Errorf("failed to convert Account Id from import command, actual value: %s, expected numeric id", idSlice[1])
+					}
+					d.Set("account_id", accountID)
+				}
+
+				log.Printf("[DEBUG] Import Site ssl settings for Site ID %d", siteID)
 				return []*schema.ResourceData{d}, nil
 			},
 		},
@@ -86,6 +106,11 @@ func resourceSiteSSLSettings() *schema.Resource {
 				Type:        schema.TypeInt,
 				Required:    true,
 				ForceNew:    true,
+			},
+			"account_id": {
+				Description: "Numeric identifier of the account in which the site is located",
+				Type:        schema.TypeInt,
+				Optional:    true,
 			},
 			"hsts": {
 				Type:     schema.TypeSet,
@@ -108,7 +133,7 @@ func resourceSiteSSLSettingsUpdate(d *schema.ResourceData, m interface{}) error 
 
 	setting := getSSLSettingsDTO(d)
 
-	_, err := client.UpdateSiteSSLSettings(d.Get("site_id").(int), setting)
+	_, err := client.UpdateSiteSSLSettings(d.Get("site_id").(int), d.Get("account_id").(int), setting)
 
 	if err != nil {
 		return err
@@ -120,7 +145,7 @@ func resourceSiteSSLSettingsUpdate(d *schema.ResourceData, m interface{}) error 
 func resourceSiteSSLSettingsRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	settingsData, statusCode, err := client.ReadSiteSSLSettings(d.Get("site_id").(int))
+	settingsData, statusCode, err := client.ReadSiteSSLSettings(d.Get("site_id").(int), d.Get("account_id").(int))
 	if statusCode == 404 {
 		d.SetId("")
 		return nil
@@ -150,7 +175,7 @@ func resourceSiteSSLSettingsDelete(d *schema.ResourceData, m interface{}) error 
 	// If more settings are implemented in the endpoint, add delete logic for them here.
 	setting := prepareDisableHSTSStructure()
 	prepareDefaultTLSStructure(&setting)
-	var _, err = client.UpdateSiteSSLSettings(d.Get("site_id").(int), setting)
+	var _, err = client.UpdateSiteSSLSettings(d.Get("site_id").(int), d.Get("account_id").(int), setting)
 
 	if err != nil {
 		return err
@@ -160,7 +185,7 @@ func resourceSiteSSLSettingsDelete(d *schema.ResourceData, m interface{}) error 
 }
 
 func prepareDisableHSTSStructure() SSLSettingsResponse {
-	disableHSTSSetting := HSTSConfiguration{
+	disableHSTSSetting := &HSTSConfiguration{
 		IsEnabled: false,
 	}
 
@@ -185,7 +210,7 @@ func prepareDefaultTLSStructure(settingsData *SSLSettingsResponse) {
 
 func mapHSTSResponseToHSTSResource(d *schema.ResourceData, settingsData *SSLSettingsResponse) {
 	// handle HSTS remote configuration mapping
-	var hstsSettingsFromServer HSTSConfiguration
+	var hstsSettingsFromServer *HSTSConfiguration
 	hstsSettingsFromServer = settingsData.Data[0].HstsConfiguration
 	// Get the "hsts" attribute from the resource data
 	// Create a map to hold the values for the "hsts" nested object
@@ -202,12 +227,15 @@ func mapHSTSResponseToHSTSResource(d *schema.ResourceData, settingsData *SSLSett
 	// END HSTS mapping
 }
 
-func mapHSTSResourceToHSTSDTO(d *schema.ResourceData) HSTSConfiguration {
-	hsts := d.Get("hsts").(*schema.Set)
+func mapHSTSResourceToHSTSDTO(d *schema.ResourceData) *HSTSConfiguration {
+	hsts, ok := d.Get("hsts").(*schema.Set)
+	if !ok || hsts.Len() == 0 {
+		return nil
+	}
 	hstsList := hsts.List()
 	hstsMap := hstsList[0].(map[string]interface{})
 
-	return HSTSConfiguration{
+	return &HSTSConfiguration{
 		IsEnabled:          hstsMap["is_enabled"].(bool),
 		MaxAge:             hstsMap["max_age"].(int),
 		PreLoaded:          hstsMap["pre_loaded"].(bool),
