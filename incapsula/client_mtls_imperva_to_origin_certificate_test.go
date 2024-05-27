@@ -81,7 +81,7 @@ func TestGetMTLSCertificateInvalidApiConfig(t *testing.T) {
 		"status": 500,
 		"id": "cca667c1371c31ff",
 		"source": {
-		"pointer": "/v3/mtls-origin/certificates/111"
+		"pointer": "/v3/mtls/origin/111"
 	},
 		"title": "Internal Server Error",
 		"detail": "Internal Server Error"
@@ -240,10 +240,10 @@ func TestEditMTLSCertificateApiConfig(t *testing.T) {
             "status": 400,
             "id": "16d37a3dfb2b3aff",
             "source": {
-                "pointer": "/v3/mtls-origin/certificates"
+                "pointer": "/v3/mtls/origin"
             },
             "title": "Bad Request",
-            "detail": "handleRequest - Got response headers:org.springframework.web.reactive.function.client.DefaultClientResponse$DefaultHeaders@20c80d50, status: 400 BAD_REQUEST, body: {\"errors\":[{\"status\":400,\"id\":\"de31602becdf6d4b\",\"source\":{\"pointer\":\"/mtls-origin/certificates\"},\"title\":\"Bad Request\",\"detail\":\"Certificate already exists\"}]}"
+            "detail": "handleRequest - Got response headers:org.springframework.web.reactive.function.client.DefaultClientResponse$DefaultHeaders@20c80d50, status: 400 BAD_REQUEST, body: {\"errors\":[{\"status\":400,\"id\":\"de31602becdf6d4b\",\"source\":{\"pointer\":\"/mtls/origin\"},\"title\":\"Bad Request\",\"detail\":\"Certificate already exists\"}]}"
         }
     ]
 }`))
@@ -370,10 +370,10 @@ func TestDeleteMTLSCertificateInvalidConfig(t *testing.T) {
             "status": 400,
             "id": "bd2f35a9b684a7cf",
             "source": {
-                "pointer": "/v3/mtls-origin/certificates/1"
+                "pointer": "/v3/mtls/origin/1"
             },
             "title": "Bad Request",
-            "detail": "handleRequest - Got response headers:org.springframework.web.reactive.function.client.DefaultClientResponse$DefaultHeaders@7d57d69b, status: 400 BAD_REQUEST, body: {\"errors\":[{\"status\":400,\"id\":\"b352b66ace051df4\",\"source\":{\"pointer\":\"/mtls-origin/certificates/1\"},\"title\":\"Bad Request\",\"detail\":\"Certificate Id does not exist\"}]}"
+            "detail": "handleRequest - Got response headers:org.springframework.web.reactive.function.client.DefaultClientResponse$DefaultHeaders@7d57d69b, status: 400 BAD_REQUEST, body: {\"errors\":[{\"status\":400,\"id\":\"b352b66ace051df4\",\"source\":{\"pointer\":\"/mtls/origin/1\"},\"title\":\"Bad Request\",\"detail\":\"Certificate Id does not exist\"}]}"
         }
     ]
 }`))

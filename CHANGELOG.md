@@ -1,3 +1,28 @@
+## 3.25.1 (May 26, 2024)
+
+IMPROVEMENTS:
+- Add optional account id parameter to the site ssl settings resource ([#424](https://github.com/imperva/terraform-provider-incapsula/pull/424))
+
+
+## 3.25.0 (May 20, 2024)
+
+FEATURES:
+* **New Resource:** `incapsula_mtls_imperva_to_origin_certificate`
+
+IMPROVEMENTS:
+- SiemLogConfiguration: Adding support for SIGNIFICANT_SCRIPT_DISCOVERY and SIGNIFICANT_DATA_TRANSFER_DISCOVERY ([#420](https://github.com/imperva/terraform-provider-incapsula/pull/420))
+
+
+## 3.24.0 (May 12, 2024)
+
+FEATURES:
+* **New Resource:** `incapsula_certificate_signing_request`
+
+IMPROVEMENTS:
+- Change error pages to full-update endpoint ([#414](https://github.com/imperva/terraform-provider-incapsula/pull/414))
+- add docs for mtls imperva to origin resource ([#418](https://github.com/imperva/terraform-provider-incapsula/pull/418))
+
+
 ## 3.23.1 (Apr 1, 2024)
 
 - removing deprecated account id from policy dto upon update ([#411](https://github.com/imperva/terraform-provider-incapsula/pull/411))
