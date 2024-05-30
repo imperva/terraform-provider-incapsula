@@ -32,6 +32,9 @@ type Config struct {
 	// API V2
 	// Same as revision 2 but with a different subdomain
 	BaseURLAPI string
+
+	//domain to be used as base domain for acceptance tests
+	CustomTestDomain string
 }
 
 var missingAPIIDMessage = "API Identifier (api_id) must be provided"
@@ -40,6 +43,7 @@ var missingBaseURLMessage = "Base URL must be provided"
 var missingBaseURLRev2Message = "Base URL Revision 2 must be provided"
 var missingBaseURLRev3Message = "Base URL Revision 3 must be provided"
 var missingBaseURLAPIMessage = "Base URL API must be provided"
+var missingCustomTestDomainMessage = "Custom Test Domain must be provided"
 
 // Client configures and returns a fully initialized Incapsula Client
 func (c *Config) Client() (interface{}, error) {
@@ -73,6 +77,11 @@ func (c *Config) Client() (interface{}, error) {
 	// Check Base URL API
 	if strings.TrimSpace(c.BaseURLAPI) == "" {
 		return nil, errors.New(missingBaseURLAPIMessage)
+	}
+
+	// Check Custom Test Domain
+	if strings.TrimSpace(c.CustomTestDomain) == "" {
+		return nil, errors.New(missingCustomTestDomainMessage)
 	}
 
 	// Create client

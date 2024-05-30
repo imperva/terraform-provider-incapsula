@@ -20,9 +20,12 @@ func GenerateTestDomain(t *testing.T) string {
 	if v := os.Getenv("INCAPSULA_API_ID"); v == "" && t != nil {
 		t.Fatal("INCAPSULA_API_ID must be set for acceptance tests")
 	}
+	if v := os.Getenv("INCAPSULA_CUSTOM_TEST_DOMAIN"); v == "" && t != nil {
+		t.Fatal("INCAPSULA_CUSTOM_TEST_DOMAIN must be set for acceptance tests")
+	}
 	s3 := rand.NewSource(time.Now().UnixNano())
 	r3 := rand.New(s3)
-	generatedDomain = "id" + os.Getenv("INCAPSULA_API_ID") + strconv.Itoa(r3.Intn(1000)) + ".incaptest.co"
+	generatedDomain = "id" + os.Getenv("INCAPSULA_API_ID") + strconv.Itoa(r3.Intn(1000)) + os.Getenv("INCAPSULA_CUSTOM_TEST_DOMAIN")
 	return generatedDomain
 }
 
