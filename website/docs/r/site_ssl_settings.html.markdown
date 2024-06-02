@@ -26,22 +26,30 @@ If you run the SSL settings resource from a site for which SSL is not yet enable
 resource "incapsula_site_ssl_settings" "example"  {
   site_id = incapsula_site.mysite.id
   
-  hsts {
-    is_enabled = true
-    max_age = 86400
-    sub_domains_included = true
-    pre_loaded = false
+  hsts { 
+    is_enabled               = true
+    max_age                  = 31536000
+    sub_domains_included     = false
+    pre_loaded               = false
   }
-  inbound_tls_settings { 
-    configuration_profile     = "CUSTOM"
 
-    tls_configuration { 
-      tls_version             = "TLS_1_2"
-      ciphers_support         = ["TLS_CHACHA20_POLY1305_SHA256", "TLS_AES_256_GCM_SHA384"]
+  inbound_tls_settings {
+    configuration_profile = "CUSTOM"
+
+    tls_configuration {
+      tls_version     = "TLS_1_2"
+      ciphers_support = [
+          "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+          "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+        ]
     }
-    tls_configuration { 
-      tls_version             = "TLS_1_3"
-      ciphers_support         = ["TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"]
+    tls_configuration {
+      tls_version     = "TLS_1_3"
+      ciphers_support = [
+        "TLS_AES_128_GCM_SHA256",
+        "TLS_CHACHA20_POLY1305_SHA256",
+        "TLS_AES_256_GCM_SHA384",
+      ]
     }
   }
 }
@@ -99,9 +107,10 @@ The following attributes are exported:
 
 ## Import
 
-Site SSL settings can be imported using the `id`:
+Site SSL settings can be imported using the `siteId` or `siteId`/`accountId` for sub-accounts:
 ```
 terraform import incapsula_site_ssl_settings.example 1234
+terraform import incapsula_site_ssl_settings.example 1234/4321
 ```
 
 
