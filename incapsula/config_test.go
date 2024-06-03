@@ -93,7 +93,7 @@ func TestInvalidCredentials(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := Config{APIID: "bad", APIKey: "bad", BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLRev3: server.URL, BaseURLAPI: server.URL, CustomTestDomain: ".example.com"}
+	config := Config{APIID: "bad", APIKey: "bad", BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLRev3: server.URL, BaseURLAPI: server.URL}
 	client, err := config.Client()
 	if err == nil {
 		t.Errorf("Should have received an error, got a client: %q", client)
@@ -112,7 +112,7 @@ func TestValidCredentials(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := Config{APIID: "good", APIKey: "good", BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLRev3: server.URL, BaseURLAPI: server.URL, CustomTestDomain: ".example.com"}
+	config := Config{APIID: "good", APIKey: "good", BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLRev3: server.URL, BaseURLAPI: server.URL}
 	client, err := config.Client()
 	if err != nil {
 		t.Errorf("Should not have received an error, got: %s", err)
