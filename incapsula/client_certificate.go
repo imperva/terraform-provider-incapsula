@@ -42,7 +42,7 @@ type CustomCertificate struct {
 }
 
 // AddCertificate adds a custom SSL certificate to a site in Incapsula
-func (c *Client) AddCertificate(siteID, certificate, privateKey, passphrase, inputHash string) (*CertificateAddResponse, error) {
+func (c *Client) AddCertificate(siteID, certificate, privateKey, passphrase, authType, inputHash string) (*CertificateAddResponse, error) {
 
 	log.Printf("[INFO] Adding custom certificate for site_id: %s", siteID)
 
@@ -57,6 +57,9 @@ func (c *Client) AddCertificate(siteID, certificate, privateKey, passphrase, inp
 	}
 	if passphrase != "" {
 		values.Set("passphrase", passphrase)
+	}
+	if authType != "" {
+		values.Set("auth_type", authType)
 	}
 	log.Printf("AddCertificate certificate\n%v", values)
 	log.Printf("certificate\n%v", certificate)
@@ -124,7 +127,7 @@ func (c *Client) ListCertificates(siteID, operation string) (*CertificateListRes
 }
 
 // EditCertificate updates the custom certifiacte on an Incapsula site
-func (c *Client) EditCertificate(siteID, certificate, privateKey, passphrase, inputHash string) (*CertificateEditResponse, error) {
+func (c *Client) EditCertificate(siteID, certificate, privateKey, passphrase, authType, inputHash string) (*CertificateEditResponse, error) {
 
 	log.Printf("[INFO] Editing custom certificate for Incapsula site_id: %s\n", siteID)
 
@@ -140,6 +143,9 @@ func (c *Client) EditCertificate(siteID, certificate, privateKey, passphrase, in
 	}
 	if passphrase != "" {
 		values.Set("passphrase", passphrase)
+	}
+	if passphrase != "" {
+		values.Set("auth_type", authType)
 	}
 
 	// Post to Incapsula
@@ -172,7 +178,7 @@ func (c *Client) EditCertificate(siteID, certificate, privateKey, passphrase, in
 }
 
 // DeleteCertificate deletes a custom certificate for a specific site in Incapsula
-func (c *Client) DeleteCertificate(siteID string) error {
+func (c *Client) DeleteCertificate(siteID, authType string) error {
 	// Specifically shaded this struct, no need to share across funcs or export
 	// We only care about the response code and possibly the message
 	type CertificateDeleteResponse struct {
@@ -184,6 +190,11 @@ func (c *Client) DeleteCertificate(siteID string) error {
 
 	// Post form to Incapsula
 	values := url.Values{"site_id": {siteID}}
+
+	if authType != "" {
+		values.Set("auth_type", authType)
+	}
+
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointCertificateDelete)
 	resp, err := c.PostFormWithHeaders(reqURL, values, DeleteCustomCertificate)
 	if err != nil {

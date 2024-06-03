@@ -74,6 +74,8 @@ const ReadSecurityRuleException = "read_security_rule_exception"
 const UpdateSecurityRuleException = "update_security_rule_exception"
 const DeleteSecurityRuleException = "delete_security_rule_exception"
 
+const CreateCertificateSigningRequest = "create_certificate_signing_request"
+
 const CreateCustomCertificate = "create_custom_certificate"
 const ReadCustomCertificate = "read_custom_certificate"
 const UpdateCustomCertificate = "update_custom_certificate"
@@ -196,3 +198,6 @@ const CreateAbpWebsites = "create_abp_websites"
 const ReadAbpWebsites = "read_abp_websites"
 const UpdateAbpWebsites = "update_abp_websites"
 const DeleteAbpWebsites = "delete_abp_websites"
+
+const ReadDeliveryRuleConfiguration = "read_delivery_rules_configuration"
+const UpdateDeliveryRuleConfiguration = "update_delivery_rules_configuration"

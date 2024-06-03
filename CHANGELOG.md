@@ -1,3 +1,53 @@
+## 3.25.2 (June 3, 2024)
+
+IMPROVEMENTS:
+- Add optional account id parameter to the site ssl settings resource ([#424](https://github.com/imperva/terraform-provider-incapsula/pull/424))
+
+
+## 3.25.0 (May 20, 2024)
+
+FEATURES:
+* **New Resource:** `incapsula_mtls_imperva_to_origin_certificate`
+
+IMPROVEMENTS:
+- SiemLogConfiguration: Adding support for SIGNIFICANT_SCRIPT_DISCOVERY and SIGNIFICANT_DATA_TRANSFER_DISCOVERY ([#420](https://github.com/imperva/terraform-provider-incapsula/pull/420))
+
+
+## 3.24.0 (May 12, 2024)
+
+FEATURES:
+* **New Resource:** `incapsula_certificate_signing_request`
+
+IMPROVEMENTS:
+- Change error pages to full-update endpoint ([#414](https://github.com/imperva/terraform-provider-incapsula/pull/414))
+- add docs for mtls imperva to origin resource ([#418](https://github.com/imperva/terraform-provider-incapsula/pull/418))
+
+
+## 3.23.1 (Apr 1, 2024)
+
+- removing deprecated account id from policy dto upon update ([#411](https://github.com/imperva/terraform-provider-incapsula/pull/411))
+- fix client_certificate_test ([#412](https://github.com/imperva/terraform-provider-incapsula/pull/412))
+
+
+## 3.23.0 (Mar 31, 2024)
+
+IMPROVEMENTS:
+- Add auth type to custom certificate resource ([#402](https://github.com/imperva/terraform-provider-incapsula/pull/402))
+- Extending the site ssl settings resource and adding inbound TLS settings that will allow clients to configure which tls versions and which ciphers to use at the site level.
+  And extending the already existing ssl settings resource tests to cover inbound TLS settings. ([#406](https://github.com/imperva/terraform-provider-incapsula/pull/406))
+- Use different operation name for the new delivery rules resource ([#407](https://github.com/imperva/terraform-provider-incapsula/pull/407))
+
+
+## 3.22.1 (Mar 25, 2024)
+
+IMPROVEMENTS:
+
+- Delivery rules configuration improvements ([#398](https://github.com/imperva/terraform-provider-incapsula/pull/398))
+- deprecating account id for incapsula_policy use incapsula_account_policy_association instead ([#400](https://github.com/imperva/terraform-provider-incapsula/pull/398))
+- siem_log_configuration: fix documentation ([#401](https://github.com/imperva/terraform-provider-incapsula/pull/401))
+
+
+
 ## 3.22.0 (Mar 10, 2024)
 
 FEATURES:

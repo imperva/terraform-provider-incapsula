@@ -9,12 +9,16 @@ description: |-
 
 Provides an Incapsula Site SSL Settings resource.
 
-If you run the same resource from a site for which SSL is not yet enabled and **approved** will result in the following error response:
+In this resource you can configure:
+- HSTS: A security mechanism enabling websites to announce themselves as accessible only via HTTPS. 
+For more information about HSTS, click [here](https://www.imperva.com/blog/hsts-strict-transport-security/).
+- TLS settings: Define the supported TLS version and cipher suites used for encryption of the TLS handshake between client and Imperva. 
+For more information about supported TLS versions and ciphers, click [here](https://docs.imperva.com/bundle/cloud-application-security/page/cipher-suites.htm).
+
+If you run the SSL settings resource from a site for which SSL is not yet enabled and the SSL certificate is not approved, it will result in the following error response:
 - `status:` 406 
 - `message:` Site does not have SSL configured
 - To enable this feature for your site, you must first configure its SSL settings including a valid certificate.
-
-For more information what HSTS is click [here](https://www.imperva.com/blog/hsts-strict-transport-security/).
 
 ## Example Usage
 
@@ -22,11 +26,31 @@ For more information what HSTS is click [here](https://www.imperva.com/blog/hsts
 resource "incapsula_site_ssl_settings" "example"  {
   site_id = incapsula_site.mysite.id
   
-  hsts {
-    is_enabled = true
-    max_age = 86400
-    sub_domains_included = true
-    pre_loaded = false
+  hsts { 
+    is_enabled               = true
+    max_age                  = 31536000
+    sub_domains_included     = false
+    pre_loaded               = false
+  }
+
+  inbound_tls_settings {
+    configuration_profile = "CUSTOM"
+
+    tls_configuration {
+      tls_version     = "TLS_1_2"
+      ciphers_support = [
+          "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+          "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+        ]
+    }
+    tls_configuration {
+      tls_version     = "TLS_1_3"
+      ciphers_support = [
+        "TLS_AES_128_GCM_SHA256",
+        "TLS_CHACHA20_POLY1305_SHA256",
+        "TLS_AES_256_GCM_SHA384",
+      ]
+    }
   }
 }
 ```
@@ -38,6 +62,8 @@ The following arguments are supported:
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `hsts` - (Optional): HTTP Strict Transport Security (HSTS) configuration settings for the site.
     - Type: `set` of `hsts_config` resource (defined below)
+* `inbound_tls_settings` - (Optional): Transport Layer Security (TLS) configuration settings for the site.
+  - Type: `set` of `inbound_tls_settings` resource (defined below)
 
 ## Schema of `hsts_config` resource
 
@@ -56,6 +82,23 @@ The `hsts_config` resource represents the configuration settings for HTTP Strict
     - Type: `bool`
     - Default: `false`
 
+## Schema of `inbound_tls_settings` resource
+
+The `inbound_tls_settings` resource represents the configuration settings for Transport Layer Security (TLS).
+
+* `configuration_profile` - (Required): Where to use a pre-defined or custom configuration for TLS settings. Possible values: DEFAULT, ENHANCED_SECURITY, CUSTOM.
+  - Type: `string`
+* `tls_configuration` - (Optional): List supported TLS versions and ciphers.
+  - Type: `List`
+
+### Nested Schema for `tls_configuration`
+
+* `tls_version` - (Required): TLS supported versions.
+  - Type: `string`
+* `ciphers_support` - (Required): List of ciphers to use for this TLS version.
+  - Type: `List`
+
+
 ## Attributes Reference
 
 The following attributes are exported:
@@ -64,9 +107,10 @@ The following attributes are exported:
 
 ## Import
 
-Site SSL settings can be imported using the `id`:
+Site SSL settings can be imported using the `siteId` or `siteId`/`accountId` for sub-accounts:
 ```
 terraform import incapsula_site_ssl_settings.example 1234
+terraform import incapsula_site_ssl_settings.example 1234/4321
 ```
 
 

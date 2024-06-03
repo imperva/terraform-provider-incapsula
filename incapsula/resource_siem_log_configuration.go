@@ -2,9 +2,10 @@ package incapsula
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"strings"
 )
 
 const AbpProvider = "ABP"
@@ -25,7 +26,7 @@ var AuditDatasets = []string{"AUDIT_TRAIL"}
 
 const CspProvider = "CSP"
 
-var CspDatasets = []string{"GOOGLE_ANALYTICS_IDS", "SIGNIFICANT_DOMAIN_DISCOVERY"}
+var CspDatasets = []string{"GOOGLE_ANALYTICS_IDS", "SIGNIFICANT_DOMAIN_DISCOVERY", "SIGNIFICANT_SCRIPT_DISCOVERY", "SIGNIFICANT_DATA_TRANSFER_DISCOVERY"}
 
 func resourceSiemLogConfiguration() *schema.Resource {
 	return &schema.Resource{
@@ -73,7 +74,7 @@ func resourceSiemLogConfiguration() *schema.Resource {
 				Type:        schema.TypeList,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice([]string{AbpDatasets[0], NetsecDatasets[0], NetsecDatasets[1], NetsecDatasets[2], NetsecDatasets[3], AtoDatasets[0], AuditDatasets[0], CspDatasets[0], CspDatasets[1]}, false),
+					ValidateFunc: validation.StringInSlice([]string{AbpDatasets[0], NetsecDatasets[0], NetsecDatasets[1], NetsecDatasets[2], NetsecDatasets[3], AtoDatasets[0], AuditDatasets[0], CspDatasets[0], CspDatasets[1], CspDatasets[2], CspDatasets[3]}, false),
 				},
 				Required: true,
 			},

@@ -41,7 +41,7 @@ func (c *Client) ReadDeliveryRuleConfiguration(siteID string, category string) (
 	log.Printf("[INFO] Getting Delivery rules Type Rule %s for Site ID %s\n", category, siteID)
 
 	reqURL := fmt.Sprintf("%s/sites/%s/delivery-rules-configuration?category=%s", c.config.BaseURLRev3, siteID, category)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadIncapRule)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadDeliveryRuleConfiguration)
 
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -98,7 +98,7 @@ func (c *Client) UpdateDeliveryRuleConfiguration(siteID string, category string,
 
 	// Put request to Incapsula
 	reqURL := fmt.Sprintf("%s/sites/%s/delivery-rules-configuration?category=%s", c.config.BaseURLRev3, siteID, category)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, ruleJSON, UpdateIncapRule)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, ruleJSON, UpdateDeliveryRuleConfiguration)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,

@@ -1,11 +1,13 @@
 package incapsula
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -15,10 +17,10 @@ const defaultSslPortTo = 443
 
 func resourceApplicationDelivery() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceApplicationDeliveryUpdate,
-		Read:   resourceApplicationDeliveryRead,
-		Update: resourceApplicationDeliveryUpdate,
-		Delete: resourceApplicationDeliveryDelete,
+		CreateContext: resourceApplicationDeliveryUpdate,
+		ReadContext:   resourceApplicationDeliveryRead,
+		UpdateContext: resourceApplicationDeliveryUpdate,
+		DeleteContext: resourceApplicationDeliveryDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				siteID, err := strconv.Atoi(d.Id())
@@ -305,15 +307,21 @@ func resourceApplicationDelivery() *schema.Resource {
 	}
 }
 
-func resourceApplicationDeliveryRead(d *schema.ResourceData, m interface{}) error {
+func resourceApplicationDeliveryRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	siteID := d.Get("site_id").(int)
 	siteIdStr := strconv.Itoa(siteID)
 
-	applicationDelivery, err := client.GetApplicationDelivery(siteID)
-	if err != nil {
-		log.Printf("[ERROR] Could not get Incapsula Application Delivery for Site Id: %d - %s\n", siteID, err)
-		return err
+	applicationDelivery, diag := client.GetApplicationDelivery(siteID)
+	if diag != nil {
+		log.Printf("[ERROR] Could not get Incapsula Application Delivery for Site Id: %d\n", siteID)
+		return diag
+	}
+
+	errorPages, diag := client.GetErrorPages(siteID)
+	if diag != nil {
+		log.Printf("[ERROR] Could not get Incapsula Error Pages for Site Id: %d\n", siteID)
+		return diag
 	}
 
 	d.SetId(siteIdStr)
@@ -347,21 +355,22 @@ func resourceApplicationDeliveryRead(d *schema.ResourceData, m interface{}) erro
 	d.Set("redirect_naked_to_full", applicationDelivery.Redirection.RedirectNakedToFull)
 	d.Set("redirect_http_to_https", applicationDelivery.Redirection.RedirectHttpToHttps)
 
-	d.Set("default_error_page_template", strings.ReplaceAll(applicationDelivery.CustomErrorPage.DefaultErrorPage, "'", "\""))
-	d.Set("error_connection_timeout", strings.ReplaceAll(applicationDelivery.CustomErrorPage.CustomErrorPageTemplates.ErrorConnectionTimeout, "'", "\""))
-	d.Set("error_access_denied", strings.ReplaceAll(applicationDelivery.CustomErrorPage.CustomErrorPageTemplates.ErrorAccessDenied, "'", "\""))
-	d.Set("error_parse_req_error", strings.ReplaceAll(applicationDelivery.CustomErrorPage.CustomErrorPageTemplates.ErrorParseReqError, "'", "\""))
-	d.Set("error_parse_resp_error", strings.ReplaceAll(applicationDelivery.CustomErrorPage.CustomErrorPageTemplates.ErrorParseRespError, "'", "\""))
-	d.Set("error_connection_failed", strings.ReplaceAll(applicationDelivery.CustomErrorPage.CustomErrorPageTemplates.ErrorConnectionFailed, "'", "\""))
-	d.Set("error_ssl_failed", strings.ReplaceAll(applicationDelivery.CustomErrorPage.CustomErrorPageTemplates.ErrorSslFailed, "'", "\""))
-	d.Set("error_deny_and_captcha", strings.ReplaceAll(applicationDelivery.CustomErrorPage.CustomErrorPageTemplates.ErrorDenyAndCaptcha, "'", "\""))
-	d.Set("error_no_ssl_config", strings.ReplaceAll(applicationDelivery.CustomErrorPage.CustomErrorPageTemplates.ErrorTypeNoSslConfig, "'", "\""))
-	d.Set("error_abp_identification_failed", strings.ReplaceAll(applicationDelivery.CustomErrorPage.CustomErrorPageTemplates.ErrorAbpIdentificationFailed, "'", "\""))
+	d.Set("default_error_page_template", strings.ReplaceAll(errorPages.DefaultErrorPage, "'", "\""))
+	d.Set("error_connection_timeout", strings.ReplaceAll(errorPages.CustomErrorPageTemplates.ErrorConnectionTimeout, "'", "\""))
+	d.Set("error_access_denied", strings.ReplaceAll(errorPages.CustomErrorPageTemplates.ErrorAccessDenied, "'", "\""))
+	d.Set("error_parse_req_error", strings.ReplaceAll(errorPages.CustomErrorPageTemplates.ErrorParseReqError, "'", "\""))
+	d.Set("error_parse_resp_error", strings.ReplaceAll(errorPages.CustomErrorPageTemplates.ErrorParseRespError, "'", "\""))
+	d.Set("error_connection_failed", strings.ReplaceAll(errorPages.CustomErrorPageTemplates.ErrorConnectionFailed, "'", "\""))
+	d.Set("error_ssl_failed", strings.ReplaceAll(errorPages.CustomErrorPageTemplates.ErrorSslFailed, "'", "\""))
+	d.Set("error_deny_and_captcha", strings.ReplaceAll(errorPages.CustomErrorPageTemplates.ErrorDenyAndCaptcha, "'", "\""))
+	d.Set("error_no_ssl_config", strings.ReplaceAll(errorPages.CustomErrorPageTemplates.ErrorTypeNoSslConfig, "'", "\""))
+	d.Set("error_abp_identification_failed", strings.ReplaceAll(errorPages.CustomErrorPageTemplates.ErrorAbpIdentificationFailed, "'", "\""))
 
 	return nil
 }
 
-func resourceApplicationDeliveryUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceApplicationDeliveryUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	client := m.(*Client)
 	siteID := d.Get("site_id").(int)
 	http2 := new(bool)
@@ -374,11 +383,12 @@ func resourceApplicationDeliveryUpdate(d *schema.ResourceData, m interface{}) er
 		http2ToOrigin = nil
 	} else {
 		if !d.Get("enable_http2").(bool) && d.Get("http2_to_origin").(bool) {
-			log.Printf("[ERROR] error in Application Delivery resource - " +
-				"HTTP/2 to Origin support requires that HTTP/2 will be enabled for your website")
-
-			return fmt.Errorf("error in Application Delivery resource - " +
-				"HTTP/2 to Origin support requires that HTTP/2 will be enabled for your website")
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "[ERROR] error in Application Delivery resource",
+				Detail:   "HTTP/2 to Origin support requires that HTTP/2 will be enabled for your website",
+			})
+			return diags
 		} else {
 			*http2 = d.Get("enable_http2").(bool)
 			*http2ToOrigin = d.Get("http2_to_origin").(bool)
@@ -414,60 +424,65 @@ func resourceApplicationDeliveryUpdate(d *schema.ResourceData, m interface{}) er
 		RedirectNakedToFull: d.Get("redirect_naked_to_full").(bool),
 		RedirectHttpToHttps: d.Get("redirect_http_to_https").(bool),
 	}
-	customErrorPage := CustomErrorPage{
-		DefaultErrorPage: d.Get("default_error_page_template").(string),
-		CustomErrorPageTemplates: CustomErrorPageTemplates{
-			ErrorConnectionTimeout:       d.Get("error_connection_timeout").(string),
-			ErrorAccessDenied:            d.Get("error_access_denied").(string),
-			ErrorParseReqError:           d.Get("error_parse_req_error").(string),
-			ErrorParseRespError:          d.Get("error_parse_resp_error").(string),
-			ErrorConnectionFailed:        d.Get("error_connection_failed").(string),
-			ErrorSslFailed:               d.Get("error_ssl_failed").(string),
-			ErrorDenyAndCaptcha:          d.Get("error_deny_and_captcha").(string),
-			ErrorTypeNoSslConfig:         d.Get("error_no_ssl_config").(string),
-			ErrorAbpIdentificationFailed: d.Get("error_abp_identification_failed").(string),
-		},
-	}
 
 	payload := ApplicationDelivery{
 		Compression:      compression,
 		ImageCompression: imageCompression,
 		Network:          network,
 		Redirection:      redirection,
-		CustomErrorPage:  customErrorPage,
 	}
 
-	_, err := client.UpdateApplicationDelivery(siteID, &payload)
+	_, diags = client.UpdateApplicationDelivery(siteID, &payload)
 
-	if err != nil {
-		log.Printf("[ERROR] Could not get Incapsula Application Delivery for Site Id: %d - %s\n", siteID, err)
-		return err
+	if diags != nil {
+		log.Printf("[ERROR] Could not update Incapsula Application Delivery for Site Id: %d - %s\n", siteID, diags[0].Detail)
+		return diags
 	}
-	return resourceApplicationDeliveryRead(d, m)
+
+	if d.HasChange("default_error_page_template") ||
+		d.HasChange("error_connection_timeout") ||
+		d.HasChange("error_access_denied") ||
+		d.HasChange("error_parse_req_error") ||
+		d.HasChange("error_parse_resp_error") ||
+		d.HasChange("error_connection_failed") ||
+		d.HasChange("error_ssl_failed") ||
+		d.HasChange("error_deny_and_captcha") ||
+		d.HasChange("error_no_ssl_config") ||
+		d.HasChange("error_abp_identification_failed") {
+
+		customErrorPage := CustomErrorPage{
+			DefaultErrorPage: d.Get("default_error_page_template").(string),
+			CustomErrorPageTemplates: CustomErrorPageTemplates{
+				ErrorConnectionTimeout:       d.Get("error_connection_timeout").(string),
+				ErrorAccessDenied:            d.Get("error_access_denied").(string),
+				ErrorParseReqError:           d.Get("error_parse_req_error").(string),
+				ErrorParseRespError:          d.Get("error_parse_resp_error").(string),
+				ErrorConnectionFailed:        d.Get("error_connection_failed").(string),
+				ErrorSslFailed:               d.Get("error_ssl_failed").(string),
+				ErrorDenyAndCaptcha:          d.Get("error_deny_and_captcha").(string),
+				ErrorTypeNoSslConfig:         d.Get("error_no_ssl_config").(string),
+				ErrorAbpIdentificationFailed: d.Get("error_abp_identification_failed").(string),
+			},
+		}
+
+		_, diags := client.UpdateErrorPages(siteID, &customErrorPage)
+
+		if diags != nil {
+			log.Printf("[ERROR] Could not get Incapsula Error Pages for Site Id: %d\n", siteID)
+			return diags
+		}
+	}
+
+	return resourceApplicationDeliveryRead(ctx, d, m)
 }
 
-func resourceApplicationDeliveryDelete(d *schema.ResourceData, m interface{}) error {
+func resourceApplicationDeliveryDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	siteID := d.Get("site_id").(int)
 
 	network := Network{
 		Port:    Port{To: strconv.Itoa(defaultPortTo)},
 		SslPort: SslPort{To: strconv.Itoa(defaultSslPortTo)},
-	}
-
-	customErrorPage := CustomErrorPage{
-		DefaultErrorPage: "",
-		CustomErrorPageTemplates: CustomErrorPageTemplates{
-			ErrorConnectionTimeout:       "",
-			ErrorAccessDenied:            "",
-			ErrorParseReqError:           "",
-			ErrorParseRespError:          "",
-			ErrorConnectionFailed:        "",
-			ErrorSslFailed:               "",
-			ErrorDenyAndCaptcha:          "",
-			ErrorTypeNoSslConfig:         "",
-			ErrorAbpIdentificationFailed: "",
-		},
 	}
 
 	compression := Compression{
@@ -479,22 +494,28 @@ func resourceApplicationDeliveryDelete(d *schema.ResourceData, m interface{}) er
 	}
 
 	payload := ApplicationDelivery{
-		Network:         network,
-		CustomErrorPage: customErrorPage,
-		Compression:     compression,
+		Network:     network,
+		Compression: compression,
 	}
 
-	_, err := client.UpdateApplicationDelivery(siteID, &payload)
-	if err != nil {
-		log.Printf("[ERROR] Error in Application Delivery resource for Site ID %d. Could not return values of custom error pages to defaults. Error:  %s", siteID, err)
-		return fmt.Errorf("Error in Application Delivery resource for Site ID %d. Could not return values of custom error pages to defaults. Error:  %s", siteID, err)
+	_, diags := client.UpdateApplicationDelivery(siteID, &payload)
+	if diags != nil {
+		log.Printf("[ERROR] Error in Application Delivery resource for Site ID %d. Could not return values of custom error pages to defaults.", siteID)
+		return diags
 	}
 
-	_, err = client.DeleteApplicationDelivery(siteID)
+	_, diags = client.DeleteApplicationDelivery(siteID)
 
-	if err != nil {
-		log.Printf("[ERROR] Could delete Incapsula Application Delivery for Site Id: %d - %s\n", siteID, err)
-		return err
+	if diags != nil {
+		log.Printf("[ERROR] Could delete Incapsula Application Delivery for Site Id: %d\n", siteID)
+		return diags
+	}
+
+	_, diags = client.DeleteErrorPages(siteID)
+
+	if diags != nil {
+		log.Printf("[ERROR] Could delete Incapsula Error Pages for Site Id: %d\n", siteID)
+		return diags
 	}
 
 	d.SetId("")
