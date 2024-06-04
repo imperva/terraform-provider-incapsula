@@ -47,7 +47,7 @@ func testCheckATOSiteAllowlistConfigExists(name string) resource.TestCheckFunc {
 		// Fetch the resource from the current state
 		res, ok := state.RootModule().Resources[name]
 		if !ok {
-			return fmt.Errorf("Incapsula ATO Site allowlist resource not found: %s", name)
+			return fmt.Errorf("[ERROR] incapsula ATO Site allowlist resource not found: %s", name)
 		}
 
 		// Extract accountId and siteId from teh terraform state
@@ -63,13 +63,13 @@ func testCheckATOSiteAllowlistConfigExists(name string) resource.TestCheckFunc {
 		var siteIdString = res.Primary.Attributes["site_id"]
 		siteId, err := strconv.Atoi(siteIdString)
 		if err != nil {
-			fmt.Errorf("failed to convert site ID from import command, actual value: %s, expected numeric ID", siteIdString)
+			return fmt.Errorf("[ERROR] failed to convert site ID from import command, actual value: %s, expected numeric ID", siteIdString)
 		}
 
 		client := testAccProvider.Meta().(*Client)
 		aTOAllowlistDTO, _, err := client.GetAtoSiteAllowlistWithRetries(accountId, siteId)
 		if err != nil {
-			return fmt.Errorf("Error in fetching ATO allowlist for site ID %d, Error : %s", siteId, err)
+			return fmt.Errorf("[ERROR] cannot fetch ATO allowlist for site ID %d, Error : %s", siteId, err)
 		}
 		if aTOAllowlistDTO == nil || aTOAllowlistDTO.Allowlist == nil {
 			return fmt.Errorf("ATO site allowlist is not present for site ID %d", siteId)
@@ -90,12 +90,12 @@ func testACCStateATOSiteAllowlistID(s *terraform.State) (string, error) {
 
 		if strings.Compare(schemaId, resourceId) != 0 {
 			// if newID != resourceID {
-			return "", fmt.Errorf("Incapsula ATO Site allowlist Config does not exist")
+			return "", fmt.Errorf("[ERROR] incapsula ATO Site allowlist Config does not exist")
 		}
 
 		return schemaId, nil
 	}
-	return "", fmt.Errorf("Error finding correct resource %s", atoSiteAllowlistConfigResource)
+	return "", fmt.Errorf("[ERROR] finding correct resource %s", atoSiteAllowlistConfigResource)
 }
 
 func testACCStateATOSiteAllowlistConfigDestroy(s *terraform.State) error {
@@ -131,10 +131,11 @@ func testACCStateATOSiteAllowlistConfigDestroy(s *terraform.State) error {
 func testAccCheckATOSiteAllowlistConfigBasic(t *testing.T) string {
 	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 	resource "%s" "%s" {
+		account_id          = %s.account_id
 		site_id             = %s.id
 		allowlist			= [ { "ip": "192.10.20.0", "mask": "24", "desc": "Test IP 1"}, { "ip": "192.10.20.1", "mask": "8", "desc": "Test IP 2" } ]
 		depends_on 			= ["%s"]
 	}`,
-		atoSiteAllowlistResourceType, atoSiteAllowlistResourceName, siteResourceName, siteResourceName,
+		atoSiteAllowlistResourceType, atoSiteAllowlistResourceName, siteResourceName, siteResourceName, siteResourceName,
 	)
 }

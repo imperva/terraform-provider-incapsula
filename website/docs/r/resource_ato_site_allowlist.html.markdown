@@ -41,8 +41,8 @@ The following arguments are supported:
 
 ## Import
 
-ATO Site allowlist configuration can be imported using the site_id 
+ATO Site allowlist configuration can be imported using the <account_id>/<site_id> 
 
 ```
-$ terraform import incapsula_ato_site_allowlist.demo-terraform-ato-site-allowlist 1234
+$ terraform import incapsula_ato_site_allowlist.demo-terraform-ato-site-allowlist 1234/4567
 ```
