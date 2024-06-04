@@ -2,6 +2,7 @@ package incapsula
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"testing"
@@ -20,9 +21,12 @@ func GenerateTestDomain(t *testing.T) string {
 	if v := os.Getenv("INCAPSULA_API_ID"); v == "" && t != nil {
 		t.Fatal("INCAPSULA_API_ID must be set for acceptance tests")
 	}
+	if v := os.Getenv("INCAPSULA_CUSTOM_TEST_DOMAIN"); v == "" && t != nil {
+		t.Fatal("INCAPSULA_CUSTOM_TEST_DOMAIN must be set for acceptance tests which require onboarding a domain")
+	}
 	s3 := rand.NewSource(time.Now().UnixNano())
 	r3 := rand.New(s3)
-	generatedDomain = "id" + os.Getenv("INCAPSULA_API_ID") + strconv.Itoa(r3.Intn(1000)) + ".examplewebsite.com"
+	generatedDomain = "id" + os.Getenv("INCAPSULA_API_ID") + strconv.Itoa(r3.Intn(1000)) + os.Getenv("INCAPSULA_CUSTOM_TEST_DOMAIN")
 	return generatedDomain
 }
 
@@ -33,7 +37,8 @@ func TestAccIncapsulaSite_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaSiteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(nil)),
+				SkipFunc: IsTestDomainEnvVarExist,
+				Config:   testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(nil)),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiteExists(siteResourceName),
 					resource.TestCheckResourceAttr(siteResourceName, "domain", generatedDomain),
@@ -75,6 +80,16 @@ func testAccCheckIncapsulaSiteDestroy(state *terraform.State) error {
 	}
 
 	return nil
+}
+
+func IsTestDomainEnvVarExist() (bool, error) {
+	skipTest := false
+	if v := os.Getenv("INCAPSULA_CUSTOM_TEST_DOMAIN"); v == "" {
+		skipTest = true
+		log.Printf("[ERROR] INCAPSULA_CUSTOM_TEST_DOMAIN environment variable does not exist, if you want to if you want to test features which require site onboarding, you must prvide it")
+	}
+
+	return skipTest, nil
 }
 
 func testCheckIncapsulaSiteExists(name string) resource.TestCheckFunc {
