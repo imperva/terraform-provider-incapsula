@@ -177,7 +177,7 @@ func (c *Client) GetAtoSiteAllowlist(accountId, siteId int) (*ATOAllowlistDTO, i
 	responseBody, err := io.ReadAll(resp.Body)
 
 	// Dump JSON
-	log.Printf("[INFO] ATO allowlist JSON response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] ATO allowlist JSON response: %s\n", string(responseBody))
 
 	// Parse the JSON
 	var atoAllowlistItems []AtoAllowlistItem
