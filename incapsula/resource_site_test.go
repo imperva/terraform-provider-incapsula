@@ -37,7 +37,7 @@ func TestAccIncapsulaSite_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaSiteDestroy,
 		Steps: []resource.TestStep{
 			{
-				SkipFunc: isTestDomainEnvVarExist,
+				SkipFunc: IsTestDomainEnvVarExist,
 				Config:   testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(nil)),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiteExists(siteResourceName),
@@ -82,7 +82,7 @@ func testAccCheckIncapsulaSiteDestroy(state *terraform.State) error {
 	return nil
 }
 
-func isTestDomainEnvVarExist() (bool, error) {
+func IsTestDomainEnvVarExist() (bool, error) {
 	skipTest := false
 	if v := os.Getenv("INCAPSULA_CUSTOM_TEST_DOMAIN"); v == "" {
 		skipTest = true
