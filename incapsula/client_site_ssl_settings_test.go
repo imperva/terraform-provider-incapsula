@@ -33,7 +33,7 @@ func TestUpdateSiteSSLSettingsHandleResponseCodeNotSuccess(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
-	accountID := 1234
+	accountID := 0
 
 	endpoint := fmt.Sprintf("/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", siteID)
 
@@ -71,7 +71,7 @@ func TestUpdateSiteSSLSettingsHandleInvalidResponseBody(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
-	accountID := 1234
+	accountID := 0
 
 	endpoint := fmt.Sprintf("/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", siteID)
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -109,7 +109,7 @@ func TestUpdateSiteSSLSettingsSuccess(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
-	accountID := 1234
+	accountID := 0
 
 	validResponse := getValidJSONResponse()
 
@@ -165,7 +165,7 @@ func TestReadSiteSSLSettingsHandleResponseCodeNotSuccess(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
-	accountID := 1234
+	accountID := 0
 
 	endpoint := fmt.Sprintf("/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", siteID)
 
@@ -202,7 +202,7 @@ func TestReadSiteSSLSettingsHandleInvalidResponseBody(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
-	accountID := 1234
+	accountID := 0
 
 	endpoint := fmt.Sprintf("/sites-mgmt/v3/sites/%d/settings/TLSConfiguration", siteID)
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -239,7 +239,7 @@ func TestReadSiteSSLSettingsSuccess(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42
-	accountID := 1234
+	accountID := 0
 
 	var validResponse = getValidJSONResponse()
 
