@@ -467,25 +467,29 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	}
 	d.Set("dns_a_record_value", dnsARecordValues)
 
+	// Set up verification variables
+	verificationRecordName := ""
+	verificationValue := ""
+
 	// Set the GlobalSign verification
-	if siteStatusResponse.Ssl.GeneratedCertificate.ValidationMethod == "dns" {
+	if siteStatusResponse.Ssl.GeneratedCertificate.ValidationMethod == "dns" || siteStatusResponse.Ssl.GeneratedCertificate.ValidationMethod == "cname" {
 		dnsValidation := siteStatusResponse.Ssl.GeneratedCertificate.ValidationData.([]interface{})
 		dnsRecord := dnsValidation[0].(map[string]interface{})
-		setDataTo := dnsRecord["set_data_to"].([]interface{})[0]
-		dnsRecordName := dnsRecord["dns_record_name"].(interface{})
-		d.Set("domain_verification", setDataTo)
-		d.Set("dns_record_name", dnsRecordName)
+		verificationValue = dnsRecord["set_data_to"].([]interface{})[0].(string)
+		verificationRecordName = dnsRecord["dns_record_name"].(interface{}).(string)
 	}
 
 	// Set the HTML verification
 	if siteStatusResponse.Ssl.GeneratedCertificate.ValidationMethod == "html" {
 		htmlValidation := siteStatusResponse.Ssl.GeneratedCertificate.ValidationData.(map[string]interface{})
 		for _, value := range htmlValidation {
-			metaTag := value.([]interface{})[0]
-			d.Set("domain_verification", metaTag)
+			verificationValue = value.([]interface{})[0].(string)
 			break
 		}
 	}
+
+	d.Set("dns_record_name", verificationRecordName)
+	d.Set("domain_verification", verificationValue)
 
 	// Get the log level for the site
 	if siteStatusResponse.LogLevel != "" {
