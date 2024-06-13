@@ -15,7 +15,9 @@ const siteDomainConfResourceName = "incapsula_site_domain_configuration"
 const siteDomainConfResource = "site_domain_conf"
 const rootModuleName = siteDomainConfResourceName + "." + siteDomainConfResource
 
-var domain = "a-" + strconv.FormatInt(time.Now().UnixNano()%99999, 10) + os.Getenv("INCAPSULA_CUSTOM_TEST_DOMAIN")
+var siteV3ResourceNameForDomainTest = "test-site-v3-for-domain-resource" + strconv.FormatInt(time.Now().UnixNano()%99999, 10)
+var siteV3NameForDomainTests = "test site for domain resource" + strconv.FormatInt(time.Now().UnixNano()%99999, 10)
+var domain = strconv.FormatInt(time.Now().UnixNano()%99999, 10) + os.Getenv("INCAPSULA_CUSTOM_TEST_DOMAIN")
 
 func TestAccIncapsulaSiteDomainConfiguration_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -32,6 +34,16 @@ func TestAccIncapsulaSiteDomainConfiguration_Basic(t *testing.T) {
 					resource.TestMatchResourceAttr(rootModuleName, "domain.0.name", regexp.MustCompile(domain)),
 					resource.TestMatchResourceAttr(rootModuleName, "domain.0.id", regexp.MustCompile("\\d+")),
 					resource.TestMatchResourceAttr(rootModuleName, "domain.0.status", regexp.MustCompile("BYPASSED")),
+				),
+			},
+			{
+				SkipFunc: IsTestDomainEnvVarExist,
+				Config:   testAccCheckIncapsulaSiteV3Domain(t, "b-"+domain),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr(rootModuleName+"-2", "site_id", regexp.MustCompile("\\d+")),
+					resource.TestMatchResourceAttr(rootModuleName+"-2", "domain.0.name", regexp.MustCompile("b-"+domain)),
+					resource.TestMatchResourceAttr(rootModuleName+"-2", "domain.0.id", regexp.MustCompile("\\d+")),
+					resource.TestMatchResourceAttr(rootModuleName+"-2", "domain.0.status", regexp.MustCompile("BYPASSED")),
 				),
 			},
 		},
@@ -66,6 +78,24 @@ resource "%s" "%s" {
   domain {name="%s"}
 depends_on = ["%s"]
 }`, siteDomainConfResourceName, siteDomainConfResource, domain, siteResourceName)
+	return result
+}
+
+func testAccCheckIncapsulaSiteV3Domain(t *testing.T, domain string) string {
+	result := checkIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+
+ resource "incapsula_v3_site" "%s" {
+			name = "%s"
+	}
+
+resource "incapsula_site_certificate_request" "example-site-cert" {
+  site_id = incapsula_v3_site.%s.id
+}
+resource "%s" "%s-2" {
+  site_id=incapsula_v3_site.%s.id
+  site_certificate_request_id = incapsula_site_certificate_request.example-site-cert.id
+  domain {name="%s"}
+}`, siteV3ResourceNameForDomainTest, siteV3NameForDomainTests, siteV3ResourceNameForDomainTest, siteDomainConfResourceName, siteDomainConfResource, siteV3ResourceNameForDomainTest, domain)
 	return result
 }
 

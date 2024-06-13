@@ -7,7 +7,11 @@ import (
 	"log"
 	"strconv"
 	"testing"
+	"time"
 )
+
+var siteV3ResourceName = "test-site-v3-for-site-cert" + strconv.FormatInt(time.Now().UnixNano()%99999, 10)
+var siteV3Name = "test site " + strconv.FormatInt(time.Now().UnixNano()%99999, 10)
 
 const siteCertificateResourceName = "incapsula_site_certificate_request"
 const siteCertificateResource = siteCertificateResourceName + "." + siteCertificateConfigName
@@ -44,11 +48,14 @@ func testAccSiteCertificateDestroy(s *terraform.State) error {
 func testAccSiteCertificateRequestConfig(t *testing.T) string {
 	return fmt.Sprintf(`
 	
+   resource "incapsula_v3_site" "%s" {
+			name = "%s"
+	}
 	resource"%s""%s"{
-    site_id = 722883409
+    site_id = incapsula_v3_site.%s.id
     default_validation_method = "DNS"
 	}`,
-		siteCertificateResourceName, siteCertificateConfigName,
+		siteV3ResourceName, siteV3Name, siteCertificateResourceName, siteCertificateConfigName, siteV3ResourceName,
 	)
 }
 
