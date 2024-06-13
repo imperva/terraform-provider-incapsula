@@ -19,7 +19,7 @@ resource "incapsula_csp_site_domain" "demo-terraform-csp-site-domain" {
   domain              = "www.imperva.com"
   status              = "allowed"
   include_subdomains  = false
-  notes               = [“first note”, “second note”]
+  notes               = ["first note", "second note"]
 }
 ```
 
