@@ -30,7 +30,7 @@ func ATOEndpointMitigationConfiguration() *schema.Resource {
 				if err != nil {
 					return nil, fmt.Errorf("failed to convert site ID from import command, actual value: %s, expected numeric id", keyParts[1])
 				}
-				endpointId := keyParts[1]
+				endpointId := keyParts[2]
 
 				d.Set("account_id", accountId)
 				d.Set("site_id", siteId)

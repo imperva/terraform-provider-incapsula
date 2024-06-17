@@ -30,7 +30,7 @@ body:
       label: Affected resource(s)
       description: |
         Please list the resources as a list, for example:
-        - incasula_site
+        - incapsula_site
         - incapsula_incap_rule
 
         If this issue appears to affect multiple resources, it may be an issue with

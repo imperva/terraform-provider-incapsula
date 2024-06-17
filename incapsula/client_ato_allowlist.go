@@ -164,6 +164,9 @@ func (c *Client) GetAtoSiteAllowlist(accountId, siteId int) (*ATOAllowlistDTO, i
 	} else {
 		reqURL = fmt.Sprintf("%s%s/%d%s?caid=%d", c.config.BaseURLAPI, endpointATOSiteBase, siteId, endpointAtoAllowlist, accountId)
 	}
+
+	log.Printf("[INFO] fetching ATO Allowlist for siteId: %d, accountId: %d, BaseURLAPI: %s, endpointATOSiteBase: %s, endpointAtoAllowlist: %s, reqURL: %s\n", siteId, accountId, c.config.BaseURLAPI, endpointATOSiteBase, endpointAtoAllowlist, reqURL)
+
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadATOSiteAllowlistOperation)
 	if err != nil {
 		return nil, 0, fmt.Errorf("[Error] Error executing get ATO allowlist request for site with id %d: %s", siteId, err)
