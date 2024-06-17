@@ -12,7 +12,7 @@ import (
 	"math/rand"
 )
 
-const siteV3ResourceName = "incapsula_v3_site.test-terraform-site-v3"
+const siteV3ResourceName = "incapsula_site_v3.test-terraform-site-v3"
 
 var siteName string
 
@@ -53,7 +53,7 @@ func testCheckIncapsulaSiteV3Destroy(state *terraform.State) error {
 	client := testAccProvider.Meta().(*Client)
 
 	for _, res := range state.RootModule().Resources {
-		if res.Type != "incapsula_v3_site" {
+		if res.Type != "incapsula_site_v3" {
 			continue
 		}
 
@@ -81,7 +81,7 @@ func testCheckIncapsulaSiteV3Destroy(state *terraform.State) error {
 
 func testCheckIncapsulaSiteV3ConfigBasic(name string, siteType string) string {
 	return fmt.Sprintf(`
-		resource "incapsula_v3_site" "test-terraform-site-v3" {
+		resource "incapsula_site_v3" "test-terraform-site-v3" {
 			name = "%s"
 		    type = "%s"
 
