@@ -8,7 +8,7 @@ description: |-
 
 # incapsula_site_monitoring
 
-Configure settings to determine when origin servers should be considered “up” or “down” (active or inactive) by the Imperva Load Balancer. 
+Configure settings to determine when origin servers should be considered "up" or "down" (active or inactive) by the Imperva Load Balancer. 
 Select which failure scenarios you want to produce alarm messages, and how to send them.
 
 Note that destroy action doesn't do any change in Imperva system. To return to default values,

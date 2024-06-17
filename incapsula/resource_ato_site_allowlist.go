@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func resourceATOSiteAllowlist() *schema.Resource {
@@ -16,10 +17,34 @@ func resourceATOSiteAllowlist() *schema.Resource {
 		Delete: resourceATOSiteAllowlistDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+
+				// If this id is of form <account_id>/<site_id> extract the sub account Id as well
+				if strings.Contains(d.Id(), "/") {
+					keyParts := strings.Split(d.Id(), "/")
+					print("id is %s", d.Id())
+					if len(keyParts) != 2 {
+						return nil, fmt.Errorf("Error parsing ID, actual value: %s, expected 2 numeric IDs seperated by '/'\n", d.Id())
+					}
+					accountId, err := strconv.Atoi(keyParts[0])
+					if err != nil {
+						return nil, fmt.Errorf("[ERROR] failed to convert account ID from import command, actual value: %s, expected numeric id", keyParts[0])
+					}
+					siteId, err := strconv.Atoi(keyParts[1])
+					if err != nil {
+						return nil, fmt.Errorf("[ERROR] failed to convert site ID from import command, actual value: %s, expected numeric id", keyParts[1])
+					}
+
+					d.Set("account_id", accountId)
+					d.Set("site_id", siteId)
+					d.Set("id", d.Id())
+					log.Printf("[DEBUG] To Import ATO allowlsit configuration for account ID %d , site ID %d", accountId, siteId)
+					return []*schema.ResourceData{d}, nil
+				}
+
 				siteId, err := strconv.Atoi(d.Id())
 				err = d.Set("site_id", siteId)
 				if err != nil {
-					return nil, fmt.Errorf("failed to extract site ID from import command, actual value: %s, error : %s", d.Id(), err)
+					return nil, fmt.Errorf("[ERROR] failed to extract site ID from import command, actual value: %s, error : %s", d.Id(), err)
 				}
 				log.Printf("[DEBUG] Import ATO allowlist for site ID %d", siteId)
 				return []*schema.ResourceData{d}, nil

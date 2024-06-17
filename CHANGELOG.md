@@ -1,3 +1,9 @@
+## 3.25.3 (June 13, 2024)
+
+IMPROVEMENTS:
+- Account export capability for ATO ([#430](https://github.com/imperva/terraform-provider-incapsula/pull/430))
+
+
 ## 3.25.2 (June 3, 2024)
 
 IMPROVEMENTS:
