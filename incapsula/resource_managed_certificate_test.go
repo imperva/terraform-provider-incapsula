@@ -13,9 +13,9 @@ import (
 var siteV3ResourceName = "test-cloudwaf-site-for-site-cert" + strconv.FormatInt(time.Now().UnixNano()%99999, 10)
 var siteV3Name = "test site " + strconv.FormatInt(time.Now().UnixNano()%99999, 10)
 
-const siteCertificateResourceName = "imperva_managed_certificate"
+const siteCertificateResourceName = "incapsula_managed_certificate_settings"
 const siteCertificateResource = siteCertificateResourceName + "." + siteCertificateConfigName
-const siteCertificateConfigName = "testacc-terraform-managed_certificate"
+const siteCertificateConfigName = "testacc-terraform-managed_certificate_settings"
 
 func TestAccSiteCertificate_Basic(t *testing.T) {
 	log.Printf("========================BEGIN TEST========================")

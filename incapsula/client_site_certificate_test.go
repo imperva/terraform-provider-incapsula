@@ -173,7 +173,32 @@ func TestClientDeleteRequestSiteCertificateError500(t *testing.T) {
 	}
 }
 
-func TestClientDeleteRequestSiteCertificate(t *testing.T) {
+func TestClientValidateDomainBadConnection(t *testing.T) {
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "http://badness.incapsula.com"}
+	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
+	diag := client.ValidateDomains(123, []int{222})
+	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "Timeout exceeded while awaiting") {
+		t.Errorf("Should have received an time out error")
+	}
+}
+func TestClientValidateDomainError500(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != fmt.Sprintf("%s%d%s", endpointSiteCertV3BasePath, 123, endpointSSLValidationSuffix) {
+			t.Errorf("Should have hit /%s%d%s endpoint. Got: %s", endpointSiteCertV3BasePath, 123, endpointSSLValidationSuffix, req.URL.String())
+		}
+		rw.WriteHeader(500)
+		rw.Write([]byte("error"))
+	}))
+	defer server.Close()
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+	diag := client.ValidateDomains(123, []int{222})
+	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "got response status 500") {
+		t.Errorf("Should have received an error")
+	}
+}
+
+func TestClientValidateDomain(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != fmt.Sprintf("%s%d%s", endpointSiteCertV3BasePath, 123, endpointSiteCertV3Suffix) {
 			t.Errorf("Should have hit /%s%d%s endpoint. Got: %s", endpointSiteCertV3BasePath, 123, endpointSiteCertV3Suffix, req.URL.String())

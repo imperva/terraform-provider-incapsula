@@ -227,6 +227,15 @@ func (c *Client) ValidateDomains(siteId int, domainIds []int) diag.Diagnostics {
 		})
 		return diags
 	}
+	log.Printf("[DEBUG] Imperva ssl validation response: %d\n", resp.StatusCode)
+	if resp.StatusCode != 200 {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Failed to request ssl validation",
+			Detail:   fmt.Sprintf("Failed to request ssl validation for site id %d and domains %v, got response status %d", siteId, domainIds, resp.StatusCode),
+		})
+		return diags
+	}
 	defer resp.Body.Close()
 	return diags
 }

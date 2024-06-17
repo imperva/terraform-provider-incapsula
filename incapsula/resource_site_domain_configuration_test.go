@@ -88,12 +88,12 @@ func testAccCheckIncapsulaSiteV3Domain(t *testing.T, domain string) string {
 			name = "%s"
 	}
 
-resource "incapsula_site_certificate_request" "example-site-cert" {
+resource "incapsula_managed_certificate_settings" "example-site-cert" {
   site_id = incapsula_site_v3.%s.id
 }
 resource "%s" "%s-2" {
   site_id=incapsula_site_v3.%s.id
-  site_certificate_request_id = incapsula_site_certificate_request.example-site-cert.id
+  managed_certificate_settings_id = incapsula_managed_certificate_settings.example-site-cert.id
   domain {name="%s"}
 }`, siteV3ResourceNameForDomainTest, siteV3NameForDomainTests, siteV3ResourceNameForDomainTest, siteDomainConfResourceName, siteDomainConfResource, siteV3ResourceNameForDomainTest, domain)
 	return result
