@@ -31,7 +31,7 @@ func resourceSiteDomainConfiguration() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"site_certificate_request_id": {
+			"managed_certificate_id": {
 				Description: "Numeric identifier of the site certificate id.",
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -108,7 +108,7 @@ func resourceDomainUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 	siteDomainDetailsDto, err := client.GetWebsiteDomains(d.Get("site_id").(string))
 	id, _ := strconv.Atoi(siteId)
-	if d.Get("site_certificate_request_id") != "" {
+	if d.Get("managed_certificate_id") != "" {
 		for i := 0; i < 20; i++ {
 			siteCertificateV3Response, _ := client.GetSiteCertificateRequestStatus(id)
 			b := siteCertificateV3Response != nil && siteCertificateV3Response.Data != nil && len(siteCertificateV3Response.Data) > 0
@@ -121,7 +121,7 @@ func resourceDomainUpdate(d *schema.ResourceData, m interface{}) error {
 	} else {
 		return resourceDomainRead(d, m)
 	}
-	panic("site certificate was not created as expected")
+	panic("managed certificate was not created as expected")
 }
 
 func validateSans(siteCertificateDTO SiteCertificateDTO, siteDomainDetails []SiteDomainDetails) bool {
@@ -222,7 +222,7 @@ func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
 
 	domains := &schema.Set{F: getHashFromDomain}
 	for _, v := range siteDomainDetailsDto.Data {
-		if v.AutoDiscovered == true || (d.Get("site_certificate_request_id") == "" && v.MainDomain == true) { //we ignore the main and auto discovered domains
+		if v.AutoDiscovered == true || (d.Get("managed_certificate_id") == "" && v.MainDomain == true) { //we ignore the main and auto discovered domains
 			continue
 		}
 		domain := map[string]interface{}{}

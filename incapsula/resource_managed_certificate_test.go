@@ -10,16 +10,16 @@ import (
 	"time"
 )
 
-var siteV3ResourceName = "test-site-v3-for-site-cert" + strconv.FormatInt(time.Now().UnixNano()%99999, 10)
+var siteV3ResourceName = "test-cloudwaf-site-for-site-cert" + strconv.FormatInt(time.Now().UnixNano()%99999, 10)
 var siteV3Name = "test site " + strconv.FormatInt(time.Now().UnixNano()%99999, 10)
 
-const siteCertificateResourceName = "incapsula_site_certificate_request"
+const siteCertificateResourceName = "imperva_managed_certificate"
 const siteCertificateResource = siteCertificateResourceName + "." + siteCertificateConfigName
-const siteCertificateConfigName = "testacc-terraform-site_certificate_request"
+const siteCertificateConfigName = "testacc-terraform-managed_certificate"
 
 func TestAccSiteCertificate_Basic(t *testing.T) {
 	log.Printf("========================BEGIN TEST========================")
-	log.Printf("[DEBUG]Running test resource_site_certificate_request_test.TestAccSiteCertificate_Basic")
+	log.Printf("[DEBUG]Running test resource_managed_certificate_test.TestAccSiteCertificate_Basic")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -35,7 +35,7 @@ func TestAccSiteCertificate_Basic(t *testing.T) {
 				ResourceName:      siteCertificateResource,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: testACCStateSiteCertificateRequest,
+				ImportStateIdFunc: testACCStateManagedCertificate,
 			},
 		},
 	})
@@ -48,18 +48,18 @@ func testAccSiteCertificateDestroy(s *terraform.State) error {
 func testAccSiteCertificateRequestConfig(t *testing.T) string {
 	return fmt.Sprintf(`
 	
-   resource "incapsula_v3_site" "%s" {
+   resource "imperva_site_v3" "%s" {
 			name = "%s"
 	}
 	resource"%s""%s"{
-    site_id = incapsula_v3_site.%s.id
+    site_id = imperva_site_v3.%s.id
     default_validation_method = "DNS"
 	}`,
 		siteV3ResourceName, siteV3Name, siteCertificateResourceName, siteCertificateConfigName, siteV3ResourceName,
 	)
 }
 
-func testACCStateSiteCertificateRequest(s *terraform.State) (string, error) {
+func testACCStateManagedCertificate(s *terraform.State) (string, error) {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != siteCertificateResourceName {
 			continue

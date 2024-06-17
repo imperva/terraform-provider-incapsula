@@ -84,15 +84,15 @@ depends_on = ["%s"]
 func testAccCheckIncapsulaSiteV3Domain(t *testing.T, domain string) string {
 	result := checkIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
 
- resource "incapsula_v3_site" "%s" {
+ resource "incapsula_site_v3" "%s" {
 			name = "%s"
 	}
 
 resource "incapsula_site_certificate_request" "example-site-cert" {
-  site_id = incapsula_v3_site.%s.id
+  site_id = incapsula_site_v3.%s.id
 }
 resource "%s" "%s-2" {
-  site_id=incapsula_v3_site.%s.id
+  site_id=incapsula_site_v3.%s.id
   site_certificate_request_id = incapsula_site_certificate_request.example-site-cert.id
   domain {name="%s"}
 }`, siteV3ResourceNameForDomainTest, siteV3NameForDomainTests, siteV3ResourceNameForDomainTest, siteDomainConfResourceName, siteDomainConfResource, siteV3ResourceNameForDomainTest, domain)

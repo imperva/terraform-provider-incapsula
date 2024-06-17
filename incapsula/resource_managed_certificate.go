@@ -1,7 +1,6 @@
 package incapsula
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -10,18 +9,18 @@ import (
 	"strconv"
 )
 
-func resourceSiteCertificateRequest() *schema.Resource {
+func resourceManagedCertificate() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceSiteCertificateRequestAdd,
-		ReadContext:   resourceSiteCertificateRequestRead,
-		UpdateContext: resourceSiteCertificateRequestAdd,
-		DeleteContext: resourceSiteCertificateRequestDelete,
+		CreateContext: resourceManagedCertificateAdd,
+		ReadContext:   resourceManagedCertificateRead,
+		UpdateContext: resourceManagedCertificateAdd,
+		DeleteContext: resourceManagedCertificateDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
 				siteId := d.Id()
 
 				d.Set("site_id", siteId)
-				log.Printf("[DEBUG] site v3 resource: Import  Site Config JSON for Site ID %s", siteId)
+				log.Printf("[DEBUG] cloudwaf site resource: Import  Site Config JSON for Site ID %s", siteId)
 				return []*schema.ResourceData{d}, nil
 			},
 		},
@@ -41,7 +40,7 @@ func resourceSiteCertificateRequest() *schema.Resource {
 	}
 }
 
-func resourceSiteCertificateRequestAdd(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceManagedCertificateAdd(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	var diags diag.Diagnostics
 	siteId, _ = d.Get("site_id").(string)
@@ -65,11 +64,11 @@ func resourceSiteCertificateRequestAdd(ctx context.Context, d *schema.ResourceDa
 		log.Printf("[ERROR] Could not read Incapsula site id after delete v3 site: %s\n", err)
 		return diag.FromErr(err)
 	}
-	resourceSiteCertificateRequestRead(ctx, d, m)
+	resourceManagedCertificateRead(ctx, d, m)
 	return diags
 }
 
-func resourceSiteCertificateRequestRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceManagedCertificateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	var diags diag.Diagnostics
 	siteId, _ = d.Get("site_id").(string)
@@ -102,7 +101,7 @@ func resourceSiteCertificateRequestRead(ctx context.Context, d *schema.ResourceD
 	return diags
 }
 
-func resourceSiteCertificateRequestDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceManagedCertificateDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	var diags diag.Diagnostics
 	siteId, _ = d.Get("site_id").(string)
@@ -125,16 +124,6 @@ func resourceSiteCertificateRequestDelete(ctx context.Context, d *schema.Resourc
 		log.Printf("[ERROR] Could not read Incapsula site id after delete v3 site: %s\n", err)
 		return diag.FromErr(err)
 	}
-	resourceSiteCertificateRequestRead(ctx, d, m)
+	resourceManagedCertificateRead(ctx, d, m)
 	return diags
-}
-
-func getHashId(v interface{}) int {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-
-	if v, ok := m["id"]; ok {
-		buf.WriteString(fmt.Sprintf("%s-", strconv.Itoa(v.(int))))
-	}
-	return PositiveHash(buf.String())
 }
