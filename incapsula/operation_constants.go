@@ -199,8 +199,12 @@ const ReadAbpWebsites = "read_abp_websites"
 const UpdateAbpWebsites = "update_abp_websites"
 const DeleteAbpWebsites = "delete_abp_websites"
 
+
+const RequestSiteCert = "request_site_cert"
+
 const AddV3Site = "add_v3_site"
 const UpdateV3Site = "update_v3_site"
+
 
 const ReadDeliveryRuleConfiguration = "read_delivery_rules_configuration"
 const UpdateDeliveryRuleConfiguration = "update_delivery_rules_configuration"

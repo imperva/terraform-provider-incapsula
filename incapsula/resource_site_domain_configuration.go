@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
+	"slices"
+	"strconv"
 	"time"
 )
 
@@ -28,6 +30,11 @@ func resourceSiteDomainConfiguration() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
+			},
+			"managed_certificate_settings_id": {
+				Description: "Numeric identifier of the site certificate id.",
+				Type:        schema.TypeString,
+				Optional:    true,
 			},
 			"cname_redirection_record": {
 				Description: "Cname record for traffic redirection. Point your domain's DNS to this record in order to forward the traffic to Imperva",
@@ -99,8 +106,97 @@ func resourceDomainUpdate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+	siteDomainDetailsDto, err := client.GetWebsiteDomains(d.Get("site_id").(string))
+	id, _ := strconv.Atoi(siteId)
+	if d.Get("managed_certificate_settings_id") != "" {
+		for i := 0; i < 20; i++ {
+			siteCertificateV3Response, _ := client.GetSiteCertificateRequestStatus(id)
+			b := siteCertificateV3Response != nil && siteCertificateV3Response.Data != nil && len(siteCertificateV3Response.Data) > 0
+			b = b && siteCertificateV3Response.Data[0].CertificatesDetails != nil && validateSans(siteCertificateV3Response.Data[0], siteDomainDetailsDto.Data)
+			if b {
+				return resourceDomainRead(d, m)
+			}
+			time.Sleep(10 * time.Second)
+		}
+	} else {
+		return resourceDomainRead(d, m)
+	}
+	panic("managed certificate was not created as expected")
+}
 
-	return resourceDomainRead(d, m)
+func validateSans(siteCertificateDTO SiteCertificateDTO, siteDomainDetails []SiteDomainDetails) bool {
+	if len(siteDomainDetails) == 0 { //todo handle multiple certificates
+		return len(siteCertificateDTO.CertificatesDetails) == 0 || validateEmptyCertificates(siteCertificateDTO.CertificatesDetails)
+	} else {
+		return len(siteCertificateDTO.CertificatesDetails) > 0 && validateDomainsSans(siteDomainDetails, siteCertificateDTO.CertificatesDetails)
+	}
+}
+
+func validateEmptyCertificates(certificatesDetails []CertificateDTO) bool {
+	for _, t := range certificatesDetails {
+		if t.Sans != nil && len(t.Sans) > 0 && !allSansAreDeleted(t.Sans) {
+			return false
+		}
+	}
+	return true
+}
+
+func allSansAreDeleted(sans []SanDTO) bool {
+	deleteStatuses := []string{"REMOVED", "DELETED_PENDING_PUBLICATION", "DELETED_LOCALLY", "CANCELED_LOCALLY", "PENDING_CANCELATION", "PENDING_DELETION"}
+	for _, t := range sans {
+		if !slices.Contains(deleteStatuses, t.Status) {
+			return false
+		}
+	}
+	return true
+}
+
+func validateDomainsSans(siteDomainDetails []SiteDomainDetails, certificateDTO []CertificateDTO) bool {
+	return validateSanForEachDomain(siteDomainDetails, certificateDTO) && validateRedundantSansAreDeleted(siteDomainDetails, certificateDTO)
+}
+
+func validateSanForEachDomain(siteDomainDetails []SiteDomainDetails, certificateDTO []CertificateDTO) bool {
+	for _, t := range siteDomainDetails {
+		if !validateSanForDomain(t, certificateDTO) {
+			return false
+		}
+	}
+	return true
+}
+
+func validateSanForDomain(domain SiteDomainDetails, certificates []CertificateDTO) bool {
+	for _, t := range certificates {
+		if t.Sans != nil && len(t.Sans) > 0 {
+			for _, s := range t.Sans {
+				if slices.Contains(s.DomainIds, domain.Id) && s.SanValue == domain.Domain {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+func validateRedundantSansAreDeleted(domains []SiteDomainDetails, certificates []CertificateDTO) bool {
+	res := true
+	for _, t := range certificates {
+		if t.Sans != nil && len(t.Sans) > 0 {
+			for _, s := range t.Sans {
+				res = res && validateExistDomainOrDeletedSan(s, domains)
+			}
+		}
+	}
+	return res
+}
+
+func validateExistDomainOrDeletedSan(s SanDTO, domains []SiteDomainDetails) bool {
+	deleteStatuses := []string{"REMOVED", "DELETED_PENDING_PUBLICATION", "DELETED_LOCALLY", "CANCELED_LOCALLY", "PENDING_CANCELATION", "PENDING_DELETION"}
+	for _, t := range domains {
+		if t.Domain == s.SanValue && slices.Contains(s.DomainIds, t.Id) {
+			return true
+		}
+	}
+	return !slices.Contains(deleteStatuses, s.Status)
 }
 
 func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
@@ -126,7 +222,7 @@ func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
 
 	domains := &schema.Set{F: getHashFromDomain}
 	for _, v := range siteDomainDetailsDto.Data {
-		if v.MainDomain == true || v.AutoDiscovered == true { //we ignore the main and auto discovered domains
+		if v.AutoDiscovered == true || (d.Get("managed_certificate_settings_id") == "" && v.MainDomain == true) { //we ignore the main and auto discovered domains
 			continue
 		}
 		domain := map[string]interface{}{}
