@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var siteV3ResourceName = "test-cloudwaf-site-for-site-cert" + strconv.FormatInt(time.Now().UnixNano()%99999, 10)
+var siteV3ResourceNameForManagedCert = "test-cloudwaf-site-for-site-cert" + strconv.FormatInt(time.Now().UnixNano()%99999, 10)
 var siteV3Name = "test site " + strconv.FormatInt(time.Now().UnixNano()%99999, 10)
 
 const siteCertificateResourceName = "incapsula_managed_certificate_settings"
@@ -55,7 +55,7 @@ func testAccSiteCertificateRequestConfig(t *testing.T) string {
     site_id = imperva_site_v3.%s.id
     default_validation_method = "DNS"
 	}`,
-		siteV3ResourceName, siteV3Name, siteCertificateResourceName, siteCertificateConfigName, siteV3ResourceName,
+		siteV3ResourceNameForManagedCert, siteV3Name, siteCertificateResourceName, siteCertificateConfigName, siteV3ResourceNameForManagedCert,
 	)
 }
 

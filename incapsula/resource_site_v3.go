@@ -86,7 +86,7 @@ func resourceSiteV3Add(ctx context.Context, d *schema.ResourceData, m interface{
 			Detail:   fmt.Sprintf("Failed to add v3 site to account%s, %s", accountID, siteV3Response.Errors[0].Detail),
 		}}
 	}
-	err := d.Set("account_id", siteV3Response.Data[0].AccountId)
+	err := d.Set("account_id", strconv.Itoa(siteV3Response.Data[0].AccountId))
 	if err != nil {
 		log.Printf("[ERROR] Could not read Incapsula account after add v3 site to Account ID: %s, %s\n", accountID, err)
 		return diag.FromErr(err)
