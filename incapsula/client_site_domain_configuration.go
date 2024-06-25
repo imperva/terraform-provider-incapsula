@@ -32,13 +32,14 @@ type SiteDomainsExtraDetailsResponse struct {
 }
 
 type SiteDomainDetails struct {
-	Id                     int    `json:"id"`
-	SiteId                 int    `json:"siteId"`
-	Domain                 string `json:"domain"`
-	AutoDiscovered         bool   `json:"autoDiscovered"`
-	MainDomain             bool   `json:"mainDomain"`
-	Managed                bool   `json:"managed"`
-	CnameRedirectionRecord string `json:"cnameRedirectionRecord"`
+	Id                     int      `json:"id"`
+	SiteId                 int      `json:"siteId"`
+	Domain                 string   `json:"domain"`
+	AutoDiscovered         bool     `json:"autoDiscovered"`
+	MainDomain             bool     `json:"mainDomain"`
+	Managed                bool     `json:"managed"`
+	CnameRedirectionRecord string   `json:"cnameRedirectionRecord"`
+	ARecords               []string `json:"aRecords,omitempty"`
 	SubDomains             []struct {
 		Id                 int    `json:"id"`
 		SubDomain          string `json:"subDomain"`

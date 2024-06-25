@@ -56,7 +56,14 @@ func resourceSiteDomainConfiguration() *schema.Resource {
 							Description: "Status of the domain. Indicates if domain DNS is pointed to Imperva's CNAME. Options: BYPASSED, VERIFIED, PROTECTED, MISCONFIGURED",
 							Computed:    true,
 						},
-					}},
+						"a_records": {
+							Description: "A records for traffic redirection. Point your apex domain's DNS to this record in order to forward the traffic to Imperva",
+							Type:        schema.TypeSet,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Computed: true,
+						}}},
 			},
 		},
 		Timeouts: &schema.ResourceTimeout{
@@ -132,6 +139,9 @@ func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
 		domain["name"] = v.Domain
 		domain["id"] = v.Id
 		domain["status"] = v.Status
+		if v.ARecords != nil && len(v.ARecords) > 0 {
+			domain["a_records"] = v.ARecords
+		}
 		domains.Add(domain)
 	}
 	d.SetId(d.Get("site_id").(string))
