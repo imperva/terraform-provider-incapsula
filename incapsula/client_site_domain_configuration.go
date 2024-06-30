@@ -68,6 +68,10 @@ type DomainNameDto struct {
 	Name string `json:"name"`
 }
 
+type SingleDomainDto struct {
+	Domain string `json:"domain"`
+}
+
 type ApiErrorResponse struct {
 	ID     string         `json:"id"`
 	Status int            `json:"status"`
