@@ -1,3 +1,9 @@
+## 3.25.4 (Jul 02, 2024)
+
+IMPROVEMENTS:
+- Change outputs for SSL verification records so they always exist and have values when using CNAME verification. ([#439](https://github.com/imperva/terraform-provider-incapsula/pull/439))
+- Ato - support site id in import command ([#449](https://github.com/imperva/terraform-provider-incapsula/pull/449))
+
 ## 3.25.3 (June 13, 2024)
 
 IMPROVEMENTS:
