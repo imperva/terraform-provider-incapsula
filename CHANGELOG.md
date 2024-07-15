@@ -1,3 +1,9 @@
+## 3.25.5 (Jul 15, 2024)
+
+IMPROVEMENTS:
+- fix site ssl settings documentation ([#454](https://github.com/imperva/terraform-provider-incapsula/pull/454))
+
+
 ## 3.25.4 (Jul 03, 2024)
 
 IMPROVEMENTS:
