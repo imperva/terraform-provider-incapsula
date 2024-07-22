@@ -43,13 +43,20 @@ func resourcePolicy() *schema.Resource {
 				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
 					oldValue = strings.ReplaceAll(oldValue, " ", "")
 					oldValue = strings.ReplaceAll(oldValue, "\n", "")
-					oldValue = strings.ReplaceAll(oldValue, ",\"data\":{}", "")
-					oldValue = strings.ReplaceAll(oldValue, ",\"policyDataExceptions\":[]", "")
+					oldValue = strings.ReplaceAll(oldValue, "\"data\":{}", "")
+					oldValue = strings.ReplaceAll(oldValue, "\"policyDataExceptions\":[]", "")
+					oldValue = strings.ReplaceAll(oldValue, ",,", ",")
+					oldValue = strings.ReplaceAll(oldValue, ",}", "}")
+					oldValue = strings.ReplaceAll(oldValue, "{,", "{")
 
 					newValue = strings.ReplaceAll(newValue, " ", "")
 					newValue = strings.ReplaceAll(newValue, "\n", "")
-					newValue = strings.ReplaceAll(newValue, ",\"data\":{}", "")
-					newValue = strings.ReplaceAll(newValue, ",\"policyDataExceptions\":[]", "")
+					newValue = strings.ReplaceAll(newValue, "\"data\":{}", "")
+					newValue = strings.ReplaceAll(newValue, "\"policyDataExceptions\":[]", "")
+					newValue = strings.ReplaceAll(newValue, ",,", ",")
+					newValue = strings.ReplaceAll(newValue, ",}", "}")
+					newValue = strings.ReplaceAll(newValue, "{,", "{")
+
 					return suppressEquivalentJSONStringDiffs(k, oldValue, newValue, d)
 				},
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
