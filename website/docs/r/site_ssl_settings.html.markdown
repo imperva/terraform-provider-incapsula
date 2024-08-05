@@ -24,7 +24,8 @@ If you run the SSL settings resource from a site for which SSL is not yet enable
 
 ```hcl
 resource "incapsula_site_ssl_settings" "example"  {
-  site_id = incapsula_site.mysite.id
+  site_id       = incapsula_site.mysite.id
+  account_id    = 4321
   
   hsts { 
     is_enabled               = true
@@ -60,6 +61,7 @@ resource "incapsula_site_ssl_settings" "example"  {
 The following arguments are supported:
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
+* `account_id` - (Optional) Numeric identifier of the account in which the site is located.
 * `hsts` - (Optional): HTTP Strict Transport Security (HSTS) configuration settings for the site.
     - Type: `set` of `hsts_config` resource (defined below)
 * `inbound_tls_settings` - (Optional): Transport Layer Security (TLS) configuration settings for the site.
