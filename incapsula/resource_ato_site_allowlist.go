@@ -134,7 +134,11 @@ func resourceATOSiteAllowlistRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("id", "")
 	} else {
 		// Set ID for all other cases as siteId
-		d.SetId(strconv.Itoa(siteId))
+		if accountId == 0 {
+			d.SetId(strconv.Itoa(siteId))
+		} else {
+			d.SetId(fmt.Sprintf("%d/%d", accountId, siteId))
+		}
 	}
 
 	err = d.Set("allowlist", atoAllowlistEntry["allowlist"])

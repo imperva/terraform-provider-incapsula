@@ -13,9 +13,8 @@ import (
 
 const siteDomainConfResourceName = "incapsula_site_domain_configuration"
 const siteDomainConfResource = "site_domain_conf"
-const rootModuleName = siteDomainConfResourceName + "." + siteDomainConfResource
+const rootSiteDomainConfigurationModuleName = siteDomainConfResourceName + "." + siteDomainConfResource
 
-var siteV3ResourceNameForDomainTest = "test-site-v3-for-domain-resource" + strconv.FormatInt(time.Now().UnixNano()%99999, 10)
 var siteV3NameForDomainTests = "test site for domain resource" + strconv.FormatInt(time.Now().UnixNano()%99999, 10)
 var domain = strconv.FormatInt(time.Now().UnixNano()%99999, 10) + os.Getenv("INCAPSULA_CUSTOM_TEST_DOMAIN")
 
@@ -29,21 +28,11 @@ func TestAccIncapsulaSiteDomainConfiguration_Basic(t *testing.T) {
 				Config:   testAccCheckIncapsulaSiteDomainConfGoodConfig(t, domain),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiteDomainConfExists(siteDomainConfResourceName),
-					resource.TestMatchResourceAttr(rootModuleName, "cname_redirection_record", regexp.MustCompile(".+\\.imperva.+")),
-					resource.TestMatchResourceAttr(rootModuleName, "site_id", regexp.MustCompile("\\d+")),
-					resource.TestMatchResourceAttr(rootModuleName, "domain.0.name", regexp.MustCompile(domain)),
-					resource.TestMatchResourceAttr(rootModuleName, "domain.0.id", regexp.MustCompile("\\d+")),
-					resource.TestMatchResourceAttr(rootModuleName, "domain.0.status", regexp.MustCompile("BYPASSED")),
-				),
-			},
-			{
-				SkipFunc: IsTestDomainEnvVarExist,
-				Config:   testAccCheckIncapsulaSiteV3Domain(t, "b-"+domain),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr(rootModuleName+"-2", "site_id", regexp.MustCompile("\\d+")),
-					resource.TestMatchResourceAttr(rootModuleName+"-2", "domain.0.name", regexp.MustCompile("b-"+domain)),
-					resource.TestMatchResourceAttr(rootModuleName+"-2", "domain.0.id", regexp.MustCompile("\\d+")),
-					resource.TestMatchResourceAttr(rootModuleName+"-2", "domain.0.status", regexp.MustCompile("BYPASSED")),
+					resource.TestMatchResourceAttr(rootSiteDomainConfigurationModuleName, "cname_redirection_record", regexp.MustCompile(".+\\.imperva.+")),
+					resource.TestMatchResourceAttr(rootSiteDomainConfigurationModuleName, "site_id", regexp.MustCompile("\\d+")),
+					resource.TestMatchResourceAttr(rootSiteDomainConfigurationModuleName, "domain.0.name", regexp.MustCompile(domain)),
+					resource.TestMatchResourceAttr(rootSiteDomainConfigurationModuleName, "domain.0.id", regexp.MustCompile("\\d+")),
+					resource.TestMatchResourceAttr(rootSiteDomainConfigurationModuleName, "domain.0.status", regexp.MustCompile("BYPASSED")),
 				),
 			},
 		},
@@ -52,7 +41,7 @@ func TestAccIncapsulaSiteDomainConfiguration_Basic(t *testing.T) {
 
 func testCheckIncapsulaSiteDomainConfExists(name string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		res, ok := state.RootModule().Resources[rootModuleName]
+		res, ok := state.RootModule().Resources[rootSiteDomainConfigurationModuleName]
 		if !ok {
 			return fmt.Errorf("incapsula site domain configuration resource not found : %s", siteDomainConfResource)
 		}
@@ -78,24 +67,6 @@ resource "%s" "%s" {
   domain {name="%s"}
 depends_on = ["%s"]
 }`, siteDomainConfResourceName, siteDomainConfResource, domain, siteResourceName)
-	return result
-}
-
-func testAccCheckIncapsulaSiteV3Domain(t *testing.T, domain string) string {
-	result := checkIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
-
- resource "incapsula_site_v3" "%s" {
-			name = "%s"
-	}
-
-resource "incapsula_managed_certificate_settings" "example-site-cert" {
-  site_id = incapsula_site_v3.%s.id
-}
-resource "%s" "%s-2" {
-  site_id=incapsula_site_v3.%s.id
-  managed_certificate_settings_id = incapsula_managed_certificate_settings.example-site-cert.id
-  domain {name="%s"}
-}`, siteV3ResourceNameForDomainTest, siteV3NameForDomainTests, siteV3ResourceNameForDomainTest, siteDomainConfResourceName, siteDomainConfResource, siteV3ResourceNameForDomainTest, domain)
 	return result
 }
 

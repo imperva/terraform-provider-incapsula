@@ -49,7 +49,11 @@ For Each domain the following data will be stored:
 
 ## Import
 
-Site Domains Configurations cannot be imported.
+Site domain configuration can be imported using the site_id, e.g.:
+
+```
+$ terraform import incapsula_site_domain_configuration.example_incapsula_site_domain_configuration site_id
+```
 
 ## Limitations
 ### Auto-discovered domains: 
