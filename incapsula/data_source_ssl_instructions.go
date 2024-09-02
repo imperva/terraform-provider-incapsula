@@ -24,10 +24,13 @@ func dataSourceSSLInstructions() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"site_domain_configuration_id": {
-				Description: "Numeric identifier of the site domain configurations to operate on.",
-				Type:        schema.TypeInt,
+			"domain_ids": {
+				Description: "domain ids.",
+				Type:        schema.TypeSet,
 				Required:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"managed_certificate_settings_id": {
 				Description: "Numeric identifier of the site certificate id.",
