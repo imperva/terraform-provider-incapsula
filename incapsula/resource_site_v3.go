@@ -74,6 +74,7 @@ func resourceSiteV3Add(ctx context.Context, d *schema.ResourceData, m interface{
 	siteV3Request := SiteV3Request{}
 	siteV3Request.SiteType = d.Get("type").(string)
 	siteV3Request.Name = d.Get("name").(string)
+	siteV3Request.AccountId, _ = strconv.Atoi(accountID)
 	siteV3Response, diags := client.AddV3Site(&siteV3Request, accountID)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] failed to add v3 site to Account ID: %s, %v\n", accountID, diags)
@@ -110,6 +111,7 @@ func resourceSiteV3Update(ctx context.Context, d *schema.ResourceData, m interfa
 	siteV3Request := SiteV3Request{}
 	siteV3Request.Name = d.Get("name").(string)
 	siteV3Request.Id, _ = strconv.Atoi(d.Get("site_id").(string))
+	siteV3Request.AccountId, _ = strconv.Atoi(accountID)
 	siteV3Response, diags := client.UpdateV3Site(&siteV3Request, accountID)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] failed to update v3 site to Account ID: %s, %v\n", accountID, diags)
@@ -149,6 +151,7 @@ func resourceSiteV3Read(ctx context.Context, d *schema.ResourceData, m interface
 	siteV3Request.SiteType = d.Get("type").(string)
 	siteV3Request.Name = d.Get("name").(string)
 	siteV3Request.Id, _ = strconv.Atoi(d.Get("site_id").(string))
+	siteV3Request.AccountId, _ = strconv.Atoi(accountID)
 	siteV3Response, diags := client.GetV3Site(&siteV3Request, accountID)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] failed to get v3 site of Account ID: %s, %v\n", accountID, diags)
@@ -209,6 +212,7 @@ func resourceSiteV3Delete(ctx context.Context, d *schema.ResourceData, m interfa
 	siteV3Request.SiteType = d.Get("type").(string)
 	siteV3Request.Name = d.Get("name").(string)
 	siteV3Request.Id, _ = strconv.Atoi(d.Get("site_id").(string))
+	siteV3Request.AccountId, _ = strconv.Atoi(accountID)
 	siteV3Response, diags := client.DeleteV3Site(&siteV3Request, accountID)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] failed to delete v3 site of Account ID: %s, %v\n", accountID, diags)
