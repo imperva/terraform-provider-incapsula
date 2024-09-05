@@ -176,6 +176,9 @@ const UpdateAccountUser = "update_account_user"
 const DeleteAccountUser = "delete_account_user"
 
 const UpdateDomain = "update_domain"
+const CreateDomain = "create_domain"
+const DeleteDomain = "delete_domain"
+
 const ReadDomain = "read_domain"
 const ReadDomainExtraDetails = "read_domain_extra_details"
 

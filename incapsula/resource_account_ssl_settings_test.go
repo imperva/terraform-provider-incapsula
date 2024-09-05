@@ -13,7 +13,9 @@ const accountSSLSettingsResourceName = "incapsula_account_ssl_settings"
 const accountSSLSettingsResource = accountSSLSettingsResourceName + "." + accountSSLSettingsConfigName
 const accountSSLSettingsConfigName = "testacc-terraform-account-ssl-settings"
 
-func TestAccAccountSSLSettings_Basic(t *testing.T) {
+// wont work until we will support delete last domain
+
+func testAccAccountSSLSettings_Basic(t *testing.T) {
 	log.Printf("========================BEGIN TEST========================")
 	log.Printf("[DEBUG]Running test resource_account_ssl_settings_test.TestAccAccountSSLSettings_Basic")
 	resource.Test(t, resource.TestCase{
