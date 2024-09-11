@@ -19,7 +19,8 @@ func TestUpdateApiSecuritySiteConfigBadConnection(t *testing.T) {
 	siteID := 42
 
 	payload := ApiSecuritySiteConfigPostPayload{
-		ApiOnlySite: true,
+		ApiOnlySite:      true,
+		DiscoveryEnabled: true,
 		IsAutomaticDiscoveryApiIntegrationEnabled: false,
 		NonApiRequestViolationAction:              "IGNORE",
 		ViolationActions: ViolationActions{
@@ -65,7 +66,8 @@ func TestUpdateApiSecuritySiteConfigBadJSON(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 
 	payload := ApiSecuritySiteConfigPostPayload{
-		ApiOnlySite: true,
+		ApiOnlySite:      true,
+		DiscoveryEnabled: true,
 		IsAutomaticDiscoveryApiIntegrationEnabled: false,
 		NonApiRequestViolationAction:              "IGNORE",
 		ViolationActions: ViolationActions{
@@ -151,7 +153,8 @@ func TestUpdateApiSecuritySiteConfigValidSiteConfig(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	payload := ApiSecuritySiteConfigPostPayload{
-		ApiOnlySite: true,
+		ApiOnlySite:      true,
+		DiscoveryEnabled: true,
 		IsAutomaticDiscoveryApiIntegrationEnabled: false,
 		NonApiRequestViolationAction:              "IGNORE",
 		ViolationActions: ViolationActions{
