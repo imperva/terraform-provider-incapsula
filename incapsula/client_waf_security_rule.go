@@ -23,7 +23,7 @@ const botAccessControlRuleID = "api.threats.bot_access_control"
 const customRuleDefaultActionID = "api.threats.customRule"
 
 // ConfigureWAFSecurityRule adds an WAF rule
-func (c *Client) ConfigureWAFSecurityRule(siteID int, ruleID, securityRuleAction, activationMode, ddosTrafficThreshold, blockBadBots, challengeSuspectedBots string) (*SiteStatusResponse, error) {
+func (c *Client) ConfigureWAFSecurityRule(siteID int, ruleID, securityRuleAction, activationMode, ddosTrafficThreshold, unknownClientsChallenge, blockNonEssentialBots, blockBadBots, challengeSuspectedBots string) (*SiteStatusResponse, error) {
 	// Base URL values
 	values := url.Values{
 		"site_id": {strconv.Itoa(siteID)},
@@ -37,7 +37,14 @@ func (c *Client) ConfigureWAFSecurityRule(siteID int, ruleID, securityRuleAction
 	} else if ruleID == ddosRuleID {
 		values.Add("activation_mode", activationMode)
 		values.Add("ddos_traffic_threshold", ddosTrafficThreshold)
-		log.Printf("[INFO] Configuring Incapsula WAF rule id (%s) with activation mode (%s) and DDoS traffic threshold (%s) for site id (%d)\n", ruleID, activationMode, ddosTrafficThreshold, siteID)
+
+		if unknownClientsChallenge != "" {
+			values.Add("unknown_clients_challenge", unknownClientsChallenge)
+		}
+		if blockNonEssentialBots != "" {
+			values.Add("block_non_essential_bots", blockNonEssentialBots)
+		}
+		log.Printf("[INFO] Configuring Incapsula WAF rule id (%s) with activation mode (%s), DDoS traffic threshold (%s), unknown clients challenge (%s) and block non essential bots (%s) for site id (%d)\n", ruleID, activationMode, ddosTrafficThreshold, unknownClientsChallenge, blockNonEssentialBots, siteID)
 	} else if ruleID == botAccessControlRuleID {
 		values.Add("block_bad_bots", blockBadBots)
 		values.Add("challenge_suspected_bots", challengeSuspectedBots)
