@@ -1,3 +1,9 @@
+## 3.25.6 (Sep 19, 2024)
+
+IMPROVEMENTS:
+- Add adpative DDoS activation mode to WAF security rule ([#456](https://github.com/imperva/terraform-provider-incapsula/pull/456))
+
+
 ## 3.25.5 (Jul 15, 2024)
 
 IMPROVEMENTS:
