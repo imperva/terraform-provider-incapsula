@@ -231,6 +231,5 @@ func resourceSiteV3Delete(ctx context.Context, d *schema.ResourceData, m interfa
 		log.Printf("[ERROR] Could not read Incapsula site id after delete v3 site of Account ID: %s, %s\n", accountID, err)
 		return diag.FromErr(err)
 	}
-	resourceSiteV3Read(ctx, d, m)
-	return diags
+	return nil
 }

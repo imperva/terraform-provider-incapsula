@@ -12,9 +12,9 @@ import (
 func resourceSiteDomainConfiguration() *schema.Resource {
 	return &schema.Resource{
 		Read:   resourceDomainRead,
-		Create: resourceDomainUpdate,
+		Create: resourceDomainsUpdate,
 		Delete: resourceDomainDelete,
-		Update: resourceDomainUpdate,
+		Update: resourceDomainsUpdate,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				d.Set("site_id", d.Id())
@@ -98,7 +98,7 @@ func populateFromResourceToDTO(d *schema.ResourceData) []SiteDomainDetails {
 	return siteDomainDetails
 }
 
-func resourceDomainUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceDomainsUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteID := d.Get("site_id").(string)
 	siteDomainDetails := populateFromResourceToDTO(d)

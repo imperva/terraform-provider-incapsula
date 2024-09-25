@@ -21,7 +21,7 @@ func TestIncapsulaSSL_Instructions(t *testing.T) {
 			{
 				Config: testAccCheckIncapsulaSiteV3Domain(t, "b-"+domain),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(dataSourceName, "site_domain_configuration_id"),
+					resource.TestCheckResourceAttrSet(dataSourceName, "domain_ids"),
 					resource.TestCheckResourceAttr(dataSourceName, "instructions.#", "1"),
 					resource.TestCheckResourceAttr(dataSourceName, "instructions.0.type", "CNAME"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "instructions.0.name"),
@@ -47,18 +47,20 @@ func testAccCheckIncapsulaSiteV3Domain(t *testing.T, domain string) string {
 resource "incapsula_managed_certificate_settings" "example-site-cert" {
   site_id = incapsula_site_v3.%s.id
 }
-resource "%s" "%s-2" {
-  site_id=incapsula_site_v3.%s.id
-  domain {name="%s"}
+
+
+resource "incapsula_domain" "domain1" {
+    site_id = incapsula_site_v3.%s.id
+    domain="%s"
 }
 
 data "incapsula_ssl_instructions" "%s" {
-site_domain_configuration_id = %s-2.site_id
+domain_ids = toset([incapsula_domain.domain1.id])
 managed_certificate_settings_id = incapsula_managed_certificate_settings.example-site-cert.id
 site_id=incapsula_site_v3.%s.id
 
 }
-`, siteV3ResourceNameForDomainTest, siteV3NameForDomainTests, siteV3ResourceNameForDomainTest, siteDomainConfResourceName, siteDomainConfResource, siteV3ResourceNameForDomainTest, domain,
-		incapsulaSslInstructionsDataSource, rootSiteDomainConfigurationModuleName, siteV3ResourceNameForDomainTest)
+`, siteV3ResourceNameForDomainTest, siteV3NameForDomainTests, siteV3ResourceNameForDomainTest, siteV3ResourceNameForDomainTest, domain,
+		incapsulaSslInstructionsDataSource, siteV3ResourceNameForDomainTest)
 	return result
 }
