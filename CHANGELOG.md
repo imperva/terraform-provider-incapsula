@@ -1,3 +1,10 @@
+## 3.26.0 (Oct 1, 2024)
+
+IMPROVEMENTS:
+- Adding unknownClientsChallenge and blockNonEssentialBots to the waf security ddos rules ([#459](https://github.com/imperva/terraform-provider-incapsula/pull/459))
+- Adding validation in incapsula_security_rule_exception for url_patterns <> url ([#461](https://github.com/imperva/terraform-provider-incapsula/pull/461))
+
+
 ## 3.25.6 (Sep 19, 2024)
 
 IMPROVEMENTS:
