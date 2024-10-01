@@ -10,6 +10,7 @@ description: |-
 
 Provides an Incapsula Domain resource for V3 Sites.
 The provider will add/delete domains to/from an Imperva site, based on this resource.
+These domains are protected by Imperva and share the website settings and configuration of the onboarded website. Legitimate traffic for all verified domains is allowed.
 
 ## Example Usage
 
