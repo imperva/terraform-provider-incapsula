@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 // Endpoints (unexported consts)
@@ -47,6 +48,11 @@ func (c *Client) AddSecurityRuleException(siteID int, ruleID, clientAppTypes, cl
 	}
 
 	log.Printf("[INFO] Adding new security rule exception for rule_id (%s) for site id (%d)\n", ruleID, siteID)
+
+	err := validateListSizes(urlPatterns, urls)
+	if err != nil {
+		return nil, err
+	}
 
 	// Check to see if ruleID is correct, then iterate rule specific parameters
 	if ruleParams, ok := securityRuleExceptionParamMapping[ruleID]; ok {
@@ -116,6 +122,11 @@ func (c *Client) EditSecurityRuleException(siteID int, ruleID, clientAppTypes, c
 	}
 
 	log.Printf("[INFO] Updating existing security rule exception for rule_id (%s) whitelist_id (%s) for site_id (%d)\n", ruleID, whitelistID, siteID)
+
+	err := validateListSizes(urlPatterns, urls)
+	if err != nil {
+		return nil, err
+	}
 
 	// Check to see if ruleID is correct, then iterate rule specific parameters
 	if ruleParams, ok := securityRuleExceptionParamMapping[ruleID]; ok {
@@ -269,6 +280,17 @@ func (c *Client) DeleteSecurityRuleException(siteID int, ruleID, whitelistID str
 	// Look at the response status code from Incapsula
 	if exceptionDeleteResponse.Res != 0 {
 		return fmt.Errorf("Error from Incapsula service when deleting security rule exception for rule_id (%s) and site_id (%d): %s", ruleID, siteID, string(responseBody))
+	}
+
+	return nil
+}
+
+func validateListSizes(urlPatterns, urls string) error {
+	urlPatternsList := strings.Split(urlPatterns, ",")
+	urlsList := strings.Split(urls, ",")
+
+	if len(urlPatternsList) != len(urlsList) {
+		return fmt.Errorf("error: url_patterns and urls lists do not have the same number of elements")
 	}
 
 	return nil
