@@ -219,7 +219,7 @@ func (c *Client) GetV3Site(siteV3Request *SiteV3Request, accountId string) (*Sit
 		})
 		return nil, diags
 	}
-	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, updateUrl, siteV3RequestJson, nil, UpdateV3Site)
+	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, updateUrl, siteV3RequestJson, map[string]string{"caid": accountId}, UpdateV3Site)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,

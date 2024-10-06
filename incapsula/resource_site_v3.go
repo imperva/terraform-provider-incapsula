@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
+	"strings"
 )
 
 func resourceSiteV3() *schema.Resource {
@@ -16,7 +17,30 @@ func resourceSiteV3() *schema.Resource {
 		UpdateContext: resourceSiteV3Update,
 		DeleteContext: resourceSiteV3Delete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+
+				idSlice := strings.Split(d.Id(), "/")
+				log.Printf("[DEBUG] Starting to import domain. Parameters: %s\n", d.Id())
+
+				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id or site_id/domain_id", d.Id())
+				}
+
+				err := d.Set("account_id", idSlice[0])
+
+				if err != nil {
+					return nil, err
+				}
+
+				_, err = strconv.Atoi(idSlice[1])
+				if err != nil {
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id or account_id/site_id", d.Id())
+				}
+
+				d.SetId(idSlice[1])
+
+				return []*schema.ResourceData{d}, nil
+			},
 		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
