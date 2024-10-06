@@ -77,7 +77,9 @@ resource "incapsula_waf_security_rule" "example-waf-ddos-rule" {
   site_id                = incapsula_site.example-site.id
   rule_id                = "api.threats.ddos"
   activation_mode        = "api.threats.ddos.activation_mode.on"
-  ddos_traffic_threshold = "5000"                               
+  ddos_traffic_threshold = "5000"
+  unknown_clients_challenge = "none"
+  block_non_essential_bots  = "false"
 }
 
 ####################################################################

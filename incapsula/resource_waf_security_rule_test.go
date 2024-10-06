@@ -239,6 +239,8 @@ resource "incapsula_waf_security_rule" "example-waf-ddos-rule" {
   rule_id = "api.threats.ddos"
   activation_mode = "api.threats.ddos.activation_mode.on"
   ddos_traffic_threshold = "5000"
+  unknown_clients_challenge = "none"
+  block_non_essential_bots  = "false"
 }`, certificateName, siteResourceName,
 	)
 }
@@ -271,6 +273,8 @@ resource "incapsula_waf_security_rule" "example-waf-ddos-rule" {
   rule_id = "api.threats.ddos"
   activation_mode = "bad_activation_mode"
   ddos_traffic_threshold = "1234"
+  unknown_clients_challenge = "none"
+  block_non_essential_bots  = "false"
 }`, certificateName, siteResourceName,
 	)
 }

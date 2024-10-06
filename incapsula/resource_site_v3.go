@@ -59,6 +59,7 @@ func resourceSiteV3Add(ctx context.Context, d *schema.ResourceData, m interface{
 	siteV3Request := SiteV3Request{}
 	siteV3Request.SiteType = d.Get("type").(string)
 	siteV3Request.Name = d.Get("name").(string)
+	siteV3Request.AccountId, _ = strconv.Atoi(accountID)
 	siteV3Response, diags := client.AddV3Site(&siteV3Request, accountID)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] failed to add v3 site to Account ID: %s, %v\n", accountID, diags)

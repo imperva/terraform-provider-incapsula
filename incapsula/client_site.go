@@ -65,16 +65,18 @@ type SiteStatusResponse struct {
 	Security                             struct {
 		Waf struct {
 			Rules []struct {
-				Action                 string `json:"action,omitempty"`
-				ActionText             string `json:"action_text,omitempty"`
-				ID                     string `json:"id"`
-				Name                   string `json:"name"`
-				BlockBadBots           bool   `json:"block_bad_bots,omitempty"`
-				ChallengeSuspectedBots bool   `json:"challenge_suspected_bots,omitempty"`
-				ActivationMode         string `json:"activation_mode,omitempty"`
-				ActivationModeText     string `json:"activation_mode_text,omitempty"`
-				DdosTrafficThreshold   int    `json:"ddos_traffic_threshold,omitempty"`
-				Exceptions             []struct {
+				Action                  string `json:"action,omitempty"`
+				ActionText              string `json:"action_text,omitempty"`
+				ID                      string `json:"id"`
+				Name                    string `json:"name"`
+				BlockBadBots            bool   `json:"block_bad_bots,omitempty"`
+				ChallengeSuspectedBots  bool   `json:"challenge_suspected_bots,omitempty"`
+				ActivationMode          string `json:"activation_mode,omitempty"`
+				ActivationModeText      string `json:"activation_mode_text,omitempty"`
+				DdosTrafficThreshold    int    `json:"ddos_traffic_threshold,omitempty"`
+				UnknownClientsChallenge string `json:"unknown_clients_challenge,omitempty"`
+				BlockNonEssentialBots   bool   `json:"block_non_essential_bots,omitempty"`
+				Exceptions              []struct {
 					Values []struct {
 						ID   string   `json:"id,omitempty"`
 						Name string   `json:"name,omitempty"`
