@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
+	"strings"
 )
 
 func resourceSiteV3() *schema.Resource {
@@ -16,26 +17,34 @@ func resourceSiteV3() *schema.Resource {
 		UpdateContext: resourceSiteV3Update,
 		DeleteContext: resourceSiteV3Delete,
 		Importer: &schema.ResourceImporter{
-			StateContext: func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-				siteId := d.Id()
+			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 
-				err := d.Set("site_id", siteId)
-				if err != nil {
-					return nil, fmt.Errorf("[ERROR] Could not read site ID")
+				idSlice := strings.Split(d.Id(), "/")
+				log.Printf("[DEBUG] Starting to import site v3. Parameters: %s\n", d.Id())
+
+				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id or account_id/site_id", d.Id())
 				}
-				log.Printf("[DEBUG] site v3 resource: Import  Site Config JSON for Site ID %s", siteId)
+
+				err := d.Set("account_id", idSlice[0])
+
+				if err != nil {
+					return nil, err
+				}
+
+				_, err = strconv.Atoi(idSlice[1])
+				if err != nil {
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id or account_id/site_id", d.Id())
+				}
+
+				d.SetId(idSlice[1])
+
 				return []*schema.ResourceData{d}, nil
 			},
 		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Description: "Numeric identifier of the account to operate on.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-			},
-			"site_id": {
-				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
@@ -74,6 +83,7 @@ func resourceSiteV3Add(ctx context.Context, d *schema.ResourceData, m interface{
 	siteV3Request := SiteV3Request{}
 	siteV3Request.SiteType = d.Get("type").(string)
 	siteV3Request.Name = d.Get("name").(string)
+	siteV3Request.AccountId, _ = strconv.Atoi(accountID)
 	siteV3Response, diags := client.AddV3Site(&siteV3Request, accountID)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] failed to add v3 site to Account ID: %s, %v\n", accountID, diags)
@@ -92,11 +102,8 @@ func resourceSiteV3Add(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.FromErr(err)
 	}
 	siteId := siteV3Response.Data[0].Id
-	err = d.Set("site_id", strconv.Itoa(siteId))
-	if err != nil {
-		log.Printf("[ERROR] Could not read Incapsula site id after add v3 site to Account ID: %s, %s\n", accountID, err)
-		return diag.FromErr(err)
-	}
+	d.SetId(strconv.Itoa(siteId))
+
 	resourceSiteV3Read(ctx, d, m)
 	return diags
 }
@@ -109,7 +116,8 @@ func resourceSiteV3Update(ctx context.Context, d *schema.ResourceData, m interfa
 	log.Printf("[INFO] adding v3 site to Account ID: %s to %v", accountID, d)
 	siteV3Request := SiteV3Request{}
 	siteV3Request.Name = d.Get("name").(string)
-	siteV3Request.Id, _ = strconv.Atoi(d.Get("site_id").(string))
+	siteV3Request.AccountId, _ = strconv.Atoi(accountID)
+	siteV3Request.Id, _ = strconv.Atoi(d.Id())
 	siteV3Response, diags := client.UpdateV3Site(&siteV3Request, accountID)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] failed to update v3 site to Account ID: %s, %v\n", accountID, diags)
@@ -129,11 +137,8 @@ func resourceSiteV3Update(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 	siteId := siteV3Response.Data[0].Id
-	err = d.Set("site_id", strconv.Itoa(siteId))
-	if err != nil {
-		log.Printf("[ERROR] Could not read Incapsula site id after update v3 site to Account ID: %s, %s\n", accountID, err)
-		return diag.FromErr(err)
-	}
+	d.SetId(strconv.Itoa(siteId))
+
 	resourceSiteV3Read(ctx, d, m)
 	return diags
 }
@@ -148,7 +153,8 @@ func resourceSiteV3Read(ctx context.Context, d *schema.ResourceData, m interface
 	siteV3Request := SiteV3Request{}
 	siteV3Request.SiteType = d.Get("type").(string)
 	siteV3Request.Name = d.Get("name").(string)
-	siteV3Request.Id, _ = strconv.Atoi(d.Get("site_id").(string))
+	siteV3Request.AccountId, _ = strconv.Atoi(accountID)
+	siteV3Request.Id, _ = strconv.Atoi(d.Id())
 	siteV3Response, diags := client.GetV3Site(&siteV3Request, accountID)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] failed to get v3 site of Account ID: %s, %v\n", accountID, diags)
@@ -166,11 +172,8 @@ func resourceSiteV3Read(ctx context.Context, d *schema.ResourceData, m interface
 		log.Printf("[ERROR] Could not read Incapsula account after get v3 site of Account ID: %s, %s\n", accountID, err)
 		return diag.FromErr(err)
 	}
-	err = d.Set("site_id", strconv.Itoa(siteV3Response.Data[0].Id))
-	if err != nil {
-		log.Printf("[ERROR] Could not read Incapsula site id after get v3 site of Account ID: %s, %s\n", accountID, err)
-		return diag.FromErr(err)
-	}
+	d.SetId(strconv.Itoa(siteV3Response.Data[0].Id))
+
 	err = d.Set("name", siteV3Response.Data[0].Name)
 	if err != nil {
 		log.Printf("[ERROR] Could not read Incapsula name after get v3 site of Account ID: %s, %s\n", accountID, err)
@@ -208,7 +211,8 @@ func resourceSiteV3Delete(ctx context.Context, d *schema.ResourceData, m interfa
 	siteV3Request := SiteV3Request{}
 	siteV3Request.SiteType = d.Get("type").(string)
 	siteV3Request.Name = d.Get("name").(string)
-	siteV3Request.Id, _ = strconv.Atoi(d.Get("site_id").(string))
+	siteV3Request.AccountId, _ = strconv.Atoi(accountID)
+	siteV3Request.Id, _ = strconv.Atoi(d.Id())
 	siteV3Response, diags := client.DeleteV3Site(&siteV3Request, accountID)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] failed to delete v3 site of Account ID: %s, %v\n", accountID, diags)
@@ -226,10 +230,9 @@ func resourceSiteV3Delete(ctx context.Context, d *schema.ResourceData, m interfa
 		log.Printf("[ERROR] Could not read Incapsula account after delete v3 site of Account ID: %s, %s\n", accountID, err)
 		return diag.FromErr(err)
 	}
-	err = d.Set("site_id", strconv.Itoa(siteV3Response.Data[0].Id))
-	if err != nil {
-		log.Printf("[ERROR] Could not read Incapsula site id after delete v3 site of Account ID: %s, %s\n", accountID, err)
-		return diag.FromErr(err)
-	}
+
+	siteId := strconv.Itoa(siteV3Response.Data[0].Id)
+	d.SetId(siteId)
+
 	return nil
 }

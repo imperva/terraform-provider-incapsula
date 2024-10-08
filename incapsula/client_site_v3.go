@@ -32,7 +32,7 @@ func (c *Client) AddV3Site(siteV3Request *SiteV3Request, accountId string) (*Sit
 	var diags diag.Diagnostics
 	log.Printf("[INFO] adding v3 site to: %v ", siteV3Request)
 
-	updateUrl := getSiteV3Url("", "", c.config.BaseURLAPI)
+	updateUrl := getSiteV3Url(accountId, "", c.config.BaseURLAPI)
 	siteV3RequestJson, err := json.Marshal(siteV3Request)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -91,7 +91,7 @@ func (c *Client) UpdateV3Site(siteV3Request *SiteV3Request, accountId string) (*
 	var diags diag.Diagnostics
 	log.Printf("[INFO] updating v3 site %d to: %v ", siteV3Request.Id, siteV3Request)
 
-	updateUrl := getSiteV3Url("", "/"+strconv.Itoa(siteV3Request.Id), c.config.BaseURLAPI)
+	updateUrl := getSiteV3Url(accountId, "/"+strconv.Itoa(siteV3Request.Id), c.config.BaseURLAPI)
 	siteV3RequestJson, err := json.Marshal(siteV3Request)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -150,7 +150,7 @@ func (c *Client) DeleteV3Site(siteV3Request *SiteV3Request, accountId string) (*
 	var diags diag.Diagnostics
 	log.Printf("[INFO] deleting v3 site %d to: %v ", siteV3Request.Id, siteV3Request)
 
-	updateUrl := getSiteV3Url("", "/"+strconv.Itoa(siteV3Request.Id), c.config.BaseURLAPI)
+	updateUrl := getSiteV3Url(accountId, "/"+strconv.Itoa(siteV3Request.Id), c.config.BaseURLAPI)
 	siteV3RequestJson, err := json.Marshal(siteV3Request)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -209,7 +209,7 @@ func (c *Client) GetV3Site(siteV3Request *SiteV3Request, accountId string) (*Sit
 	var diags diag.Diagnostics
 	log.Printf("[INFO] getting v3 site %d to: %v ", siteV3Request.Id, siteV3Request)
 
-	updateUrl := getSiteV3Url("", "/"+strconv.Itoa(siteV3Request.Id), c.config.BaseURLAPI)
+	updateUrl := getSiteV3Url(accountId, "/"+strconv.Itoa(siteV3Request.Id), c.config.BaseURLAPI)
 	siteV3RequestJson, err := json.Marshal(siteV3Request)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -219,7 +219,7 @@ func (c *Client) GetV3Site(siteV3Request *SiteV3Request, accountId string) (*Sit
 		})
 		return nil, diags
 	}
-	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, updateUrl, siteV3RequestJson, nil, UpdateV3Site)
+	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, updateUrl, siteV3RequestJson, map[string]string{"caid": accountId}, UpdateV3Site)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,

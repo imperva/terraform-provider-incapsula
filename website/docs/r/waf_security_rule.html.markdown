@@ -31,6 +31,8 @@ resource "incapsula_waf_security_rule" "example-waf-ddos-rule" {
   rule_id = "api.threats.ddos"
   activation_mode = "api.threats.ddos.activation_mode.on" # (api.threats.ddos.activation_mode.auto | api.threats.ddos.activation_mode.off | api.threats.ddos.activation_mode.on)
   ddos_traffic_threshold = "5000" # valid values are 10, 20, 50, 100, 200, 500, 750, 1000, 2000, 3000, 4000, 5000
+  unknown_clients_challenge = "none" # valid values are none, cookies, javascript, captcha (optional, default: cookies)
+  block_non_essential_bots  = "false" # true | false (optional, default: false)
 }
 ```
 
@@ -43,6 +45,8 @@ The following arguments are supported:
 * `security_rule_action` - (Optional) The action that should be taken when a threat is detected, for example: api.threats.action.block_ip. See above examples for `rule_id` and `action` combinations.
 * `activation_mode` - (Optional) The mode of activation for ddos on a site. Possible values: api.threats.ddos.activation_mode.off, api.threats.ddos.activation_mode.auto, api.threats.ddos.activation_mode.on.
 * `ddos_traffic_threshold` - (Optional) Consider site to be under DDoS if the request rate is above this threshold. The valid values are 10, 20, 50, 100, 200, 500, 750, 1000, 2000, 3000, 4000, 5000.
+* `unknown_clients_challenge` - (Optional) Defines a method used for challenging suspicious bots. This argument is valid for the rule_id api.threats.ddos argument value only. If this argument is not provided, then the value stays as it is in the system. Possible values: none, cookies, javascript, captcha
+* `block_non_essential_bots` - (Optional) If non-essential bots (bots determined to be legitimate by Imperva's client classification mechanism, such as site helpers and search engines) should be blocked or not. This argument is valid for the rule_id api.threats.ddos argument value only. If this argument is not provided, then the value stays as it is in the system. Possible values: true, false
 * `block_bad_bots` - (Optional) Whether or not to block bad bots. Possible values: true, false.
 * `challenge_suspected_bots` - (Optional) Whether or not to send a challenge to clients that are suspected to be bad bots (CAPTCHA for example). Possible values: true, false.
 

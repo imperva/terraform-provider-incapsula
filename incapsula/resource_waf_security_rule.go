@@ -2,6 +2,7 @@ package incapsula
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
 	"strings"
@@ -18,6 +19,8 @@ const remoteFileInclusionRuleIDDefaultAction = "api.threats.action.block_request
 const sqlInjectionRuleIDDefaultAction = "api.threats.action.block_request"
 const ddosRuleIDDefaultActivationMode = "api.threats.ddos.activation_mode.auto"
 const ddosRuleIDDefaultDDOSTrafficThreshold = "1000"
+const ddosRuleIDDefaultDDOSUnknownClientsChallenge = "cookies"
+const ddosRuleIDDefaultDDOSBlockNonEssentialBots = "false"
 const botAccessControlBlockBadBotsDefaultAction = "true"
 const botAccessControlChallengeSuspectedBotsDefaultAction = "false"
 
@@ -79,6 +82,20 @@ func resourceWAFSecurityRule() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"unknown_clients_challenge": {
+				Description:  "Defines a method used for challenging suspicious bots. Possible values: none, cookies, javascript, captcha",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringInSlice([]string{"none", "cookies", "javascript", "captcha"}, false),
+			},
+			"block_non_essential_bots": {
+				Description:  "If non-essential bots should be blocked or not. Possible values: true, false",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringInSlice([]string{"true", "false"}, false),
+			},
 
 			// Required for rule_id: api.threats.bot_access_control
 			"block_bad_bots": {
@@ -111,6 +128,8 @@ func resourceWAFSecurityRuleCreate(d *schema.ResourceData, m interface{}) error 
 			"",
 			"",
 			"",
+			"",
+			"",
 		)
 		if err != nil {
 			log.Printf("[ERROR] Could not create Incapsula WAF Rule rule_id (%s) and security_rule_action (%s) on site_id (%d), %s\n", ruleID, d.Get("security_rule_action").(string), d.Get("site_id").(int), err)
@@ -123,17 +142,21 @@ func resourceWAFSecurityRuleCreate(d *schema.ResourceData, m interface{}) error 
 			"",
 			d.Get("activation_mode").(string),
 			d.Get("ddos_traffic_threshold").(string),
+			d.Get("unknown_clients_challenge").(string),
+			d.Get("block_non_essential_bots").(string),
 			"",
 			"",
 		)
 		if err != nil {
-			log.Printf("[ERROR] Could not create Incapsula WAF Rule rule_id (%s) with activation_mode (%s) and ddos_traffic_threshold (%s) on site_id (%d), %s\n", ruleID, d.Get("activation_mode").(string), d.Get("ddos_traffic_threshold").(string), d.Get("site_id").(int), err)
+			log.Printf("[ERROR] Could not create Incapsula WAF Rule rule_id (%s) with activation_mode (%s), ddos_traffic_threshold (%s), unknown_clients_challenge (%s) and block_non_essential_bots (%s) on site_id (%d), %s\n", ruleID, d.Get("activation_mode").(string), d.Get("ddos_traffic_threshold").(string), d.Get("unknown_clients_challenge").(string), d.Get("block_non_essential_bots").(string), d.Get("site_id").(int), err)
 			return err
 		}
 	} else if ruleID == botAccessControlRuleID {
 		_, err := client.ConfigureWAFSecurityRule(
 			d.Get("site_id").(int),
 			ruleID,
+			"",
+			"",
 			"",
 			"",
 			"",
@@ -197,6 +220,8 @@ func resourceWAFSecurityRuleRead(d *schema.ResourceData, m interface{}) error {
 			case ddosRuleID:
 				d.Set("activation_mode", entry.ActivationMode)
 				d.Set("ddos_traffic_threshold", strconv.FormatInt(int64(entry.DdosTrafficThreshold), 10))
+				d.Set("unknown_clients_challenge", entry.UnknownClientsChallenge)
+				d.Set("block_non_essential_bots", strconv.FormatBool(entry.BlockNonEssentialBots))
 			case botAccessControlRuleID:
 				d.Set("block_bad_bots", strconv.FormatBool(entry.BlockBadBots))
 				d.Set("challenge_suspected_bots", strconv.FormatBool(entry.ChallengeSuspectedBots))
@@ -260,6 +285,8 @@ func resourceWAFSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 			"",
 			"",
 			"",
+			"",
+			"",
 		)
 		if err != nil {
 			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, backdoorRuleIDDefaultAction, d.Get("site_id").(int), err)
@@ -270,6 +297,8 @@ func resourceWAFSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 			d.Get("site_id").(int),
 			ruleID,
 			crossSiteScriptingRuleIDDefaultAction,
+			"",
+			"",
 			"",
 			"",
 			"",
@@ -288,6 +317,8 @@ func resourceWAFSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 			"",
 			"",
 			"",
+			"",
+			"",
 		)
 		if err != nil {
 			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, illegalResourceAccessRuleIDDefaultAction, d.Get("site_id").(int), err)
@@ -298,6 +329,8 @@ func resourceWAFSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 			d.Get("site_id").(int),
 			ruleID,
 			remoteFileInclusionRuleIDDefaultAction,
+			"",
+			"",
 			"",
 			"",
 			"",
@@ -316,6 +349,8 @@ func resourceWAFSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 			"",
 			"",
 			"",
+			"",
+			"",
 		)
 		if err != nil {
 			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with security_rule_action (%s) on site_id (%d) %s\n", ruleID, sqlInjectionRuleIDDefaultAction, d.Get("site_id").(int), err)
@@ -328,17 +363,21 @@ func resourceWAFSecurityRuleDelete(d *schema.ResourceData, m interface{}) error 
 			"",
 			ddosRuleIDDefaultActivationMode,
 			ddosRuleIDDefaultDDOSTrafficThreshold,
+			ddosRuleIDDefaultDDOSUnknownClientsChallenge,
+			ddosRuleIDDefaultDDOSBlockNonEssentialBots,
 			"",
 			"",
 		)
 		if err != nil {
-			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with default_activation_mode (%s) and ddos_traffic_threshold (%s) on site_id (%d) %s\n", ruleID, ddosRuleIDDefaultActivationMode, ddosRuleIDDefaultDDOSTrafficThreshold, d.Get("site_id").(int), err)
+			log.Printf("[ERROR] Could not reset Incapsula WAF Rule rule_id (%s) with default_activation_mode (%s), ddos_traffic_threshold (%s), unknown_clients_challenge (%s) and block_non_essential_bots (%s) on site_id (%d) %s\n", ruleID, ddosRuleIDDefaultActivationMode, ddosRuleIDDefaultDDOSTrafficThreshold, ddosRuleIDDefaultDDOSUnknownClientsChallenge, ddosRuleIDDefaultDDOSBlockNonEssentialBots, d.Get("site_id").(int), err)
 			return err
 		}
 	case botAccessControlRuleID:
 		_, err := client.ConfigureWAFSecurityRule(
 			d.Get("site_id").(int),
 			ruleID,
+			"",
+			"",
 			"",
 			"",
 			"",
