@@ -13,12 +13,12 @@ The provider will add/delete domains to/from an Imperva site, based on this reso
 These domains are protected by Imperva and share the website settings and configuration of the onboarded website. Legitimate traffic for all verified domains is allowed.
 
 ## Example Usage
-Given a site with ID 1111 and a domain with ID 2222:
+For site "test.com" and domain "a.test.com":
 
 ```hcl
-resource "incapsula_domain" "incapsula_domain-1111_2222" {
+resource "incapsula_domain" "incapsula_domain-test_com-a_test_com" {
     site_id = 1111
-    domain = "example-domain.com"
+    domain = "a.test.com"
 }
 ```
 
@@ -41,10 +41,10 @@ The following attributes are exported:
 
 ## Import
 
-Domains can be imported using the site_id and domain_id, e.g. given a site with ID 1111 and a domain with ID 2222:
+Domains can be imported using the site_id and domain_id, e.g. for site "test.com" with ID 1111 and domain "a.test.com" with ID 2222:
 
 ```
-$ terraform import incapsula_domain.incapsula_domain_1111_2222 1111/2222
+$ terraform import incapsula_domain.incapsula_domain-test_com-a_test_com 1111/2222
 ```
 
 ## Limitations
