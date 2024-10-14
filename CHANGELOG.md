@@ -1,3 +1,11 @@
+## 3.26.1 (Oct 14, 2024)
+
+IMPROVEMENTS:
+- Update documentation sub account and additive ddos ([#465](https://github.com/imperva/terraform-provider-incapsula/pull/465))
+- Change how empty data values in policies are suppressed ([#440](https://github.com/imperva/terraform-provider-incapsula/pull/440))
+
+
+
 ## 3.26.0 (Oct 1, 2024)
 
 IMPROVEMENTS:
