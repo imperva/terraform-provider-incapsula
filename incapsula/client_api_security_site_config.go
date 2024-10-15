@@ -17,6 +17,7 @@ type ApiSecuritySiteConfigGetResponse struct {
 		NonApiRequestViolationAction              string           `json:"nonApiRequestViolationAction"`
 		LastModified                              int64            `json:"lastModified"`
 		ViolationActions                          ViolationActions `json:"violationActions"`
+		DiscoveryEnabled                          bool             `json:"discoveryEnabled"`
 		IsAutomaticDiscoveryApiIntegrationEnabled bool             `json:"isAutomaticDiscoveryApiIntegrationEnabled"`
 	} `json:"value"`
 	IsError bool `json:"isError"`
@@ -31,6 +32,7 @@ type ApiSecuritySiteConfigPostResponse struct {
 
 type ApiSecuritySiteConfigPostPayload struct {
 	ApiOnlySite                               bool             `json:"apiOnlySite"`
+	DiscoveryEnabled                          bool             `json:"discoveryEnabled,omitempty"`
 	IsAutomaticDiscoveryApiIntegrationEnabled bool             `json:"isAutomaticDiscoveryApiIntegrationEnabled,omitempty"`
 	NonApiRequestViolationAction              string           `json:"nonApiRequestViolationAction"`
 	ViolationActions                          ViolationActions `json:"violationActions"`
