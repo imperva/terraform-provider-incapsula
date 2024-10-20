@@ -12,6 +12,8 @@ Provides an Incapsula Domain resource for V3 Sites.
 The provider will add/delete domains to/from an Imperva site, based on this resource.
 These domains are protected by Imperva and share the website settings and configuration of the onboarded website. Legitimate traffic for all verified domains is allowed.
 
+Note: This resource is designed to work with sites represented by the "incapsula_site_v3" resource, and cannot be used together in the same configuration with the "incapsula_site_domain_configuration" resource.
+
 ## Example Usage
 
 ```hcl
