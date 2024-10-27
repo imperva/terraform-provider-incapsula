@@ -10,8 +10,11 @@ description: |-
 
 Provides an Incapsula Site Domain Configuration resource.
 The provider will add/delete domains to/from an Imperva site, based on this resource.
+
 Note: The provider is using a single update request, hence domains that exists in the account, but
 are missing from the TF file will be deleted.
+
+This resource is designed to work with sites represented by the "incapsula_site" resource, and cannot be used together in the same configuration with the "incapsula_domain" resource.
 
 ## Example Usage
 

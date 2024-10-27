@@ -15,7 +15,7 @@ A V3 site resource is the core resource that is required by all other resources.
 
 ```hcl
 resource "incapsula_site_v3" "example-site-v3" {
-  name                   = "example.com"
+  name = "example.com"
 }
 ```
 
@@ -25,7 +25,7 @@ The following arguments are supported:
 
 * `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `name` - (Required) The site name.
-* `type` - (Optional) The website type. Indicates which kind of website is created. The default type is CLOUD_WAF for a website onboarded to Imperva Cloud WAF.
+* `type` - (Optional) The website type. Indicates which kind of website is created. The allowed options is CLOUD_WAF for a website onboarded to Imperva Cloud WAF.
 
 ## Attributes Reference
 

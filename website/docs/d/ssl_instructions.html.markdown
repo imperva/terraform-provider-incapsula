@@ -1,22 +1,22 @@
 ---
 subcategory: "Provider Reference"
 layout: "incapsula"
-page_title: "incapsula_site_ssl_settings"
+page_title: "incapsula_ssl_instructions"
 description: |- 
-  Provides an Incapsula Site SSL Settings resource.
+  Provides an Incapsula DNS and SSL instructions.
 ---
 # incapsula_ssl_instructions
 
 Provides an Incapsula Site SSL instruction resource.
 
-This resource enables you to retrieve instructions for configuring your DNS and SSL for completing the domain validation process.
+This data resource enables you to retrieve instructions for configuring your DNS and SSL for completing the domain validation process.
 
 
 
 ## Example Usage
 
 ```hcl
-resource "incapsula_ssl_instructions" "example"  {
+data "incapsula_ssl_instructions" "example"  {
   site_id       = incapsula_site.mysite.id
   domain_ids    = [incapsula_domain.my_domain1.id,incapsula_domain.my_domain2.id]
   managed_certificate_settings_id = incapsula_managed_certificate_settings.my_managed_certificate_settings.id
@@ -45,6 +45,3 @@ The following attributes are exported:
   - `name` - the domain name to add to the DNS server
   - `type` - The record type used for the instructions. e.g TXT.
   - `value` - The certificate verification code
-
-
-
