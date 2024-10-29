@@ -111,9 +111,9 @@ func resourceSingleDomainRead(d *schema.ResourceData, m interface{}) error {
 			return err
 		}
 
-		return fmt.Errorf("error getting domains (%d) for site (%s): %s",
-			d.Get("Id").(int),
-			d.Get("site_id"),
+		return fmt.Errorf("error getting domain (%s) for site (%s): %s",
+			id,
+			siteID,
 			out)
 	}
 
