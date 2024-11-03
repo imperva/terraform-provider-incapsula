@@ -14,7 +14,7 @@ var AbpDatasets = []string{"ABP"}
 
 const NetsecProvider = "NETSEC"
 
-var NetsecDatasets = []string{"CONNECTION", "IP", "NETFLOW", "ATTACK"}
+var NetsecDatasets = []string{"CONNECTION", "IP", "NETFLOW", "ATTACK", "NOTIFICATIONS"}
 
 const AtoProvider = "ATO"
 
@@ -26,7 +26,7 @@ var AuditDatasets = []string{"AUDIT_TRAIL"}
 
 const CspProvider = "CSP"
 
-var CspDatasets = []string{"GOOGLE_ANALYTICS_IDS", "SIGNIFICANT_DOMAIN_DISCOVERY", "SIGNIFICANT_SCRIPT_DISCOVERY", "SIGNIFICANT_DATA_TRANSFER_DISCOVERY"}
+var CspDatasets = []string{"GOOGLE_ANALYTICS_IDS", "SIGNIFICANT_DOMAIN_DISCOVERY", "SIGNIFICANT_SCRIPT_DISCOVERY", "SIGNIFICANT_DATA_TRANSFER_DISCOVERY", "DOMAIN_DISCOVERY_ENFORCE_MODE"}
 
 const CloudWafProvider = "CLOUD_WAF"
 
@@ -35,6 +35,10 @@ var CloudWafDatasets = []string{"WAF_RAW_LOGS", "CLOUD_WAF_ACCESS"}
 const AttackAnalyticsProvider = "ATTACK_ANALYTICS"
 
 var AttackAnalyticsDatasets = []string{"WAF_ANALYTICS_LOGS"}
+
+const DnsMsProvider = "DNSMS"
+
+var DnsMsDatasets = []string{"DNSMS_SECURITY_LOGS"}
 
 func resourceSiemLogConfiguration() *schema.Resource {
 	return &schema.Resource{
@@ -75,14 +79,14 @@ func resourceSiemLogConfiguration() *schema.Resource {
 				Description:  "Type of the producer.",
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{AbpProvider, NetsecProvider, AtoProvider, AuditProvider, CspProvider, CloudWafProvider, AttackAnalyticsProvider}, false),
+				ValidateFunc: validation.StringInSlice([]string{AbpProvider, NetsecProvider, AtoProvider, AuditProvider, CspProvider, CloudWafProvider, AttackAnalyticsProvider, DnsMsProvider}, false),
 			},
 			"datasets": {
 				Description: "All datasets for the supported producers.",
 				Type:        schema.TypeList,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice([]string{AbpDatasets[0], NetsecDatasets[0], NetsecDatasets[1], NetsecDatasets[2], NetsecDatasets[3], AtoDatasets[0], AuditDatasets[0], CspDatasets[0], CspDatasets[1], CspDatasets[2], CspDatasets[3], CloudWafDatasets[0], CloudWafDatasets[1], AttackAnalyticsDatasets[0]}, false),
+					ValidateFunc: validation.StringInSlice([]string{AbpDatasets[0], NetsecDatasets[0], NetsecDatasets[1], NetsecDatasets[2], NetsecDatasets[3], NetsecDatasets[4], AtoDatasets[0], AuditDatasets[0], CspDatasets[0], CspDatasets[1], CspDatasets[2], CspDatasets[3], CspDatasets[4], CloudWafDatasets[0], CloudWafDatasets[1], AttackAnalyticsDatasets[0], DnsMsDatasets[0]}, false),
 				},
 				Required: true,
 			},
