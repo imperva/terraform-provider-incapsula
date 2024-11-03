@@ -123,6 +123,8 @@ func resourceValidation(d *schema.ResourceData) error {
 		providerDatasets = CloudWafDatasets
 	} else if producer == AttackAnalyticsProvider {
 		providerDatasets = AttackAnalyticsDatasets
+	} else if producer = DnsMsProvider {
+	    providerDatasets = DnsMsDatasets
 	}
 
 	for _, s := range datasets {
