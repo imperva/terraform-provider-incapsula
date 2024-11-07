@@ -10,6 +10,7 @@ description: |-
 
 Provides an Incapsula V3 site resource.
 A V3 site resource is the core resource that is required by all other resources.
+incapsula_site_v3 is a newer version of incapsula_site. Site can be managed by incapsula_site_v3 or incapsula_site, but not both simultaneously.
 
 ## Example Usage
 
