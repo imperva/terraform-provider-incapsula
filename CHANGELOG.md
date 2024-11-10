@@ -1,4 +1,4 @@
-## 3.27.0 (Nov 10, 2024)
+## 3.27.1 (Nov 10, 2024)
 
 FEATURES:
 New Incapsula site, SSL and domain management model:
