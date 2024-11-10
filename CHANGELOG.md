@@ -1,3 +1,19 @@
+## 3.27.0 (Nov 10, 2024)
+
+FEATURES:
+New Incapsula site, SSL and domain management model:
+* **New Resource:** `incapsula_ssl_instructions` for SSL configuration guidance
+* **New Resource:** `incapsula_domain` for managing domains
+* **New Resource:** `incapsula_managed_certificate_settings` for certificate settings configuration
+* **New Resource:** `incapsula_site_v3` for site management (v3 API)
+* **New Resource:** `incapsula_ssl_validation` for SSL validation setup
+
+
+IMPROVEMENTS:
+- Add info about adaptive ddos mode ([#467](https://github.com/imperva/terraform-provider-incapsula/pull/467))
+
+
+
 ## 3.26.1 (Oct 14, 2024)
 
 IMPROVEMENTS:
