@@ -53,17 +53,32 @@ func resourceSiemSftpConnection() *schema.Resource {
 			},
 			"username": {
 				Description: "Sftp username.",
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Required:    true,
 			},
 			"password": {
 				Description: "Sftp password.",
-				Type:        schema.TypeInt,
-				Required:    true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					minLen := 1
+					actualLen := len(val.(string))
+					if actualLen < minLen && val != sensitiveDataPlaceholder {
+						errs = append(errs, fmt.Errorf("%q length should be %d, got: %d", key, minLen, actualLen))
+					}
+					return
+				},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					if new == sensitiveDataPlaceholder {
+						return true
+					}
+					return false
+				},
 			},
 			"path": {
 				Description: "Sftp path.",
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Required:    true,
 			},
 			"input_hash": {
@@ -106,10 +121,10 @@ func resourceSiemSftpConnectionCreate(d *schema.ResourceData, m interface{}) err
 		ConnectionName: d.Get("connection_name").(string),
 		StorageType:    StorageTypeCustomerSftp,
 		ConnectionInfo: SftpConnectionInfo{
-			Host:                    d.Get("host").(string),
-			Username:                d.Get("username").(string),
-			Password:                d.Get("password").(string),
-			Path:                    d.Get("path").(string),
+			Host:     d.Get("host").(string),
+			Username: d.Get("username").(string),
+			Password: d.Get("password").(string),
+			Path:     d.Get("path").(string),
 		},
 	}}})
 	if err != nil {
@@ -142,8 +157,7 @@ func resourceSiemSftpConnectionRead(d *schema.ResourceData, m interface{}) error
 		d.Set("host", connectionInfo.Host)
 		d.Set("username", connectionInfo.Username)
 		d.Set("path", connectionInfo.Path)
-// 		todo should there be also password ?
-		d.Set("input_hash", connectionInfo.Token)
+		d.Set("input_hash", connectionInfo.Password)
 		return nil
 	} else {
 		return fmt.Errorf("[ERROR] Unsupported operation. Response status code: %d", *statusCode)
@@ -163,10 +177,10 @@ func resourceSiemSftpConnectionUpdate(d *schema.ResourceData, m interface{}) err
 		ConnectionName: d.Get("connection_name").(string),
 		StorageType:    StorageTypeCustomerSftp,
 		ConnectionInfo: SftpConnectionInfo{
-			Host:                    d.Get("host").(string),
-			Username:                d.Get("username").(string),
-			Password:                d.Get("password").(string),
-			Path:                    d.Get("path").(string),
+			Host:     d.Get("host").(string),
+			Username: d.Get("username").(string),
+			Password: d.Get("password").(string),
+			Path:     d.Get("path").(string),
 		},
 	}}})
 
@@ -191,4 +205,18 @@ func resourceSiemSftpConnectionDelete(d *schema.ResourceData, m interface{}) err
 	// Implicitly clears the resource
 	d.SetId("")
 	return nil
+}
+func createSftpSiemConnectionHash(d *schema.ResourceData) string {
+	password := d.Get("password").(string)
+	result := calculateSftpSiemConnectionHash(password)
+	return result
+}
+
+func calculateSftpSiemConnectionHash(token string) string {
+	h := sha256.New()
+	stringForHash := token
+	h.Write([]byte(stringForHash))
+	byteString := h.Sum(nil)
+	result := hex.EncodeToString(byteString)
+	return result
 }

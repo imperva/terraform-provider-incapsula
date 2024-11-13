@@ -26,10 +26,10 @@ type SplunkConnectionInfo struct {
 }
 
 type SftpConnectionInfo struct {
-	Host                    string `json:"host"`
-	Username                string `json:"username"`
-	Password                string `json:"password"`
-	Path                    string `json:"path"`
+	Host     string `json:"host"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Path     string `json:"path"`
 }
 
 type ConnectionInfo interface {
@@ -47,13 +47,12 @@ func (s SplunkConnectionInfo) getConnectionInfo() any {
 
 func (s SftpConnectionInfo) getConnectionInfo() any {
 	return SftpConnectionInfo{
-		Host:                    s.Host,
-		Username:                s.Username,
-		Password:                s.Password,
-		Path:                    s.Path,
+		Host:     s.Host,
+		Username: s.Username,
+		Password: s.Password,
+		Path:     s.Path,
 	}
 }
-
 
 func (s S3ConnectionInfo) getConnectionInfo() any {
 	return S3ConnectionInfo{
@@ -101,10 +100,10 @@ func (s *SiemConnectionData) UnmarshalJSON(input []byte) error {
 		}
 	} else if s.StorageType == "CUSTOMER_SFTP" {
 		s.ConnectionInfo = SftpConnectionInfo{
-			Host:                    jsonMap["connectionInfo"].(map[string]interface{})["host"].(string),
-			Username:                jsonMap["connectionInfo"].(map[string]interface{})["username"].(string),
-			Password:                jsonMap["connectionInfo"].(map[string]interface{})["password"].(string),
-			Path:                    jsonMap["connectionInfo"].(map[string]interface{})["path"].(string),
+			Host:     jsonMap["connectionInfo"].(map[string]interface{})["host"].(string),
+			Username: jsonMap["connectionInfo"].(map[string]interface{})["username"].(string),
+			Password: jsonMap["connectionInfo"].(map[string]interface{})["password"].(string),
+			Path:     jsonMap["connectionInfo"].(map[string]interface{})["path"].(string),
 		}
 	} else {
 		err = errors.New("unsupported ConnectionInfo type")
