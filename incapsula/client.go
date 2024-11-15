@@ -118,6 +118,20 @@ func (c *Client) PostFormWithHeaders(url string, data url.Values, operation stri
 	return c.executeRequest(req)
 }
 
+func (c *Client) GetWithHeaders(url string, queryParams url.Values, operation string) (*http.Response, error) {
+	reqURL := url
+	if len(queryParams) > 0 {
+		reqURL = fmt.Sprintf("%s?%s", url, queryParams.Encode())
+	}
+	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("Error preparing request: %s", err)
+	}
+
+	SetHeaders(c, req, contentTypeApplicationJson, operation, nil)
+	return c.executeRequest(req)
+}
+
 func (c *Client) DoJsonRequestWithCustomHeaders(method string, url string, data []byte, headers map[string]string, operation string) (*http.Response, error) {
 	req, err := PrepareJsonRequest(method, url, data)
 	if err != nil {
@@ -179,7 +193,9 @@ func PrepareJsonRequest(method string, url string, data []byte) (*http.Request, 
 }
 
 func SetHeaders(c *Client, req *http.Request, contentType string, operation string, customHeaders map[string]string) {
-	req.Header.Set("Content-Type", contentType)
+	if req.Method != http.MethodGet {
+		req.Header.Set("Content-Type", contentType)
+	}
 	req.Header.Set("x-api-id", c.config.APIID)
 	req.Header.Set("x-api-key", c.config.APIKey)
 	req.Header.Set("x-tf-provider-ver", c.providerVersion)
