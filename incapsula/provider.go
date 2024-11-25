@@ -147,6 +147,7 @@ func Provider() *schema.Provider {
 			"incapsula_account_user":                                           resourceAccountUser(),
 			"incapsula_siem_connection":                                        resourceSiemConnection(),
 			"incapsula_siem_splunk_connection":                                 resourceSiemSplunkConnection(),
+			"incapsula_siem_sftp_connection":                                   resourceSiemSftpConnection(),
 			"incapsula_siem_log_configuration":                                 resourceSiemLogConfiguration(),
 			"incapsula_waiting_room":                                           resourceWaitingRoom(),
 			"incapsula_abp_websites":                                           resourceAbpWebsites(),
