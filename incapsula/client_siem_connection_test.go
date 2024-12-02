@@ -819,3 +819,217 @@ func TestClientUpdateExistingSplunkSiemConnection(t *testing.T) {
 		t.Errorf("Returned data should be same as sent data")
 	}
 }
+
+func TestClientCreateValidSiemSftpConnection(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	host := "test.sftp.com"
+	path := "/data/testing/accounts/53548213"
+	username := "testuser"
+	password := "testpassword"
+
+	apiID := RandomCapitalLetterAndNumberString(20)
+	apiKey := RandomLetterAndNumberString(40)
+	assetId := RandomNumbersExcludingZeroString(10)
+	endpoint := fmt.Sprintf("/%s/?caid=%s", endpointSiemConnection, assetId)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		}
+		rw.WriteHeader(201)
+		_, err := rw.Write([]byte(fmt.Sprintf(`{
+            "data": [
+                {
+                    "id": "%s",
+                    "connectionName": "%s",
+                    "assetId": "%s",
+                    "storageType": "CUSTOMER_SFTP",
+                    "connectionInfo": {
+                        "host": "%s",
+                        "path": "%s",
+                        "username": "%s",
+                        "password": "%s"
+                    }
+                }
+            ]
+        }`,
+			RandomLowLetterAndNumberString(24),
+			RandomLetterAndNumberString(20),
+			RandomNumbersExcludingZeroString(10),
+			host,
+			path,
+			username,
+			password)))
+		if err != nil {
+			return
+		}
+	}))
+
+	defer server.Close()
+
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+	siemConnection, _, err := client.CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
+		AssetID:        assetId,
+		ConnectionName: RandomLetterAndNumberString(20),
+		StorageType:    "CUSTOMER_SFTP",
+		ConnectionInfo: SftpConnectionInfo{
+			Host:     host,
+			Path:     path,
+			Username: username,
+			Password: password,
+		},
+	}}})
+
+	if err != nil {
+		t.Errorf("Should not have received an error")
+	}
+	if siemConnection == nil {
+		t.Errorf("Should not have received a nil SiemConnection instance")
+	}
+}
+
+func TestClientReadExistingSiemSftpConnection(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	host := "test.sftp.com"
+	path := "/data/testing/accounts/53548213"
+	username := "testuser"
+	password := "testpassword"
+
+	apiID := RandomCapitalLetterAndNumberString(20)
+	apiKey := RandomLetterAndNumberString(40)
+	ID := RandomLowLetterAndNumberString(25)
+
+	endpoint := fmt.Sprintf("/%s/%s", endpointSiemConnection, ID)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		}
+		rw.WriteHeader(200)
+		_, err := rw.Write([]byte(fmt.Sprintf(`{
+            "data": [
+                {
+                    "id": "%s",
+                    "connectionName": "%s",
+                    "assetId": "%s",
+                    "storageType": "CUSTOMER_SFTP",
+                    "connectionInfo": {
+                        "host": "%s",
+                        "path": "%s",
+                        "username": "%s",
+                        "password": "%s"
+                    }
+                }
+            ]
+        }`,
+			RandomLowLetterAndNumberString(24),
+			RandomLetterAndNumberString(20),
+			RandomNumbersExcludingZeroString(10),
+			host,
+			path,
+			username,
+			password)))
+		if err != nil {
+			return
+		}
+	}))
+
+	defer server.Close()
+
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+	siemConnection, _, err := client.ReadSiemConnection(ID, "")
+
+	if err != nil {
+		t.Errorf("Should not have received an error")
+	}
+	if (siemConnection == nil) || (siemConnection != nil && len(siemConnection.Data) != 1) {
+		t.Errorf("Should have received only one SiemConnection")
+	}
+}
+
+func TestClientUpdateExistingSftpSiemConnection(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	apiID := RandomCapitalLetterAndNumberString(20)
+	apiKey := RandomLetterAndNumberString(40)
+
+	responseID := RandomLowLetterAndNumberString(24)
+	responseConnectionName := RandomLetterAndNumberString(20)
+	responseStorageType := "CUSTOMER_SFTP"
+	responseAssetId := RandomNumbersExcludingZeroString(10)
+	responseHost := "sftp.test.com"
+	responsePath := "/data/testing/accounts/53548213"
+	responseUsername := "updateduser"
+	responsePassword := "updatedpassword"
+
+	endpoint := fmt.Sprintf("/%s/%s?caid=%s", endpointSiemConnection, responseID, responseAssetId)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		}
+		rw.WriteHeader(200)
+		_, err := rw.Write([]byte(fmt.Sprintf(`{
+            "data": [
+                {
+                    "id": "%s",
+                    "connectionName": "%s",
+                    "assetId": "%s",
+                    "storageType": "%s",
+                    "connectionInfo": {
+                        "host": "%s",
+                        "path": "%s",
+                        "username": "%s",
+                        "password": "%s"
+                    }
+                }
+            ]
+        }`,
+			responseID,
+			responseConnectionName,
+			responseAssetId,
+			responseStorageType,
+			responseHost,
+			responsePath,
+			responseUsername,
+			responsePassword)))
+		if err != nil {
+			return
+		}
+	}))
+
+	defer server.Close()
+
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+	sent := SiemConnectionData{
+		ID:             responseID,
+		AssetID:        responseAssetId,
+		ConnectionName: responseConnectionName,
+		StorageType:    responseStorageType,
+		ConnectionInfo: SftpConnectionInfo{
+			Host:     responseHost,
+			Path:     responsePath,
+			Username: responseUsername,
+			Password: responsePassword,
+		},
+	}
+
+	siemConnection, _, err := client.UpdateSiemConnection(&SiemConnection{Data: []SiemConnectionData{sent}})
+
+	if err != nil {
+		t.Errorf("Should not have received an error")
+	}
+	if (siemConnection == nil) || (siemConnection != nil && len(siemConnection.Data) != 1) {
+		t.Errorf("Should have received only one SiemConnection")
+	}
+
+	var received = siemConnection.Data[0]
+	if !reflect.DeepEqual(sent, received) {
+		t.Errorf("Returned data should be same as sent data")
+	}
+}

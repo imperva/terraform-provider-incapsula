@@ -19,6 +19,11 @@ type SiemLogConfigurationData struct {
 	Datasets          []interface{} `json:"datasets"`
 	Enabled           bool          `json:"enabled"`
 	ConnectionId      string        `json:"connectionId"`
+	CompressLogs      bool          `json:"compressLogs,omitempty"`
+	Format            string        `json:"format,omitempty"`
+	LogsLevel         string        `json:"logsLevel,omitempty"`
+	PublicKey         string        `json:"publicKey,omitempty"`
+	PublicKeyFileNAme string        `json:"publicKeyFileName,omitempty"`
 }
 
 type SiemLogConfiguration struct {
