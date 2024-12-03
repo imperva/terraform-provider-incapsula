@@ -3,10 +3,11 @@ package incapsula
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceManagedCertificate() *schema.Resource {
@@ -36,6 +37,11 @@ func resourceManagedCertificate() *schema.Resource {
 				Optional:    true,
 				Default:     "CNAME",
 			},
+			"account_id": {
+				Description: "(Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -44,10 +50,11 @@ func resourceManagedCertificateAdd(ctx context.Context, d *schema.ResourceData, 
 	client := m.(*Client)
 	var diags diag.Diagnostics
 	siteId, _ = d.Get("site_id").(string)
+	var accountId, _ = d.Get("account_id").(int)
 	validationMethod, _ := d.Get("default_validation_method").(string)
 	id, _ := strconv.Atoi(siteId)
 	log.Printf("[INFO] requesting site cert to site ID: %d to %v", id, d)
-	siteCertificateV3Response, diags := client.RequestSiteCertificate(id, validationMethod)
+	siteCertificateV3Response, diags := client.RequestSiteCertificate(id, validationMethod, accountId)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] failed request site cert to site ID: %d, %v\n", id, diags)
 		return diags

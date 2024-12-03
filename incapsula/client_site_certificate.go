@@ -3,10 +3,11 @@ package incapsula
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
 const endpointSiteCertV3BasePath = "/certificates-ui/v3/sites/"
@@ -52,13 +53,13 @@ type SiteCertificateV3Response struct {
 }
 
 // RequestSiteCertificate request site certificate
-func (c *Client) RequestSiteCertificate(siteId int, validationMethod string) (*SiteCertificateV3Response, diag.Diagnostics) {
+func (c *Client) RequestSiteCertificate(siteId int, validationMethod string, accountId int) (*SiteCertificateV3Response, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] request site certificate to: %d ", siteId)
 	siteCertificateDTO := SiteCertificateDTO{}
 	siteCertificateDTO.DefaultValidationMethod = validationMethod
 	siteCertificateDTOJSON, err := json.Marshal(siteCertificateDTO)
-	url := fmt.Sprintf("%s%s%d%s", c.config.BaseURLAPI, endpointSiteCertV3BasePath, siteId, endpointSiteCertV3Suffix)
+	url := fmt.Sprintf("%s%s%d%s?caid=%d", c.config.BaseURLAPI, endpointSiteCertV3BasePath, siteId, endpointSiteCertV3Suffix, accountId)
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodPost, url, []byte(siteCertificateDTOJSON), nil, RequestSiteCert)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
