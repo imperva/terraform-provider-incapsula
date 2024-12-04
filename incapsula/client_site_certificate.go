@@ -53,13 +53,16 @@ type SiteCertificateV3Response struct {
 }
 
 // RequestSiteCertificate request site certificate
-func (c *Client) RequestSiteCertificate(siteId int, validationMethod string, accountId int) (*SiteCertificateV3Response, diag.Diagnostics) {
+func (c *Client) RequestSiteCertificate(siteId int, validationMethod string, accountId *int) (*SiteCertificateV3Response, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] request site certificate to: %d ", siteId)
 	siteCertificateDTO := SiteCertificateDTO{}
 	siteCertificateDTO.DefaultValidationMethod = validationMethod
 	siteCertificateDTOJSON, err := json.Marshal(siteCertificateDTO)
-	url := fmt.Sprintf("%s%s%d%s?caid=%d", c.config.BaseURLAPI, endpointSiteCertV3BasePath, siteId, endpointSiteCertV3Suffix, accountId)
+	url := fmt.Sprintf("%s%s%d%s", c.config.BaseURLAPI, endpointSiteCertV3BasePath, siteId, endpointSiteCertV3Suffix)
+	if accountId != nil {
+		url = fmt.Sprintf("%s?caid=%d", url, *accountId)
+	}
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodPost, url, []byte(siteCertificateDTOJSON), nil, RequestSiteCert)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -105,11 +108,14 @@ func (c *Client) RequestSiteCertificate(siteId int, validationMethod string, acc
 }
 
 // DeleteRequestSiteCertificate deletes a site certificate request
-func (c *Client) DeleteRequestSiteCertificate(siteId int) (*SiteCertificateV3Response, diag.Diagnostics) {
+func (c *Client) DeleteRequestSiteCertificate(siteId int, accountId *int) (*SiteCertificateV3Response, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] deleting request site certificate %d", siteId)
 
 	url := fmt.Sprintf("%s%s%d%s", c.config.BaseURLAPI, endpointSiteCertV3BasePath, siteId, endpointSiteCertV3Suffix)
+	if accountId != nil {
+		url = fmt.Sprintf("%s?caid=%d", url, *accountId)
+	}
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodDelete, url, []byte("{}"), nil, RequestSiteCert)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{

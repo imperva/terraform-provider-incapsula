@@ -50,7 +50,11 @@ func resourceManagedCertificateAdd(ctx context.Context, d *schema.ResourceData, 
 	client := m.(*Client)
 	var diags diag.Diagnostics
 	siteId, _ = d.Get("site_id").(string)
-	var accountId, _ = d.Get("account_id").(int)
+	var accountId *int
+	if v, ok := d.GetOk("account_id"); ok {
+		accountIdValue := v.(int)
+		accountId = &accountIdValue
+	}
 	validationMethod, _ := d.Get("default_validation_method").(string)
 	id, _ := strconv.Atoi(siteId)
 	log.Printf("[INFO] requesting site cert to site ID: %d to %v", id, d)
@@ -113,8 +117,13 @@ func resourceManagedCertificateDelete(ctx context.Context, d *schema.ResourceDat
 	var diags diag.Diagnostics
 	siteId, _ = d.Get("site_id").(string)
 	id, _ := strconv.Atoi(siteId)
+	var accountId *int
+	if v, ok := d.GetOk("account_id"); ok {
+		accountIdValue := v.(int)
+		accountId = &accountIdValue
+	}
 	log.Printf("[INFO] deleting site cert request of site ID: %d to %v", id, d)
-	siteCertificateV3Response, diags := client.DeleteRequestSiteCertificate(id)
+	siteCertificateV3Response, diags := client.DeleteRequestSiteCertificate(id, accountId)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] failed delete site cert request of site ID: %d, %v\n", id, diags)
 		return diags
