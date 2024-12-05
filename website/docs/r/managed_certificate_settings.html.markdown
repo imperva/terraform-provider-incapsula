@@ -41,6 +41,12 @@ Managed certificate settings can be imported using the site_id, e.g.:
 $ terraform import incapsula_managed_certificate_settings.example-managed_certificate_settings site_id
 ```
 
+Or by using the account_id and site_id separated by /, e.g.:
+
+```
+$ terraform import incapsula_managed_certificate_settings.example-managed_certificate_settings account_id/site_id
+```
+
 The official docs for Manage Certificate settings API are located here: https://docs.imperva.com/bundle/cloud-application-security/page/certificatesUI-api-definition.htm
 
 
