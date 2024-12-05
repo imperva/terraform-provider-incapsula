@@ -12,7 +12,7 @@ import (
 func TestClientRequestSiteCertificateBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "http://badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	requestSiteCertificateResponse, diag := client.RequestSiteCertificate(123, "DNS")
+	requestSiteCertificateResponse, diag := client.RequestSiteCertificate(123, "DNS", nil)
 	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "Timeout exceeded while awaiting") {
 		t.Errorf("Should have received an time out error")
 	}
@@ -32,7 +32,7 @@ func TestClientRequestSiteCertificateInternalError(t *testing.T) {
 	defer server.Close()
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	_, diag := client.RequestSiteCertificate(123, "DNS")
+	_, diag := client.RequestSiteCertificate(123, "DNS", nil)
 	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "got response status 500, error") {
 		t.Errorf("Should have received an error")
 	}
@@ -49,7 +49,7 @@ func TestClientRequestSiteCertificateErrorsInBody(t *testing.T) {
 	defer server.Close()
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	accountSSLSettingsResponse, diag := client.RequestSiteCertificate(123, "DNS")
+	accountSSLSettingsResponse, diag := client.RequestSiteCertificate(123, "DNS", nil)
 	if diag != nil {
 		t.Errorf("Should not received an error")
 	}
@@ -69,7 +69,7 @@ func TestClientRequestSiteCertificateDataInBody(t *testing.T) {
 	defer server.Close()
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	requestSiteCertificateResponse, diag := client.RequestSiteCertificate(123, "DNS")
+	requestSiteCertificateResponse, diag := client.RequestSiteCertificate(123, "DNS", nil)
 	if diag != nil {
 		t.Errorf("Should not received an error")
 	}
@@ -77,6 +77,28 @@ func TestClientRequestSiteCertificateDataInBody(t *testing.T) {
 		t.Errorf("Got unexpected response")
 	}
 }
+
+func TestClientRequestSiteCertificateWithAccountId(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != fmt.Sprintf("%s%d%s?caid=%d", endpointSiteCertV3BasePath, 123, endpointSiteCertV3Suffix, 111) {
+			t.Errorf("Should have hit /%s%d%s?caid=%d endpoint. Got: %s", endpointSiteCertV3BasePath, 123, endpointSiteCertV3Suffix, 111, req.URL.String())
+		}
+		rw.WriteHeader(http.StatusOK)
+		rw.Write([]byte("{\"data\":[{\"siteId\":1088225110,\"defaultValidationMethod\":\"CNAME\",\"certificateDetails\":[{\"id\":3476,\"name\":\"ATLAS_845-1717566889024\",\"status\":\"IN_PROCESS\",\"expirationDate\":1749113691000,\"inRenewal\":false,\"sans\":[{\"sanId\":34,\"sanValue\":\"domain-8226.com\",\"validationMethod\":\"CNAME\",\"expirationDate\":null,\"status\":\"PENDING_USER_ACTION\",\"statusDate\":1717577707000,\"numSitesCovered\":1,\"verificationCode\":\"globalsign-domain-verification=A477A8393D17A55ECB2964402\",\"cnameValidationValue\":\"dh8pzxg.devImpervaDns.com\",\"autoValidation\":false,\"approverFqdn\":\"domain-8226.com\",\"validationEmail\":null,\"domainIds\":[7]}],\"level\":\"SITE\"}]}]}"))
+	}))
+	defer server.Close()
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+	accountId := 111
+	response, diag := client.RequestSiteCertificate(123, "DNS", &accountId)
+	if diag != nil {
+		t.Errorf("Should not received an error")
+	}
+	if response.Errors != nil || response.Data == nil || response.Data[0].DefaultValidationMethod != "CNAME" {
+		t.Errorf("Got unexpected response")
+	}
+}
+
 func TestClientGetSiteCertificateRequestStatusDataInBody(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != fmt.Sprintf("%s%d%s", endpointSiteCertV3BasePath, 123, endpointSiteCertV3Suffix) {
@@ -88,7 +110,7 @@ func TestClientGetSiteCertificateRequestStatusDataInBody(t *testing.T) {
 	defer server.Close()
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteCertificateResponse, diag := client.GetSiteCertificateRequestStatus(123)
+	siteCertificateResponse, diag := client.GetSiteCertificateRequestStatus(123, nil)
 	if diag != nil {
 		t.Errorf("Should not received an error")
 	}
@@ -109,7 +131,7 @@ func TestClientGetSiteCertificateRequestStatusErrorsInBody(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	siteCertificateResponse, diag := client.GetSiteCertificateRequestStatus(123)
+	siteCertificateResponse, diag := client.GetSiteCertificateRequestStatus(123, nil)
 	if diag != nil {
 		t.Errorf("Should not received an error")
 	}
@@ -129,7 +151,7 @@ func TestClientGetSiteCertificateRequestStatusError500(t *testing.T) {
 	defer server.Close()
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	_, diag := client.GetSiteCertificateRequestStatus(123)
+	_, diag := client.GetSiteCertificateRequestStatus(123, nil)
 	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "got response status 500, error") {
 		t.Errorf("Should have received an error")
 	}
@@ -138,7 +160,7 @@ func TestClientGetSiteCertificateRequestStatusError500(t *testing.T) {
 func TestClientGetSiteCertificateRequestStatusBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "http://badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	updateAccountSSLSettingsResponse, diag := client.GetSiteCertificateRequestStatus(123)
+	updateAccountSSLSettingsResponse, diag := client.GetSiteCertificateRequestStatus(123, nil)
 	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "Timeout exceeded while awaiting") {
 		t.Errorf("Should have received an time out error")
 	}
@@ -150,7 +172,7 @@ func TestClientGetSiteCertificateRequestStatusBadConnection(t *testing.T) {
 func TestClientDeleteRequestSiteCertificateBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "http://badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	_, diag := client.DeleteRequestSiteCertificate(123)
+	_, diag := client.DeleteRequestSiteCertificate(123, nil)
 	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "Timeout exceeded while awaiting") {
 		t.Errorf("Should have received an time out error")
 	}
@@ -167,9 +189,30 @@ func TestClientDeleteRequestSiteCertificateError500(t *testing.T) {
 	defer server.Close()
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	_, diag := client.DeleteRequestSiteCertificate(123)
+	_, diag := client.DeleteRequestSiteCertificate(123, nil)
 	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "got response status 500") {
 		t.Errorf("Should have received an error")
+	}
+}
+
+func TestClientDeleteRequestSiteCertificateWithAccountId(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != fmt.Sprintf("%s%d%s?caid=%d", endpointSiteCertV3BasePath, 123, endpointSiteCertV3Suffix, 111) {
+			t.Errorf("Should have hit /%s%d%s?caid=%d endpoint. Got: %s", endpointSiteCertV3BasePath, 123, endpointSiteCertV3Suffix, 111, req.URL.String())
+		}
+		rw.Write([]byte("{\"data\":[{\"siteId\":1088225110,\"defaultValidationMethod\":\"CNAME\"}]}"))
+		rw.WriteHeader(200)
+	}))
+	defer server.Close()
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+	accountId := 111
+	response, diag := client.DeleteRequestSiteCertificate(123, &accountId)
+	if diag != nil || diag.HasError() {
+		t.Errorf("Should not received an error")
+	}
+	if response.Errors != nil || response.Data == nil || response.Data[0].DefaultValidationMethod != "CNAME" {
+		t.Errorf("Got unexpected response")
 	}
 }
 
@@ -209,7 +252,7 @@ func TestClientValidateDomain(t *testing.T) {
 	defer server.Close()
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	deleteSiteCertificateResponse, diag := client.DeleteRequestSiteCertificate(123)
+	deleteSiteCertificateResponse, diag := client.DeleteRequestSiteCertificate(123, nil)
 	if diag != nil || diag.HasError() {
 		t.Errorf("Should not received an error")
 	}

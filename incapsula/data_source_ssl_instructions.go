@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"golang.org/x/exp/slices"
-	"strconv"
-	"time"
 )
 
 func dataSourceSSLInstructions() *schema.Resource {
@@ -94,7 +95,7 @@ func waitForInstructions(client *Client, siteId int) diag.Diagnostics {
 	}
 	if siteDomainDetailsDto.Data != nil && len(siteDomainDetailsDto.Data) > 0 {
 		for i := 0; i < 20; i++ {
-			siteCertificateV3Response, _ := client.GetSiteCertificateRequestStatus(siteId)
+			siteCertificateV3Response, _ := client.GetSiteCertificateRequestStatus(siteId, nil)
 			b := siteCertificateV3Response != nil && siteCertificateV3Response.Data != nil && len(siteCertificateV3Response.Data) > 0
 			b = b && siteCertificateV3Response.Data[0].CertificatesDetails != nil && validateSans(siteCertificateV3Response.Data[0], siteDomainDetailsDto.Data)
 			if b {
