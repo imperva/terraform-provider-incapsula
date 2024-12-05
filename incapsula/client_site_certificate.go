@@ -161,11 +161,14 @@ func (c *Client) DeleteRequestSiteCertificate(siteId int, accountId *int) (*Site
 }
 
 // GetSiteCertificateRequestStatus get site cert request
-func (c *Client) GetSiteCertificateRequestStatus(siteId int) (*SiteCertificateV3Response, diag.Diagnostics) {
+func (c *Client) GetSiteCertificateRequestStatus(siteId int, accountId *int) (*SiteCertificateV3Response, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	log.Printf("[INFO] get request site certificate status %d", siteId)
 
 	url := fmt.Sprintf("%s%s%d%s", c.config.BaseURLAPI, endpointSiteCertV3BasePath, siteId, endpointSiteCertV3Suffix)
+	if accountId != nil {
+		url = fmt.Sprintf("%s?caid=%d", url, *accountId)
+	}
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, url, nil, nil, RequestSiteCert)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{

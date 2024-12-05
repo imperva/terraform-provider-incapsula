@@ -110,7 +110,7 @@ func TestClientGetSiteCertificateRequestStatusDataInBody(t *testing.T) {
 	defer server.Close()
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	siteCertificateResponse, diag := client.GetSiteCertificateRequestStatus(123)
+	siteCertificateResponse, diag := client.GetSiteCertificateRequestStatus(123, nil)
 	if diag != nil {
 		t.Errorf("Should not received an error")
 	}
@@ -131,7 +131,7 @@ func TestClientGetSiteCertificateRequestStatusErrorsInBody(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	siteCertificateResponse, diag := client.GetSiteCertificateRequestStatus(123)
+	siteCertificateResponse, diag := client.GetSiteCertificateRequestStatus(123, nil)
 	if diag != nil {
 		t.Errorf("Should not received an error")
 	}
@@ -151,7 +151,7 @@ func TestClientGetSiteCertificateRequestStatusError500(t *testing.T) {
 	defer server.Close()
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	_, diag := client.GetSiteCertificateRequestStatus(123)
+	_, diag := client.GetSiteCertificateRequestStatus(123, nil)
 	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "got response status 500, error") {
 		t.Errorf("Should have received an error")
 	}
@@ -160,7 +160,7 @@ func TestClientGetSiteCertificateRequestStatusError500(t *testing.T) {
 func TestClientGetSiteCertificateRequestStatusBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "http://badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	updateAccountSSLSettingsResponse, diag := client.GetSiteCertificateRequestStatus(123)
+	updateAccountSSLSettingsResponse, diag := client.GetSiteCertificateRequestStatus(123, nil)
 	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "Timeout exceeded while awaiting") {
 		t.Errorf("Should have received an time out error")
 	}
