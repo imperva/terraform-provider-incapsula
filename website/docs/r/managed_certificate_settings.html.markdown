@@ -26,6 +26,7 @@ The following arguments are supported:
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `default_validation_method` - (Optional) The default SSL validation method that will be used for new domains. Options are `CNAME`, `DNS` and `EMAIL`. Defaults to `CNAME`.
+* `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
 
 ## Attributes Reference
 
@@ -39,6 +40,12 @@ Managed certificate settings can be imported using the site_id, e.g.:
 
 ```
 $ terraform import incapsula_managed_certificate_settings.example-managed_certificate_settings site_id
+```
+
+Or by using the account_id and site_id separated by /, e.g.:
+
+```
+$ terraform import incapsula_managed_certificate_settings.example-managed_certificate_settings account_id/site_id
 ```
 
 The official docs for Manage Certificate settings API are located here: https://docs.imperva.com/bundle/cloud-application-security/page/certificatesUI-api-definition.htm
