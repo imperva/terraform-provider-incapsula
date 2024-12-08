@@ -26,6 +26,7 @@ The following arguments are supported:
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `default_validation_method` - (Optional) The default SSL validation method that will be used for new domains. Options are `CNAME`, `DNS` and `EMAIL`. Defaults to `CNAME`.
+* `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
 
 ## Attributes Reference
 
