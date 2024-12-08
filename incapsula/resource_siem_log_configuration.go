@@ -14,7 +14,7 @@ var AbpDatasets = []string{"ABP"}
 
 const NetsecProvider = "NETSEC"
 
-var NetsecDatasets = []string{"CONNECTION", "IP", "NETFLOW", "ATTACK"}
+var NetsecDatasets = []string{"CONNECTION", "IP", "NETFLOW", "ATTACK", "NOTIFICATIONS"}
 
 const AtoProvider = "ATO"
 
@@ -26,7 +26,19 @@ var AuditDatasets = []string{"AUDIT_TRAIL"}
 
 const CspProvider = "CSP"
 
-var CspDatasets = []string{"GOOGLE_ANALYTICS_IDS", "SIGNIFICANT_DOMAIN_DISCOVERY", "SIGNIFICANT_SCRIPT_DISCOVERY", "SIGNIFICANT_DATA_TRANSFER_DISCOVERY"}
+var CspDatasets = []string{"GOOGLE_ANALYTICS_IDS", "SIGNIFICANT_DOMAIN_DISCOVERY", "SIGNIFICANT_SCRIPT_DISCOVERY", "SIGNIFICANT_DATA_TRANSFER_DISCOVERY", "DOMAIN_DISCOVERY_ENFORCE_MODE", "CSP_HEADER_HEALTH"}
+
+const CloudWafProvider = "CLOUD_WAF"
+
+var CloudWafDatasets = []string{"WAF_RAW_LOGS", "CLOUD_WAF_ACCESS"}
+
+const AttackAnalyticsProvider = "ATTACK_ANALYTICS"
+
+var AttackAnalyticsDatasets = []string{"WAF_ANALYTICS_LOGS"}
+
+const DnsMsProvider = "DNSMS"
+
+var DnsMsDatasets = []string{"DNSMS_SECURITY_LOGS"}
 
 func resourceSiemLogConfiguration() *schema.Resource {
 	return &schema.Resource{
@@ -67,14 +79,14 @@ func resourceSiemLogConfiguration() *schema.Resource {
 				Description:  "Type of the producer.",
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{AbpProvider, NetsecProvider, AtoProvider, AuditProvider, CspProvider}, false),
+				ValidateFunc: validation.StringInSlice([]string{AbpProvider, NetsecProvider, AtoProvider, AuditProvider, CspProvider, CloudWafProvider, AttackAnalyticsProvider, DnsMsProvider}, false),
 			},
 			"datasets": {
 				Description: "All datasets for the supported producers.",
 				Type:        schema.TypeList,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice([]string{AbpDatasets[0], NetsecDatasets[0], NetsecDatasets[1], NetsecDatasets[2], NetsecDatasets[3], AtoDatasets[0], AuditDatasets[0], CspDatasets[0], CspDatasets[1], CspDatasets[2], CspDatasets[3]}, false),
+					ValidateFunc: validation.StringInSlice([]string{AbpDatasets[0], NetsecDatasets[0], NetsecDatasets[1], NetsecDatasets[2], NetsecDatasets[3], NetsecDatasets[4], AtoDatasets[0], AuditDatasets[0], CspDatasets[0], CspDatasets[1], CspDatasets[2], CspDatasets[3], CspDatasets[4], CspDatasets[5], CloudWafDatasets[0], CloudWafDatasets[1], AttackAnalyticsDatasets[0], DnsMsDatasets[0]}, false),
 				},
 				Required: true,
 			},
@@ -87,6 +99,36 @@ func resourceSiemLogConfiguration() *schema.Resource {
 				Description: "The id of the connection for this log configuration.",
 				Type:        schema.TypeString,
 				Required:    true,
+			},
+			"format": {
+				Description: "The format of the logs of this log configuration.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Required:    false,
+			},
+			"logs_level": {
+				Description: "The default logs level of this log configuration.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Required:    false,
+			},
+			"compress_logs": {
+				Description: "True if the logs are compressed, false otherwise.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Required:    false,
+			},
+			"public_key": {
+				Description: "The public key of the log configuration.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Required:    false,
+			},
+			"public_key_file_name": {
+				Description: "The public key file name of the log configuration.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Required:    false,
 			},
 		},
 	}
@@ -107,6 +149,12 @@ func resourceValidation(d *schema.ResourceData) error {
 		providerDatasets = AuditDatasets
 	} else if producer == CspProvider {
 		providerDatasets = CspDatasets
+	} else if producer == CloudWafProvider {
+		providerDatasets = CloudWafDatasets
+	} else if producer == AttackAnalyticsProvider {
+		providerDatasets = AttackAnalyticsDatasets
+	} else if producer == DnsMsProvider {
+		providerDatasets = DnsMsDatasets
 	}
 
 	for _, s := range datasets {
@@ -139,6 +187,11 @@ func resourceSiemLogConfigurationCreate(d *schema.ResourceData, m interface{}) e
 		Datasets:          d.Get("datasets").([]interface{}),
 		Enabled:           d.Get("enabled").(bool),
 		ConnectionId:      d.Get("connection_id").(string),
+		CompressLogs:      d.Get("compress_logs").(bool),
+		Format:            d.Get("format").(string),
+		LogsLevel:         d.Get("logs_level").(string),
+		PublicKey:         d.Get("public_key").(string),
+		PublicKeyFileNAme: d.Get("public_key_file_name").(string),
 	}}})
 	if err != nil {
 		return err
@@ -170,6 +223,11 @@ func resourceSiemLogConfigurationRead(d *schema.ResourceData, m interface{}) err
 		d.Set("datasets", logConfiguration.Datasets)
 		d.Set("enabled", logConfiguration.Enabled)
 		d.Set("connection_id", logConfiguration.ConnectionId)
+		d.Set("compress_logs", logConfiguration.CompressLogs)
+		d.Set("format", logConfiguration.Format)
+		d.Set("logs_level", logConfiguration.LogsLevel)
+		d.Set("public_key", logConfiguration.PublicKey)
+		d.Set("public_key_file_name", logConfiguration.PublicKeyFileNAme)
 		return nil
 	} else {
 		return fmt.Errorf("[ERROR] Unsupported operation. Response status code: %d", *statusCode)
@@ -191,6 +249,11 @@ func resourceSiemLogConfigurationUpdate(d *schema.ResourceData, m interface{}) e
 		Datasets:          d.Get("datasets").([]interface{}),
 		Enabled:           d.Get("enabled").(bool),
 		ConnectionId:      d.Get("connection_id").(string),
+		CompressLogs:      d.Get("compress_logs").(bool),
+		Format:            d.Get("format").(string),
+		LogsLevel:         d.Get("logs_level").(string),
+		PublicKey:         d.Get("public_key").(string),
+		PublicKeyFileNAme: d.Get("public_key_file_name").(string),
 	}}})
 
 	if err != nil {

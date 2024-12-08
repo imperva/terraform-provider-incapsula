@@ -13,8 +13,8 @@ func TestAddV3SiteWithNameAndType(t *testing.T) {
 	log.Printf("[DEBUG] Running test client_site_v3_test.TestAddV3SiteWithName")
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("%s", endpointSiteV3) {
-			t.Errorf("Should have hit %s endpoint. Got: %s", endpointSiteV3, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("%s", endpointSiteV3+"?caid=123") {
+			t.Errorf("Should have hit %s endpoint. Got: %s", endpointSiteV3+"?caid=123", req.URL.String())
 		}
 		rw.WriteHeader(200)
 		rw.Write([]byte("{\n  \"data\": [\n    {\n      \"id\": 462102065,\n      \"name\": \"de3affdrere.inddcapcwafteam.net\",\n      \"type\": \"CLOUD_WAF\",\n      \"accountId\": 51999737,\n      \"creationTime\": 1717588301055,\n      \"cname\": \"mhhp8q4.ng.impervadnsstage.net\"\n    }\n  ]\n}"))
@@ -71,8 +71,8 @@ func TestUpdateV3SiteWithName(t *testing.T) {
 	log.Printf("[DEBUG] Running test client_site_v3_test.TestAddV3SiteWithName")
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("%s", endpointSiteV3+"/111") {
-			t.Errorf("Should have hit %s endpoint. Got: %s", endpointSiteV3+"/111", req.URL.String())
+		if req.URL.String() != fmt.Sprintf("%s", endpointSiteV3+"/111?caid=123") {
+			t.Errorf("Should have hit %s endpoint. Got: %s", endpointSiteV3+"/111?caid=123", req.URL.String())
 		}
 		rw.WriteHeader(200)
 		rw.Write([]byte("{\n  \"data\": [\n    {\n      \"id\": 462102065,\n      \"name\": \"de3affdrere.inddcapcwafteam.net\",\n      \"type\": \"CLOUD_WAF\",\n      \"accountId\": 51999737,\n      \"creationTime\": 1717588301055,\n      \"cname\": \"mhhp8q4.ng.impervadnsstage.net\"\n    }\n  ]\n}"))
@@ -101,8 +101,8 @@ func TestDeleteV3Site(t *testing.T) {
 	log.Printf("[DEBUG] Running test client_site_v3_test.TestAddV3SiteWithName")
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("%s", endpointSiteV3+"/1234") {
-			t.Errorf("Should have hit %s endpoint. Got: %s", endpointSiteV3, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("%s", endpointSiteV3+"/1234?caid=123") {
+			t.Errorf("Should have hit %s endpoint. Got: %s", endpointSiteV3+"/1234?caid=123", req.URL.String())
 		}
 		rw.WriteHeader(200)
 		rw.Write([]byte("{\n  \"data\": [\n    {\n      \"id\": 462102065,\n      \"name\": \"de3affdrere.inddcapcwafteam.net\",\n      \"type\": \"CLOUD_WAF\",\n      \"accountId\": 51999737,\n      \"creationTime\": 1717588301055,\n      \"cname\": \"mhhp8q4.ng.impervadnsstage.net\"\n    }\n  ]\n}"))

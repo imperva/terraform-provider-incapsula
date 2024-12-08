@@ -477,47 +477,6 @@ func resourceApplicationDeliveryUpdate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceApplicationDeliveryDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Client)
-	siteID := d.Get("site_id").(int)
-
-	network := Network{
-		Port:    Port{To: strconv.Itoa(defaultPortTo)},
-		SslPort: SslPort{To: strconv.Itoa(defaultSslPortTo)},
-	}
-
-	compression := Compression{
-		FileCompression:  true,
-		CompressionType:  "GZIP",
-		MinifyJs:         true,
-		MinifyCss:        true,
-		MinifyStaticHtml: true,
-	}
-
-	payload := ApplicationDelivery{
-		Network:     network,
-		Compression: compression,
-	}
-
-	_, diags := client.UpdateApplicationDelivery(siteID, &payload)
-	if diags != nil {
-		log.Printf("[ERROR] Error in Application Delivery resource for Site ID %d. Could not return values of custom error pages to defaults.", siteID)
-		return diags
-	}
-
-	_, diags = client.DeleteApplicationDelivery(siteID)
-
-	if diags != nil {
-		log.Printf("[ERROR] Could delete Incapsula Application Delivery for Site Id: %d\n", siteID)
-		return diags
-	}
-
-	_, diags = client.DeleteErrorPages(siteID)
-
-	if diags != nil {
-		log.Printf("[ERROR] Could delete Incapsula Error Pages for Site Id: %d\n", siteID)
-		return diags
-	}
-
 	d.SetId("")
 	return nil
 }

@@ -56,7 +56,7 @@ func TestAccSiemConnection_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				SkipFunc: isS3EnvVarExist,
-				Config:   getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName),
+				Config:   getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName, "/data/testing/accounts/53548213"),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemConnectionExists(s3ArnSiemConnectionResource),
 					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "connection_name", s3ArnSiemConnectionName),
@@ -102,7 +102,7 @@ func TestAccSiemConnection_Update(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				SkipFunc: isS3EnvVarExist,
-				Config:   getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName),
+				Config:   getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName, "data-platform-access-logs-dev/test/cwaf/51319839"),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemConnectionExists(s3ArnSiemConnectionResource),
 					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "connection_name", s3ArnSiemConnectionName),
@@ -111,7 +111,7 @@ func TestAccSiemConnection_Update(t *testing.T) {
 			},
 			{
 				SkipFunc: isS3EnvVarExist,
-				Config:   getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionNameUpdated),
+				Config:   getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionNameUpdated, "data-platform-access-logs-dev/test/cwaf/51319839"),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemConnectionExists(s3ArnSiemConnectionResource),
 					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "connection_name", s3ArnSiemConnectionNameUpdated),
@@ -142,7 +142,7 @@ func TestAccSiemConnection_Update(t *testing.T) {
 	resource.Test(t, r)
 }
 
-func getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName string) string {
+func getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName string, path string) string {
 	return fmt.Sprintf(`
 		resource "%s" "%s" {	
 			connection_name = "%s"
@@ -150,8 +150,7 @@ func getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName strin
   			path = "%s"
 		}`,
 		siemConnectionResourceType, s3ArnSiemConnectionResourceName,
-		s3ArnSiemConnectionName, StorageTypeCustomerS3Arn,
-		os.Getenv("SIEM_CONNECTION_S3_PATH"),
+		s3ArnSiemConnectionName, StorageTypeCustomerS3Arn, path,
 	)
 }
 

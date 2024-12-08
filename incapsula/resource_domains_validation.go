@@ -2,11 +2,12 @@ package incapsula
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceDomainsValidation() *schema.Resource {
@@ -61,7 +62,7 @@ func resourceSSLValidationAdd(ctx context.Context, d *schema.ResourceData, m int
 		index++
 	}
 	for i := 0; i < 50; i++ {
-		siteCertificateV3Response, _ := client.GetSiteCertificateRequestStatus(siteId)
+		siteCertificateV3Response, _ := client.GetSiteCertificateRequestStatus(siteId, nil)
 		b := siteCertificateV3Response != nil && siteCertificateV3Response.Data != nil && len(siteCertificateV3Response.Data) > 0
 		b = b && siteCertificateV3Response.Data[0].CertificatesDetails != nil && len(siteCertificateV3Response.Data[0].CertificatesDetails) > 0
 		b = b && siteCertificateV3Response.Data[0].CertificatesDetails[0].Sans != nil && len(siteCertificateV3Response.Data[0].CertificatesDetails[0].Sans) == len(domainIds)
