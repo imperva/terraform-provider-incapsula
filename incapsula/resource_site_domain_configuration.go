@@ -132,7 +132,9 @@ func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
 
 	domains := &schema.Set{F: getHashFromDomain}
 	for _, v := range siteDomainDetailsDto.Data {
-		if v.AutoDiscovered == true || (d.Get("managed_certificate_settings_id") == "" && v.MainDomain == true) { //we ignore the main and auto discovered domains
+		managedCertSettingsID := d.Get("managed_certificate_settings_id")
+		hasNoSiteCert := managedCertSettingsID == "" || managedCertSettingsID == nil
+		if v.AutoDiscovered == true || (hasNoSiteCert && v.MainDomain == true) { //we ignore the main and auto discovered domains
 			continue
 		}
 		domain := map[string]interface{}{}
