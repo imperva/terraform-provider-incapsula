@@ -1,3 +1,17 @@
+## 3.28.0 (Dec 9, 2024)
+
+FEATURES:
+* **New Resource:** `incapsula_siem_connnection_sftp`
+added cwaf, attack analytics and dnsms log configurations
+added new fields to log configuration resource (compression,encryption)
+added datasets to log-configuration
+
+IMPROVEMENTS:
+Add accountId parameter to managed certificate resource ([#481](https://github.com/imperva/terraform-provider-incapsula/pull/481))
+Remove 'restore defaults' logic when deleting application delivery resource ([#482](https://github.com/imperva/terraform-provider-incapsula/pull/482))
+
+
+
 ## 3.27.1 (Nov 10, 2024)
 
 FEATURES:
