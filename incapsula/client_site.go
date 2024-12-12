@@ -13,6 +13,7 @@ const endpointSiteAdd = "sites/add"
 const endpointSiteStatus = "sites/status"
 const endpointSiteUpdate = "sites/configure"
 const endpointSiteDelete = "sites/delete"
+const endpointCertDetails = "certificates-ui/v3/certificates"
 
 // SiteAddResponse contains the relevant site information when adding an Incapsula managed site
 type SiteAddResponse struct {
@@ -210,6 +211,21 @@ type SiteStatusResponse struct {
 	} `json:"debug_info"`
 }
 
+// SAN contains the relevant status information when parsing the SANs
+type SAN struct {
+	Status string `json:"status"`
+}
+
+// DataItem contains the relevant SAN information when parsing the data
+type DataItem struct {
+	Sans []SAN `json:"sans"`
+}
+
+// Response contains the relevant data from the response when checking for SSL certificates
+type Response struct {
+	Data []DataItem `json:"data"`
+}
+
 // AddSite adds a site to be managed by Incapsula
 func (c *Client) AddSite(domain, refID, sendSiteSetupEmails, siteIP, forceSSL string, accountID int, nakedDomainSan bool, wildcarSan bool, logsAccountId string) (*SiteAddResponse, error) {
 	log.Printf("[INFO] Adding Incapsula site for domain: %s (account ID %d)\n", domain, accountID)
@@ -331,6 +347,42 @@ func (c *Client) UpdateSite(siteID, param, value string) (*SiteUpdateResponse, e
 
 	// Look at the response status code from Incapsula
 	if siteUpdateResponse.Res != 0 {
+		if siteUpdateResponse.Res == 1 && param == "domain_validation" { // Domain Validation parameter can throw code 1 when reusing wildcard certificate
+			//Get request for SSL certificate check on site
+			reqURL := fmt.Sprintf("%s/%s", c.config.BaseURLAPI, endpointCertDetails)
+			queryParams := url.Values{}
+			queryParams.Add("extSiteId", siteID)
+
+			resp, err := c.GetWithHeaders(reqURL, queryParams, UpdateSite)
+
+			if err != nil {
+				return nil, fmt.Errorf("Error checking certificate on site_id: %s: %s", siteID, err)
+			}
+
+			// Read the body
+			defer resp.Body.Close()
+			responseBody, err := ioutil.ReadAll(resp.Body)
+
+			// Dump JSON
+			log.Printf("[DEBUG] Incapsula check certificate JSON response: %s\n", string(responseBody))
+
+			// Parse the JSON
+			var response Response
+			err = json.Unmarshal([]byte(responseBody), &response)
+			if err != nil {
+				return nil, fmt.Errorf("Error parsing check certificate JSON response for siteID %s: %s", siteID, err)
+			}
+
+			// Check all SANs to verify if there's an active certificate already
+			for _, dataItem := range response.Data {
+				for _, san := range dataItem.Sans {
+					if san.Status != "PENDING_USER_ACTION" {
+						// There's an active certificate, avoiding internal error
+						return &siteUpdateResponse, nil
+					}
+				}
+			}
+		}
 		return nil, fmt.Errorf("Error from Incapsula service when updating site for siteID %s: %s", siteID, string(responseBody))
 	}
 
