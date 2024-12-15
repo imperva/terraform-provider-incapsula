@@ -2,6 +2,7 @@ package incapsula
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -378,5 +379,74 @@ func TestClientDeleteSiteValidSite(t *testing.T) {
 	err := client.DeleteSite(domain, siteID)
 	if err != nil {
 		t.Errorf("Should not have received an error")
+	}
+}
+
+func TestClientUpdateSiteWithExistingCertificate(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+
+		bytedata, _ := io.ReadAll(req.Body)
+		reqBodyString := string(bytedata)
+
+		if strings.Contains(req.URL.String(), endpointSiteUpdate) {
+			if strings.Contains(reqBodyString, "domain_validation") {
+				rw.Write([]byte(`{"site_id":111,"res":1}`))
+			} else {
+				rw.Write([]byte(`{"site_id":111,"res":0}`))
+			}
+
+		} else if strings.Contains(req.URL.String(), endpointCertDetails) {
+			rw.Write([]byte(`{
+    "data": [
+        {
+            "id": 222,
+            "name": "ATLAS_661-1730205519459",
+            "status": "IN_PROCESS",
+            "sans": [
+                {
+                    "sanId": 123,
+                    "sanValue": "*.test.com",
+                    "validationMethod": "CNAME",
+                    "status": "VALIDATED",
+                    "domainIds": 2333,
+                    "sitesIds": [
+                        111
+                    ]
+                }
+            ],
+            "authType": "RSA",
+            "level": "ACCOUNT"
+        }
+    ]
+			}`))
+		}
+	}))
+	defer server.Close()
+
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL, BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+	siteID := "111"
+	addSiteResponse, err := client.UpdateSite(siteID, "", "")
+	if err != nil {
+		t.Errorf("Should not have received an error")
+	}
+	if addSiteResponse.Res != 0 {
+		t.Errorf("Response code doesn't match")
+	}
+
+	updateSiteResponse, err := client.UpdateSite(siteID, "domain_validation", "DNS")
+
+	if err != nil {
+		t.Errorf("Should not have received an error")
+	}
+	if updateSiteResponse == nil {
+		t.Errorf("Should not have received a nil updateSiteResponse instance")
+	}
+	if updateSiteResponse.SiteID != 111 {
+		t.Errorf("Site ID doesn't match")
+	}
+	if updateSiteResponse.Res != 1 {
+		t.Errorf("Response code doesn't match")
 	}
 }
