@@ -1,3 +1,10 @@
+## 3.28.2 (Dec 16, 2024)
+
+IMPROVEMENTS:
+Fix managed certificate existence check #485 ([#485](https://github.com/imperva/terraform-provider-incapsula/pull/485))
+Adding an example for a policy exception that's assign to a site ([#488](https://github.com/imperva/terraform-provider-incapsula/pull/488))
+
+
 ## 3.28.0 (Dec 9, 2024)
 
 FEATURES:
