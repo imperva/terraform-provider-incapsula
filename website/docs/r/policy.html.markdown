@@ -78,6 +78,12 @@ resource "incapsula_policy" "example-waf-rule-illegal-resource-access-policy" {
               "values": [
                 "/cmd.exe"
               ]
+            },
+            {
+              "exceptionType": "SITE_ID",
+              "values": [
+              "132456789"
+              ]
             }
           ]
         }
