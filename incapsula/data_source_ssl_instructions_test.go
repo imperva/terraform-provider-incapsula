@@ -21,7 +21,7 @@ func TestIncapsulaSSL_Instructions(t *testing.T) {
 			{
 				Config: testAccCheckIncapsulaSiteV3Domain(t, "b-"+domain),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(dataSourceName, "domain_ids"),
+					resource.TestCheckResourceAttr(dataSourceName, "domain_ids.#", "1"),
 					resource.TestCheckResourceAttr(dataSourceName, "instructions.#", "1"),
 					resource.TestCheckResourceAttr(dataSourceName, "instructions.0.type", "CNAME"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "instructions.0.name"),
