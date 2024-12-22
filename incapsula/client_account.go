@@ -156,7 +156,7 @@ func (c *Client) AccountStatus(accountID int, operation string) (*AccountStatusR
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
 	// Dump JSON
-	log.Printf("[DEBUG] Incapsula account status JSON response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] Received a JSON response from the Incapsula account \n")
 
 	// Parse the JSON
 	var accountStatusResponse AccountStatusResponse
