@@ -12,6 +12,10 @@ Provides a resource to define WAF security, Whitelist, and ACL policies. All pol
 
 The follow-on action is to use the `incapsula_account_policy_association` resource, to assign the policy to a sub account.
 
+To simplify the use of policies, you can utilize this [cloud-waf Module](https://registry.terraform.io/modules/imperva/cloud-waf/incapsula/latest) along with its submodules.
+
+For full feature documentation, see [Create and Manage Policies](https://docs.imperva.com/bundle/cloud-application-security/page/policies.htm).
+
 ## Example Usage
 
 ```hcl
