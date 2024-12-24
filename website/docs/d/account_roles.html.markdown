@@ -1,7 +1,7 @@
 ---
+subcategory: "Account and User Management"
 layout: "incapsula"
 page_title: "Incapsula: account-roles"
-sidebar_current: "docs-incapsula-data-account-roles"
 description: |-
   Provides an Incapsula Account Roles data source.
 ---

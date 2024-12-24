@@ -1,5 +1,5 @@
 ---
-subcategory: "Provider Reference"
+subcategory: "API Security"
 layout: "incapsula"
 page_title: "incapsula_api_security_endpoint_config"
 description: |-

@@ -1,5 +1,5 @@
 ---
-subcategory: "Provider Reference"
+subcategory: "Cloud WAF - Certificate Management"
 layout: "incapsula"
 page_title: "incapsula_custom_hsm_certificate"
 description: |-

@@ -1,5 +1,5 @@
 ---
-subcategory: "Provider Reference"
+subcategory: "SIEM"
 layout: "incapsula"
 page_title: "incapsula_siem_splunk_connection"
 description: |- 

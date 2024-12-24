@@ -1,5 +1,5 @@
 ---
-subcategory: "Provider Reference"
+subcategory: "Client-Side Protection"
 layout: "incapsula"
 page_title: "incapsula_csp_site_domain"
 description: |- 

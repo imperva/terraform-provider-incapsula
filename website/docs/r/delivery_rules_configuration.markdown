@@ -1,5 +1,5 @@
 ---
-subcategory: "Provider Reference"
+subcategory: "Application Performance and Delivery"
 layout: "incapsula"
 page_title: "Incapsula: delivery_rules_configuration"
 description: |-

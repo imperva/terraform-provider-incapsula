@@ -1,5 +1,5 @@
 ---
-subcategory: "Provider Reference"
+subcategory: "Account Takeover Protection"
 layout: "incapsula"
 page_title: "incapsula_ato_endpoint_mitigation_configuration"
 description: |-

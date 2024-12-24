@@ -1,5 +1,5 @@
 ---
-subcategory: "Provider Reference"
+subcategory: "Account and User Management"
 layout: "incapsula"
 page_title: "incapsula_account"
 description: |-

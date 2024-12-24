@@ -1,5 +1,5 @@
 ---
-subcategory: "Provider Reference"
+subcategory: "Cloud WAF"
 layout: "incapsula"
 page_title: "incapsula_incap_rule"
 description: |-
