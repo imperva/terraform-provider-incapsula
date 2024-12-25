@@ -20,7 +20,6 @@ resource "incapsula_security_rule_exception" "example-waf-backdoor-rule-exceptio
   countries="JM,US"
   continents="NA,AF"
   ips="1.2.3.6,1.2.3.7"
-  url_patterns="EQUALS,CONTAINS"
   urls="/myurl,/myurl2"
   user_agents="myUserAgent"
   parameters="myparam"
@@ -31,7 +30,6 @@ resource "incapsula_security_rule_exception" "example-waf-bot_access-control-rul
   rule_id = "api.threats.bot_access_control"
   client_app_types="DataScraper,"
   ips="1.2.3.6,1.2.3.7"
-  url_patterns="EQUALS,CONTAINS"
   urls="/myurl,/myurl2"
   user_agents="myUserAgent"
 }
@@ -42,7 +40,6 @@ resource "incapsula_security_rule_exception" "example-waf-cross-site-scripting-r
   client_apps="488,123"
   countries="JM,US"
   continents="NA,AF"
-  url_patterns="EQUALS,CONTAINS"
   urls="/myurl,/myurl2"
   parameters="myparam"
 }
@@ -54,7 +51,6 @@ resource "incapsula_security_rule_exception" "example-waf-ddos-rule-exception" {
   countries="JM,US"
   continents="NA,AF"
   ips="1.2.3.6,1.2.3.7"
-  url_patterns="EQUALS,CONTAINS"
   urls="/myurl,/myurl2"
 }
 
@@ -65,7 +61,6 @@ resource "incapsula_security_rule_exception" "example-waf-illegal-resource-acces
   countries="JM,US"
   continents="NA,AF"
   ips="1.2.3.6,1.2.3.7"
-  url_patterns="EQUALS,CONTAINS"
   urls="/myurl,/myurl2"
   parameters="myparam"
 }
@@ -77,7 +72,6 @@ resource "incapsula_security_rule_exception" "example-waf-remote-file-inclusion-
   countries="JM,US"
   continents="NA,AF"
   ips="1.2.3.6,1.2.3.7"
-  url_patterns="EQUALS,CONTAINS"
   urls="/myurl,/myurl2"
   user_agents="myUserAgent"
   parameters="myparam"
@@ -90,7 +84,6 @@ resource "incapsula_security_rule_exception" "example-waf-sql-injection-rule-exc
   countries="JM,US"
   continents="NA,AF"
   ips="1.2.3.6,1.2.3.7"
-  url_patterns="EQUALS,CONTAINS"
   urls="/myurl,/myurl2"
 }
 ```
@@ -107,8 +100,7 @@ At least one Optional argument is required.
 * `countries` - (Optional) A comma separated list of country codes.
 * `continents` - (Optional) A comma separated list of continent codes.
 * `ips=` - (Optional) A comma separated list of IPs or IP ranges, e.g: 192.168.1.1, 192.168.1.1-192.168.1.100 or 192.168.1.1/24
-* `urls=` - (Optional) A comma separated list of resource paths. For example, /home and /admin/index.html are resource paths, while http://www.example.com/home is not. Each URL should be encoded separately using percent encoding as specified by RFC 3986 (http://tools.ietf.org/html/rfc3986#section-2.1). An empty URL list will remove all URLs. urls="/someurl1,/path/to/my/resource/2.html,/some/url/3". If this argument is used, the url_patterns argument is required.
-* `url_patterns` - (Optional) A comma separated list of patterns that correlate to the list of urls. url_patterns are required if you have urls specified, and patterns are applied in the order specified and map literally to the list of urls. Supported values are: contains,equals,prefix,suffix,not_equals,not_contain,not_prefix,not_suffix. Example of how to apply url_patterns to the three urls listed above in order: url_patterns="prefix,equals,prefix".
+* `urls=` - (Optional) A comma separated list of resource paths. For example, /home and /admin/index.html are resource paths, while http://www.example.com/home is not. Each URL should be encoded separately using percent encoding as specified by RFC 3986 (http://tools.ietf.org/html/rfc3986#section-2.1). An empty URL list will remove all URLs. urls="/someurl1,/path/to/my/resource/2.html,/some/url/3".
 * `user_agents` - (Optional) A comma separated list of encoded user agents.
 * `parameters` - (Optional) A comma separated list of encoded parameters.
 
