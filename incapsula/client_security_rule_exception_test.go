@@ -21,7 +21,7 @@ func TestClientAddSecurityRuleExceptionBadConnection(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := 1234
 	ruleID := "api.threats.backdoor"
-	addSecurityRuleExceptionResponse, err := client.AddSecurityRuleException(siteID, ruleID, "", "", "", "", "", "", "", "", "")
+	addSecurityRuleExceptionResponse, err := client.AddSecurityRuleException(siteID, ruleID, "", "", "", "", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -48,7 +48,7 @@ func TestClientAddSecurityRuleExceptionBadJSON(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 1234
 	ruleID := "api.threats.backdoor"
-	addSecurityRuleExceptionResponse, err := client.AddSecurityRuleException(siteID, ruleID, "", "", "", "", "", "", "", "", "")
+	addSecurityRuleExceptionResponse, err := client.AddSecurityRuleException(siteID, ruleID, "", "", "", "", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -75,7 +75,7 @@ func TestClientAddSecurityRuleExceptionInvalidRuleID(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 1234
 	ruleID := "bad_rule_id"
-	addSecurityRuleExceptionResponse, err := client.AddSecurityRuleException(siteID, ruleID, "", "", "", "AN,AS", "", "", "", "", "")
+	addSecurityRuleExceptionResponse, err := client.AddSecurityRuleException(siteID, ruleID, "", "", "", "AN,AS", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -103,7 +103,7 @@ func TestClientAddSecurityRuleExceptionInvalidParam(t *testing.T) {
 	siteID := 1234
 	ruleID := "api.threats.backdoor"
 	badIps := "1234"
-	addSecurityRuleExceptionResponse, err := client.AddSecurityRuleException(siteID, ruleID, "", "", "", "", badIps, "", "", "", "")
+	addSecurityRuleExceptionResponse, err := client.AddSecurityRuleException(siteID, ruleID, "", "", "", "", badIps, "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -126,7 +126,7 @@ func TestClientEditSecurityRuleExceptionBadConnection(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := 1234
 	ruleID := "api.threats.backdoor"
-	editSecurityRuleExceptionResponse, err := client.EditSecurityRuleException(siteID, ruleID, "", "", "", "", "", "", "", "", "", "")
+	editSecurityRuleExceptionResponse, err := client.EditSecurityRuleException(siteID, ruleID, "", "", "", "", "", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -153,7 +153,7 @@ func TestClientEditecurityRuleExceptionBadJSON(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 1234
 	ruleID := "api.threats.backdoor"
-	editSecurityRuleExceptionResponse, err := client.EditSecurityRuleException(siteID, ruleID, "", "", "", "", "", "", "", "", "", "")
+	editSecurityRuleExceptionResponse, err := client.EditSecurityRuleException(siteID, ruleID, "", "", "", "", "", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -180,7 +180,7 @@ func TestClientEditSecurityRuleExceptionInvalidRuleID(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{}}
 	siteID := 1234
 	ruleID := "bad_rule_id"
-	editSecurityRuleExceptionResponse, err := client.EditSecurityRuleException(siteID, ruleID, "", "", "", "", "", "", "", "", "", "")
+	editSecurityRuleExceptionResponse, err := client.EditSecurityRuleException(siteID, ruleID, "", "", "", "", "", "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -209,7 +209,7 @@ func TestClientEditSecurityRuleExceptionInvalidWhitelistID(t *testing.T) {
 	ruleID := "api.threats.backdoor"
 	badIps := "1.2.3.4,1.2.4"
 	badWhitelistID := "1234"
-	editSecurityRuleExceptionResponse, err := client.EditSecurityRuleException(siteID, ruleID, "", "", "", "", badIps, "", "", "", "", badWhitelistID)
+	editSecurityRuleExceptionResponse, err := client.EditSecurityRuleException(siteID, ruleID, "", "", "", "", badIps, "", "", "", badWhitelistID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -237,7 +237,7 @@ func TestClientEditSecurityRuleExceptionInvalidParam(t *testing.T) {
 	siteID := 1234
 	ruleID := "api.threats.backdoor"
 	badIps := "1234"
-	editSecurityRuleExceptionResponse, err := client.EditSecurityRuleException(siteID, ruleID, "", "", "", "", badIps, "", "", "", "", "")
+	editSecurityRuleExceptionResponse, err := client.EditSecurityRuleException(siteID, ruleID, "", "", "", "", badIps, "", "", "", "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
