@@ -9,7 +9,7 @@ description: |-
 # incapsula_site_v3
 
 Provides an Incapsula V3 site resource. A V3 site resource is the core resource that is required by all other resources. incapsula_site_v3 is a newer version of incapsula_site. Site can be managed by incapsula_site_v3 or incapsula_site, but not both simultaneously.
-Full site onboarding example with TF can be found [here | https://docs.imperva.com/bundle/cloud-application-security/page/website-certificate-terraform.htm].
+Full site onboarding example with TF can be found [here](https://docs.imperva.com/bundle/cloud-application-security/page/website-certificate-terraform.htm).
 
 ## Example Usage
 
