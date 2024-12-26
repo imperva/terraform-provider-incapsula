@@ -1,9 +1,9 @@
 ---
+subcategory: "Application Performance and Delivery"
 layout: "incapsula"
 page_title: "Incapsula: data-centers-configuration"
-sidebar_current: "docs-incapsula-data-data-center"
 description: |-
-  Provides an Incapsula Data Center data source.
+    Provides an Incapsula Data Center data source.
 ---
 
 # incapsula_data_center
