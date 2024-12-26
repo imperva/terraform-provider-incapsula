@@ -100,7 +100,7 @@ At least one Optional argument is required.
 * `countries` - (Optional) A comma separated list of country codes.
 * `continents` - (Optional) A comma separated list of continent codes.
 * `ips=` - (Optional) A comma separated list of IPs or IP ranges, e.g: 192.168.1.1, 192.168.1.1-192.168.1.100 or 192.168.1.1/24
-* `urls=` - (Optional) A comma separated list of resource paths. For example, /home and /admin/index.html are resource paths, while http://www.example.com/home is not. Each URL should be encoded separately using percent encoding as specified by RFC 3986 (http://tools.ietf.org/html/rfc3986#section-2.1). The resource configures exceptions for the exact URLs listed in this parameter.
+* `urls=` - (Optional) A comma separated list of resource paths. For example, /home and /admin/index.html are resource paths, while http://www.example.com/home is not. Each URL should be encoded separately using percent encoding as specified by RFC 3986 (http://tools.ietf.org/html/rfc3986#section-2.1). An empty URL list will remove all URLs. The resource configures exceptions for the exact URLs listed in this parameter.
 * `user_agents` - (Optional) A comma separated list of encoded user agents.
 * `parameters` - (Optional) A comma separated list of encoded parameters.
 
