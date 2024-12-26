@@ -110,6 +110,7 @@ func resourceSecurityRuleException() *schema.Resource {
 				Description:      "A comma separated list of url patterns. One of: contains | equals | prefix | suffix | not_equals | not_contain | not_prefix | not_suffix. The patterns should be in accordance with the matching urls sent by the urls parameter.",
 				Type:             schema.TypeString,
 				Optional:         true,
+				Deprecated:       "This parameter will be deprecated in the next major release. EQUALS is the only supported pattern.",
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
 			"urls": {
@@ -158,7 +159,6 @@ func resourceSecurityRuleExceptionCreate(d *schema.ResourceData, m interface{}) 
 		d.Get("countries").(string),
 		d.Get("continents").(string),
 		d.Get("ips").(string),
-		d.Get("url_patterns").(string),
 		d.Get("urls").(string),
 		d.Get("user_agents").(string),
 		d.Get("parameters").(string),
@@ -230,7 +230,6 @@ func resourceSecurityRuleExceptionRead(d *schema.ResourceData, m interface{}) er
 									urlList = append(urlList, url.Value)
 									urlPatternList = append(urlPatternList, url.Pattern)
 								}
-								d.Set("url_patterns", strings.Join(urlPatternList, ","))
 								d.Set("urls", strings.Join(urlList, ","))
 							case exceptionTypeCountry:
 								d.Set("countries", strings.Join(value.Geo.Countries, ","))
@@ -286,7 +285,6 @@ func resourceSecurityRuleExceptionUpdate(d *schema.ResourceData, m interface{}) 
 			"",
 			"",
 			d.Get("ips").(string),
-			d.Get("url_patterns").(string),
 			d.Get("urls").(string),
 			"",
 			"",
@@ -305,7 +303,6 @@ func resourceSecurityRuleExceptionUpdate(d *schema.ResourceData, m interface{}) 
 			d.Get("countries").(string),
 			d.Get("continents").(string),
 			d.Get("ips").(string),
-			d.Get("url_patterns").(string),
 			d.Get("urls").(string),
 			"",
 			"",
@@ -324,7 +321,6 @@ func resourceSecurityRuleExceptionUpdate(d *schema.ResourceData, m interface{}) 
 			d.Get("countries").(string),
 			d.Get("continents").(string),
 			d.Get("ips").(string),
-			d.Get("url_patterns").(string),
 			d.Get("urls").(string),
 			"",
 			"",
@@ -343,7 +339,6 @@ func resourceSecurityRuleExceptionUpdate(d *schema.ResourceData, m interface{}) 
 			d.Get("countries").(string),
 			d.Get("continents").(string),
 			d.Get("ips").(string),
-			d.Get("url_patterns").(string),
 			d.Get("urls").(string),
 			d.Get("user_agents").(string),
 			d.Get("parameters").(string),
@@ -362,7 +357,6 @@ func resourceSecurityRuleExceptionUpdate(d *schema.ResourceData, m interface{}) 
 			"",
 			"",
 			d.Get("ips").(string),
-			d.Get("url_patterns").(string),
 			d.Get("urls").(string),
 			d.Get("user_agents").(string),
 			"",
@@ -381,7 +375,6 @@ func resourceSecurityRuleExceptionUpdate(d *schema.ResourceData, m interface{}) 
 			d.Get("countries").(string),
 			d.Get("continents").(string),
 			"",
-			d.Get("url_patterns").(string),
 			d.Get("urls").(string),
 			"",
 			d.Get("parameters").(string),
@@ -400,7 +393,6 @@ func resourceSecurityRuleExceptionUpdate(d *schema.ResourceData, m interface{}) 
 			d.Get("countries").(string),
 			d.Get("continents").(string),
 			d.Get("ips").(string),
-			d.Get("url_patterns").(string),
 			d.Get("urls").(string),
 			"",
 			"",
@@ -419,7 +411,6 @@ func resourceSecurityRuleExceptionUpdate(d *schema.ResourceData, m interface{}) 
 			d.Get("countries").(string),
 			d.Get("continents").(string),
 			d.Get("ips").(string),
-			d.Get("url_patterns").(string),
 			d.Get("urls").(string),
 			"",
 			d.Get("parameters").(string),
@@ -438,7 +429,6 @@ func resourceSecurityRuleExceptionUpdate(d *schema.ResourceData, m interface{}) 
 			d.Get("countries").(string),
 			d.Get("continents").(string),
 			d.Get("ips").(string),
-			d.Get("url_patterns").(string),
 			d.Get("urls").(string),
 			d.Get("user_agents").(string),
 			d.Get("parameters").(string),
@@ -457,7 +447,6 @@ func resourceSecurityRuleExceptionUpdate(d *schema.ResourceData, m interface{}) 
 			d.Get("countries").(string),
 			d.Get("continents").(string),
 			d.Get("ips").(string),
-			d.Get("url_patterns").(string),
 			d.Get("urls").(string),
 			"",
 			d.Get("parameters").(string),

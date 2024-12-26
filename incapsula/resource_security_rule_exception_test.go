@@ -164,7 +164,6 @@ resource "incapsula_security_rule_exception" "example-waf-blacklisted-countries-
   rule_id = "api.acl.blacklisted_countries"
   client_app_types="DataScraper,"
   ips="1.2.3.6,1.2.3.7"
-  url_patterns="EQUALS,CONTAINS"
   urls="/myurl,/myurl2"
 }`, securityRuleExceptionResourceNameBlacklistedCountries,
 	)
@@ -178,7 +177,6 @@ resource "incapsula_security_rule_exception" "example-waf-blacklisted-countries-
   rule_id = "bad_rule_id"
   client_app_types="DataScraper,"
   ips="1.2.3.6,1.2.3.7"
-  url_patterns="EQUALS,CONTAINS"
   urls="/myurl,/myurl2"
 }`, securityRuleExceptionResourceNameBlacklistedCountries,
 	)
@@ -191,7 +189,6 @@ resource "incapsula_security_rule_exception" "example-waf-blacklisted-countries-
   rule_id = "api.acl.blacklisted_countries"
   client_app_types="DataScraper,"
   ips="1.2.3.6,1.2.3."
-  url_patterns="EQUALS,CONTAINS"
   urls="/myurl,myurl2"
 }`, securityRuleExceptionResourceNameBlacklistedCountries,
 	)
