@@ -110,7 +110,7 @@ func resourceSecurityRuleException() *schema.Resource {
 				Description:      "A comma separated list of url patterns. One of: contains | equals | prefix | suffix | not_equals | not_contain | not_prefix | not_suffix. The patterns should be in accordance with the matching urls sent by the urls parameter.",
 				Type:             schema.TypeString,
 				Optional:         true,
-				Deprecated:       "This parameter will be deprecated in the next major release. EQUALS is the only supported pattern.",
+				Deprecated:       "This parameter is deprecated and will be removed in the next major release. The resource configures exceptions for the exact URLs specified in the 'urls' parameter, if provided.",
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
 			"urls": {
