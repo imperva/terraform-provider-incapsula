@@ -1,7 +1,20 @@
+## 3.28.3 (Jan 05, 2025)
+
+IMPROVEMENTS:
+Organize resources tree by products ([#494](https://github.com/imperva/terraform-provider-incapsula/pull/494))
+
+
+BUG FIXES:
+Updates the log to avoid printing the user details ([#492](https://github.com/imperva/terraform-provider-incapsula/pull/492))
+Fix link in site_v3 docs ([#495](https://github.com/imperva/terraform-provider-incapsula/pull/495))
+incapsula_security_rule_exception resource - Remove usages of ignored parameter 'url_patterns' and add deprecation message ([#496](https://github.com/imperva/terraform-provider-incapsula/pull/496))
+Improve docs in security_rule_exception resource ([#497](https://github.com/imperva/terraform-provider-incapsula/pull/497))
+
+
 ## 3.28.2 (Dec 16, 2024)
 
 IMPROVEMENTS:
-Fix managed certificate existence check #485 ([#485](https://github.com/imperva/terraform-provider-incapsula/pull/485))
+Fix managed certificate existence check ([#485](https://github.com/imperva/terraform-provider-incapsula/pull/485))
 Adding an example for a policy exception that's assign to a site ([#488](https://github.com/imperva/terraform-provider-incapsula/pull/488))
 
 
