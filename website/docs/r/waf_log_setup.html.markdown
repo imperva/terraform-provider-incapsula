@@ -1,10 +1,15 @@
 ---
-subcategory: "Provider Reference"
+subcategory: "Deprecated"
 layout: "incapsula"
 page_title: "incapsula_waf_log_setup"
 description: |-
     Provides an Incapsula WAF Log Setup resource.
 ---
+
+-> DEPRECATED: incapsula_waf_log_setup
+
+This resource has been DEPRECATED. It will be removed in a future version.
+Please use the current `incapsula_siem_log_configuration` resource instead.
 
 # incapsula_waf_log_setup
 
