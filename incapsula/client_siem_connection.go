@@ -25,6 +25,13 @@ type SplunkConnectionInfo struct {
 	DisableCertVerification bool   `json:"disableCertVerification"`
 }
 
+type SftpConnectionInfo struct {
+	Host     string `json:"host"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Path     string `json:"path"`
+}
+
 type ConnectionInfo interface {
 	getConnectionInfo() any
 }
@@ -35,6 +42,15 @@ func (s SplunkConnectionInfo) getConnectionInfo() any {
 		Port:                    s.Port,
 		Token:                   s.Token,
 		DisableCertVerification: s.DisableCertVerification,
+	}
+}
+
+func (s SftpConnectionInfo) getConnectionInfo() any {
+	return SftpConnectionInfo{
+		Host:     s.Host,
+		Username: s.Username,
+		Password: s.Password,
+		Path:     s.Path,
 	}
 }
 
@@ -81,6 +97,13 @@ func (s *SiemConnectionData) UnmarshalJSON(input []byte) error {
 			Port:                    int(jsonMap["connectionInfo"].(map[string]interface{})["port"].(float64)),
 			Token:                   jsonMap["connectionInfo"].(map[string]interface{})["token"].(string),
 			DisableCertVerification: jsonMap["connectionInfo"].(map[string]interface{})["disableCertVerification"].(bool),
+		}
+	} else if s.StorageType == "CUSTOMER_SFTP" {
+		s.ConnectionInfo = SftpConnectionInfo{
+			Host:     jsonMap["connectionInfo"].(map[string]interface{})["host"].(string),
+			Username: jsonMap["connectionInfo"].(map[string]interface{})["username"].(string),
+			Password: jsonMap["connectionInfo"].(map[string]interface{})["password"].(string),
+			Path:     jsonMap["connectionInfo"].(map[string]interface{})["path"].(string),
 		}
 	} else {
 		err = errors.New("unsupported ConnectionInfo type")
