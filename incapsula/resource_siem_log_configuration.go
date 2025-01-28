@@ -36,10 +36,6 @@ const AttackAnalyticsProvider = "ATTACK_ANALYTICS"
 
 var AttackAnalyticsDatasets = []string{"WAF_ANALYTICS_LOGS"}
 
-const DnsMsProvider = "DNSMS"
-
-var DnsMsDatasets = []string{"DNSMS_SECURITY_LOGS"}
-
 func resourceSiemLogConfiguration() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceSiemLogConfigurationCreate,
@@ -79,14 +75,14 @@ func resourceSiemLogConfiguration() *schema.Resource {
 				Description:  "Type of the producer.",
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{AbpProvider, NetsecProvider, AtoProvider, AuditProvider, CspProvider, CloudWafProvider, AttackAnalyticsProvider, DnsMsProvider}, false),
+				ValidateFunc: validation.StringInSlice([]string{AbpProvider, NetsecProvider, AtoProvider, AuditProvider, CspProvider, CloudWafProvider, AttackAnalyticsProvider}, false),
 			},
 			"datasets": {
 				Description: "All datasets for the supported producers.",
 				Type:        schema.TypeList,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice([]string{AbpDatasets[0], NetsecDatasets[0], NetsecDatasets[1], NetsecDatasets[2], NetsecDatasets[3], NetsecDatasets[4], AtoDatasets[0], AuditDatasets[0], CspDatasets[0], CspDatasets[1], CspDatasets[2], CspDatasets[3], CspDatasets[4], CspDatasets[5], CloudWafDatasets[0], CloudWafDatasets[1], AttackAnalyticsDatasets[0], DnsMsDatasets[0]}, false),
+					ValidateFunc: validation.StringInSlice([]string{AbpDatasets[0], NetsecDatasets[0], NetsecDatasets[1], NetsecDatasets[2], NetsecDatasets[3], NetsecDatasets[4], AtoDatasets[0], AuditDatasets[0], CspDatasets[0], CspDatasets[1], CspDatasets[2], CspDatasets[3], CspDatasets[4], CspDatasets[5], CloudWafDatasets[0], CloudWafDatasets[1], AttackAnalyticsDatasets[0]}, false),
 				},
 				Required: true,
 			},
@@ -153,8 +149,6 @@ func resourceValidation(d *schema.ResourceData) error {
 		providerDatasets = CloudWafDatasets
 	} else if producer == AttackAnalyticsProvider {
 		providerDatasets = AttackAnalyticsDatasets
-	} else if producer == DnsMsProvider {
-		providerDatasets = DnsMsDatasets
 	}
 
 	for _, s := range datasets {
