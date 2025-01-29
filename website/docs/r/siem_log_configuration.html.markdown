@@ -124,15 +124,6 @@ NwIDAQAB
 
 }
 
-resource "incapsula_siem_log_configuration" "example_siem_log_configuration_csp"{
-    accountId = 1234567
-  	configurationName = "DNSMS SIEM-LOGS configuration"
-  	producer = "DNSMS"
-	datasets = ["DNSMS_SECURITY_LOGS"]
-  	enabled = true
-  	connectionId = incapsula_siem_connection.example_siem_connection_basic_auth.id
-  	
-}
 ```
 
 ## Argument Reference
@@ -140,8 +131,8 @@ resource "incapsula_siem_log_configuration" "example_siem_log_configuration_csp"
 The following arguments are supported:
 * `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `configurationName` - (Required) Unique configuration name.
-* `producer` - (Required) Provider type. Values: `ABP`, `NETSEC`, `ATO`, `AUDIT`, `CLOUD_WAF`, `ATTACK_ANALYTICS`, `DNSMS`
-* `datasets` - (Required) An array of strings representing the type of logs. Values:<br /> `ABP` for provider type `ABP`<br /> `CONNECTION`, `NETFLOW`, `IP`, `ATTACK`,`NOTIFICATIONS` for provider type `NETSEC`<br /> `ATO` for provider type `ATO`<br /> `AUDIT_TRAIL` for provider type `AUDIT` <br /> `GOOGLE_ANALYTICS_IDS`, `SIGNIFICANT_DOMAIN_DISCOVERY`, `SIGNIFICANT_SCRIPT_DISCOVERY`, `SIGNIFICANT_DATA_TRANSFER_DISCOVERY`, `DOMAIN_DISCOVERY_ENFORCE_MODE`, `CSP_HEADER_HEALTH` for provider type `CSP`<br /> `WAF_RAW_LOGS`, `CLOUD_WAF_ACCESS` for provider type `CLOUD_WAF` <br /> `WAF_ANALYTICS_LOGS` for provider type `ATTACK_ANALYTICS`<br /> `DNSMS_SECURITY_LOGS` for provider type `DNSMS`
+* `producer` - (Required) Provider type. Values: `ABP`, `NETSEC`, `ATO`, `AUDIT`, `CLOUD_WAF`, `ATTACK_ANALYTICS`
+* `datasets` - (Required) An array of strings representing the type of logs. Values:<br /> `ABP` for provider type `ABP`<br /> `CONNECTION`, `NETFLOW`, `IP`, `ATTACK`,`NOTIFICATIONS` for provider type `NETSEC`<br /> `ATO` for provider type `ATO`<br /> `AUDIT_TRAIL` for provider type `AUDIT` <br /> `GOOGLE_ANALYTICS_IDS`, `SIGNIFICANT_DOMAIN_DISCOVERY`, `SIGNIFICANT_SCRIPT_DISCOVERY`, `SIGNIFICANT_DATA_TRANSFER_DISCOVERY`, `DOMAIN_DISCOVERY_ENFORCE_MODE`, `CSP_HEADER_HEALTH` for provider type `CSP`<br /> `WAF_RAW_LOGS`, `CLOUD_WAF_ACCESS` for provider type `CLOUD_WAF` <br /> `WAF_ANALYTICS_LOGS` for provider type `ATTACK_ANALYTICS`
 * `enabled`  - (Required) Boolean. Values: `true`/ `false`
 * `connectionId` - (Required) Connection id associated with this log configuration
 * `logs_level` - (Optional) Security log level - compatible only with CLOUD_WAF producer. Values: `NONE`, `FULL`, `SECURITY`
@@ -161,7 +152,6 @@ The following arguments are supported:
 | CSP              | GOOGLE_ANALYTICS_IDS, SIGNIFICANT_DOMAIN_DISCOVERY, SIGNIFICANT_SCRIPT_DISCOVERY, SIGNIFICANT_DATA_TRANSFER_DISCOVERY,DOMAIN_DISCOVERY_ENFORCE_MODE,CSP_HEADER_HEALTH |
 | CLOUD_WAF        | WAF_RAW_LOGS, CLOUD_WAF_ACCESS                                                                                                                                        |
 | ATTACK_ANALYTICS | WAF_ANALYTICS_LOGS                                                                                                                                                    |
-| DNSMS            | DNSMS_SECURITY_LOGS                                                                                                                                                   |
 
 
 ## Attributes Reference
