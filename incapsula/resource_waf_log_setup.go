@@ -8,10 +8,11 @@ import (
 
 func resourceWAFLogSetup() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceWAFLogSetupCreate,
-		Read:   resourceWAFLogSetupRead,
-		Update: resourceWAFLogSetupCreate,
-		Delete: resourceWAFLogSetupDelete,
+		DeprecationMessage: "This resource is deprecated. It will be removed in a future version. Please use resource incapsula_siem_log_configuration instead.",
+		Create:             resourceWAFLogSetupCreate,
+		Read:               resourceWAFLogSetupRead,
+		Update:             resourceWAFLogSetupCreate,
+		Delete:             resourceWAFLogSetupDelete,
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments

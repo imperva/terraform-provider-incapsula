@@ -1,10 +1,15 @@
 ---
-subcategory: "SIEM"
+subcategory: "Deprecated"
 layout: "incapsula"
 page_title: "incapsula_waf_log_setup"
 description: |-
     Provides an Incapsula WAF Log Setup resource.
 ---
+-> DEPRECATED: incapsula_waf_log_setup
+
+This resource has been DEPRECATED. It will be removed in a future version.
+Please use the current `incapsula_siem_log_configuration` for CWAF log configuration resource instead.
+For SFTP Connection please use the current `incapsula_siem_sftp_connection` resource, and for S3 Connection please use the `incapsula_siem_s3_connection` resource.
 
 # incapsula_waf_log_setup
 

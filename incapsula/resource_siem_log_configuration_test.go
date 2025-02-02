@@ -27,7 +27,7 @@ func TestSiemLogConfiguration_Basic(t *testing.T) {
 		CheckDestroy: testAccIncapsulaSiemLogConfigurationDestroy(siemLogConfigurationResourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\"", "\"ATO\"", "\"AUDIT_TRAIL\"", "\"GOOGLE_ANALYTICS_IDS\", \"SIGNIFICANT_DOMAIN_DISCOVERY\", \"SIGNIFICANT_SCRIPT_DISCOVERY\", \"SIGNIFICANT_DATA_TRANSFER_DISCOVERY\", \"DOMAIN_DISCOVERY_ENFORCE_MODE\", \"CSP_HEADER_HEALTH\"", "\"CLOUD_WAF_ACCESS\", \"WAF_RAW_LOGS\"", "\"WAF_ANALYTICS_LOGS\"", "\"DNSMS_SECURITY_LOGS\""),
+				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\"", "\"ATO\"", "\"AUDIT_TRAIL\"", "\"GOOGLE_ANALYTICS_IDS\", \"SIGNIFICANT_DOMAIN_DISCOVERY\", \"SIGNIFICANT_SCRIPT_DISCOVERY\", \"SIGNIFICANT_DATA_TRANSFER_DISCOVERY\", \"DOMAIN_DISCOVERY_ENFORCE_MODE\", \"CSP_HEADER_HEALTH\"", "\"CLOUD_WAF_ACCESS\", \"WAF_RAW_LOGS\"", "\"WAF_ANALYTICS_LOGS\""),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_abp"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
@@ -36,7 +36,6 @@ func TestSiemLogConfiguration_Basic(t *testing.T) {
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_csp"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_cloudwaf"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_attackanalytics"),
-					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_dnsms"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "configuration_name", siemLogConfigurationName+"abp"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "producer", "ABP"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "configuration_name", siemLogConfigurationName+"netsec"),
@@ -53,8 +52,6 @@ func TestSiemLogConfiguration_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_attackanalytics", "configuration_name", siemLogConfigurationName+"attackanalytics"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_attackanalytics", "producer", "ATTACK_ANALYTICS"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_attackanalytics", "format", "CEF"),
-					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_dnsms", "configuration_name", siemLogConfigurationName+"dnsms"),
-					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_dnsms", "producer", "DNSMS"),
 				),
 			},
 			{
@@ -99,12 +96,6 @@ func TestSiemLogConfiguration_Basic(t *testing.T) {
 				ImportStateVerify: true,
 				ImportStateIdFunc: testACCStateSiemLogConfigurationID(siemLogConfigurationResourceType),
 			},
-			{
-				ResourceName:      siemLogConfigurationResource + "_dnsms",
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateIdFunc: testACCStateSiemLogConfigurationID(siemLogConfigurationResourceType),
-			},
 		},
 	})
 }
@@ -119,7 +110,7 @@ func TestSiemLogConfiguration_Update(t *testing.T) {
 		CheckDestroy: testAccIncapsulaSiemLogConfigurationDestroy(siemLogConfigurationResourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\"", "\"ATO\"", "\"AUDIT_TRAIL\"", "\"GOOGLE_ANALYTICS_IDS\", \"SIGNIFICANT_DOMAIN_DISCOVERY\", \"SIGNIFICANT_SCRIPT_DISCOVERY\", \"SIGNIFICANT_DATA_TRANSFER_DISCOVERY\", \"DOMAIN_DISCOVERY_ENFORCE_MODE\", \"CSP_HEADER_HEALTH\"", "\"CLOUD_WAF_ACCESS\", \"WAF_RAW_LOGS\"", "\"WAF_ANALYTICS_LOGS\"", "\"DNSMS_SECURITY_LOGS\""),
+				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\"", "\"ATO\"", "\"AUDIT_TRAIL\"", "\"GOOGLE_ANALYTICS_IDS\", \"SIGNIFICANT_DOMAIN_DISCOVERY\", \"SIGNIFICANT_SCRIPT_DISCOVERY\", \"SIGNIFICANT_DATA_TRANSFER_DISCOVERY\", \"DOMAIN_DISCOVERY_ENFORCE_MODE\", \"CSP_HEADER_HEALTH\"", "\"CLOUD_WAF_ACCESS\", \"WAF_RAW_LOGS\"", "\"WAF_ANALYTICS_LOGS\""),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_abp"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
@@ -128,7 +119,6 @@ func TestSiemLogConfiguration_Update(t *testing.T) {
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_csp"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_cloudwaf"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_attackanalytics"),
-					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_dnsms"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "configuration_name", siemLogConfigurationName+"abp"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "configuration_name", siemLogConfigurationName+"netsec"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_ato", "configuration_name", siemLogConfigurationName+"ato"),
@@ -136,11 +126,10 @@ func TestSiemLogConfiguration_Update(t *testing.T) {
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_csp", "configuration_name", siemLogConfigurationName+"csp"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_cloudwaf", "configuration_name", siemLogConfigurationName+"cloudwaf"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_attackanalytics", "configuration_name", siemLogConfigurationName+"attackanalytics"),
-					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_dnsms", "configuration_name", siemLogConfigurationName+"dnsms"),
 				),
 			},
 			{
-				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationNameUpdated, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\"", "\"ATO\"", "\"AUDIT_TRAIL\"", "\"GOOGLE_ANALYTICS_IDS\", \"SIGNIFICANT_DOMAIN_DISCOVERY\", \"SIGNIFICANT_SCRIPT_DISCOVERY\", \"SIGNIFICANT_DATA_TRANSFER_DISCOVERY\", \"DOMAIN_DISCOVERY_ENFORCE_MODE\", \"CSP_HEADER_HEALTH\"", "\"CLOUD_WAF_ACCESS\", \"WAF_RAW_LOGS\"", "\"WAF_ANALYTICS_LOGS\"", "\"DNSMS_SECURITY_LOGS\""),
+				Config: getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationNameUpdated, "\"ABP\"", "\"CONNECTION\", \"NETFLOW\"", "\"ATO\"", "\"AUDIT_TRAIL\"", "\"GOOGLE_ANALYTICS_IDS\", \"SIGNIFICANT_DOMAIN_DISCOVERY\", \"SIGNIFICANT_SCRIPT_DISCOVERY\", \"SIGNIFICANT_DATA_TRANSFER_DISCOVERY\", \"DOMAIN_DISCOVERY_ENFORCE_MODE\", \"CSP_HEADER_HEALTH\"", "\"CLOUD_WAF_ACCESS\", \"WAF_RAW_LOGS\"", "\"WAF_ANALYTICS_LOGS\""),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_abp"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_netsec"),
@@ -149,7 +138,6 @@ func TestSiemLogConfiguration_Update(t *testing.T) {
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_csp"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_cloudwaf"),
 					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_attackanalytics"),
-					testCheckIncapsulaSiemLogConfigurationExists(siemLogConfigurationResource+"_dnsms"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_abp", "configuration_name", siemLogConfigurationNameUpdated+"abp"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_netsec", "configuration_name", siemLogConfigurationNameUpdated+"netsec"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_ato", "configuration_name", siemLogConfigurationNameUpdated+"ato"),
@@ -157,14 +145,13 @@ func TestSiemLogConfiguration_Update(t *testing.T) {
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_csp", "configuration_name", siemLogConfigurationNameUpdated+"csp"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_cloudwaf", "configuration_name", siemLogConfigurationNameUpdated+"cloudwaf"),
 					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_attackanalytics", "configuration_name", siemLogConfigurationNameUpdated+"attackanalytics"),
-					resource.TestCheckResourceAttr(siemLogConfigurationResource+"_dnsms", "configuration_name", siemLogConfigurationNameUpdated+"dnsms"),
 				),
 			},
 		},
 	})
 }
 
-func getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName string, abpDatasets string, netsecDatasets string, atoDatasets string, auditDatasets string, cspDatasets string, cloudWafDatasets string, attackAnalyticsDatasets string, dnsMsDatasets string) string {
+func getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName string, abpDatasets string, netsecDatasets string, atoDatasets string, auditDatasets string, cspDatasets string, cloudWafDatasets string, attackAnalyticsDatasets string) string {
 	return getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName, "data-platform-access-logs-dev/test/cwaf/51319839") + fmt.Sprintf(`
 		resource "%s" "%s" {
 			configuration_name = "%s"
@@ -237,16 +224,6 @@ func getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName str
          }`,
 		siemLogConfigurationResourceType, siemLogConfigurationResourceName+"_attackanalytics", siemLogConfigurationName+"attackanalytics",
 		attackAnalyticsDatasets, siemConnectionResourceType, s3ArnSiemConnectionResourceName,
-	) + fmt.Sprintf(`
-        resource "%s" "%s" {
-            configuration_name = "%s"
-            producer = "DNSMS"
-            datasets = [%s]
-            enabled = true
-            connection_id = %s.%s.id
-        }`,
-		siemLogConfigurationResourceType, siemLogConfigurationResourceName+"_dnsms", siemLogConfigurationName+"dnsms",
-		dnsMsDatasets, siemConnectionResourceType, s3ArnSiemConnectionResourceName,
 	)
 }
 
