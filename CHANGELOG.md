@@ -1,11 +1,19 @@
+## 3.29.0 (Feb 02, 2025)
+
+IMPROVEMENTS:
+* Deprecation: waf_log_setup resource ([#504](https://github.com/imperva/terraform-provider-incapsula/pull/504))
+* removed dnsms dataset  ([#504](https://github.com/imperva/terraform-provider-incapsula/pull/504))
+ 
+
+
 ## 3.28.3 (Jan 05, 2025)
 
 IMPROVEMENTS:
-Organize resources tree by products ([#494](https://github.com/imperva/terraform-provider-incapsula/pull/494))
+* Organize resources tree by products ([#494](https://github.com/imperva/terraform-provider-incapsula/pull/494))
 
 
 BUG FIXES:
-Updates the log to avoid printing the user details ([#492](https://github.com/imperva/terraform-provider-incapsula/pull/492))
+* Updates the log to avoid printing the user details ([#492](https://github.com/imperva/terraform-provider-incapsula/pull/492))
 Fix link in site_v3 docs ([#495](https://github.com/imperva/terraform-provider-incapsula/pull/495))
 incapsula_security_rule_exception resource - Remove usages of ignored parameter 'url_patterns' and add deprecation message ([#496](https://github.com/imperva/terraform-provider-incapsula/pull/496))
 Improve docs in security_rule_exception resource ([#497](https://github.com/imperva/terraform-provider-incapsula/pull/497))
