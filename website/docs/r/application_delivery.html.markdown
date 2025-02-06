@@ -9,7 +9,6 @@ description: |-
 # incapsula_application_delivery
 
 Configure delivery options to help you optimize your content delivery and improve performance by providing faster loading of your web pages.
-Note that the destroy command returns the configuration to the default values.
 
 ## Example Usage
 

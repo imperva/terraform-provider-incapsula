@@ -53,14 +53,14 @@ type PerformanceSettings struct {
 }
 
 // GetPerformanceSettings gets the site performance settings
-func (c *Client) GetPerformanceSettings(siteID string) (*PerformanceSettings, int, error) {
+func (c *Client) GetPerformanceSettings(siteID string) (*PerformanceSettings, error) {
 	log.Printf("[INFO] Getting Incapsula Performance Settings for Site ID %s\n", siteID)
 
 	// Post form to Incapsula
 	reqURL := fmt.Sprintf("%s/sites/%s/settings/cache", c.config.BaseURLRev2, siteID)
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadSitePerformance)
 	if err != nil {
-		return nil, 0, fmt.Errorf("Error from Incapsula service when reading Incap Performance Settings for Site ID %s: %s", siteID, err)
+		return nil, fmt.Errorf("Error from Incapsula service when reading Incap Performance Settings for Site ID %s: %s", siteID, err)
 	}
 
 	// Read the body
@@ -72,17 +72,17 @@ func (c *Client) GetPerformanceSettings(siteID string) (*PerformanceSettings, in
 
 	// Check the response code
 	if resp.StatusCode != 200 {
-		return nil, resp.StatusCode, fmt.Errorf("Error status code %d from Incapsula service when reading Incap Performance Settings for Site ID %s: %s", resp.StatusCode, siteID, string(responseBody))
+		return nil, fmt.Errorf("Error status code %d from Incapsula service when reading Incap Performance Settings for Site ID %s: %s", resp.StatusCode, siteID, string(responseBody))
 	}
 
 	// Parse the JSON
 	var performanceSettings PerformanceSettings
 	err = json.Unmarshal([]byte(responseBody), &performanceSettings)
 	if err != nil {
-		return nil, resp.StatusCode, fmt.Errorf("Error parsing Incap Performance Settings JSON response for Site ID %s: %s\nresponse: %s", siteID, err, string(responseBody))
+		return nil, fmt.Errorf("Error parsing Incap Performance Settings JSON response for Site ID %s: %s\nresponse: %s", siteID, err, string(responseBody))
 	}
 
-	return &performanceSettings, resp.StatusCode, nil
+	return &performanceSettings, nil
 }
 
 // UpdatePerformanceSettings updates the site performance settings
