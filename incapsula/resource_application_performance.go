@@ -247,6 +247,8 @@ func resourceApplicationPerformanceRead(d *schema.ResourceData, m interface{}) e
 	d.Set("ttl_prefer_last_modified", performanceSettingsResponse.TTL.PreferLastModified)
 	d.Set("ttl_use_shortest_caching", performanceSettingsResponse.TTL.UseShortestCaching)
 
+	d.SetId(siteIdStr)
+
 	return nil
 }
 
