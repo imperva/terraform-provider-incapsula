@@ -118,11 +118,11 @@ func testAccStateApplicationPerformanceID(s *terraform.State) (string, error) {
 		siteID, err := strconv.Atoi(rs.Primary.Attributes["site_id"])
 
 		if err != nil {
-			return "", fmt.Errorf("Error parsing ID %v to int in Application Delivery resource test", rs.Primary.Attributes["site_id"])
+			return "", fmt.Errorf("Error parsing ID %v to int in Application Performance resource test", rs.Primary.Attributes["site_id"])
 		}
 		return fmt.Sprintf("%d", siteID), nil
 	}
-	return "", fmt.Errorf("Error finding site_id argument in Application Delivery resource test")
+	return "", fmt.Errorf("Error finding site_id argument in Application Performance resource test")
 }
 
 func testAllCachingEnabled(domainName string) string {
