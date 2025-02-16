@@ -106,13 +106,6 @@ func resourceSecurityRuleException() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
-			"url_patterns": {
-				Description:      "A comma separated list of url patterns. One of: contains | equals | prefix | suffix | not_equals | not_contain | not_prefix | not_suffix. The patterns should be in accordance with the matching urls sent by the urls parameter.",
-				Type:             schema.TypeString,
-				Optional:         true,
-				Deprecated:       "This parameter is deprecated and will be removed in the next major release. The resource configures exceptions for the exact URLs specified in the 'urls' parameter, if provided.",
-				DiffSuppressFunc: suppressEquivalentStringDiffs,
-			},
 			"urls": {
 				Description:      "A comma separated list of resource paths. For example, /home and /admin/index.html are resource paths, while http://www.example.com/home is not. Each URL should be encoded separately using percent encoding as specified by RFC 3986 (http://tools.ietf.org/html/rfc3986#section-2.1). An empty URL list will remove all URLs.",
 				Type:             schema.TypeString,
