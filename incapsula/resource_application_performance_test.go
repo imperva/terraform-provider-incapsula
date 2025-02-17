@@ -43,11 +43,11 @@ func TestAccIncapsulaApplicationPerformance_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_cache_http_10_responses", "true"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_cache_response_header_mode", "custom"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_cache_response_headers.#", "1"),
-					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_cache_response_headers.0", "cache"),
+					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_cache_response_headers.0", "cache2"),
 
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_stale_content_mode", "custom"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_stale_content_time", "120"),
-					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_tag_response_header", "cache"),
+					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_tag_response_header", "myHeader3"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "ttl_prefer_last_modified", "true"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "ttl_use_shortest_caching", "true"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_cache_shield", "false"),
@@ -144,8 +144,9 @@ resource "%s" "%s" {
 	response_cache_empty_responses = true
 	response_cache_http_10_responses = true
 	response_cache_response_header_mode = "custom"
-	response_cache_response_headers = ["cache"]
+	response_cache_response_headers = ["cache2"]
 	response_stale_content_mode = "custom"
+	response_tag_response_header = "myHeader3"
 	response_stale_content_time = 120
 	ttl_prefer_last_modified = true
 	ttl_use_shortest_caching = true
