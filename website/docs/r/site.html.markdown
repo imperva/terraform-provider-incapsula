@@ -93,7 +93,7 @@ The following arguments are supported:
   60.
 * `perf_response_cache_empty_responses` - (Optional) Cache responses that don’t have a message body.
 * `perf_response_cache_http_10_responses` - (Optional) Cache HTTP 1.0 type responses that don’t include the Content-Length header or chunking.
-* `perf_response_cache_response_header_mode` - (Optional) The working mode for caching response headers. Options are `all` and `custom`.
+* `perf_response_cache_response_header_mode` - (Optional) The working mode for caching response headers. Options are `all`, `custom` and `disabled`.
 * `perf_response_cache_response_headers` - (Optional) An array of strings representing the response headers to be cached when working in `custom` mode. If empty, no response headers are cached.
 For example: `["Access-Control-Allow-Origin","Access-Control-Allow-Methods"]`.
 * `perf_response_cache_shield` - (Optional) Adds an intermediate cache between other Imperva PoPs and your origin servers to protect your servers from redundant requests.
