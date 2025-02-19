@@ -245,7 +245,7 @@ func resourceSite() *schema.Resource {
 				Optional:    true,
 			},
 			"perf_response_cache_response_header_mode": {
-				Description: "The working mode for caching response headers. Options are `all` and `custom`.",
+				Description: "The working mode for caching response headers. Options are `all`, `custom` and `disabled`.",
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,

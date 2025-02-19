@@ -74,17 +74,17 @@ func resourceApplicationPerformance() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"disabled", "dont_include_html", "include_html", "include_all_resources"}, false),
 			},
 			"mode_level": {
-				Description:  "Caching level. Options are `disabled`, `standard`, `smart`, and `all_resources`.",
+				Description:  "Caching level. Options are `disabled`, `custom_cache_rules_only`, `standard`, `smart`, and `all_resources`.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "smart",
-				ValidateFunc: validation.StringInSlice([]string{"disabled", "standard", "smart", "all_resources"}, false),
+				ValidateFunc: validation.StringInSlice([]string{"disabled", "custom_cache_rules_only", "standard", "smart", "all_resources"}, false),
 			},
 			"mode_time": {
 				Description: "The time, in seconds, that you set for this option determines how often the cache is refreshed. Relevant for the `include_html` and `include_all_resources` levels only.",
 				Type:        schema.TypeInt,
-				Computed:    true,
 				Optional:    true,
+				Default:     0,
 			},
 			"response_cache_300x": {
 				Description: "When this option is checked Imperva will cache 301, 302, 303, 307, and 308 redirect response headers containing the target URI.",
@@ -101,8 +101,8 @@ func resourceApplicationPerformance() *schema.Resource {
 			"response_cache_404_time": {
 				Description:  "The time in seconds to cache 404 responses.",
 				Type:         schema.TypeInt,
-				Computed:     true,
 				Optional:     true,
+				Default:      0,
 				ValidateFunc: validation.IntDivisibleBy(60),
 			},
 			"response_cache_empty_responses": {
@@ -152,8 +152,8 @@ func resourceApplicationPerformance() *schema.Resource {
 			"response_stale_content_time": {
 				Description: "The time, in seconds, to serve stale content for when working in `custom` work mode.",
 				Type:        schema.TypeInt,
-				Computed:    true,
 				Optional:    true,
+				Default:     0,
 			},
 			"response_tag_response_header": {
 				Description: "Tag the response according to the value of this header. Specify which origin response header contains the cache tags in your resources.",
