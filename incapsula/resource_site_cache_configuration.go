@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func resourceApplicationPerformance() *schema.Resource {
+func resourceSiteCacheConfiguration() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceApplicationPerformanceUpdate,
 		Read:   resourceApplicationPerformanceRead,
@@ -19,11 +19,11 @@ func resourceApplicationPerformance() *schema.Resource {
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				siteID, err := strconv.Atoi(d.Id())
 				if err != nil {
-					return nil, fmt.Errorf("failed to convert Site Id from import command for Application Performance resource, actual value: %s, expected numeric id", d.Id())
+					return nil, fmt.Errorf("failed to convert Site Id from import command for Site Cache Configuration resource, actual value: %s, expected numeric id", d.Id())
 				}
 
 				d.Set("site_id", siteID)
-				log.Printf("[DEBUG] Import Application Performance for Site ID %d", siteID)
+				log.Printf("[DEBUG] Import Site Cache Configuration for Site ID %d", siteID)
 				return []*schema.ResourceData{d}, nil
 			},
 		},

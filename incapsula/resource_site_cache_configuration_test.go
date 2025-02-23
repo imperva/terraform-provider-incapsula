@@ -10,14 +10,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-const applicationPerformanceResourceName = "incapsula_application_performance"
+const applicationPerformanceResourceName = "incapsula_site_cache_configuration"
 const applicationPerformanceResource = applicationPerformanceResourceName + "." + applicationPerformanceName
-const applicationPerformanceName = "testacc-terraform-application_performance"
+const applicationPerformanceName = "testacc-terraform-site_cache_configuration"
 
 func TestAccIncapsulaApplicationPerformance_basic(t *testing.T) {
 	var domainName = GenerateTestDomain(t)
 	log.Printf("======================== BEGIN TEST ========================")
-	log.Printf("[DEBUG] Running test resource_application_performance_test.TestAccIncapsulaApplicationPerformance_basic")
+	log.Printf("[DEBUG] Running test resource_site_cache_configuration_test.TestAccIncapsulaApplicationPerformance_basic")
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
@@ -96,13 +96,13 @@ func testCheckApplicationPerformanceExists(name string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		_, ok := state.RootModule().Resources[name]
 		if !ok {
-			return fmt.Errorf("Incapsula Application Performance resource not found: %s", name)
+			return fmt.Errorf("Incapsula Site Cache Configuration resource not found: %s", name)
 		}
 
 		client := testAccProvider.Meta().(*Client)
 		_, err2 := client.GetPerformanceSettings(siteId)
 		if err2 != nil {
-			fmt.Errorf("Incapsula Application Performance doesn't exist")
+			fmt.Errorf("Incapsula Site Cache Configuration doesn't exist")
 		}
 
 		return nil
@@ -118,11 +118,11 @@ func testAccStateApplicationPerformanceID(s *terraform.State) (string, error) {
 		siteID, err := strconv.Atoi(rs.Primary.Attributes["site_id"])
 
 		if err != nil {
-			return "", fmt.Errorf("Error parsing ID %v to int in Application Performance resource test", rs.Primary.Attributes["site_id"])
+			return "", fmt.Errorf("Error parsing ID %v to int in Site Cache Configuration resource test", rs.Primary.Attributes["site_id"])
 		}
 		return fmt.Sprintf("%d", siteID), nil
 	}
-	return "", fmt.Errorf("Error finding site_id argument in Application Performance resource test")
+	return "", fmt.Errorf("Error finding site_id argument in Site Cache Configuration resource test")
 }
 
 func testAllCachingEnabled(domainName string) string {

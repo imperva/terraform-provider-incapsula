@@ -1,21 +1,21 @@
 ---
 subcategory: "Application Performance and Delivery"
 layout: "incapsula"
-page_title: "incapsula_application_performance"
+page_title: "incapsula_site_cache_configuration"
 description: |-
-  Provides a Incapsula Application Performance resource.
+  Provides an Incapsula Site Cache Configuration resource.
 ---
 
-# incapsula_application_performance
+# incapsula_site_cache_configuration
 
 Configure content caching for your website.
 
 ## Example Usage
 
-### Basic Usage - Application Performance
+### Basic Usage - Site Cache Configuration
 
 ```hcl
-resource "incapsula_application_performance" "example_application_performance" {
+resource "incapsula_site_cache_configuration" "example_site_cache_configuration" {
 	site_id = incapsula_site.testacc-terraform-site.id
 	client_comply_no_cache              = true
 	client_enable_client_side_caching   = true
@@ -91,12 +91,12 @@ Possible values:
 
 The following attributes are exported:
 
-* `id` - Unique identifier in the API for the application performance configuration. The id is identical to Site id.
+* `id` - Unique identifier in the API for the Site Cache configuration. The id is identical to Site id.
 
 ## Import
 
-Application performance configuration can be imported using the `id`, e.g.:
+Site Cache Configuration can be imported using the `id`, e.g.:
 
 ```
-$ terraform import incapsula_application_performance.example_application_performance 1234
+$ terraform import incapsula_site_cache_configuration.example_site_cache_configuration 1234
 ```

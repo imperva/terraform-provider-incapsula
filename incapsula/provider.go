@@ -154,7 +154,7 @@ func Provider() *schema.Provider {
 			"incapsula_abp_websites":                                           resourceAbpWebsites(),
 			"incapsula_delivery_rules_configuration":                           resourceDeliveryRulesConfiguration(),
 			"incapsula_simplified_redirect_rules_configuration":                resourceSimplifiedRedirectRulesConfiguration(),
-			"incapsula_application_performance":                                resourceApplicationPerformance(),
+			"incapsula_site_cache_configuration":                               resourceSiteCacheConfiguration(),
 		},
 	}
 
