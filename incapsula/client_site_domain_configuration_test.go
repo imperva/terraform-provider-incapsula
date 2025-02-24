@@ -16,7 +16,7 @@ func TestClientGetDomainsForSiteValidCase(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "111"
-	endpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/%s", siteID, "domains?pageSize=-1")
+	endpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/%s", siteID, "domains?excludeAutoDiscovered=true&pageSize=-1")
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
@@ -79,7 +79,7 @@ func TestClientGetDomainsForSiteBadJsonResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "111"
-	endpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/%s", siteID, "domains?pageSize=-1")
+	endpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/%s", siteID, "domains?excludeAutoDiscovered=true&pageSize=-1")
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(500)
