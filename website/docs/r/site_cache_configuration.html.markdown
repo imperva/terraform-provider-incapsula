@@ -16,7 +16,7 @@ Configure content caching for your website.
 
 ```hcl
 resource "incapsula_site_cache_configuration" "example_site_cache_configuration" {
-	site_id = incapsula_site.testacc-terraform-site.id
+	site_id = incapsula_site_v3.example-site-v3.id
 	client_comply_no_cache              = true
 	client_enable_client_side_caching   = true
 	client_send_age_header              = true
