@@ -87,6 +87,7 @@ func (c *Client) GetWebsiteDomains(siteId string) (*SiteDomainDetailsDto, error)
 	}
 	var params = map[string]string{}
 	params["pageSize"] = "-1"
+	params["excludeAutoDiscovered"] = "true"
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, reqURL, nil, params, ReadDomain)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when reading domain configuration details %s: %s", siteId, err)
