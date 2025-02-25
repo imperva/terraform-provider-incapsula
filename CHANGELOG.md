@@ -1,4 +1,4 @@
-## 3.29.1 (Feb 24, 2025)
+## 3.29.2 (Feb 24, 2025)
 
 IMPROVEMENTS:
 - Bug fix for the data source incapsula_ssl_instructions – The site certificate process could not be completed when an auto-discovered domain existed due to missing SANs. These SANs were not added to the certificate if the corresponding domains originated through the auto-discovered domain mechanism. ([#511](https://github.com/imperva/terraform-provider-incapsula/pull/511))
