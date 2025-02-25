@@ -116,7 +116,6 @@ func resourceSiteV3Update(ctx context.Context, d *schema.ResourceData, m interfa
 	log.Printf("[INFO] adding v3 site to Account ID: %s to %v", accountID, d)
 	siteV3Request := SiteV3Request{}
 	siteV3Request.Name = d.Get("name").(string)
-	siteV3Request.AccountId, _ = strconv.Atoi(accountID)
 	siteV3Request.Id, _ = strconv.Atoi(d.Id())
 	siteV3Response, diags := client.UpdateV3Site(&siteV3Request, accountID)
 	if diags != nil && diags.HasError() {
