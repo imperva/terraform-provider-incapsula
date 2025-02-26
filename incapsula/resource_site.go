@@ -2,13 +2,14 @@ package incapsula
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 const create_retries = 3
@@ -245,7 +246,7 @@ func resourceSite() *schema.Resource {
 				Optional:    true,
 			},
 			"perf_response_cache_response_header_mode": {
-				Description: "The working mode for caching response headers. Options are `all` and `custom`.",
+				Description: "The working mode for caching response headers. Options are `all`, `custom` and `disabled`.",
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
@@ -514,7 +515,7 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("hash_salt", maskingResponse.HashSalt)
 
 	// Get the performance settings for the site
-	performanceSettingsResponse, _, err := client.GetPerformanceSettings(d.Id())
+	performanceSettingsResponse, err := client.GetPerformanceSettings(d.Id())
 	if err != nil {
 		log.Printf("[ERROR] Could not read Incapsula site peformance settings for domain: %s and site id: %d, %s\n", domain, siteID, err)
 		return err
