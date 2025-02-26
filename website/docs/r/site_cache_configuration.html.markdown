@@ -58,7 +58,7 @@ Possible values:
   * **include_all_resources** - All resources may be cached over HTTPS.
 * `mode_level` - (Optional) Caching level. **Default:** `smart` 
 Possible values:
-  * **disabled** - Turn off site caching entirely, including user-defined custom cache rules.
+  * **disabled** - Turn off site caching entirely, including user-defined custom cache rules. **Note:** Since all other attributes require caching, it is recommended to clear all resource attributes from configuration when disabling the cache.
   * **custom_cache_rules_only** - Disable caching, unless specified otherwise by a custom cache rule.
   * **standard** - Cache according to standard HTTP headers.
   * **smart** - Cache according to standard HTTP headers as well as profile dynamic pages to identify and cache static content that was not marked as static. In addition to content that was marked by the site's developer / web server as static using standard HTTP headers, Imperva also profiles other resources to identify and cache static content that was not marked as such.

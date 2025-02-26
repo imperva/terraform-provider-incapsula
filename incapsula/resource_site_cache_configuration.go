@@ -126,15 +126,11 @@ func resourceSiteCacheConfiguration() *schema.Resource {
 			},
 			"response_cache_response_headers": {
 				Description: "An array of strings representing the response headers to be cached when working in `custom` mode. If empty, no response headers are cached.",
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
 				Optional: true,
-				DefaultFunc: func() (interface{}, error) {
-					return []interface{}{}, nil
-				},
-				DiffSuppressFunc: suppressEquivalentStringDiffs,
 			},
 			"response_cache_shield": {
 				Description: "Adds an intermediate cache between other Imperva PoPs and your origin servers to protect your servers from redundant requests.",
@@ -196,7 +192,7 @@ func resourceApplicationPerformanceUpdate(d *schema.ResourceData, m interface{})
 	performanceSettings.Response.CacheEmptyResponses = d.Get("response_cache_empty_responses").(bool)
 	performanceSettings.Response.CacheHTTP10Responses = d.Get("response_cache_http_10_responses").(bool)
 	performanceSettings.Response.CacheResponseHeader.Mode = d.Get("response_cache_response_header_mode").(string)
-	performanceSettings.Response.CacheResponseHeader.Headers = d.Get("response_cache_response_headers").([]interface{})
+	performanceSettings.Response.CacheResponseHeader.Headers = d.Get("response_cache_response_headers").(*schema.Set).List()
 	performanceSettings.Response.CacheShield = d.Get("response_cache_shield").(bool)
 	performanceSettings.Response.StaleContent.Mode = d.Get("response_stale_content_mode").(string)
 	performanceSettings.Response.StaleContent.Time = d.Get("response_stale_content_time").(int)
