@@ -24,6 +24,7 @@ func TestAccIncapsulaIncapRule_Basic(t *testing.T) {
 					testCheckIncapsulaIncapRuleExists(incapRuleResourceName),
 					resource.TestCheckResourceAttr(incapRuleResourceName, "name", incapRuleName),
 					resource.TestCheckResourceAttr(incapRuleResourceName, "enabled", "true"),
+					resource.TestCheckResourceAttr(incapRuleResourceName, "send_notifications", "true"),
 				),
 			},
 			{
@@ -32,6 +33,7 @@ func TestAccIncapsulaIncapRule_Basic(t *testing.T) {
 					testCheckIncapsulaIncapRuleExists(incapRuleResourceName),
 					resource.TestCheckResourceAttr(incapRuleResourceName, "name", incapRuleName),
 					resource.TestCheckResourceAttr(incapRuleResourceName, "enabled", "true"),
+					resource.TestCheckResourceAttr(incapRuleResourceName, "send_notifications", "false"),
 				),
 			},
 			{
@@ -140,6 +142,7 @@ resource "incapsula_incap_rule" "testacc-terraform-incap-rule" {
   filter = "Full-URL == \"/someurl\""
   depends_on = ["%s"]
   enabled = true
+  send_notifications = "true"
 }`, incapRuleName, siteResourceName,
 	)
 }
@@ -152,6 +155,7 @@ resource "incapsula_incap_rule" "testacc-terraform-incap-rule" {
   action = "RULE_ACTION_ALERT"
   filter = "Full-URL == \"/someurl\""
   depends_on = ["%s"]
+  send_notifications = "false"
 }`, incapRuleName, siteResourceName,
 	)
 }
@@ -165,6 +169,7 @@ resource "incapsula_incap_rule" "testacc-terraform-incap-rule" {
   filter = "Full-URL == \"/someurl\""
   depends_on = ["%s"]
   enabled = false
+  send_notifications = "false"
 }`, incapRuleName, siteResourceName,
 	)
 }
