@@ -148,6 +148,19 @@ func resourceIncapRule() *schema.Resource {
 				Optional:    true,
 				Default:     true,
 			},
+			"send_notifications": {
+				Description: "Send an email notification whenever this rule is triggered",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					v := val.(string)
+					if v != "true" && v != "false" {
+						errs = append(errs, fmt.Errorf("%q must be either 'true' or 'false', got: %s", key, v))
+					}
+					return
+				},
+			},
 		},
 	}
 }
@@ -162,6 +175,16 @@ func resourceIncapRuleCreate(d *schema.ResourceData, m interface{}) error {
 		*rewriteExisting = d.Get("rewrite_existing").(bool)
 	} else {
 		rewriteExisting = nil
+	}
+
+	var sendNotifications *bool
+	if v, ok := d.GetOk("send_notifications"); ok {
+		valStr := v.(string)
+		valBool, err := strconv.ParseBool(valStr)
+		if err != nil {
+			return fmt.Errorf("Error parsing send_notifications: %s", err)
+		}
+		sendNotifications = &valBool
 	}
 
 	rule := IncapRule{
@@ -186,6 +209,7 @@ func resourceIncapRuleCreate(d *schema.ResourceData, m interface{}) error {
 		OverrideWafRule:       d.Get("override_waf_rule").(string),
 		OverrideWafAction:     d.Get("override_waf_action").(string),
 		Enabled:               d.Get("enabled").(bool),
+		SendNotifications:     sendNotifications,
 	}
 
 	ruleWithID, err := client.AddIncapRule(d.Get("site_id").(string), &rule)
@@ -241,6 +265,9 @@ func resourceIncapRuleRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("override_waf_rule", rule.OverrideWafRule)
 	d.Set("override_waf_action", rule.OverrideWafAction)
 	d.Set("enabled", rule.Enabled)
+	if rule.SendNotifications != nil {
+		d.Set("send_notifications", strconv.FormatBool(*rule.SendNotifications))
+	}
 
 	action := d.Get("action").(string)
 
@@ -268,6 +295,16 @@ func resourceIncapRuleUpdate(d *schema.ResourceData, m interface{}) error {
 		rewriteExisting = nil
 	}
 
+	var sendNotifications *bool
+	if v, ok := d.GetOk("send_notifications"); ok {
+		valStr := v.(string)
+		valBool, err := strconv.ParseBool(valStr)
+		if err != nil {
+			return fmt.Errorf("Error parsing send_notifications: %s", err)
+		}
+		sendNotifications = &valBool
+	}
+
 	rule := IncapRule{
 		Name:                  d.Get("name").(string),
 		Action:                action,
@@ -290,6 +327,7 @@ func resourceIncapRuleUpdate(d *schema.ResourceData, m interface{}) error {
 		OverrideWafRule:       d.Get("override_waf_rule").(string),
 		OverrideWafAction:     d.Get("override_waf_action").(string),
 		Enabled:               d.Get("enabled").(bool),
+		SendNotifications:     sendNotifications,
 	}
 
 	ruleID, err := strconv.Atoi(d.Id())

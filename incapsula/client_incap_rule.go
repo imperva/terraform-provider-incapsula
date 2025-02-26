@@ -31,6 +31,7 @@ type IncapRule struct {
 	OverrideWafRule       string `json:"overrideWafRule,omitempty"`
 	OverrideWafAction     string `json:"overrideWafAction,omitempty"`
 	Enabled               bool   `json:"enabled"`
+	SendNotifications     *bool  `json:"sendNotifications"`
 }
 
 // IncapRuleWithID contains the IncapRule as well as the rule identifier

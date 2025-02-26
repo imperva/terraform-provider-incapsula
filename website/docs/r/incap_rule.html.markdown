@@ -21,6 +21,7 @@ resource "incapsula_incap_rule" "example-incap-rule-alert" {
   action = "RULE_ACTION_ALERT"
   filter = "Full-URL == \"/someurl\""
   enabled = true
+  send_notifications = "false"
 }
 
 # Incap Rule: Require javascript support
@@ -30,6 +31,7 @@ resource "incapsula_incap_rule" "example-incap-rule-require-js-support" {
   action = "RULE_ACTION_INTRUSIVE_HTML"
   filter = "Full-URL == \"/someurl\""
   enabled = true  
+  send_notifications = "false"
 }
 
 # Incap Rule: Block IP
@@ -39,6 +41,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-ip" {
   action = "RULE_ACTION_BLOCK_IP"
   filter = "Full-URL == \"/someurl\""
   enabled = true  
+  send_notifications = "true"
 }
 
 # Incap Rule: Block Request
@@ -48,6 +51,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-request" {
   action = "RULE_ACTION_BLOCK"
   filter = "Full-URL == \"/someurl\""
   enabled = true
+  send_notifications = "true"
 }
 
 # Incap Rule: Block Session
@@ -57,6 +61,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-session" {
   action = "RULE_ACTION_BLOCK_USER"
   filter = "Full-URL == \"/someurl\""
   enabled = true
+  send_notifications = "false"
 }
 
 # Incap Rule: Delete Cookie (ADR)
@@ -109,6 +114,7 @@ resource "incapsula_incap_rule" "example-incap-rule-require-cookie-support" {
   action = "RULE_ACTION_RETRY"
   filter = "Full-URL == \"/someurl\""
   enabled = true
+  send_notifications = "false"
 }
 
 # Incap Rule: Rewrite Cookie (ADR)
@@ -189,6 +195,7 @@ The following arguments are supported:
 * `override_waf_action` - (Optional) The action for the override rule `RULE_ACTION_WAF_OVERRIDE`. Possible values: Alert Only, Block Request, Block User, Block IP, Ignore.
 * `override_waf_rule` - (Optional) The setting to override `RULE_ACTION_WAF_OVERRIDE`. Possible values: SQL Injection, Remote File Inclusion, Cross Site Scripting, Illegal Resource Access.
 * `enabled` - (Optional) Boolean that enables the rule. Possible values: true, false. Default value is true.
+* `send_notifications` - (Optional) Send an email notification whenever this rule is triggered. Possible values: `true`, `false`. Default value is `false`. Applies to the following security actions: `RULE_ACTION_ALERT`, `RULE_ACTION_BLOCK`, `RULE_ACTION_BLOCK_USER`, `RULE_ACTION_BLOCK_IP`, `RULE_ACTION_RETRY`, `RULE_ACTION_INTRUSIVE_HTML`, `RULE_ACTION_CAPTCHA`.
 
 ## Attributes Reference
 
