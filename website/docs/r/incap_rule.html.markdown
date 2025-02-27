@@ -54,13 +54,28 @@ resource "incapsula_incap_rule" "example-incap-rule-block-request" {
   send_notifications = "true"
 }
 
-# Incap Rule: Block Session
+# Incap Rule: Block Session fixed period
 resource "incapsula_incap_rule" "example-incap-rule-block-session" {
   name = "Example incap rule block session"
   site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_BLOCK_USER"
   filter = "Full-URL == \"/someurl\""
   enabled = true
+  block_duration_type = "fixed"
+  block_duration = 55
+  send_notifications = "false"
+}
+
+# Incap Rule: Block Session randomized period
+resource "incapsula_incap_rule" "example-incap-rule-block-session" {
+  name = "Example incap rule block session"
+  site_id = incapsula_site.example-site.id
+  action = "RULE_ACTION_BLOCK_USER"
+  filter = "Full-URL == \"/someurl\""
+  enabled = true
+  block_duration_type = "randomized"
+  block_duration_min = 25
+  block_duration_max = 44
   send_notifications = "false"
 }
 
@@ -196,6 +211,10 @@ The following arguments are supported:
 * `override_waf_rule` - (Optional) The setting to override `RULE_ACTION_WAF_OVERRIDE`. Possible values: SQL Injection, Remote File Inclusion, Cross Site Scripting, Illegal Resource Access.
 * `enabled` - (Optional) Boolean that enables the rule. Possible values: true, false. Default value is true.
 * `send_notifications` - (Optional) Send an email notification whenever this rule is triggered. Possible values: `true`, `false`. Default value is `false`. Applies to the following security actions: `RULE_ACTION_ALERT`, `RULE_ACTION_BLOCK`, `RULE_ACTION_BLOCK_USER`, `RULE_ACTION_BLOCK_IP`, `RULE_ACTION_RETRY`, `RULE_ACTION_INTRUSIVE_HTML`, `RULE_ACTION_CAPTCHA`.
+* `block_duration_type` - (Optional) Block duration types: `fixed`, `randomized`. Time range: 1-1440 minutes.The Fixed type blocks the IP address or session for the duration specified by the `block_duration` parameter. The Randomized type generates a random duration for each block between the specified minimum and maximum values. Valid only for `RULE_ACTION_BLOCK_USER` `action`.
+* `block_duration` - (Optional) Value of the fixed block duration. Valid only for `RULE_ACTION_BLOCK_USER` `action` and `fixed` `block_duration_type`
+* `block_duration_min` - (Optional) The lower limit for the randomized block duration. Valid only for `RULE_ACTION_BLOCK_USER` `action` and `randomized` `block_duration_type`
+* `block_duration_max` - (Optional) The upper limit for the randomized block duration. Valid only for `RULE_ACTION_BLOCK_USER` `action` and `randomized` `block_duration_type`
 
 ## Attributes Reference
 
