@@ -23,7 +23,7 @@ func resourceSiteV3() *schema.Resource {
 				log.Printf("[DEBUG] Starting to import site v3. Parameters: %s\n", d.Id())
 
 				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
-					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id or account_id/site_id", d.Id())
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected account_id/site_id", d.Id())
 				}
 
 				err := d.Set("account_id", idSlice[0])
@@ -34,7 +34,7 @@ func resourceSiteV3() *schema.Resource {
 
 				_, err = strconv.Atoi(idSlice[1])
 				if err != nil {
-					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id or account_id/site_id", d.Id())
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected account_id/site_id", d.Id())
 				}
 
 				d.SetId(idSlice[1])
