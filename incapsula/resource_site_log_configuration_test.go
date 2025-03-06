@@ -10,7 +10,9 @@ const siteLogConfigResourceType = "incapsula_site_log_configuration"
 const siteLogConfigResourceName = "example_site_log_configuration"
 
 const logLevel = "full"
-const dataStorageRegion = "US"
+const dataStorageRegion = "EU"
+
+var logConfigSiteName = GenerateTestSiteName(nil)
 
 func TestAccIncapsulaSiteLogConfiguration_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -36,16 +38,16 @@ func TestAccIncapsulaSiteLogConfiguration_Update(t *testing.T) {
 		CheckDestroy: testAccIncapsulaSiemLogConfigurationDestroy(siemLogConfigurationResourceType),
 		Steps: []resource.TestStep{
 			{
-				Config: getAccIncapsulaSiteLogConfigBasic(GenerateTestSiteName(nil), "CLOUD_WAF"),
+				Config: getAccIncapsulaSiteLogConfigBasic(logConfigSiteName, "CLOUD_WAF"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(siteLogConfigResourceType+"."+siteLogConfigResourceName, "log_level", logLevel),
 				),
 			},
 			{
-				Config: getAccIncapsulaSiteLogConfigUpdated(GenerateTestSiteName(nil), "CLOUD_WAF"),
+				Config: getAccIncapsulaSiteLogConfigUpdated(logConfigSiteName, "CLOUD_WAF"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(siteLogConfigResourceType+"."+siteLogConfigResourceName, "log_level", "security"),
-					resource.TestCheckResourceAttr(siteLogConfigResourceType+"."+siteLogConfigResourceName, "data_storage_region", "EU"),
+					resource.TestCheckResourceAttr(siteLogConfigResourceType+"."+siteLogConfigResourceName, "data_storage_region", "US"),
 				),
 			},
 		},
@@ -99,7 +101,7 @@ func getAccIncapsulaSiteLogConfigUpdated(name string, siteType string) string {
 		resource "%s" "%s" {
 			site_id = incapsula_site_v3.test_log_config_site.id
 			log_level = "security"
-			data_storage_region = "EU"
+			data_storage_region = "US"
 		}`,
 		name, siteType, siteLogConfigResourceType, siteLogConfigResourceName,
 	)
