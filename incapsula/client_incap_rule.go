@@ -36,7 +36,7 @@ type IncapRule struct {
 }
 
 type BlockDurationDetails struct {
-	BlockDurationType string `json:"blockDurationPeriodType"`
+	BlockDurationType string `json:"blockDurationPeriodType,omitempty"`
 	BlockDuration     int    `json:"blockFixedDurationValue,omitempty"`
 	BlockDurationMin  int    `json:"blockRandomizedDurationMinValue,omitempty"`
 	BlockDurationMax  int    `json:"blockRandomizedDurationMaxValue,omitempty"`
