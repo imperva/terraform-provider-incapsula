@@ -26,7 +26,7 @@ const certificateName = "custom-certificate"
 const certificateResource = certificateResourceName + "." + certificateName
 
 var calculatedHash = ""
-var calculatedHashBase64 = "3d1684629a33ee41456fb78a169953c63b982fd2"
+var calculatedHashBase64 string
 
 func TestAccIncapsulaCustomCertificate_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -35,8 +35,7 @@ func TestAccIncapsulaCustomCertificate_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckIncapsulaCertificateDestroy,
 		Steps: []resource.TestStep{
 			{
-				SkipFunc: IsCustomCertificateEnvVarExist,
-				Config:   testAccCheckIncapsulaCustomCertificateGoodConfig(t),
+				Config: testAccCheckIncapsulaCustomCertificateGoodConfig(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaCertificateExists(certificateResourceName),
 					resource.TestCheckResourceAttr(certificateResource, "input_hash", calculatedHashBase64),
@@ -105,31 +104,20 @@ func IsCustomCertificateEnvVarExist() (bool, error) {
 }
 
 func testAccCheckIncapsulaCustomCertificateGoodConfig(t *testing.T) string {
-	cert := os.Getenv("CUSTOM_CERTIFICATE")
-	if cert == "" {
-
-	}
-	pkey := os.Getenv("CUSTOM_PRIVATE_KEY")
-	if pkey == "" {
-
-	}
-	//cert, pkey := generateKeyPairBase64()
-	certRes := fmt.Sprintf("<<EOT\n%s\nEOT", cert)
-	pkeyRes := fmt.Sprintf("<<EOT\n%s\nEOT", pkey)
-	//cert, privateKey := generateKeyPair()
-	//generateKeyPairBase64
-	result := testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+	domain := GenerateTestDomain(t)
+	cert, pkey := generateKeyPairBase64(domain)
+	result := testAccCheckIncapsulaSiteConfigBasic(domain) + fmt.Sprintf(`
 resource "%s" "%s" {
-  site_id = incapsula_site.testacc-terraform-site.id
-  certificate = %s
-  private_key = %s
-depends_on = ["%s"]
-}`, certificateResourceName, certificateName, certRes, pkeyRes, siteResourceName)
+	site_id=incapsula_site.testacc-terraform-site.id
+	certificate="%s"
+	private_key="%s"
+	depends_on=["%s"]
+}`, certificateResourceName, certificateName, cert, pkey, siteResourceName)
 	return result
 }
 
-func generateKeyPair() (string, string) {
-	template := getCertificateTemplate()
+func generateKeyPair(Domain string) (string, string) {
+	template := getCertificateTemplate(Domain)
 
 	// generate private key
 	privatekey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -159,24 +147,24 @@ func generateKeyPair() (string, string) {
 	pem.Encode(out, &pem.Block{Type: "CERTIFICATE", Bytes: certificate})
 	certificateRes := out.String()
 	pkeyRes := string(privateKeyPEM)
-	calculatedHash = calculateHash(certificateRes+"\n", "", pkeyRes+"\n")
+	calculatedHash = calculateHash(certificateRes, "", pkeyRes)
 
-	return fmt.Sprintf("<<EOT\n%s\nEOT", certificateRes), fmt.Sprintf("<<EOT\n%s\nEOT", pkeyRes)
+	return fmt.Sprintf("%s", certificateRes), fmt.Sprintf("%s", pkeyRes)
 }
 
-func generateKeyPairBase64() (string, string) {
-	cert, pkey := generateKeyPair()
+func generateKeyPairBase64(Domain string) (string, string) {
+	cert, pkey := generateKeyPair(Domain)
 	// encode PEM-encoded certificate with base64 algorith
 	certificateBase64 := b64.StdEncoding.EncodeToString([]byte(cert))
 	// encode PEM-encoded certificate with base64 algorith
 	privateKeyBase64 := b64.StdEncoding.EncodeToString([]byte(pkey))
 
 	//save calculated hash for it's verification in step 1 of the test(verify create)
-	calculatedHashBase64 = calculateHash(certificateBase64+"\n", "", privateKeyBase64+"\n")
+	calculatedHashBase64 = calculateHash(certificateBase64, "", privateKeyBase64)
 	return certificateBase64, privateKeyBase64
 }
 
-func getCertificateTemplate() *x509.Certificate {
+func getCertificateTemplate(Domain string) *x509.Certificate {
 	template := &x509.Certificate{
 		IsCA:                  true,
 		BasicConstraintsValid: true,
@@ -185,6 +173,7 @@ func getCertificateTemplate() *x509.Certificate {
 		Subject: pkix.Name{
 			Country:      []string{"Earth"},
 			Organization: []string{"Mother Nature"},
+			CommonName:   Domain,
 		},
 		Issuer: pkix.Name{
 			CommonName:   "dash.beer.center",

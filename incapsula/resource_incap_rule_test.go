@@ -12,6 +12,9 @@ import (
 const incapRuleResourceName = "incapsula_incap_rule.testacc-terraform-incap-rule"
 const incapRuleName = "Example Incap Rule Alert"
 
+const incapRuleResourceNameBlockDuration = "incapsula_incap_rule.testacc-terraform-incap-rule-block-duration"
+const incapRuleNameBlockDuration = "Example Incap Rule Block Duration"
+
 func TestAccIncapsulaIncapRule_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -46,6 +49,45 @@ func TestAccIncapsulaIncapRule_Basic(t *testing.T) {
 			},
 			{
 				ResourceName:      incapRuleResourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testAccStateRuleID,
+			},
+		},
+	})
+}
+
+func TestAccIncapsulaIncapRule_Basic_RULE_ACTION_BLOCK_USER(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIncapsulaIncapRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIncapsulaIncapRuleConfigBasicBlockDuration(t),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaIncapRuleExists(incapRuleResourceNameBlockDuration),
+					resource.TestCheckResourceAttr(incapRuleResourceNameBlockDuration, "name", incapRuleNameBlockDuration),
+					resource.TestCheckResourceAttr(incapRuleResourceNameBlockDuration, "enabled", "true"),
+					resource.TestCheckResourceAttr(incapRuleResourceNameBlockDuration, "send_notifications", "true"),
+					resource.TestCheckResourceAttr(incapRuleResourceNameBlockDuration, "block_duration_type", "randomized"),
+					resource.TestCheckResourceAttr(incapRuleResourceNameBlockDuration, "block_duration_min", "25"),
+					resource.TestCheckResourceAttr(incapRuleResourceNameBlockDuration, "block_duration_max", "44"),
+				),
+			},
+			{
+				Config: testAccCheckIncapsulaIncapRuleConfigUpdatedBlockDuration(t),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaIncapRuleExists(incapRuleResourceNameBlockDuration),
+					resource.TestCheckResourceAttr(incapRuleResourceNameBlockDuration, "name", incapRuleNameBlockDuration),
+					resource.TestCheckResourceAttr(incapRuleResourceNameBlockDuration, "enabled", "true"),
+					resource.TestCheckResourceAttr(incapRuleResourceNameBlockDuration, "send_notifications", "false"),
+					resource.TestCheckResourceAttr(incapRuleResourceNameBlockDuration, "block_duration_type", "fixed"),
+					resource.TestCheckResourceAttr(incapRuleResourceNameBlockDuration, "block_duration", "55"),
+				),
+			},
+			{
+				ResourceName:      incapRuleResourceNameBlockDuration,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: testAccStateRuleID,
@@ -171,5 +213,37 @@ resource "incapsula_incap_rule" "testacc-terraform-incap-rule" {
   enabled = false
   send_notifications = "false"
 }`, incapRuleName, siteResourceName,
+	)
+}
+
+func testAccCheckIncapsulaIncapRuleConfigBasicBlockDuration(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+resource "incapsula_incap_rule" "testacc-terraform-incap-rule-block-duration" {
+  name = "%s"
+  site_id = "${incapsula_site.testacc-terraform-site.id}"
+  action = "RULE_ACTION_BLOCK_USER"
+  filter = "Full-URL == \"/someurl\""
+  depends_on = ["%s"]
+  enabled = true
+  send_notifications = "true"
+  block_duration_type = "randomized"
+  block_duration_min = 25
+  block_duration_max = 44
+}`, incapRuleNameBlockDuration, siteResourceName,
+	)
+}
+
+func testAccCheckIncapsulaIncapRuleConfigUpdatedBlockDuration(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+resource "incapsula_incap_rule" "testacc-terraform-incap-rule-block-duration" {
+  name = "%s"
+  site_id = "${incapsula_site.testacc-terraform-site.id}"
+  action = "RULE_ACTION_BLOCK_USER"
+  filter = "Full-URL == \"/someurl\""
+  depends_on = ["%s"]
+  send_notifications = "false"
+  block_duration_type = "fixed"
+  block_duration = 55
+}`, incapRuleNameBlockDuration, siteResourceName,
 	)
 }

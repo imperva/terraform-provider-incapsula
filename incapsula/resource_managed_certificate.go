@@ -22,6 +22,8 @@ func resourceManagedCertificate() *schema.Resource {
 				client := m.(*Client)
 				parameters := strings.Split(d.Id(), "/")
 				var accountId int
+				var siteId string
+
 				var err error
 				if len(parameters) == 2 {
 					siteId = parameters[1]
@@ -72,7 +74,7 @@ func resourceManagedCertificate() *schema.Resource {
 func resourceManagedCertificateAdd(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	var diags diag.Diagnostics
-	siteId, _ = d.Get("site_id").(string)
+	var siteId, _ = d.Get("site_id").(string)
 	var accountId *int
 	if v, ok := d.GetOk("account_id"); ok {
 		accountIdValue := v.(int)
@@ -105,7 +107,7 @@ func resourceManagedCertificateAdd(ctx context.Context, d *schema.ResourceData, 
 func resourceManagedCertificateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	var diags diag.Diagnostics
-	siteId, _ = d.Get("site_id").(string)
+	var siteId, _ = d.Get("site_id").(string)
 	var accountId *int
 	if v, ok := d.GetOk("account_id"); ok {
 		accountIdValue := v.(int)
@@ -125,8 +127,7 @@ func resourceManagedCertificateRead(ctx context.Context, d *schema.ResourceData,
 			Detail:   fmt.Sprintf("Failed to get site cert status of site ID%d, %s", id, siteCertificateV3Response.Errors[0].Detail),
 		}}
 	}
-	siteId := siteCertificateV3Response.Data[0].SiteId
-	err := d.Set("site_id", strconv.Itoa(siteId))
+	err := d.Set("site_id", strconv.Itoa(siteCertificateV3Response.Data[0].SiteId))
 	if err != nil {
 		log.Printf("[ERROR] Could not read Incapsula site id after request site cert to site ID: %d, %s\n", id, err)
 		return diag.FromErr(err)
@@ -152,7 +153,7 @@ func resourceManagedCertificateRead(ctx context.Context, d *schema.ResourceData,
 func resourceManagedCertificateDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	var diags diag.Diagnostics
-	siteId, _ = d.Get("site_id").(string)
+	var siteId, _ = d.Get("site_id").(string)
 	id, _ := strconv.Atoi(siteId)
 	var accountId *int
 	if v, ok := d.GetOk("account_id"); ok {

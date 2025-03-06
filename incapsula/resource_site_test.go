@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -26,7 +27,9 @@ func GenerateTestDomain(t *testing.T) string {
 	}
 	s3 := rand.NewSource(time.Now().UnixNano())
 	r3 := rand.New(s3)
-	generatedDomain = "id" + os.Getenv("INCAPSULA_API_ID") + strconv.Itoa(r3.Intn(1000)) + os.Getenv("INCAPSULA_CUSTOM_TEST_DOMAIN")
+	initialDomain := "id" + os.Getenv("INCAPSULA_API_ID") + strconv.Itoa(r3.Intn(1000)) + os.Getenv("INCAPSULA_CUSTOM_TEST_DOMAIN")
+	generatedDomain = strings.ReplaceAll(initialDomain, " ", "")
+	log.Printf("[DEBUG] Generated domain: %s", generatedDomain)
 	return generatedDomain
 }
 

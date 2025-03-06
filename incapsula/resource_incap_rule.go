@@ -142,6 +142,30 @@ func resourceIncapRule() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"block_duration_type": {
+				Description: "Block duration type.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+			},
+			"block_duration": {
+				Description: "Value of the fixed block duration.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+			},
+			"block_duration_min": {
+				Description: "The lower limit for the randomized block duration.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+			},
+			"block_duration_max": {
+				Description: "The upper limit for the randomized block duration.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+			},
 			"enabled": {
 				Description: "Enable or disable rule.",
 				Type:        schema.TypeBool,
@@ -187,6 +211,13 @@ func resourceIncapRuleCreate(d *schema.ResourceData, m interface{}) error {
 		sendNotifications = &valBool
 	}
 
+	blockDurationDetails := BlockDurationDetails{
+		BlockDurationType: d.Get("block_duration_type").(string),
+		BlockDuration:     d.Get("block_duration").(int),
+		BlockDurationMin:  d.Get("block_duration_min").(int),
+		BlockDurationMax:  d.Get("block_duration_max").(int),
+	}
+
 	rule := IncapRule{
 		Name:                  d.Get("name").(string),
 		Action:                action,
@@ -210,6 +241,7 @@ func resourceIncapRuleCreate(d *schema.ResourceData, m interface{}) error {
 		OverrideWafAction:     d.Get("override_waf_action").(string),
 		Enabled:               d.Get("enabled").(bool),
 		SendNotifications:     sendNotifications,
+		BlockDurationDetails:  blockDurationDetails,
 	}
 
 	ruleWithID, err := client.AddIncapRule(d.Get("site_id").(string), &rule)
@@ -268,6 +300,10 @@ func resourceIncapRuleRead(d *schema.ResourceData, m interface{}) error {
 	if rule.SendNotifications != nil {
 		d.Set("send_notifications", strconv.FormatBool(*rule.SendNotifications))
 	}
+	d.Set("block_duration_type", rule.BlockDurationDetails.BlockDurationType)
+	d.Set("block_duration", rule.BlockDurationDetails.BlockDuration)
+	d.Set("block_duration_min", rule.BlockDurationDetails.BlockDurationMin)
+	d.Set("block_duration_max", rule.BlockDurationDetails.BlockDurationMax)
 
 	action := d.Get("action").(string)
 
@@ -305,6 +341,13 @@ func resourceIncapRuleUpdate(d *schema.ResourceData, m interface{}) error {
 		sendNotifications = &valBool
 	}
 
+	blockDurationDetails := BlockDurationDetails{
+		BlockDurationType: d.Get("block_duration_type").(string),
+		BlockDuration:     d.Get("block_duration").(int),
+		BlockDurationMin:  d.Get("block_duration_min").(int),
+		BlockDurationMax:  d.Get("block_duration_max").(int),
+	}
+
 	rule := IncapRule{
 		Name:                  d.Get("name").(string),
 		Action:                action,
@@ -328,6 +371,7 @@ func resourceIncapRuleUpdate(d *schema.ResourceData, m interface{}) error {
 		OverrideWafAction:     d.Get("override_waf_action").(string),
 		Enabled:               d.Get("enabled").(bool),
 		SendNotifications:     sendNotifications,
+		BlockDurationDetails:  blockDurationDetails,
 	}
 
 	ruleID, err := strconv.Atoi(d.Id())

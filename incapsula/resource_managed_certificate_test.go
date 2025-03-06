@@ -46,17 +46,18 @@ func testAccSiteCertificateDestroy(s *terraform.State) error {
 }
 
 func testAccSiteCertificateRequestConfig(t *testing.T) string {
-	return fmt.Sprintf(`
+	res := fmt.Sprintf(`
 	
-   resource "imperva_site_v3" "%s" {
+   resource "incapsula_site_v3" "%s" {
 			name = "%s"
 	}
-	resource"%s""%s"{
-    site_id = imperva_site_v3.%s.id
+	resource "%s" "%s" {
+    site_id = incapsula_site_v3.%s.id
     default_validation_method = "DNS"
 	}`,
 		siteV3ResourceNameForManagedCert, siteV3Name, siteCertificateResourceName, siteCertificateConfigName, siteV3ResourceNameForManagedCert,
 	)
+	return res
 }
 
 func testACCStateManagedCertificate(s *terraform.State) (string, error) {

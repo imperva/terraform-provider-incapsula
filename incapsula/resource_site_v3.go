@@ -23,7 +23,7 @@ func resourceSiteV3() *schema.Resource {
 				log.Printf("[DEBUG] Starting to import site v3. Parameters: %s\n", d.Id())
 
 				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
-					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id or account_id/site_id", d.Id())
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected account_id/site_id", d.Id())
 				}
 
 				err := d.Set("account_id", idSlice[0])
@@ -34,7 +34,7 @@ func resourceSiteV3() *schema.Resource {
 
 				_, err = strconv.Atoi(idSlice[1])
 				if err != nil {
-					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id or account_id/site_id", d.Id())
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected account_id/site_id", d.Id())
 				}
 
 				d.SetId(idSlice[1])
@@ -116,7 +116,6 @@ func resourceSiteV3Update(ctx context.Context, d *schema.ResourceData, m interfa
 	log.Printf("[INFO] adding v3 site to Account ID: %s to %v", accountID, d)
 	siteV3Request := SiteV3Request{}
 	siteV3Request.Name = d.Get("name").(string)
-	siteV3Request.AccountId, _ = strconv.Atoi(accountID)
 	siteV3Request.Id, _ = strconv.Atoi(d.Id())
 	siteV3Response, diags := client.UpdateV3Site(&siteV3Request, accountID)
 	if diags != nil && diags.HasError() {
