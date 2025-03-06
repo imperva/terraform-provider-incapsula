@@ -63,4 +63,4 @@ jobs:
      # run: go test -parallel=1 ./incapsula
 
     - name: Run acceptance tests
-      run: make testacc -parallel=1
+      run: make testacc
