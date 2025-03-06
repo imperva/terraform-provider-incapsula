@@ -95,19 +95,18 @@ func testCheckMtlsClientToImervaCertificateExists() resource.TestCheckFunc {
 //}
 
 func testAccCheckMtlsClientToImervaCertificateBasic(t *testing.T) string {
-	cert, _ := generateKeyPairBase64()
+	cert, _ := generateKeyPairBase64("dash.beer.center")
 	calculatedHashForClientCACert = calculateHash(cert+"\n", "", "")
-	certRest := fmt.Sprintf("<<EOT\n%s\nEOT", cert)
-
-	return fmt.Sprintf(`
+	res := fmt.Sprintf(`
 data "incapsula_account_data" "account_data" {
 }
 
 	resource"%s""%s"{
 	    account_id       = data.incapsula_account_data.account_data.current_account
 		certificate_name = "acceptance test CA certificate"
-  		certificate      = %s
+  		certificate      = "%s"
 	}`,
-		mtlsClientToImervaCertificateResourceName, mtlsClientToImervaCertificateName, certRest,
+		mtlsClientToImervaCertificateResourceName, mtlsClientToImervaCertificateName, cert,
 	)
+	return res
 }
