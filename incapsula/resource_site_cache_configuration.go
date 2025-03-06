@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -205,7 +206,7 @@ func resourceApplicationPerformanceUpdate(d *schema.ResourceData, m interface{})
 		log.Printf("[ERROR] Could not update Incapsula performance settings for site_id: %s %s\n", d.Id(), err)
 		return err
 	}
-
+	time.Sleep(1 * time.Second)
 	return resourceApplicationPerformanceRead(d, m)
 }
 

@@ -248,15 +248,16 @@ func TestAccIncapsulaApplicationPerformance_basic(t *testing.T) {
 
 func testCheckApplicationPerformanceExists(name string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		_, ok := state.RootModule().Resources[name]
+		res, ok := state.RootModule().Resources[name]
 		if !ok {
 			return fmt.Errorf("Incapsula Site Cache Configuration resource not found: %s", name)
 		}
+		siteId := res.Primary.ID
 
 		client := testAccProvider.Meta().(*Client)
 		_, err2 := client.GetPerformanceSettings(siteId)
 		if err2 != nil {
-			fmt.Errorf("Incapsula Site Cache Configuration doesn't exist")
+			return fmt.Errorf("Incapsula Site Cache Configuration doesn't exist")
 		}
 
 		return nil
@@ -280,10 +281,10 @@ func testAccStateApplicationPerformanceID(s *terraform.State) (string, error) {
 }
 
 func testDisabledCaching(domainName string) string {
-	return /*testCheckIncapsulaSiteV3ConfigBasic(domainName, "CLOUD_WAF") +*/ fmt.Sprintf(`
+	return testCheckIncapsulaSiteV3ConfigBasic(domainName, "CLOUD_WAF") + fmt.Sprintf(`
 resource "%s" "%s" {
-	site_id = 2365924 #incapsula_site_v3.test-terraform-site-v3.id
-	#depends_on = ["incapsula_site_v3.test-terraform-site-v3"]
+	site_id = incapsula_site_v3.test-terraform-site-v3.id
+	depends_on = ["incapsula_site_v3.test-terraform-site-v3"]
 	client_comply_no_cache = false
 	client_enable_client_side_caching = false
 	client_send_age_header = false
@@ -306,10 +307,10 @@ resource "%s" "%s" {
 }
 
 func testCustomCaching(domainName string) string {
-	return /*testCheckIncapsulaSiteV3ConfigBasic(domainName, "CLOUD_WAF") +*/ fmt.Sprintf(`
+	return testCheckIncapsulaSiteV3ConfigBasic(domainName, "CLOUD_WAF") + fmt.Sprintf(`
 resource "%s" "%s" {
-	site_id = 2365924 #incapsula_site_v3.test-terraform-site-v3.id
-	#depends_on = ["incapsula_site_v3.test-terraform-site-v3"]
+	site_id = incapsula_site_v3.test-terraform-site-v3.id
+	depends_on = ["incapsula_site_v3.test-terraform-site-v3"]
 	client_comply_no_cache = false
 	key_comply_vary = false
 	key_unite_naked_full_cache = false
@@ -326,10 +327,10 @@ resource "%s" "%s" {
 }
 
 func testStandardCaching(domainName string) string {
-	return /*testCheckIncapsulaSiteV3ConfigBasic(domainName, "CLOUD_WAF") +*/ fmt.Sprintf(`
+	return testCheckIncapsulaSiteV3ConfigBasic(domainName, "CLOUD_WAF") + fmt.Sprintf(`
 resource "%s" "%s" {
-	site_id = 2365924 #incapsula_site_v3.test-terraform-site-v3.id
-	#depends_on = ["incapsula_site_v3.test-terraform-site-v3"]
+	site_id = incapsula_site_v3.test-terraform-site-v3.id
+	depends_on = ["incapsula_site_v3.test-terraform-site-v3"]
 	client_comply_no_cache = true
 	client_enable_client_side_caching = true
 	client_send_age_header = true
@@ -350,10 +351,10 @@ resource "%s" "%s" {
 }
 
 func testSmartCaching(domainName string) string {
-	return /*testCheckIncapsulaSiteV3ConfigBasic(domainName, "CLOUD_WAF") +*/ fmt.Sprintf(`
+	return testCheckIncapsulaSiteV3ConfigBasic(domainName, "CLOUD_WAF") + fmt.Sprintf(`
 resource "%s" "%s" {
-	site_id = 2365924 #incapsula_site_v3.test-terraform-site-v3.id
-	#depends_on = ["incapsula_site_v3.test-terraform-site-v3"]
+	site_id = incapsula_site_v3.test-terraform-site-v3.id
+	depends_on = ["incapsula_site_v3.test-terraform-site-v3"]
 	client_comply_no_cache = true
 	client_enable_client_side_caching = true
 	client_send_age_header = true
@@ -380,10 +381,10 @@ resource "%s" "%s" {
 }
 
 func testAllResourceCaching(domainName string) string {
-	return /*testCheckIncapsulaSiteV3ConfigBasic(domainName, "CLOUD_WAF") +*/ fmt.Sprintf(`
+	return testCheckIncapsulaSiteV3ConfigBasic(domainName, "CLOUD_WAF") + fmt.Sprintf(`
 resource "%s" "%s" {
-	site_id = 2365924 #incapsula_site_v3.test-terraform-site-v3.id
-	#depends_on = ["incapsula_site_v3.test-terraform-site-v3"]
+	site_id = incapsula_site_v3.test-terraform-site-v3.id
+	depends_on = ["incapsula_site_v3.test-terraform-site-v3"]
 	client_comply_no_cache = true
 	client_enable_client_side_caching = true
 	client_send_age_header = true
@@ -408,10 +409,10 @@ resource "%s" "%s" {
 }
 
 func testMultipleResponseHeaders(domainName string) string {
-	return /*testCheckIncapsulaSiteV3ConfigBasic(domainName, "CLOUD_WAF") +*/ fmt.Sprintf(`
+	return testCheckIncapsulaSiteV3ConfigBasic(domainName, "CLOUD_WAF") + fmt.Sprintf(`
 resource "%s" "%s" {
-	site_id = 2365924 #incapsula_site_v3.test-terraform-site-v3.id
-	#depends_on = ["incapsula_site_v3.test-terraform-site-v3"]
+	site_id = incapsula_site_v3.test-terraform-site-v3.id
+	depends_on = ["incapsula_site_v3.test-terraform-site-v3"]
 	client_comply_no_cache = true
 	client_enable_client_side_caching = true
 	client_send_age_header = true
@@ -438,10 +439,10 @@ resource "%s" "%s" {
 }
 
 func testDisabledCachingWithoutParameters(domainName string) string {
-	return /*testCheckIncapsulaSiteV3ConfigBasic(domainName, "CLOUD_WAF") +*/ fmt.Sprintf(`
+	return testCheckIncapsulaSiteV3ConfigBasic(domainName, "CLOUD_WAF") + fmt.Sprintf(`
 resource "%s" "%s" {
-	site_id = 2365924 #incapsula_site_v3.test-terraform-site-v3.id
-	#depends_on = ["incapsula_site_v3.test-terraform-site-v3"]
+	site_id = incapsula_site_v3.test-terraform-site-v3.id
+	depends_on = ["incapsula_site_v3.test-terraform-site-v3"]
 	mode_level = "disabled"
 }`,
 		applicationPerformanceResourceName, applicationPerformanceName,
