@@ -8,7 +8,6 @@ import (
 	"sort"
 )
 
-var siteId = "site_id"
 var canceledGoodBots = "canceled_good_bots"
 var badBots = "bad_bots"
 var botId = "id"
@@ -21,14 +20,14 @@ func resourceBotsConfiguration() *schema.Resource {
 		Delete: resourceBotsConfigurationDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				d.Set(siteId, d.Id())
+				d.Set("site_id", d.Id())
 				return []*schema.ResourceData{d}, nil
 			},
 		},
 
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
-			siteId: {
+			"site_id": {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeString,
 				Required:    true,
@@ -90,19 +89,19 @@ func resourceBotsConfigurationCreate(d *schema.ResourceData, m interface{}) erro
 
 	requestDTO := populateFromConfBotsConfigurationDTO(d)
 
-	responseDTO, err := client.UpdateBotAccessControlConfiguration(d.Get(siteId).(string), requestDTO)
+	responseDTO, err := client.UpdateBotAccessControlConfiguration(d.Get("site_id").(string), requestDTO)
 	if err != nil {
 		return fmt.Errorf("Error updating Bots configuration for site (%s): %s",
-			d.Get(siteId), err)
+			d.Get("site_id"), err)
 	}
 
 	if responseDTO.Errors != nil && len(responseDTO.Errors) > 0 {
 		return fmt.Errorf("Error updating Bots configuration for site (%s): %s",
-			d.Get(siteId), responseDTO.Errors)
+			d.Get("site_id"), responseDTO.Errors)
 	}
 
 	// Set the dc ID
-	d.SetId(d.Get(siteId).(string))
+	d.SetId(d.Get("site_id").(string))
 
 	return resourceBotsConfigurationRead(d, m)
 }
@@ -111,14 +110,14 @@ func resourceBotsConfigurationRead(d *schema.ResourceData, m interface{}) error 
 	// Implement by reading the ListBotsResponse for the bots
 	client := m.(*Client)
 
-	responseDTO, err := client.GetBotAccessControlConfiguration(d.Get(siteId).(string))
+	responseDTO, err := client.GetBotAccessControlConfiguration(d.Get("site_id").(string))
 	if err != nil {
-		return fmt.Errorf("Error getting Bots configuration for site (%s): %s", d.Get(siteId), err)
+		return fmt.Errorf("Error getting Bots configuration for site (%s): %s", d.Get("site_id"), err)
 	}
 
 	if responseDTO.Errors != nil && len(responseDTO.Errors) > 0 {
 		if responseDTO.Errors[0].Status == "404" {
-			log.Printf("[INFO] Incapsula Site with ID %s has already been deleted: %s\n", d.Get(siteId), responseDTO.Errors)
+			log.Printf("[INFO] Incapsula Site with ID %s has already been deleted: %s\n", d.Get("site_id"), responseDTO.Errors)
 			d.SetId("")
 			return nil
 		}
@@ -127,7 +126,7 @@ func resourceBotsConfigurationRead(d *schema.ResourceData, m interface{}) error 
 		if err != nil {
 			panic(err)
 		}
-		return fmt.Errorf("Error getting Bots configuration for site (%s): %s", d.Get(siteId), string(out))
+		return fmt.Errorf("Error getting Bots configuration for site (%s): %s", d.Get("site_id"), string(out))
 	}
 
 	canceledGoodBotsList := make([]int, 0)
@@ -153,9 +152,9 @@ func resourceBotsConfigurationRead(d *schema.ResourceData, m interface{}) error 
 func resourceBotsConfigurationDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	responseDTO, err := client.GetBotAccessControlConfiguration(d.Get(siteId).(string))
+	responseDTO, err := client.GetBotAccessControlConfiguration(d.Get("site_id").(string))
 	if err != nil {
-		return fmt.Errorf("Error deleting Bots configuration for site (%s): %s", d.Get(siteId), err)
+		return fmt.Errorf("Error deleting Bots configuration for site (%s): %s", d.Get("site_id"), err)
 	}
 
 	if responseDTO.Errors != nil && len(responseDTO.Errors) > 0 && responseDTO.Errors[0].Status != "404" {
@@ -163,7 +162,7 @@ func resourceBotsConfigurationDelete(d *schema.ResourceData, m interface{}) erro
 		if err != nil {
 			panic(err)
 		}
-		return fmt.Errorf("Error deleting Bots configuration for site (%s): %s", d.Get(siteId), string(out))
+		return fmt.Errorf("Error deleting Bots configuration for site (%s): %s", d.Get("site_id"), string(out))
 	}
 
 	d.SetId("")

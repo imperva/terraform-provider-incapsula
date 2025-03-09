@@ -1,9 +1,9 @@
 ---
+subcategory: "Account and User Management"
 layout: "incapsula"
 page_title: "Incapsula: account-data"
-sidebar_current: "docs-incapsula-data-account-data"
 description: |-
-Provides an Incapsula Account Data data source.
+    Provides an Incapsula Account Data data source.
 ---
 
 # incapsula_account_data

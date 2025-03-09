@@ -398,7 +398,6 @@ resource "incapsula_security_rule_exception" "example-waf-backdoor-rule-exceptio
   countries    = "JM,US"
   continents   = "NA,AF"
   ips          = "1.2.3.6,1.2.3.7"
-  url_patterns = "EQUALS,CONTAINS"
   urls         = "/myurl,/myurl2"
   user_agents  = "myUserAgent"
   parameters   = "myparam"
@@ -418,7 +417,6 @@ resource "incapsula_security_rule_exception" "example-waf-bot_access-control-rul
   rule_id          = "api.threats.bot_access_control"
   client_app_types = "DataScraper,"
   ips              = "1.2.3.6,1.2.3.7"
-  url_patterns     = "EQUALS,CONTAINS"
   urls             = "/myurl,/myurl2"
   user_agents      = "myUserAgent"
 }
@@ -437,7 +435,6 @@ resource "incapsula_security_rule_exception" "example-waf-cross-site-scripting-r
   client_apps  = "488,123"
   countries    = "JM,US"
   continents   = "NA,AF"
-  url_patterns = "EQUALS,CONTAINS"
   urls         = "/myurl,/myurl2"
   parameters   = "myparam"
 }
@@ -460,7 +457,6 @@ resource "incapsula_security_rule_exception" "example-waf-ddos-rule-exception" {
   countries    = "JM,US"
   continents   = "NA,AF"
   ips          = "1.2.3.6,1.2.3.7"
-  url_patterns = "EQUALS,CONTAINS"
   urls         = "/myurl,/myurl2"
 }
 
@@ -479,7 +475,6 @@ resource "incapsula_security_rule_exception" "example-waf-illegal-resource-acces
   countries    = "JM,US"
   continents   = "NA,AF"
   ips          = "1.2.3.6,1.2.3.7"
-  url_patterns = "EQUALS,CONTAINS"
   urls         = "/myurl,/myurl2"
   parameters   = "myparam"
 }
@@ -499,7 +494,6 @@ resource "incapsula_security_rule_exception" "example-waf-remote-file-inclusion-
   countries    = "JM,US"
   continents   = "NA,AF"
   ips          = "1.2.3.6,1.2.3.7"
-  url_patterns = "EQUALS,CONTAINS"
   urls         = "/myurl,/myurl2"
   user_agents  = "myUserAgent"
   parameters   = "myparam"
@@ -520,7 +514,6 @@ resource "incapsula_security_rule_exception" "example-waf-sql-injection-rule-exc
   countries    = "JM,US"
   continents   = "NA,AF"
   ips          = "1.2.3.6,1.2.3.7"
-  url_patterns = "EQUALS,CONTAINS"
   urls         = "/myurl,/myurl2"
 }
 

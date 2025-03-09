@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/url"
 	"strconv"
-	"strings"
 )
 
 // Endpoints (unexported consts)
@@ -18,17 +17,17 @@ const endpointExceptionList = "sites/status"
 // NOTE: no exceptions for whitelistedIPsExceptionRuleId
 var securityRuleExceptionParamMapping = map[string][]string{
 	// ACL RuleIDs
-	blacklistedCountriesExceptionRuleID: {"client_app_types", "ips", "url_patterns", "urls"},
-	blacklistedIPsExceptionRuleID:       {"client_apps", "countries", "continents", "ips", "url_patterns", "urls"},
-	blacklistedURLsExceptionRuleID:      {"client_apps", "countries", "continents", "ips", "url_patterns", "urls"},
+	blacklistedCountriesExceptionRuleID: {"client_app_types", "ips", "urls"},
+	blacklistedIPsExceptionRuleID:       {"client_apps", "countries", "continents", "ips", "urls"},
+	blacklistedURLsExceptionRuleID:      {"client_apps", "countries", "continents", "ips", "urls"},
 	// WAF RuleIDs
-	backdoorExceptionRuleID:              {"client_apps", "countries", "continents", "ips", "url_patterns", "urls", "user_agents", "parameters"},
-	botAccessControlExceptionRuleID:      {"client_app_types", "ips", "url_patterns", "urls", "user_agents"},
-	crossSiteScriptingExceptionRuleID:    {"client_apps", "countries", "continents", "url_patterns", "urls", "parameters"},
-	ddosExceptionRuleID:                  {"client_apps", "countries", "continents", "ips", "url_patterns", "urls"},
-	illegalResourceAccessExceptionRuleID: {"client_apps", "countries", "continents", "ips", "url_patterns", "urls", "parameters"},
-	remoteFileInclusionExceptionRuleID:   {"client_apps", "countries", "continents", "ips", "url_patterns", "urls", "user_agents", "parameters"},
-	sqlInjectionExceptionRuleID:          {"client_apps", "countries", "continents", "ips", "url_patterns", "urls", "parameters"},
+	backdoorExceptionRuleID:              {"client_apps", "countries", "continents", "ips", "urls", "user_agents", "parameters"},
+	botAccessControlExceptionRuleID:      {"client_app_types", "ips", "urls", "user_agents"},
+	crossSiteScriptingExceptionRuleID:    {"client_apps", "countries", "continents", "urls", "parameters"},
+	ddosExceptionRuleID:                  {"client_apps", "countries", "continents", "ips", "urls"},
+	illegalResourceAccessExceptionRuleID: {"client_apps", "countries", "continents", "ips", "urls", "parameters"},
+	remoteFileInclusionExceptionRuleID:   {"client_apps", "countries", "continents", "ips", "urls", "user_agents", "parameters"},
+	sqlInjectionExceptionRuleID:          {"client_apps", "countries", "continents", "ips", "urls", "parameters"},
 }
 
 // SecurityRuleExceptionCreateResponse provides exception_id of rule exception
@@ -39,7 +38,7 @@ type SecurityRuleExceptionCreateResponse struct {
 }
 
 // AddSecurityRuleException adds a security rule exception
-func (c *Client) AddSecurityRuleException(siteID int, ruleID, clientAppTypes, clientApps, countries, continents, ips, urlPatterns, urls, userAgents, parameters string) (*SecurityRuleExceptionCreateResponse, error) {
+func (c *Client) AddSecurityRuleException(siteID int, ruleID, clientAppTypes, clientApps, countries, continents, ips, urls, userAgents, parameters string) (*SecurityRuleExceptionCreateResponse, error) {
 	// Base URL values
 	values := url.Values{
 		"site_id":           {strconv.Itoa(siteID)},
@@ -48,11 +47,6 @@ func (c *Client) AddSecurityRuleException(siteID int, ruleID, clientAppTypes, cl
 	}
 
 	log.Printf("[INFO] Adding new security rule exception for rule_id (%s) for site id (%d)\n", ruleID, siteID)
-
-	err := validateListSizes(urlPatterns, urls)
-	if err != nil {
-		return nil, err
-	}
 
 	// Check to see if ruleID is correct, then iterate rule specific parameters
 	if ruleParams, ok := securityRuleExceptionParamMapping[ruleID]; ok {
@@ -71,8 +65,6 @@ func (c *Client) AddSecurityRuleException(siteID int, ruleID, clientAppTypes, cl
 				values.Add("ips", ips)
 			} else if param == "parameters" && parameters != "" {
 				values.Add("parameters", parameters)
-			} else if param == "url_patterns" && urlPatterns != "" {
-				values.Add("url_patterns", urlPatterns)
 			} else if param == "urls" && urls != "" {
 				values.Add("urls", urls)
 			} else if param == "user_agents" && userAgents != "" {
@@ -113,7 +105,7 @@ func (c *Client) AddSecurityRuleException(siteID int, ruleID, clientAppTypes, cl
 }
 
 // EditSecurityRuleException edits a security rule exception
-func (c *Client) EditSecurityRuleException(siteID int, ruleID, clientAppTypes, clientApps, countries, continents, ips, urlPatterns, urls, userAgents, parameters, whitelistID string) (*SiteStatusResponse, error) {
+func (c *Client) EditSecurityRuleException(siteID int, ruleID, clientAppTypes, clientApps, countries, continents, ips, urls, userAgents, parameters, whitelistID string) (*SiteStatusResponse, error) {
 	// Base URL values
 	values := url.Values{
 		"site_id":      {strconv.Itoa(siteID)},
@@ -122,11 +114,6 @@ func (c *Client) EditSecurityRuleException(siteID int, ruleID, clientAppTypes, c
 	}
 
 	log.Printf("[INFO] Updating existing security rule exception for rule_id (%s) whitelist_id (%s) for site_id (%d)\n", ruleID, whitelistID, siteID)
-
-	err := validateListSizes(urlPatterns, urls)
-	if err != nil {
-		return nil, err
-	}
 
 	// Check to see if ruleID is correct, then iterate rule specific parameters
 	if ruleParams, ok := securityRuleExceptionParamMapping[ruleID]; ok {
@@ -145,8 +132,6 @@ func (c *Client) EditSecurityRuleException(siteID int, ruleID, clientAppTypes, c
 				values.Add("ips", ips)
 			} else if param == "parameters" && parameters != "" {
 				values.Add("parameters", parameters)
-			} else if param == "url_patterns" && urlPatterns != "" {
-				values.Add("url_patterns", urlPatterns)
 			} else if param == "urls" && urls != "" {
 				values.Add("urls", urls)
 			} else if param == "user_agents" && userAgents != "" {
@@ -280,17 +265,6 @@ func (c *Client) DeleteSecurityRuleException(siteID int, ruleID, whitelistID str
 	// Look at the response status code from Incapsula
 	if exceptionDeleteResponse.Res != 0 {
 		return fmt.Errorf("Error from Incapsula service when deleting security rule exception for rule_id (%s) and site_id (%d): %s", ruleID, siteID, string(responseBody))
-	}
-
-	return nil
-}
-
-func validateListSizes(urlPatterns, urls string) error {
-	urlPatternsList := strings.Split(urlPatterns, ",")
-	urlsList := strings.Split(urls, ",")
-
-	if len(urlPatternsList) != len(urlsList) {
-		return fmt.Errorf("error: url_patterns and urls lists do not have the same number of elements")
 	}
 
 	return nil

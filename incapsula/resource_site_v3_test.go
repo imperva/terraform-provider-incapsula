@@ -44,6 +44,7 @@ func TestIncapsulaSiteV3_Basic(t *testing.T) {
 				ResourceName:      siteV3ResourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateIdFunc: testSiteV3Importer,
 			},
 		},
 	})
@@ -89,4 +90,17 @@ func testCheckIncapsulaSiteV3ConfigBasic(name string, siteType string) string {
 		name,
 		siteType,
 	)
+}
+
+func testSiteV3Importer(s *terraform.State) (string, error) {
+	for _, rs := range s.RootModule().Resources {
+
+		accountId1, err := strconv.Atoi(rs.Primary.Attributes["account_id"])
+		if err != nil {
+			return "", fmt.Errorf("Error parsing API ID %v to int", rs.Primary.Attributes["id"])
+		}
+
+		return fmt.Sprintf("%d/%s", accountId1, rs.Primary.ID), nil
+	}
+	return "", fmt.Errorf("Error finding an Site V3")
 }

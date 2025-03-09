@@ -1,9 +1,9 @@
 ---
+subcategory: "Cloud WAF"
 layout: "incapsula"
 page_title: "Incapsula: client-applications"
-sidebar_current: "docs-incapsula_client_apps_data"
 description: |-
-Provides an Incapsula Client Applications data source.
+  Provides an Incapsula Client Applications data source.
 ---
 
 # incapsula_client_apps_data

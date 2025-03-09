@@ -1,5 +1,5 @@
 ---
-subcategory: "Provider Reference"
+subcategory: "Cloud WAF"
 layout: "incapsula"
 page_title: "incapsula_incap_rule"
 description: |-
@@ -21,6 +21,7 @@ resource "incapsula_incap_rule" "example-incap-rule-alert" {
   action = "RULE_ACTION_ALERT"
   filter = "Full-URL == \"/someurl\""
   enabled = true
+  send_notifications = "false"
 }
 
 # Incap Rule: Require javascript support
@@ -30,6 +31,7 @@ resource "incapsula_incap_rule" "example-incap-rule-require-js-support" {
   action = "RULE_ACTION_INTRUSIVE_HTML"
   filter = "Full-URL == \"/someurl\""
   enabled = true  
+  send_notifications = "false"
 }
 
 # Incap Rule: Block IP
@@ -39,6 +41,7 @@ resource "incapsula_incap_rule" "example-incap-rule-block-ip" {
   action = "RULE_ACTION_BLOCK_IP"
   filter = "Full-URL == \"/someurl\""
   enabled = true  
+  send_notifications = "true"
 }
 
 # Incap Rule: Block Request
@@ -48,15 +51,32 @@ resource "incapsula_incap_rule" "example-incap-rule-block-request" {
   action = "RULE_ACTION_BLOCK"
   filter = "Full-URL == \"/someurl\""
   enabled = true
+  send_notifications = "true"
 }
 
-# Incap Rule: Block Session
+# Incap Rule: Block Session fixed period
 resource "incapsula_incap_rule" "example-incap-rule-block-session" {
   name = "Example incap rule block session"
   site_id = incapsula_site.example-site.id
   action = "RULE_ACTION_BLOCK_USER"
   filter = "Full-URL == \"/someurl\""
   enabled = true
+  block_duration_type = "fixed"
+  block_duration = 55
+  send_notifications = "false"
+}
+
+# Incap Rule: Block Session randomized period
+resource "incapsula_incap_rule" "example-incap-rule-block-session" {
+  name = "Example incap rule block session"
+  site_id = incapsula_site.example-site.id
+  action = "RULE_ACTION_BLOCK_USER"
+  filter = "Full-URL == \"/someurl\""
+  enabled = true
+  block_duration_type = "randomized"
+  block_duration_min = 25
+  block_duration_max = 44
+  send_notifications = "false"
 }
 
 # Incap Rule: Delete Cookie (ADR)
@@ -109,6 +129,7 @@ resource "incapsula_incap_rule" "example-incap-rule-require-cookie-support" {
   action = "RULE_ACTION_RETRY"
   filter = "Full-URL == \"/someurl\""
   enabled = true
+  send_notifications = "false"
 }
 
 # Incap Rule: Rewrite Cookie (ADR)
@@ -149,6 +170,18 @@ resource "incapsula_incap_rule" "example-incap-rule-rewrite-url" {
   to = "/redirect"
   enabled = true
 }
+
+# Incap Rule: Override WAF rule
+resource "incapsula_incap_rule" "example-incap-rule-Override-waf-rule" {
+  name = "ExampleOverrideWafRule"
+  site_id = incapsula_site.example-site.id
+  action = "RULE_ACTION_WAF_OVERRIDE"
+  filter = "Full-URL contains \"/block/\""
+  override_waf_action = "Alert Only"
+  override_waf_rule = "Cross Site Scripting"
+  enabled = true
+}
+
 ```
 
 ## Argument Reference
@@ -157,7 +190,7 @@ The following arguments are supported:
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `name` - (Required) Rule name.
-* `action` - (Required) Rule action. See the detailed descriptions in the API documentation. Possible values: `RULE_ACTION_REDIRECT`, `RULE_ACTION_SIMPLIFIED_REDIRECT`, `RULE_ACTION_REWRITE_URL`, `RULE_ACTION_REWRITE_HEADER`, `RULE_ACTION_REWRITE_COOKIE`, `RULE_ACTION_DELETE_HEADER`, `RULE_ACTION_DELETE_COOKIE`, `RULE_ACTION_RESPONSE_REWRITE_HEADER`, `RULE_ACTION_RESPONSE_DELETE_HEADER`, `RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE`, `RULE_ACTION_FORWARD_TO_DC`, `RULE_ACTION_ALERT`, `RULE_ACTION_BLOCK`, `RULE_ACTION_BLOCK_USER`, `RULE_ACTION_BLOCK_IP`, `RULE_ACTION_RETRY`, `RULE_ACTION_INTRUSIVE_HTML`, `RULE_ACTION_CAPTCHA`, `RULE_ACTION_RATE`, `RULE_ACTION_CUSTOM_ERROR_RESPONSE`, `RULE_ACTION_FORWARD_TO_PORT`.
+* `action` - (Required) Rule action. See the detailed descriptions in the API documentation. Possible values: `RULE_ACTION_REDIRECT`, `RULE_ACTION_SIMPLIFIED_REDIRECT`, `RULE_ACTION_REWRITE_URL`, `RULE_ACTION_REWRITE_HEADER`, `RULE_ACTION_REWRITE_COOKIE`, `RULE_ACTION_DELETE_HEADER`, `RULE_ACTION_DELETE_COOKIE`, `RULE_ACTION_RESPONSE_REWRITE_HEADER`, `RULE_ACTION_RESPONSE_DELETE_HEADER`, `RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE`, `RULE_ACTION_FORWARD_TO_DC`, `RULE_ACTION_ALERT`, `RULE_ACTION_BLOCK`, `RULE_ACTION_BLOCK_USER`, `RULE_ACTION_BLOCK_IP`, `RULE_ACTION_RETRY`, `RULE_ACTION_INTRUSIVE_HTML`, `RULE_ACTION_CAPTCHA`, `RULE_ACTION_RATE`, `RULE_ACTION_CUSTOM_ERROR_RESPONSE`, `RULE_ACTION_FORWARD_TO_PORT`, `RULE_ACTION_WAF_OVERRIDE`.
 * `filter` - (Required) The filter defines the conditions that trigger the rule action. For action `RULE_ACTION_SIMPLIFIED_REDIRECT` filter is not relevant. For other actions, if left empty, the rule is always run.
 * `response_code` - (Optional) For `RULE_ACTION_REDIRECT` or `RULE_ACTION_SIMPLIFIED_REDIRECT` rule's response code, valid values are `302`, `301`, `303`, `307`, `308`. For `RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE` rule's response code, valid values are all 3-digits numbers. For `RULE_ACTION_CUSTOM_ERROR_RESPONSE`, valid values are `400`, `401`, `402`, `403`, `404`, `405`, `406`, `407`, `408`, `409`, `410`, `411`, `412`, `413`, `414`, `415`, `416`, `417`, `419`, `420`, `422`, `423`, `424`, `500`, `501`, `502`, `503`, `504`, `505`, `507`.
 * `add_missing` - (Optional) Add cookie or header if it doesn't exist (Rewrite cookie rule only).
@@ -174,9 +207,14 @@ The following arguments are supported:
 * `error_response_format` - (Optional) The format of the given error response in the error_response_data field. Applies only for `RULE_ACTION_CUSTOM_ERROR_RESPONSE`. Possible values: `json`, `xml`.
 * `error_response_data` - (Optional) The response returned when the request matches the filter and is blocked. Applies only for `RULE_ACTION_CUSTOM_ERROR_RESPONSE`.
 * `multiple_deletions` - (Optional) Delete multiple header occurrences. Applies only to rules using `RULE_ACTION_DELETE_HEADER` and `RULE_ACTION_RESPONSE_DELETE_HEADER`.
-* `overrideWafAction` - (Optional) The response returned when the request matches the filter and is blocked. Applies only for `RULE_ACTION_CUSTOM_ERROR_RESPONSE`.
-* `overrideWafRule` - (Optional) The action for the override rule. Possible values: Alert Only, Block Request, Block User, Block IP, Ignore.
+* `override_waf_action` - (Optional) The action for the override rule `RULE_ACTION_WAF_OVERRIDE`. Possible values: Alert Only, Block Request, Block User, Block IP, Ignore.
+* `override_waf_rule` - (Optional) The setting to override `RULE_ACTION_WAF_OVERRIDE`. Possible values: SQL Injection, Remote File Inclusion, Cross Site Scripting, Illegal Resource Access.
 * `enabled` - (Optional) Boolean that enables the rule. Possible values: true, false. Default value is true.
+* `send_notifications` - (Optional) Send an email notification whenever this rule is triggered. Possible values: `true`, `false`. Default value is `false`. Applies to the following security actions: `RULE_ACTION_ALERT`, `RULE_ACTION_BLOCK`, `RULE_ACTION_BLOCK_USER`, `RULE_ACTION_BLOCK_IP`, `RULE_ACTION_RETRY`, `RULE_ACTION_INTRUSIVE_HTML`, `RULE_ACTION_CAPTCHA`.
+* `block_duration_type` - (Optional) Block duration types: `fixed`, `randomized`. Time range: 1-1440 minutes.The Fixed type blocks the IP address or session for the duration specified by the `block_duration` parameter. The Randomized type generates a random duration for each block between the specified minimum and maximum values. Valid only for `RULE_ACTION_BLOCK_USER` or `RULE_ACTION_BLOCK_IP` `action`.
+* `block_duration` - (Optional) Value of the fixed block duration. Valid only for `RULE_ACTION_BLOCK_USER` or `RULE_ACTION_BLOCK_IP` `action` and `fixed` `block_duration_type`
+* `block_duration_min` - (Optional) The lower limit for the randomized block duration. Valid only for `RULE_ACTION_BLOCK_USER` or `RULE_ACTION_BLOCK_IP` `action` and `randomized` `block_duration_type`
+* `block_duration_max` - (Optional) The upper limit for the randomized block duration. Valid only for `RULE_ACTION_BLOCK_USER` or `RULE_ACTION_BLOCK_IP` `action` and `randomized` `block_duration_type`
 
 ## Attributes Reference
 

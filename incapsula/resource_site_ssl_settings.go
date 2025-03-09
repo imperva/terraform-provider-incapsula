@@ -115,12 +115,14 @@ func resourceSiteSSLSettings() *schema.Resource {
 			"hsts": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				Computed: true,
 				Elem:     &hstsConfigResource,
 				Set:      schema.HashResource(&hstsConfigResource),
 			},
 			"inbound_tls_settings": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				Computed: true,
 				Elem:     &inboundTLSSettingsResource,
 				Set:      schema.HashResource(&inboundTLSSettingsResource),
 			},

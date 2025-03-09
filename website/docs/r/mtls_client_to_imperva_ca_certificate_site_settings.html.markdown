@@ -1,5 +1,5 @@
 ---
-subcategory: "Provider Reference"
+subcategory: "Cloud WAF - Certificate Management"
 layout: "incapsula"
 page_title: "incapsula_mtls_client_to_imperva_ca_certificate_site_settings"
 description: |-

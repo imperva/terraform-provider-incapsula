@@ -1,7 +1,7 @@
 ---
+subcategory: "Account and User Management"
 layout: "incapsula"
 page_title: "Incapsula: account-permissions"
-sidebar_current: "docs-incapsula-data-account-permissions"
 description: |-
   Provides an Incapsula Account Permissions data source.
 ---
