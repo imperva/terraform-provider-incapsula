@@ -206,7 +206,6 @@ func resourceApplicationPerformanceUpdate(d *schema.ResourceData, m interface{})
 		log.Printf("[ERROR] Could not update Incapsula performance settings for site_id: %s %s\n", d.Id(), err)
 		return err
 	}
-	time.Sleep(1 * time.Second)
 	return resourceApplicationPerformanceRead(d, m)
 }
 

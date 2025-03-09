@@ -92,7 +92,7 @@ func TestAccIncapsulaApplicationPerformance_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "key_unite_naked_full_cache", "true"),
 
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "mode_level", "standard"),
-					resource.TestCheckResourceAttr(applicationPerformanceResource, "mode_https", "dont_include_html"),
+					resource.TestCheckResourceAttr(applicationPerformanceResource, "mode_https", "disabled"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "mode_time", "0"),
 
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_cache_300x", "true"),
@@ -122,7 +122,7 @@ func TestAccIncapsulaApplicationPerformance_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "key_unite_naked_full_cache", "true"),
 
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "mode_level", "smart"),
-					resource.TestCheckResourceAttr(applicationPerformanceResource, "mode_https", "include_html"),
+					resource.TestCheckResourceAttr(applicationPerformanceResource, "mode_https", "disabled"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "mode_time", "100"),
 
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_cache_300x", "true"),
@@ -153,7 +153,7 @@ func TestAccIncapsulaApplicationPerformance_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "key_unite_naked_full_cache", "true"),
 
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "mode_level", "all_resources"),
-					resource.TestCheckResourceAttr(applicationPerformanceResource, "mode_https", "include_all_resources"),
+					resource.TestCheckResourceAttr(applicationPerformanceResource, "mode_https", "disabled"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "mode_time", "120"),
 
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_cache_300x", "true"),
@@ -337,7 +337,7 @@ resource "%s" "%s" {
 	key_comply_vary = true
 	key_unite_naked_full_cache = true
 	mode_level = "standard"
-	mode_https = "dont_include_html"
+	mode_https = "disabled"
 	response_cache_300x = true
 	response_cache_404_enabled = true
 	response_cache_404_time = 240
@@ -361,7 +361,7 @@ resource "%s" "%s" {
 	key_comply_vary = true
 	key_unite_naked_full_cache = true
 	mode_level = "smart"
-	mode_https = "include_html"
+	mode_https = "disabled"
 	mode_time = 100
 	response_cache_300x = true
 	response_cache_404_enabled = true
@@ -391,7 +391,7 @@ resource "%s" "%s" {
 	key_comply_vary = true
 	key_unite_naked_full_cache = true
 	mode_level = "all_resources"
-	mode_https = "include_all_resources"
+	mode_https = "disabled"
 	mode_time = 120
 	response_cache_300x = true
 	response_cache_404_enabled = true
