@@ -9,6 +9,8 @@ description: |-
 
 Provides an Incapsula Site Log Configuration resource. This resource applies only to sites created by the incapsula_site_v3 resource.
 
+Note: This resource is designed to work with sites represented by the "incapsula_site_v3" resource only.
+
 In this resource, you can configure:
 - Log Level: The log level for the site. Options include security logs only, both security and access logs, or no logging.
 - Logs Account ID: The account ID that collects the logs.
