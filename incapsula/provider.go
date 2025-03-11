@@ -127,7 +127,6 @@ func Provider() *schema.Provider {
 			"incapsula_api_security_endpoint_config":                           resourceApiSecurityEndpointConfig(),
 			"incapsula_notification_center_policy":                             resourceNotificationCenterPolicy(),
 			"incapsula_site_ssl_settings":                                      resourceSiteSSLSettings(),
-			"incapsula_site_log_configuration":                                 resourceSiteLogConfiguration(),
 			"incapsula_ssl_validation":                                         resourceDomainsValidation(),
 			"incapsula_csp_site_configuration":                                 resourceCSPSiteConfiguration(),
 			"incapsula_csp_site_domain":                                        resourceCSPSiteDomain(),
