@@ -60,7 +60,7 @@ jobs:
         key: ${{ runner.os }}-go${{ env.GO_VERSION }}-${{ hashFiles('**/go.sum') }}
 
     #- name: Run unit tests
-     # run: go test ./incapsula
+     # run: go test -parallel=1 ./incapsula
 
     - name: Run acceptance tests
-      run: TF_LOG=debug make testacc
+      run: make testacc

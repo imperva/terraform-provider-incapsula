@@ -55,7 +55,7 @@ func (c *Client) ReadDeliveryRuleConfiguration(siteID string, category string) (
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
 	// Dump JSON
-	log.Printf("[DEBUG] Incapsula Read Waiting Room JSON response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] Incapsula Read Delivery Rules JSON response: %s\n", string(responseBody))
 
 	if resp.StatusCode != 200 {
 		diags = append(diags, diag.Diagnostic{

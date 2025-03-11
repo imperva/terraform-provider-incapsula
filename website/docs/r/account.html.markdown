@@ -60,9 +60,9 @@ The following arguments are supported:
 The following attributes are exported:
 
 * `id` - Unique identifier in the API for the account.
-* `trial_end_date` - Numeric representation of the site creation date.
-* `support_level` - The CNAME record name.
-* `plan_name` - The CNAME record value.
+* `trial_end_date` - The trial end date of a trial account.
+* `support_level` - The support tier associated with the account.
+* `plan_name` - The name of the plan associated with the account.
 
 ## Import
 

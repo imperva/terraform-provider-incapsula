@@ -127,7 +127,6 @@ func Provider() *schema.Provider {
 			"incapsula_api_security_endpoint_config":                           resourceApiSecurityEndpointConfig(),
 			"incapsula_notification_center_policy":                             resourceNotificationCenterPolicy(),
 			"incapsula_site_ssl_settings":                                      resourceSiteSSLSettings(),
-			"incapsula_site_log_configuration":                                 resourceSiteLogConfiguration(),
 			"incapsula_ssl_validation":                                         resourceDomainsValidation(),
 			"incapsula_csp_site_configuration":                                 resourceCSPSiteConfiguration(),
 			"incapsula_csp_site_domain":                                        resourceCSPSiteDomain(),
@@ -154,6 +153,7 @@ func Provider() *schema.Provider {
 			"incapsula_abp_websites":                                           resourceAbpWebsites(),
 			"incapsula_delivery_rules_configuration":                           resourceDeliveryRulesConfiguration(),
 			"incapsula_simplified_redirect_rules_configuration":                resourceSimplifiedRedirectRulesConfiguration(),
+			"incapsula_site_cache_configuration":                               resourceSiteCacheConfiguration(),
 		},
 	}
 

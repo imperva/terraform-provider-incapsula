@@ -17,7 +17,7 @@ func TestClientGetPerformanceSettingsBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "123"
-	performanceSettings, _, err := client.GetPerformanceSettings(siteID)
+	performanceSettings, err := client.GetPerformanceSettings(siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -47,7 +47,7 @@ func TestClientGetPerformanceSettingsBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	performanceSettings, _, err := client.GetPerformanceSettings(siteID)
+	performanceSettings, err := client.GetPerformanceSettings(siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -78,7 +78,7 @@ func TestClientGetPerformanceSettingsInvalidSite(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	performanceSettings, _, err := client.GetPerformanceSettings(siteID)
+	performanceSettings, err := client.GetPerformanceSettings(siteID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -108,7 +108,7 @@ func TestClientGetPerformanceSettingsValidSite(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	performanceSettings, _, err := client.GetPerformanceSettings(siteID)
+	performanceSettings, err := client.GetPerformanceSettings(siteID)
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
