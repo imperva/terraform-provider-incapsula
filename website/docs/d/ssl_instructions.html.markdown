@@ -1,5 +1,5 @@
 ---
-subcategory: "Cloud WAF - Site Management"
+subcategory: "Cloud WAF - Certificate Management"
 layout: "incapsula"
 page_title: "incapsula_ssl_instructions"
 description: |- 
@@ -10,7 +10,8 @@ description: |-
 Provides an Incapsula Site SSL instruction resource.
 
 This data resource enables you to retrieve instructions for configuring your DNS and SSL for completing the domain validation process.
-
+<br/>
+**Note: This resource is designed to work with sites represented by the "incapsula_site_v3" resource only.**
 
 
 ## Example Usage

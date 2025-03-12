@@ -1,5 +1,5 @@
 ---
-subcategory: "Cloud WAF - Site Management"
+subcategory: "Cloud WAF - Certificate Management"
 layout: "incapsula"
 page_title: "incapsula_ssl_validation"
 description: |- 
@@ -13,6 +13,8 @@ This resource is dependent on the incapsula_managed_certificate_settings, the in
 The provider will be blocked until SSL coverage for all domains is configured on the Imperva managed certificate.
 This resource can be used only when the SSL validation method for the domains is DNS/CNAME and the DNS records are managed by a DNS terraform provider.
 Customers that use this resource will be able to manage fully configured Imperva sites using Terraform.
+<br/>
+**Note: This resource is designed to work with sites represented by the "incapsula_site_v3" resource only.**
 
 ## Full Imperva Site setup Example Usage
 
