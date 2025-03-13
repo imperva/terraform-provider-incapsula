@@ -1,3 +1,18 @@
+## 3.30.0 (Mar 02, 2025)
+
+FEATURES:
+* **New Resource:** `incapsula_site_cache_configuration`
+
+IMPROVEMENTS:
+- Adding Block duration parameters to incap_rule resource ([#517](https://github.com/imperva/terraform-provider-incapsula/pull/517))
+- Documentation improvements
+
+BUG FIXES:
+- Fix Terraform crash caused by incorrect site_id usage in ManagedCertificate resource ([#508](https://github.com/imperva/terraform-provider-incapsula/pull/508))
+- Removing the account id from the request body for update site ([#514](https://github.com/imperva/terraform-provider-incapsula/pull/514))
+- Adding send_notifications to the incap_rule resource ([#515](https://github.com/imperva/terraform-provider-incapsula/pull/515))
+
+
 ## 3.29.3 (Feb 24, 2025)
 
 IMPROVEMENTS:
