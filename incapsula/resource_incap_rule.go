@@ -214,11 +214,15 @@ func resourceIncapRuleCreate(d *schema.ResourceData, m interface{}) error {
 		sendNotifications = &valBool
 	}
 
-	blockDurationDetails := BlockDurationDetails{
+	blockDurationDetails := &BlockDurationDetails{
 		BlockDurationType: d.Get("block_duration_type").(string),
 		BlockDuration:     d.Get("block_duration").(int),
 		BlockDurationMin:  d.Get("block_duration_min").(int),
 		BlockDurationMax:  d.Get("block_duration_max").(int),
+	}
+
+	if blockDurationDetails.BlockDurationType == "" {
+		blockDurationDetails = nil
 	}
 
 	rule := IncapRule{
@@ -303,10 +307,12 @@ func resourceIncapRuleRead(d *schema.ResourceData, m interface{}) error {
 	if rule.SendNotifications != nil {
 		d.Set("send_notifications", strconv.FormatBool(*rule.SendNotifications))
 	}
-	d.Set("block_duration_type", rule.BlockDurationDetails.BlockDurationType)
-	d.Set("block_duration", rule.BlockDurationDetails.BlockDuration)
-	d.Set("block_duration_min", rule.BlockDurationDetails.BlockDurationMin)
-	d.Set("block_duration_max", rule.BlockDurationDetails.BlockDurationMax)
+	if rule.BlockDurationDetails != nil {
+		d.Set("block_duration_type", rule.BlockDurationDetails.BlockDurationType)
+		d.Set("block_duration", rule.BlockDurationDetails.BlockDuration)
+		d.Set("block_duration_min", rule.BlockDurationDetails.BlockDurationMin)
+		d.Set("block_duration_max", rule.BlockDurationDetails.BlockDurationMax)
+	}
 
 	action := d.Get("action").(string)
 
@@ -344,11 +350,15 @@ func resourceIncapRuleUpdate(d *schema.ResourceData, m interface{}) error {
 		sendNotifications = &valBool
 	}
 
-	blockDurationDetails := BlockDurationDetails{
+	blockDurationDetails := &BlockDurationDetails{
 		BlockDurationType: d.Get("block_duration_type").(string),
 		BlockDuration:     d.Get("block_duration").(int),
 		BlockDurationMin:  d.Get("block_duration_min").(int),
 		BlockDurationMax:  d.Get("block_duration_max").(int),
+	}
+
+	if blockDurationDetails.BlockDurationType == "" {
+		blockDurationDetails = nil
 	}
 
 	rule := IncapRule{
