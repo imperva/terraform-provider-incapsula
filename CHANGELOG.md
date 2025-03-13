@@ -1,4 +1,4 @@
-## 3.30.0 (Mar 02, 2025)
+## 3.30.0 (Mar 13, 2025)
 
 FEATURES:
 * **New Resource:** `incapsula_site_cache_configuration`
