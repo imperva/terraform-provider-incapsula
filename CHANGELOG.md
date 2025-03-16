@@ -1,3 +1,9 @@
+## 3.30.2 (Mar 16, 2025)
+
+BUG FIXES:
+- Fix block duration fields ([#536](https://github.com/imperva/terraform-provider-incapsula/pull/536))
+
+
 ## 3.30.1 (Mar 13, 2025)
 
 - Fix corrupted release
