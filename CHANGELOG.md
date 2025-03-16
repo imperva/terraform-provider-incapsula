@@ -1,3 +1,8 @@
+## 3.30.1 (Mar 13, 2025)
+
+- Fix corrupted release
+
+
 ## 3.30.0 (Mar 13, 2025)
 
 FEATURES:
