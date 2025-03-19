@@ -28,6 +28,7 @@ func TestAccIncapsulaMtlsClientToImervaCertificate_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckMtlsClientToImervaCertificateExists(),
 					resource.TestCheckResourceAttr(mtlsClientToImervaCertificateResource, "certificate_name", "acceptance test CA certificate"),
+					printState(),
 				),
 			},
 		},
