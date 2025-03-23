@@ -1,6 +1,8 @@
 module github.com/terraform-providers/terraform-provider-incapsula
 
-go 1.19
+go 1.23.0
+
+toolchain go1.24.1
 
 require (
 	github.com/hashicorp/go-uuid v1.0.3
