@@ -23,7 +23,6 @@ func resourceMtlsImpervaToOriginCertificateSiteAssociation() *schema.Resource {
 
 				d.Set("site_id", idSlice[0])
 				d.Set("certificate_id", idSlice[1])
-				d.Set("account_id", idSlice[2])
 
 				log.Printf("[DEBUG] Importing Incapsula Site to Imperva to Origin mutual TLS Certificate Association for Site ID %s, mutual TLS Certificate Id %s", idSlice[0], idSlice[1])
 				return []*schema.ResourceData{d}, nil
