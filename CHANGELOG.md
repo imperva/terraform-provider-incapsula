@@ -1,7 +1,7 @@
 ## 3.31.0 (Mar 24, 2025)
 
 FEATURES:
-* **New Resource:** `incapsula_site_log_configuration`  
+* **New Resource:** `incapsula_site_log_configuration`
 
 
 ## 3.30.2 (Mar 16, 2025)
