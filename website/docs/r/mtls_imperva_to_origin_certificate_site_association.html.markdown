@@ -26,6 +26,7 @@ The following arguments are supported:
 
 * `site_id` - (Required) Site id to assign to a given mTLS client certificate.
 * `certificate_id` - (Required) The mTLS certificate id you want to assign to your site.
+* `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
 
 ## Attributes Reference
 
