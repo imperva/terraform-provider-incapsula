@@ -26,6 +26,7 @@ func TestAccIncapsulaSiteMtlsCertificateAssociation_Basic(t *testing.T) {
 				Config: testAccCheckSiteMtlsCertificateAssociationBasic(t),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSiteMtlsCertificateAssociationExists(),
+					printState(),
 				),
 			},
 		},

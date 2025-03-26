@@ -42,6 +42,11 @@ func resourceMtlsImpervaToOriginCertificateSiteAssociation() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"account_id": {
+				Description: "(Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -49,12 +54,12 @@ func resourceMtlsImpervaToOriginCertificateSiteAssociation() *schema.Resource {
 func resourceSiteMtlsCertificateAssociationRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	siteID, certificateID, err := validateInput(d)
+	siteID, certificateID, accountId, err := validateInput(d)
 	if err != nil {
 		return err
 	}
 
-	associationExists, err := client.GetSiteMtlsCertificateAssociation(certificateID, siteID)
+	associationExists, err := client.GetSiteMtlsCertificateAssociation(certificateID, siteID, accountId)
 	if err != nil {
 		return err
 	}
@@ -72,7 +77,7 @@ func resourceSiteMtlsCertificateAssociationRead(d *schema.ResourceData, m interf
 
 func resourceSiteMtlsCertificateAssociationCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siteID, certificateID, err := validateInput(d)
+	siteID, certificateID, accountId, err := validateInput(d)
 	if err != nil {
 		return err
 	}
@@ -80,6 +85,7 @@ func resourceSiteMtlsCertificateAssociationCreate(d *schema.ResourceData, m inte
 	err = client.CreateSiteMtlsCertificateAssociation(
 		certificateID,
 		siteID,
+		accountId,
 	)
 	if err != nil {
 		return err
@@ -89,11 +95,12 @@ func resourceSiteMtlsCertificateAssociationCreate(d *schema.ResourceData, m inte
 
 func resourceSiteMtlsCertificateAssociationDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siteID, certificateID, err := validateInput(d)
+	siteID, certificateID, accountId, err := validateInput(d)
 
 	err = client.DeleteSiteMtlsCertificateAssociation(
 		certificateID,
 		siteID,
+		accountId,
 	)
 	if err != nil {
 		return err

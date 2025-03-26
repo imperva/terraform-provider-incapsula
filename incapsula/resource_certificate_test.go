@@ -39,6 +39,7 @@ func TestAccIncapsulaCustomCertificate_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaCertificateExists(certificateResourceName),
 					resource.TestCheckResourceAttr(certificateResource, "input_hash", calculatedHashBase64),
+					printState(),
 				),
 			},
 		},
