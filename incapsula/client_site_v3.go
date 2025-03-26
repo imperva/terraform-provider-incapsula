@@ -20,6 +20,8 @@ type SiteV3Request struct {
 	Cname        string `json:"cname,omitempty"`
 	Name         string `json:"name,omitempty"`
 	SiteType     string `json:"type,omitempty"`
+	RefId        string `json:"refId"`
+	Active       bool   `json:"active"`
 }
 
 type SiteV3Response struct {
