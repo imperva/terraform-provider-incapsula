@@ -19,7 +19,7 @@ func TestClientGetSiteMtlsCertificateAssociationBadConnection(t *testing.T) {
 	siteID := 42
 	certId := 100
 
-	_, err := client.GetSiteMtlsCertificateAssociation(certId, siteID)
+	_, err := client.GetSiteMtlsCertificateAssociation(certId, siteID, "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -49,7 +49,7 @@ func TestClientGetSiteMtlsCertificateAssociationBadJSON(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	certificateExists, err := client.GetSiteMtlsCertificateAssociation(certifiateID, siteID)
+	certificateExists, err := client.GetSiteMtlsCertificateAssociation(certifiateID, siteID, "")
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -95,7 +95,7 @@ func TestClientGetSiteMtlsCertificateAssociationInvalidConfig(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	certificateExists, err := client.GetSiteMtlsCertificateAssociation(certifiateID, siteID)
+	certificateExists, err := client.GetSiteMtlsCertificateAssociation(certifiateID, siteID, "")
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -129,7 +129,7 @@ func TestClientGetSiteMtlsCertificateAssociationValidConfig(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	certificateExists, err := client.GetSiteMtlsCertificateAssociation(certifiateID, siteID)
+	certificateExists, err := client.GetSiteMtlsCertificateAssociation(certifiateID, siteID, "")
 
 	if err != nil {
 		t.Errorf("Should not have received an error")
@@ -149,7 +149,7 @@ func TestClientCreateSiteMtlsCertificateAssociationBadConnection(t *testing.T) {
 	siteID := 42
 	certificateID := 100
 
-	err := client.CreateSiteMtlsCertificateAssociation(certificateID, siteID)
+	err := client.CreateSiteMtlsCertificateAssociation(certificateID, siteID, "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -191,7 +191,7 @@ func TestClientUpdateSiteMtlsCertificateAssociationInvalidConfig(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	err := client.CreateSiteMtlsCertificateAssociation(certificateID, siteID)
+	err := client.CreateSiteMtlsCertificateAssociation(certificateID, siteID, "")
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -211,7 +211,7 @@ func TestClientDeleteSiteMtlsCertificateAssociationBadConnection(t *testing.T) {
 	siteID := 42
 	certificateID := 100
 
-	err := client.DeleteSiteMtlsCertificateAssociation(certificateID, siteID)
+	err := client.DeleteSiteMtlsCertificateAssociation(certificateID, siteID, "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -254,7 +254,7 @@ func TestClientDeleteSiteMtlsCertificateAssociationInvalidConfig(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	err := client.CreateSiteMtlsCertificateAssociation(certificateID, siteID)
+	err := client.CreateSiteMtlsCertificateAssociation(certificateID, siteID, "")
 
 	if err == nil {
 		t.Errorf("Should have received an error")
