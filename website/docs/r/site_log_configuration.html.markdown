@@ -14,6 +14,8 @@ In this resource, you can configure:
 - Logs Account ID: The account ID that collects the logs.
 - Data Storage Region: The region where the data is stored.
 
+Note: This resource is designed to work with sites represented by the "incapsula_site_v3" resource only.
+
 ## Example Usage
 
 ```hcl
