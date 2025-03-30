@@ -26,7 +26,8 @@ The following arguments are supported:
 * `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `name` - (Required) The site name.
 * `type` - (Optional) The website type. Indicates which kind of website is created. The allowed options is CLOUD_WAF for a website onboarded to Imperva Cloud WAF.
-
+* `ref_id` - (Optional) Sets the Reference ID. A free-text field that enables you to add a unique identifier to correlate a website in our service with an object on the customer side.
+* `active` - (Optional) Whether the site is active or bypassed by the Imperva network.
 ## Attributes Reference
 
 The following attributes are exported:
