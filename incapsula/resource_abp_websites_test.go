@@ -25,7 +25,7 @@ func TestAccAbpWebsites_Basic(t *testing.T) {
 		CheckDestroy: testAccCheckAbpWebsitesDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAbpWebsitesBasic(t, true),
+				Config: testAccAbpWebsitesBasic(t, true, GenerateTestDomain(t)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAbpWebsitesExists(&websitesResponse),
 					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
@@ -37,7 +37,7 @@ func TestAccAbpWebsites_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccAbpWebsitesMultipleWebsites(t),
+				Config: testAccAbpWebsitesMultipleWebsites(t, GenerateTestDomain(t), GenerateTestDomain(t), GenerateTestDomain(t)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAbpWebsitesExists(&websitesResponse),
 					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
@@ -221,7 +221,7 @@ func TestAccAbpWebsites_ImportBasic(t *testing.T) {
 		CheckDestroy: testAccCheckAbpWebsitesDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAbpWebsitesBasic(t, true),
+				Config: testAccAbpWebsitesBasic(t, true, GenerateTestDomain(t)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAbpWebsitesExists(&websitesResponse),
 					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
@@ -310,6 +310,8 @@ func TestAccAbpWebsites_ImportDuplicateNames(t *testing.T) {
 
 func TestAccAbpWebsites_ChangeSiteId(t *testing.T) {
 	var websitesResponse AbpTerraformAccount
+	var siteId1 = GenerateTestDomain(t)
+	var siteId2 = GenerateTestDomain(t)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -319,7 +321,7 @@ func TestAccAbpWebsites_ChangeSiteId(t *testing.T) {
 		CheckDestroy: testAccCheckAbpWebsitesDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAbpWebsitesChangeSiteId(t, "sites-1"),
+				Config: testAccAbpWebsitesChangeSiteId(t, siteId1, siteId2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAbpWebsitesExists(&websitesResponse),
 					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
@@ -331,7 +333,7 @@ func TestAccAbpWebsites_ChangeSiteId(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccAbpWebsitesChangeSiteId(t, "sites-2"),
+				Config: testAccAbpWebsitesChangeSiteId(t, siteId2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAbpWebsitesExists(&websitesResponse),
 					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
@@ -403,10 +405,10 @@ func createTestDomain(t *testing.T, id string) string {
 	return generatedDomain
 }
 
-func testAccAbpWebsitesMultipleWebsites(t *testing.T) string {
-	return testAccCheckIncapsulaSiteConfig(t, "sites-1") +
-		testAccCheckIncapsulaSiteConfig(t, "sites-2") +
-		testAccCheckIncapsulaSiteConfig(t, "sites-3") +
+func testAccAbpWebsitesMultipleWebsites(t *testing.T, domain1 string, domain2 string, domain3 string) string {
+	return testAccCheckIncapsulaSiteConfig(t, domain1) +
+		testAccCheckIncapsulaSiteConfig(t, domain2) +
+		testAccCheckIncapsulaSiteConfig(t, domain3) +
 		fmt.Sprintf(`
 	data "incapsula_account_data" "account_data" {
     }
@@ -423,19 +425,19 @@ func testAccAbpWebsitesMultipleWebsites(t *testing.T) string {
 		website_group {
 			name = "sites-2"
 			website {
-				incapsula_site_id = incapsula_site.sites-2.id
+				incapsula_site_id = incapsula_site.%s.id
 				enable_mitigation = false
 			}
 			website {
-				incapsula_site_id = incapsula_site.sites-3.id
+				incapsula_site_id = incapsula_site.%s.id
 				enable_mitigation = true
 			}
 		}
-	}`, abpWebsitesResourceName, accountConfigName)
+	}`, abpWebsitesResourceName, accountConfigName, domain1, domain2)
 }
 
-func testAccAbpWebsitesBasic(t *testing.T, mitigationEnabled bool) string {
-	return testAccCheckIncapsulaSiteConfig(t, "sites-1") + fmt.Sprintf(`
+func testAccAbpWebsitesBasic(t *testing.T, mitigationEnabled bool, domainName string) string {
+	return testAccCheckIncapsulaSiteConfigBasic(domainName) + fmt.Sprintf(`
 	data "incapsula_account_data" "account_data" {
     }
 	resource "%s" "%s" {
@@ -444,11 +446,11 @@ func testAccAbpWebsitesBasic(t *testing.T, mitigationEnabled bool) string {
 		website_group {
 			name = "sites-1"
 			website {
-				incapsula_site_id = incapsula_site.sites-1.id
+				incapsula_site_id = incapsula_site.%s.id
 				enable_mitigation = %t
 			}
 		}
-	}`, abpWebsitesResourceName, accountConfigName, mitigationEnabled)
+	}`, abpWebsitesResourceName, accountConfigName, domainName, mitigationEnabled)
 }
 
 func testAccAbpWebsitesBasic2(t *testing.T, mitigationEnabled bool) string {
@@ -568,8 +570,8 @@ func testAccAbpWebsitesAutoPublish(t *testing.T, autoPublish bool) string {
 	}`, abpWebsitesResourceName, accountConfigName, autoPublish)
 }
 
-func testAccAbpWebsitesChangeSiteId(t *testing.T, siteId string) string {
-	return testAccCheckIncapsulaSiteConfig(t, "sites-1") + testAccCheckIncapsulaSiteConfig(t, "sites-2") +
+func testAccAbpWebsitesChangeSiteId(t *testing.T, siteId string, siteId2 string) string {
+	return testAccCheckIncapsulaSiteConfigBasic(siteId) + testAccCheckIncapsulaSiteConfig(t, siteId2) +
 		fmt.Sprintf(`
 	data "incapsula_account_data" "account_data" {
     }
