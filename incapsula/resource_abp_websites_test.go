@@ -333,7 +333,7 @@ func TestAccAbpWebsites_ChangeSiteId(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccAbpWebsitesChangeSiteId(t, siteId2),
+				Config: testAccAbpWebsitesChangeSiteId(t, siteId1, siteId2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAbpWebsitesExists(&websitesResponse),
 					resource.TestCheckResourceAttrSet(abpWebsitesResource, "account_id"),
@@ -446,11 +446,11 @@ func testAccAbpWebsitesBasic(t *testing.T, mitigationEnabled bool, domainName st
 		website_group {
 			name = "sites-1"
 			website {
-				incapsula_site_id = incapsula_site.%s.id
+				incapsula_site_id = incapsula_site.testacc-terraform-site.id
 				enable_mitigation = %t
 			}
 		}
-	}`, abpWebsitesResourceName, accountConfigName, domainName, mitigationEnabled)
+	}`, abpWebsitesResourceName, accountConfigName, mitigationEnabled)
 }
 
 func testAccAbpWebsitesBasic2(t *testing.T, mitigationEnabled bool) string {
