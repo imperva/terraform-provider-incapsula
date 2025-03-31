@@ -38,9 +38,8 @@ The following arguments are supported:
 * `logs_account_id` - (Optional) Numeric identifier of the account that collects the logs.
 * `log_level` - (Optional) The log level options are `full`, `security`, and `none`. Full logging includes both security and access logs.
 * `data_storage_region` - (Optional) The data region to use. Options are `APAC`, `AU`, `EU`, and `US`.
-* `hashing_enabled` - (Optional) Specify if hashing (masking setting) should be enabled.
-* `hash_salt` - (Optional) Specify the hash salt (masking setting), required if hashing is enabled. Maximum length of 64 characters.
-
+* `hashing_enabled` - (Optional) Use the hashing method for masking fields in your logs and in the Security Events page, instead of the default (XXX) data masking.
+* `hash_salt` - (Optional) Hashing salt to use for the hashing process. Required if hashing is enabled. Maximum length of 64 characters.
 ## Attributes Reference
 
 The following attributes are exported:
