@@ -3,6 +3,7 @@ package incapsula
 import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"strconv"
 	"testing"
 )
 
@@ -11,6 +12,8 @@ const siteLogConfigResourceName = "example_site_log_configuration"
 
 const logLevel = "full"
 const dataStorageRegion = "US"
+const hashingEnabled = true
+const hashSalt = "EJKHRT48375N4TKE7956NG"
 
 func TestAccIncapsulaSiteLogConfiguration_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -23,6 +26,8 @@ func TestAccIncapsulaSiteLogConfiguration_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(siteLogConfigResourceType+"."+siteLogConfigResourceName, "log_level", logLevel),
 					resource.TestCheckResourceAttr(siteLogConfigResourceType+"."+siteLogConfigResourceName, "data_storage_region", dataStorageRegion),
+					resource.TestCheckResourceAttr(siteLogConfigResourceType+"."+siteLogConfigResourceName, "hashing_enabled", strconv.FormatBool(hashingEnabled)),
+					resource.TestCheckResourceAttr(siteLogConfigResourceType+"."+siteLogConfigResourceName, "hash_salt", hashSalt),
 				),
 			},
 		},
@@ -39,6 +44,8 @@ func TestAccIncapsulaSiteLogConfiguration_Update(t *testing.T) {
 				Config: getAccIncapsulaSiteLogConfigBasic(GenerateTestSiteName(nil), "CLOUD_WAF"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(siteLogConfigResourceType+"."+siteLogConfigResourceName, "log_level", logLevel),
+					resource.TestCheckResourceAttr(siteLogConfigResourceType+"."+siteLogConfigResourceName, "hashing_enabled", strconv.FormatBool(hashingEnabled)),
+					resource.TestCheckResourceAttr(siteLogConfigResourceType+"."+siteLogConfigResourceName, "hash_salt", hashSalt),
 				),
 			},
 			{
@@ -46,6 +53,8 @@ func TestAccIncapsulaSiteLogConfiguration_Update(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(siteLogConfigResourceType+"."+siteLogConfigResourceName, "log_level", "security"),
 					resource.TestCheckResourceAttr(siteLogConfigResourceType+"."+siteLogConfigResourceName, "data_storage_region", "EU"),
+					resource.TestCheckResourceAttr(siteLogConfigResourceType+"."+siteLogConfigResourceName, "hashing_enabled", "false"),
+					resource.TestCheckResourceAttr(siteLogConfigResourceType+"."+siteLogConfigResourceName, "hash_salt", "EJKHRT48375N777777TE"),
 				),
 			},
 		},
@@ -73,8 +82,10 @@ func getAccIncapsulaSiteLogConfigBasic(name string, siteType string) string {
 			site_id = incapsula_site_v3.test_log_config_site.id
 			log_level = "%s"
 			data_storage_region = "%s"
+			hashing_enabled = %t
+			hash_salt = "%s"
 		}`,
-		name, siteType, siteLogConfigResourceType, siteLogConfigResourceName, logLevel, dataStorageRegion,
+		name, siteType, siteLogConfigResourceType, siteLogConfigResourceName, logLevel, dataStorageRegion, hashingEnabled, hashSalt,
 	)
 	return result
 }
@@ -100,6 +111,8 @@ func getAccIncapsulaSiteLogConfigUpdated(name string, siteType string) string {
 			site_id = incapsula_site_v3.test_log_config_site.id
 			log_level = "security"
 			data_storage_region = "EU"
+			hashing_enabled = false
+			hash_salt = "EJKHRT48375N777777TE"
 		}`,
 		name, siteType, siteLogConfigResourceType, siteLogConfigResourceName,
 	)
