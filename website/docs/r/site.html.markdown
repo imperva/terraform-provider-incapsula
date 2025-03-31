@@ -57,6 +57,7 @@ The following arguments are supported:
 
 * `domain` - (Required) The fully qualified domain name of the site. For example: www.example.com, hello.example.com.
 * `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
+* `deprecated`  - (Optional) Once set to true, this setting is irreversible. Use true to deprecate the resource, preventing any further changes from taking effect. Deleting the resource will not remove the site. Default: false.
 * `send_site_setup_emails` - (Optional) If this value is false, end users will not get emails about the add site process such as DNS instructions and SSL setup.
 * `site_ip` - (Optional) The web server IP/CNAME. This field should be specified when creating a site and the domain does not yet exist or the domain already points to Imperva Cloud. When specified, its value will be used for adding site only. After site is already created this field will be ignored. To modify site ip, please use resource incapsula_data_centers_configuration instead.
 * `force_ssl` - (Optional) Force SSL. This option is only available for sites with manually configured IP/CNAME and for specific accounts.
