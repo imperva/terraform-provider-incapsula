@@ -36,6 +36,7 @@ The following arguments are supported:
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
 * `domain` - (Required) The fully qualified domain name of the site.
+* `deprecated`  - (Optional) Use 'true' to deprecate this resource, any change on the resource will not take effect. Deleting the resource will not delete the domains. Default value: false
 
 ## Attributes Reference
 
