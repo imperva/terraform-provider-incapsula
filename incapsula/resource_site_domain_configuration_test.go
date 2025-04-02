@@ -1,9 +1,11 @@
 package incapsula
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"log"
 	"os"
 	"regexp"
 	"strconv"
@@ -27,7 +29,7 @@ func TestAccIncapsulaSiteDomainConfiguration_Basic(t *testing.T) {
 				SkipFunc: IsTestDomainEnvVarExist,
 				Config:   testAccCheckIncapsulaSiteDomainConfGoodConfig(t, domain),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckIncapsulaSiteDomainConfExists(siteDomainConfResourceName),
+					testCheckIncapsulaSiteDomainConfExists(rootSiteDomainConfigurationModuleName),
 					resource.TestMatchResourceAttr(rootSiteDomainConfigurationModuleName, "cname_redirection_record", regexp.MustCompile(".+\\.imperva.+")),
 					resource.TestMatchResourceAttr(rootSiteDomainConfigurationModuleName, "site_id", regexp.MustCompile("\\d+")),
 					resource.TestMatchResourceAttr(rootSiteDomainConfigurationModuleName, "domain.0.name", regexp.MustCompile(domain)),
@@ -39,11 +41,11 @@ func TestAccIncapsulaSiteDomainConfiguration_Basic(t *testing.T) {
 	})
 }
 
-func testCheckIncapsulaSiteDomainConfExists(name string) resource.TestCheckFunc {
+func testCheckIncapsulaSiteDomainConfExists(fullSiteDomainResourceName string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		res, ok := state.RootModule().Resources[rootSiteDomainConfigurationModuleName]
+		res, ok := state.RootModule().Resources[fullSiteDomainResourceName]
 		if !ok {
-			return fmt.Errorf("incapsula site domain configuration resource not found : %s", siteDomainConfResource)
+			return fmt.Errorf("incapsula site domain configuration resource not found : %s", fullSiteDomainResourceName)
 		}
 
 		siteId, ok := res.Primary.Attributes["site_id"]
@@ -61,7 +63,7 @@ func testCheckIncapsulaSiteDomainConfExists(name string) resource.TestCheckFunc 
 }
 
 func testAccCheckIncapsulaSiteDomainConfGoodConfig(t *testing.T, domain string) string {
-	result := checkIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+	result := checkIncapsulaSiteConfigBasic(GenerateTestDomain(t), "testacc-terraform-site") + fmt.Sprintf(`
 resource "%s" "%s" {
   site_id=incapsula_site.testacc-terraform-site.id
   domain {name="%s"}
@@ -70,11 +72,150 @@ depends_on = ["%s"]
 	return result
 }
 
-func checkIncapsulaSiteConfigBasic(domain string) string {
+func checkIncapsulaSiteConfigBasic(domain string, siteResourceName string) string {
 	return fmt.Sprintf(`
-		resource "incapsula_site" "testacc-terraform-site" {
+		resource "incapsula_site" "%s" {
 			domain = "%s"
 		}`,
-		domain,
+		siteResourceName, domain,
 	)
+}
+
+func testAccCheckIncapsulaSiteDomainConfigDeprecated(siteDomain string, siteResourceName string, siteDomainConfigResourceName string, domain string, deprecated bool) string {
+	result := checkIncapsulaSiteConfigBasic(siteDomain, siteResourceName) + fmt.Sprintf(`
+resource "%s" "%s" {
+  site_id=incapsula_site.%s.id
+  domain {name="%s"}
+  deprecated = %t
+depends_on = ["incapsula_site.%s"]
+}`, siteDomainConfResourceName, siteDomainConfigResourceName, siteResourceName, domain, deprecated, siteResourceName)
+	return result
+}
+
+func testAccCheckIncapsulaSiteDomainConfigDeprecatedMultiDomains(siteDomain string, siteResourceName string, siteDomainConfigResourceName string, domain1 string, domain2 string, deprecated bool) string {
+	result := checkIncapsulaSiteConfigBasic(siteDomain, siteResourceName) + fmt.Sprintf(`
+resource "%s" "%s" {
+  site_id=incapsula_site.%s.id
+  domain {name="%s"}
+  domain {name="%s"}
+  deprecated = %t
+depends_on = ["incapsula_site.%s"]
+}`, siteDomainConfResourceName, siteDomainConfigResourceName, siteResourceName, domain1, domain2, deprecated, siteResourceName)
+	return result
+}
+
+func TestAccIncapsulaSiteDomainConfig_DeprecationFlag_siteDomainConfigNotCreated(t *testing.T) { //done
+	testDomain := GenerateTestDomain(t)
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccCheckIncapsulaSiteDomainConfigDeprecated(GenerateTestDomain(t), "TestAccIncapsulaSiteDomainConfig-site1", "TestAccIncapsulaSiteDomainConfig-domain1", testDomain, true),
+				ExpectError: regexp.MustCompile("cannot create deprecated resource"),
+			},
+		},
+	})
+}
+
+func TestAccIncapsulaSiteDomainConfig_ChangeDeprecatedFlag(t *testing.T) {
+	siteTestDomain := GenerateTestDomain(t) //done
+	testDomain := GenerateTestDomain(t)
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		//CheckDestroy: testCheckIncapsulaSiteDomainConfNotDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIncapsulaSiteDomainConfigDeprecated(siteTestDomain, "TestAccIncapsulaSiteDomainConfig-site2", "TestAccIncapsulaSiteDomainConfig-domain2", testDomain, false),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiteDomainConfExists(siteDomainConfResourceName+".TestAccIncapsulaSiteDomainConfig-domain2"),
+					resource.TestCheckResourceAttr(siteDomainConfResourceName+".TestAccIncapsulaSiteDomainConfig-domain2", "domain.0.name", testDomain),
+				),
+			},
+			{
+				Config: testAccCheckIncapsulaSiteDomainConfigDeprecated(siteTestDomain, "TestAccIncapsulaSiteDomainConfig-site2", "TestAccIncapsulaSiteDomainConfig-domain2", testDomain, true),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiteDomainConfExists(siteDomainConfResourceName+".TestAccIncapsulaSiteDomainConfig-domain2"),
+					resource.TestCheckResourceAttr(siteDomainConfResourceName+".TestAccIncapsulaSiteDomainConfig-domain2", "domain.0.name", testDomain),
+				),
+			},
+			{
+				Config: testAccCheckIncapsulaSiteDomainConfigDeprecated(siteTestDomain, "TestAccIncapsulaSiteDomainConfig-site2", "TestAccIncapsulaSiteDomainConfig-domain2", testDomain, false),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiteDomainConfExists(siteDomainConfResourceName+".TestAccIncapsulaSiteDomainConfig-domain2"),
+					resource.TestCheckResourceAttr(siteDomainConfResourceName+".TestAccIncapsulaSiteDomainConfig-domain2", "domain.0.name", testDomain),
+				),
+				ExpectError: regexp.MustCompile("deprecated flag cannot be changed from true to false"),
+			},
+		},
+	})
+}
+
+func TestAccIncapsulaSiteDomainConfig_DeprecationFlagChangeAttributes(t *testing.T) {
+	siteTestDomain := GenerateTestDomain(t)
+	domain1 := GenerateTestDomain(t)
+	domain2 := GenerateTestDomain(t)
+	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIncapsulaSiteDomainConfigDeprecatedMultiDomains(siteTestDomain, "TestAccIncapsulaSiteDomainConfig-site3", "TestAccIncapsulaSiteDomainConfig-domain3", domain1, domain2, false),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiteDomainConfExists(siteDomainConfResourceName+".TestAccIncapsulaSiteDomainConfig-domain3"),
+					resource.TestCheckResourceAttr(siteDomainConfResourceName+".TestAccIncapsulaSiteDomainConfig-domain3", "domain.0.name", domain2),
+					resource.TestCheckResourceAttr(siteDomainConfResourceName+".TestAccIncapsulaSiteDomainConfig-domain3", "domain.1.name", domain1),
+				),
+			},
+			{
+				Config: testAccCheckIncapsulaSiteDomainConfigDeprecatedMultiDomains(siteTestDomain, "TestAccIncapsulaSiteDomainConfig-site3", "TestAccIncapsulaSiteDomainConfig-domain3", "c.example.com", "d.example.com", true),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiteDomainConfExists(siteDomainConfResourceName+".TestAccIncapsulaSiteDomainConfig-domain3"),
+					resource.TestCheckResourceAttr(siteDomainConfResourceName+".TestAccIncapsulaSiteDomainConfig-domain3", "domain.0.name", domain2),
+					resource.TestCheckResourceAttr(siteDomainConfResourceName+".TestAccIncapsulaSiteDomainConfig-domain3", "domain.1.name", domain1),
+				),
+			},
+		},
+	})
+}
+
+func testCheckIncapsulaSiteDomainConfNotDestroy(state *terraform.State) error {
+	client := testAccProvider.Meta().(*Client)
+	log.Printf("[DEBUG] !!!!")
+	for _, res := range state.RootModule().Resources {
+		log.Printf("[DEBUG] !!!!: type %s  id: %s", res.Type, res.Primary.ID)
+		if res.Type != siteDomainConfResourceName && res.Primary.Attributes["name"] != "TestAccIncapsulaSiteDomainConfig-domain2" {
+			continue
+		}
+
+		siteIDStr := res.Primary.ID
+		if siteIDStr == "" {
+			return fmt.Errorf("Incapsula site ID does not exist")
+		}
+
+		siteID, err := strconv.Atoi(siteIDStr)
+		if err != nil {
+			return fmt.Errorf("Site ID conversion error for %s: %s", siteIDStr, err)
+		}
+
+		domain := res.Primary.Attributes["domain"]
+		siteStatusResponse, err := client.SiteStatus(domain, siteID)
+
+		if err != nil {
+			return fmt.Errorf("Site status error for %s: %s", siteIDStr, err)
+		}
+
+		if siteStatusResponse == nil || siteStatusResponse.SiteID != siteID {
+			response, _ := json.Marshal(siteStatusResponse)
+			return fmt.Errorf("Incapsula site status for domain: %s (site id: %d) was not retreived. response: %s", domain, siteID, response)
+		}
+		err = client.DeleteSite(domain, siteID) // clean the env after checking
+
+		if err != nil {
+			return fmt.Errorf("Error deleting site (%d) for domain %s: %s", siteID, domain, err)
+		}
+	}
+
+	return nil
 }
