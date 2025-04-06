@@ -27,10 +27,7 @@ func (c *Client) GetDomain(siteId string, domainId string) (*SiteDomainDetails, 
 
 	reqURL := fmt.Sprintf("%s%s%s%s%s", c.config.BaseURLAPI, endpointDomain, siteId, "/domains/", domainId)
 
-	var params = map[string]string{}
-	params["deleteLastDomain"] = "true"
-
-	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, reqURL, nil, params, ReadDomain)
+	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, reqURL, nil, nil, ReadDomain)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when reading domain details. domain id %s, site id %s: %s", siteId, domainId, err)
 	}
@@ -89,7 +86,7 @@ func handleAddDomainRequest(c *Client, addDomainsDto AddSiteDetails, siteId stri
 
 	if resp.StatusCode != http.StatusOK {
 		log.Printf("[ERROR] Incapsula create domain failed for site: %s \n", siteId)
-		return nil, fmt.Errorf("delete create request failed: %d", resp.StatusCode)
+		return nil, fmt.Errorf("create request failed: %d", resp.StatusCode)
 	}
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
@@ -113,7 +110,11 @@ func handleAddDomainRequest(c *Client, addDomainsDto AddSiteDetails, siteId stri
 func handleDeleteDomainRequest(c *Client, siteId string, domainId string) error {
 	reqURL := fmt.Sprintf("%s%s%s%s%s", c.config.BaseURLAPI, endpointDomain, siteId, "/domains/", domainId)
 
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteDomain)
+	var params = map[string]string{}
+	params["deleteLastDomain"] = "true"
+
+	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodDelete, reqURL, nil, params, DeleteDomain)
+
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error from Incapsula service when deleting domains for site %s: %s", siteId, err)
 	}
