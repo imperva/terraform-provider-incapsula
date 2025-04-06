@@ -10,27 +10,36 @@ import (
 
 // IncapRule is a struct that encompasses all the properties of an IncapRule
 type IncapRule struct {
-	Name                  string `json:"name"`
-	Action                string `json:"action"`
-	Filter                string `json:"filter,omitempty"`
-	ResponseCode          int    `json:"response_code,omitempty"`
-	AddMissing            bool   `json:"add_missing,omitempty"`
-	RewriteExisting       *bool  `json:"rewrite_existing,omitempty"`
-	From                  string `json:"from,omitempty"`
-	To                    string `json:"to,omitempty"`
-	RewriteName           string `json:"rewrite_name,omitempty"`
-	DCID                  int    `json:"dc_id,omitempty"`
-	PortForwardingContext string `json:"port_forwarding_context,omitempty"`
-	PortForwardingValue   string `json:"port_forwarding_value,omitempty"`
-	RateContext           string `json:"rate_context,omitempty"`
-	RateInterval          int    `json:"rate_interval,omitempty"`
-	ErrorType             string `json:"error_type,omitempty"`
-	ErrorResponseFormat   string `json:"error_response_format,omitempty"`
-	ErrorResponseData     string `json:"error_response_data,omitempty"`
-	MultipleDeletions     bool   `json:"multiple_deletions,omitempty"`
-	OverrideWafRule       string `json:"overrideWafRule,omitempty"`
-	OverrideWafAction     string `json:"overrideWafAction,omitempty"`
-	Enabled               bool   `json:"enabled"`
+	Name                  string                `json:"name"`
+	Action                string                `json:"action"`
+	Filter                string                `json:"filter,omitempty"`
+	ResponseCode          int                   `json:"response_code,omitempty"`
+	AddMissing            bool                  `json:"add_missing,omitempty"`
+	RewriteExisting       *bool                 `json:"rewrite_existing,omitempty"`
+	From                  string                `json:"from,omitempty"`
+	To                    string                `json:"to,omitempty"`
+	RewriteName           string                `json:"rewrite_name,omitempty"`
+	DCID                  int                   `json:"dc_id,omitempty"`
+	PortForwardingContext string                `json:"port_forwarding_context,omitempty"`
+	PortForwardingValue   string                `json:"port_forwarding_value,omitempty"`
+	RateContext           string                `json:"rate_context,omitempty"`
+	RateInterval          int                   `json:"rate_interval,omitempty"`
+	ErrorType             string                `json:"error_type,omitempty"`
+	ErrorResponseFormat   string                `json:"error_response_format,omitempty"`
+	ErrorResponseData     string                `json:"error_response_data,omitempty"`
+	MultipleDeletions     bool                  `json:"multiple_deletions,omitempty"`
+	OverrideWafRule       string                `json:"overrideWafRule,omitempty"`
+	OverrideWafAction     string                `json:"overrideWafAction,omitempty"`
+	Enabled               bool                  `json:"enabled"`
+	SendNotifications     *bool                 `json:"sendNotifications,omitempty"`
+	BlockDurationDetails  *BlockDurationDetails `json:"blockDurationDetails,omitempty"`
+}
+
+type BlockDurationDetails struct {
+	BlockDurationType string `json:"blockDurationPeriodType,omitempty"`
+	BlockDuration     int    `json:"blockFixedDurationValue,omitempty"`
+	BlockDurationMin  int    `json:"blockRandomizedDurationMinValue,omitempty"`
+	BlockDurationMax  int    `json:"blockRandomizedDurationMaxValue,omitempty"`
 }
 
 // IncapRuleWithID contains the IncapRule as well as the rule identifier

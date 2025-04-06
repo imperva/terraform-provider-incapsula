@@ -10,6 +10,8 @@ description: |-
 
 Provides an Incapsula Site's managed certificate settings resource.
 The provider will configure or remove a managed certificate for the sites' domains, based on this resource.
+<br/>
+**Note: This resource is designed to work with sites represented by the "incapsula_site_v3" resource only.**
 
 ## Example Usage
 

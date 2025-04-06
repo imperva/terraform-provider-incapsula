@@ -12,7 +12,7 @@ import (
 const dataCenterName = "Example data center"
 const dataCenterResourceName = "incapsula_data_center.testacc-terraform-data-center"
 
-func TestAccIncapsulaDataCenter_Basic(t *testing.T) {
+func testAccIncapsulaDataCenter_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

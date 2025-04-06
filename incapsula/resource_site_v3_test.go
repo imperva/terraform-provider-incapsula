@@ -33,7 +33,7 @@ func TestIncapsulaSiteV3_Basic(t *testing.T) {
 		CheckDestroy: testCheckIncapsulaSiteV3Destroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testCheckIncapsulaSiteV3ConfigBasic(GenerateTestSiteName(nil), "CLOUD_WAF"),
+				Config: testCheckIncapsulaSiteV3ConfigBasic(GenerateTestSiteName(nil), "CLOUD_WAF", ""),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiteExists(siteV3ResourceName),
 					resource.TestCheckResourceAttr(siteV3ResourceName, "name", siteName),
@@ -44,6 +44,55 @@ func TestIncapsulaSiteV3_Basic(t *testing.T) {
 				ResourceName:      siteV3ResourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateIdFunc: testSiteV3Importer,
+			},
+		},
+	})
+}
+
+func TestIncapsulaSiteV3_refId(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		Providers:    testAccProviders,
+		CheckDestroy: testCheckIncapsulaSiteV3Destroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testCheckIncapsulaSiteV3ConfigBasic(GenerateTestSiteName(nil), "CLOUD_WAF", "ref_id = \"123456\""),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiteExists(siteV3ResourceName),
+					resource.TestCheckResourceAttr(siteV3ResourceName, "name", siteName),
+					resource.TestCheckResourceAttr(siteV3ResourceName, "type", "CLOUD_WAF"),
+					resource.TestCheckResourceAttr(siteV3ResourceName, "ref_id", "123456"),
+				),
+			},
+			{
+				ResourceName:      siteV3ResourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testSiteV3Importer,
+			},
+		},
+	})
+}
+
+func TestIncapsulaSiteV3_isActive(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		Providers:    testAccProviders,
+		CheckDestroy: testCheckIncapsulaSiteV3Destroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testCheckIncapsulaSiteV3ConfigBasic(GenerateTestSiteName(nil), "CLOUD_WAF", "active = false"),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiteExists(siteV3ResourceName),
+					resource.TestCheckResourceAttr(siteV3ResourceName, "name", siteName),
+					resource.TestCheckResourceAttr(siteV3ResourceName, "type", "CLOUD_WAF"),
+					resource.TestCheckResourceAttr(siteV3ResourceName, "active", "false"),
+				),
+			},
+			{
+				ResourceName:      siteV3ResourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testSiteV3Importer,
 			},
 		},
 	})
@@ -79,14 +128,28 @@ func testCheckIncapsulaSiteV3Destroy(state *terraform.State) error {
 	return nil
 }
 
-func testCheckIncapsulaSiteV3ConfigBasic(name string, siteType string) string {
+func testCheckIncapsulaSiteV3ConfigBasic(name string, siteType string, extraAttr string) string {
 	return fmt.Sprintf(`
 		resource "incapsula_site_v3" "test-terraform-site-v3" {
 			name = "%s"
 		    type = "%s"
-
+			%s
 		}`,
 		name,
 		siteType,
+		extraAttr,
 	)
+}
+
+func testSiteV3Importer(s *terraform.State) (string, error) {
+	for _, rs := range s.RootModule().Resources {
+
+		accountId1, err := strconv.Atoi(rs.Primary.Attributes["account_id"])
+		if err != nil {
+			return "", fmt.Errorf("Error parsing API ID %v to int", rs.Primary.Attributes["id"])
+		}
+
+		return fmt.Sprintf("%d/%s", accountId1, rs.Primary.ID), nil
+	}
+	return "", fmt.Errorf("Error finding an Site V3")
 }

@@ -23,7 +23,7 @@ func resourceSiteV3() *schema.Resource {
 				log.Printf("[DEBUG] Starting to import site v3. Parameters: %s\n", d.Id())
 
 				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
-					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id or account_id/site_id", d.Id())
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected account_id/site_id", d.Id())
 				}
 
 				err := d.Set("account_id", idSlice[0])
@@ -34,7 +34,7 @@ func resourceSiteV3() *schema.Resource {
 
 				_, err = strconv.Atoi(idSlice[1])
 				if err != nil {
-					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id or account_id/site_id", d.Id())
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected account_id/site_id", d.Id())
 				}
 
 				d.SetId(idSlice[1])
@@ -70,6 +70,17 @@ func resourceSiteV3() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"ref_id": {
+				Description: "(Optional) Sets the Reference ID. A free-text field that enables you to add a unique identifier to correlate a website in our service with an object on the customer side.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"active": {
+				Description: "(Optional) Whether the site is active or bypassed by the Imperva network.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+			},
 		},
 	}
 }
@@ -84,6 +95,10 @@ func resourceSiteV3Add(ctx context.Context, d *schema.ResourceData, m interface{
 	siteV3Request.SiteType = d.Get("type").(string)
 	siteV3Request.Name = d.Get("name").(string)
 	siteV3Request.AccountId, _ = strconv.Atoi(accountID)
+	if d.Get("ref_id") != nil {
+		siteV3Request.RefId = d.Get("ref_id").(string)
+	}
+	siteV3Request.Active = d.Get("active").(bool)
 	siteV3Response, diags := client.AddV3Site(&siteV3Request, accountID)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] failed to add v3 site to Account ID: %s, %v\n", accountID, diags)
@@ -116,8 +131,12 @@ func resourceSiteV3Update(ctx context.Context, d *schema.ResourceData, m interfa
 	log.Printf("[INFO] adding v3 site to Account ID: %s to %v", accountID, d)
 	siteV3Request := SiteV3Request{}
 	siteV3Request.Name = d.Get("name").(string)
-	siteV3Request.AccountId, _ = strconv.Atoi(accountID)
 	siteV3Request.Id, _ = strconv.Atoi(d.Id())
+	siteV3Request.RefId = ""
+	if d.Get("ref_id") != nil {
+		siteV3Request.RefId = d.Get("ref_id").(string)
+	}
+	siteV3Request.Active = d.Get("active").(bool)
 	siteV3Response, diags := client.UpdateV3Site(&siteV3Request, accountID)
 	if diags != nil && diags.HasError() {
 		log.Printf("[ERROR] failed to update v3 site to Account ID: %s, %v\n", accountID, diags)
@@ -198,6 +217,17 @@ func resourceSiteV3Read(ctx context.Context, d *schema.ResourceData, m interface
 		return diag.FromErr(err)
 	}
 
+	err = d.Set("ref_id", siteV3Response.Data[0].RefId)
+	if err != nil {
+		log.Printf("[ERROR] Could not read Incapsula ref id after get v3 site of Account ID: %s, %s\n", accountID, err)
+		return diag.FromErr(err)
+	}
+
+	err = d.Set("active", siteV3Response.Data[0].Active)
+	if err != nil {
+		log.Printf("[ERROR] Could not read Incapsula active mode after get v3 site of Account ID: %s, %s\n", accountID, err)
+		return diag.FromErr(err)
+	}
 	d.SetId(strconv.Itoa(siteV3Response.Data[0].Id))
 	return diags
 }

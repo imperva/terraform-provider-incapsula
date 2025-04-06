@@ -3,6 +3,7 @@ package incapsula
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -116,6 +117,16 @@ func testAccCheckIncapsulaDeliveryRuleDestroy(state *terraform.State) error {
 		}
 
 		siteID, ok := res.Primary.Attributes["site_id"]
+		if siteID == "" {
+			// There is a bug in Terraform: https://github.com/hashicorp/terraform/issues/23635
+			// Specifically, upgrades/destroys are happening simulatneously and not honoroing
+			// dependencies. In this case, it's possible that the site has already been deleted,
+			// which means that all of the subresources will have been cleared out.
+			// Ordinarily, this should return an error, but until this gets addressed, we're
+			// going to simply return nil.
+			// return fmt.Errorf("Incapsula site ID does not exist")
+			return nil
+		}
 		if !ok {
 			return fmt.Errorf("Incapsula Site ID does not exist")
 		}
@@ -125,6 +136,17 @@ func testAccCheckIncapsulaDeliveryRuleDestroy(state *terraform.State) error {
 		}
 
 		deliveryRulesListDTO, diags := client.ReadDeliveryRuleConfiguration(siteID, category)
+
+		// If the site has already been deleted then return nil
+		// Otherwise check the delivery rules list
+		siteIdInt, err := strconv.Atoi(siteID)
+		if err != nil {
+			return fmt.Errorf("Couldn't parse site ID: %s ", siteID)
+		}
+		_, siteStatusErr := client.SiteStatus(domain, siteIdInt)
+		if siteStatusErr != nil {
+			return nil
+		}
 
 		if diags != nil {
 			log.Printf("[ERROR] Failed to read delivery rules in category %s for Site ID %s", category, siteID)

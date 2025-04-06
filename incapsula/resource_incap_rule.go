@@ -54,6 +54,9 @@ func resourceIncapRule() *schema.Resource {
 				Description: "The filter defines the conditions that trigger the rule action. For action `RULE_ACTION_SIMPLIFIED_REDIRECT` filter is not relevant. For other actions, if left empty, the rule is always run.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				DiffSuppressFunc: func(k, remoteState, desiredState string, d *schema.ResourceData) bool {
+					return strings.TrimSpace(remoteState) == strings.TrimSpace(desiredState)
+				},
 			},
 			"response_code": {
 				Description: "For `RULE_ACTION_REDIRECT` or `RULE_ACTION_SIMPLIFIED_REDIRECT` rule's response code, valid values are `302`, `301`, `303`, `307`, `308`. For `RULE_ACTION_RESPONSE_REWRITE_RESPONSE_CODE` rule's response code, valid values are all 3-digits numbers. For `RULE_ACTION_CUSTOM_ERROR_RESPONSE`, valid values are `400`, `401`, `402`, `403`, `404`, `405`, `406`, `407`, `408`, `409`, `410`, `411`, `412`, `413`, `414`, `415`, `416`, `417`, `419`, `420`, `422`, `423`, `424`, `500`, `501`, `502`, `503`, `504`, `505`, `507`.",
@@ -142,11 +145,48 @@ func resourceIncapRule() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"block_duration_type": {
+				Description: "Block duration type.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+			},
+			"block_duration": {
+				Description: "Value of the fixed block duration.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+			},
+			"block_duration_min": {
+				Description: "The lower limit for the randomized block duration.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+			},
+			"block_duration_max": {
+				Description: "The upper limit for the randomized block duration.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+			},
 			"enabled": {
 				Description: "Enable or disable rule.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
+			},
+			"send_notifications": {
+				Description: "Send an email notification whenever this rule is triggered",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					v := val.(string)
+					if v != "true" && v != "false" {
+						errs = append(errs, fmt.Errorf("%q must be either 'true' or 'false', got: %s", key, v))
+					}
+					return
+				},
 			},
 		},
 	}
@@ -162,6 +202,27 @@ func resourceIncapRuleCreate(d *schema.ResourceData, m interface{}) error {
 		*rewriteExisting = d.Get("rewrite_existing").(bool)
 	} else {
 		rewriteExisting = nil
+	}
+
+	var sendNotifications *bool
+	if v, ok := d.GetOk("send_notifications"); ok {
+		valStr := v.(string)
+		valBool, err := strconv.ParseBool(valStr)
+		if err != nil {
+			return fmt.Errorf("Error parsing send_notifications: %s", err)
+		}
+		sendNotifications = &valBool
+	}
+
+	blockDurationDetails := &BlockDurationDetails{
+		BlockDurationType: d.Get("block_duration_type").(string),
+		BlockDuration:     d.Get("block_duration").(int),
+		BlockDurationMin:  d.Get("block_duration_min").(int),
+		BlockDurationMax:  d.Get("block_duration_max").(int),
+	}
+
+	if blockDurationDetails.BlockDurationType == "" {
+		blockDurationDetails = nil
 	}
 
 	rule := IncapRule{
@@ -186,6 +247,8 @@ func resourceIncapRuleCreate(d *schema.ResourceData, m interface{}) error {
 		OverrideWafRule:       d.Get("override_waf_rule").(string),
 		OverrideWafAction:     d.Get("override_waf_action").(string),
 		Enabled:               d.Get("enabled").(bool),
+		SendNotifications:     sendNotifications,
+		BlockDurationDetails:  blockDurationDetails,
 	}
 
 	ruleWithID, err := client.AddIncapRule(d.Get("site_id").(string), &rule)
@@ -241,6 +304,15 @@ func resourceIncapRuleRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("override_waf_rule", rule.OverrideWafRule)
 	d.Set("override_waf_action", rule.OverrideWafAction)
 	d.Set("enabled", rule.Enabled)
+	if rule.SendNotifications != nil {
+		d.Set("send_notifications", strconv.FormatBool(*rule.SendNotifications))
+	}
+	if rule.BlockDurationDetails != nil {
+		d.Set("block_duration_type", rule.BlockDurationDetails.BlockDurationType)
+		d.Set("block_duration", rule.BlockDurationDetails.BlockDuration)
+		d.Set("block_duration_min", rule.BlockDurationDetails.BlockDurationMin)
+		d.Set("block_duration_max", rule.BlockDurationDetails.BlockDurationMax)
+	}
 
 	action := d.Get("action").(string)
 
@@ -268,6 +340,27 @@ func resourceIncapRuleUpdate(d *schema.ResourceData, m interface{}) error {
 		rewriteExisting = nil
 	}
 
+	var sendNotifications *bool
+	if v, ok := d.GetOk("send_notifications"); ok {
+		valStr := v.(string)
+		valBool, err := strconv.ParseBool(valStr)
+		if err != nil {
+			return fmt.Errorf("Error parsing send_notifications: %s", err)
+		}
+		sendNotifications = &valBool
+	}
+
+	blockDurationDetails := &BlockDurationDetails{
+		BlockDurationType: d.Get("block_duration_type").(string),
+		BlockDuration:     d.Get("block_duration").(int),
+		BlockDurationMin:  d.Get("block_duration_min").(int),
+		BlockDurationMax:  d.Get("block_duration_max").(int),
+	}
+
+	if blockDurationDetails.BlockDurationType == "" {
+		blockDurationDetails = nil
+	}
+
 	rule := IncapRule{
 		Name:                  d.Get("name").(string),
 		Action:                action,
@@ -290,6 +383,8 @@ func resourceIncapRuleUpdate(d *schema.ResourceData, m interface{}) error {
 		OverrideWafRule:       d.Get("override_waf_rule").(string),
 		OverrideWafAction:     d.Get("override_waf_action").(string),
 		Enabled:               d.Get("enabled").(bool),
+		SendNotifications:     sendNotifications,
+		BlockDurationDetails:  blockDurationDetails,
 	}
 
 	ruleID, err := strconv.Atoi(d.Id())

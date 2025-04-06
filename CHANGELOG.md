@@ -1,3 +1,43 @@
+## 3.32.0 (Mar 31, 2025)
+
+IMPROVEMENTS:
+- support sub account on incapsula_mtls_imperva_to_origin_certificate_site_association resource ([#540](https://github.com/imperva/terraform-provider-incapsula/pull/540)
+- Added support for ref_id and active fields in incapsula_site_v3 resource ([#544](https://github.com/imperva/terraform-provider-incapsula/pull/544))
+- Added site masking settings to site-log-configuration resource ([#545](https://github.com/imperva/terraform-provider-incapsula/pull/545))
+
+
+## 3.31.0 (Mar 24, 2025)
+
+FEATURES:
+* **New Resource:** `incapsula_site_log_configuration`
+
+
+## 3.30.2 (Mar 16, 2025)
+
+BUG FIXES:
+- Fix block duration fields ([#536](https://github.com/imperva/terraform-provider-incapsula/pull/536))
+
+
+## 3.30.1 (Mar 13, 2025)
+
+- Fix corrupted release
+
+
+## 3.30.0 (Mar 13, 2025)
+
+FEATURES:
+* **New Resource:** `incapsula_site_cache_configuration`
+
+IMPROVEMENTS:
+- Adding Block duration parameters to incap_rule resource ([#517](https://github.com/imperva/terraform-provider-incapsula/pull/517))
+- Documentation improvements
+
+BUG FIXES:
+- Fix Terraform crash caused by incorrect site_id usage in ManagedCertificate resource ([#508](https://github.com/imperva/terraform-provider-incapsula/pull/508))
+- Removing the account id from the request body for update site ([#514](https://github.com/imperva/terraform-provider-incapsula/pull/514))
+- Adding send_notifications to the incap_rule resource ([#515](https://github.com/imperva/terraform-provider-incapsula/pull/515))
+
+
 ## 3.29.3 (Feb 24, 2025)
 
 IMPROVEMENTS:

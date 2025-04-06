@@ -58,7 +58,10 @@ func (c *Client) CreateWaitingRoom(accountId string, siteID string, waitingRoom 
 	log.Printf("[DEBUG] Waiting Room payload: %s\n", string(waitingRoomJSON))
 
 	// Post form to Incapsula
-	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms?caid=%s", c.config.BaseURLAPI, siteID, accountId)
+	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms", c.config.BaseURLAPI, siteID)
+	if accountId != "" {
+		reqURL += "?caid=" + accountId
+	}
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, waitingRoomJSON, CreateWaitingRoom)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -105,7 +108,10 @@ func (c *Client) ReadWaitingRoom(accountId string, siteID string, waitingRoomID 
 	log.Printf("[INFO] Getting Incapsula Waiting Room %d for Site ID %s\n", waitingRoomID, siteID)
 
 	// Post form to Incapsula
-	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", c.config.BaseURLAPI, siteID, waitingRoomID, accountId)
+	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", c.config.BaseURLAPI, siteID, waitingRoomID)
+	if accountId != "" {
+		reqURL += "?caid=" + accountId
+	}
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadWaitingRoom)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -162,7 +168,10 @@ func (c *Client) UpdateWaitingRoom(accountId string, siteID string, waitingRoomI
 	}
 
 	// Put request to Incapsula
-	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", c.config.BaseURLAPI, siteID, waitingRoomID, accountId)
+	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", c.config.BaseURLAPI, siteID, waitingRoomID)
+	if accountId != "" {
+		reqURL += "?caid=" + accountId
+	}
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, waitingRoomJSON, UpdateWaitingRoom)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -209,7 +218,10 @@ func (c *Client) DeleteWaitingRoom(accountId string, siteID string, waitingRoomI
 	log.Printf("[INFO] Deleting Incapsula Waiting Room %d for Site ID %s\n", waitingRoomID, siteID)
 
 	// Delete request to Incapsula
-	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms/%d?caid=%s", c.config.BaseURLAPI, siteID, waitingRoomID, accountId)
+	reqURL := fmt.Sprintf("%s/waiting-room-settings/v3/sites/%s/waiting-rooms/%d", c.config.BaseURLAPI, siteID, waitingRoomID)
+	if accountId != "" {
+		reqURL += "?caid=" + accountId
+	}
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteWaitingRoom)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{

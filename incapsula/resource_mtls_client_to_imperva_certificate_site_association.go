@@ -60,7 +60,7 @@ func resourceMtlsClientToImpervaCertificateSiteAssociation() *schema.Resource {
 func resourceSiteMtlsClientToImpervaCertificateAssociationRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	siteID, certificateID, err := validateInput(d)
+	siteID, certificateID, _, err := validateInput(d)
 	if err != nil {
 		return err
 	}
@@ -87,7 +87,7 @@ func resourceSiteMtlsClientToImpervaCertificateAssociationRead(d *schema.Resourc
 
 func resourceSiteMtlsClientToImpervaCertificateAssociationCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siteID, certificateID, err := validateInput(d)
+	siteID, certificateID, _, err := validateInput(d)
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func resourceSiteMtlsClientToImpervaCertificateAssociationCreate(d *schema.Resou
 
 func resourceSiteMtlsClientToImpervaCertificateAssociationDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siteID, certificateID, err := validateInput(d)
+	siteID, certificateID, _, err := validateInput(d)
 
 	err = client.DeleteSiteMtlsClientToImpervaCertificateAssociation(
 		certificateID,

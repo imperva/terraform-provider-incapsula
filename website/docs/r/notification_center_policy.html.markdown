@@ -68,10 +68,8 @@ The following arguments are supported:
 * `policy_name` - (Required) The name of the policy. Cannot contain special characters
 * `status` - (Optional) Indicates whether the policy is enabled or disabled. Possible
   values: `ENABLE` (default value), `DISABLE`.
-* `sub_category` - (Required) The sub category of notifications that the policy will apply to. Possible
-  values: `ACCOUNT_NOTIFICATIONS`, `SITE_NOTIFICATIONS`, `CERTIFICATE_MANAGEMENT`, `SUBSCRIPTION`, `SIEM_STORAGE`,
-  `WAF_ALERTS`, `WEBSITE_DDOS`, `WEBSITE_GROUP_DDOS`, `DNS_PROTECTION`, `INDIVIDUAL_IP_PROTECTION`,
-  `NETWORK_PROTECTION`, `NETWORK_CONNECTIVITY`, `NETWORK_MONITORING`.
+* `sub_category` - (Required) The sub category of notifications that the policy will apply to. The possible
+  values are available via the API at https://api.imperva.com/notification-settings/v3/subtypes.
 * `emailchannel_user_recipient_list` - (Optional) List of numeric identifiers of the users from the Imperva account 
   to receive emails notifications. There must be at least one value in this list or in the `emailchannel_external_recipient_list` list.
 * `emailchannel_external_recipient_list` - (Optional) List of email addresses (for recipients who are not Imperva users) to receive email notifications.
