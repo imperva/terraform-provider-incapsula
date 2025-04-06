@@ -401,7 +401,10 @@ func (c *Client) DeleteSite(domain string, siteID int) error {
 	log.Printf("[INFO] Deleting Incapsula site for domain: %s (site id: %d)\n", domain, siteID)
 
 	// Post form to Incapsula
-	values := url.Values{"site_id": {strconv.Itoa(siteID)}}
+	values := url.Values{
+		"site_id":             {strconv.Itoa(siteID)},
+		"ignore_grace_period": {strconv.FormatBool(true)},
+	}
 	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointSiteDelete)
 	resp, err := c.PostFormWithHeaders(reqURL, values, DeleteSite)
 	if err != nil {
