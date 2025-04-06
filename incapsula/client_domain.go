@@ -27,7 +27,10 @@ func (c *Client) GetDomain(siteId string, domainId string) (*SiteDomainDetails, 
 
 	reqURL := fmt.Sprintf("%s%s%s%s%s", c.config.BaseURLAPI, endpointDomain, siteId, "/domains/", domainId)
 
-	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, reqURL, nil, nil, ReadDomain)
+	var params = map[string]string{}
+	params["deleteLastDomain"] = "true"
+
+	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, reqURL, nil, params, ReadDomain)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when reading domain details. domain id %s, site id %s: %s", siteId, domainId, err)
 	}
