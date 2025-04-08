@@ -19,7 +19,7 @@ func TestIncapsulaSSL_Instructions(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaSiteV3Domain(t, "b-"+domain),
+				Config: testAccCheckIncapsulaSiteV3Domain("b-" + domain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dataSourceName, "domain_ids.#", "1"),
 					resource.TestCheckResourceAttr(dataSourceName, "instructions.#", "1"),
@@ -37,8 +37,8 @@ func TestIncapsulaSSL_Instructions(t *testing.T) {
 	})
 }
 
-func testAccCheckIncapsulaSiteV3Domain(t *testing.T, domain string) string {
-	result := checkIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+func testAccCheckIncapsulaSiteV3Domain(domain string) string {
+	result := fmt.Sprintf(`
 
  resource "incapsula_site_v3" "%s" {
 			name = "%s"
