@@ -53,6 +53,11 @@ func resourceMtlsClientToImpervaCertificateSiteAssociation() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"account_id": {
+				Description: "(Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -60,12 +65,12 @@ func resourceMtlsClientToImpervaCertificateSiteAssociation() *schema.Resource {
 func resourceSiteMtlsClientToImpervaCertificateAssociationRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	siteID, certificateID, _, err := validateInput(d)
+	siteID, certificateID, accountID, err := validateInput(d)
 	if err != nil {
 		return err
 	}
 
-	mTLSCertificateData, associationExists, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID)
+	mTLSCertificateData, associationExists, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID, accountID)
 	if err != nil {
 		return err
 	}
@@ -87,7 +92,7 @@ func resourceSiteMtlsClientToImpervaCertificateAssociationRead(d *schema.Resourc
 
 func resourceSiteMtlsClientToImpervaCertificateAssociationCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siteID, certificateID, _, err := validateInput(d)
+	siteID, certificateID, accountID, err := validateInput(d)
 	if err != nil {
 		return err
 	}
@@ -95,6 +100,7 @@ func resourceSiteMtlsClientToImpervaCertificateAssociationCreate(d *schema.Resou
 	err = client.CreateSiteMtlsClientToImpervaCertificateAssociation(
 		certificateID,
 		siteID,
+		accountID,
 	)
 	if err != nil {
 		return err
@@ -105,11 +111,12 @@ func resourceSiteMtlsClientToImpervaCertificateAssociationCreate(d *schema.Resou
 
 func resourceSiteMtlsClientToImpervaCertificateAssociationDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siteID, certificateID, _, err := validateInput(d)
+	siteID, certificateID, accountID, err := validateInput(d)
 
 	err = client.DeleteSiteMtlsClientToImpervaCertificateAssociation(
 		certificateID,
 		siteID,
+		accountID,
 	)
 	if err != nil {
 		//todo - check error

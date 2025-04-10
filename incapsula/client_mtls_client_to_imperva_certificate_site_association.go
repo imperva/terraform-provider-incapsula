@@ -9,9 +9,13 @@ import (
 	"strings"
 )
 
-func (c *Client) GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID int) (*ClientCaCertificateWithSites, bool, error) {
+func (c *Client) GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID int, accountId string) (*ClientCaCertificateWithSites, bool, error) {
 	log.Printf("[INFO] Getting Site to mutual TLS Imperva to Origin Certificate association for Site ID %d", siteID)
 	reqURL := fmt.Sprintf("%s/certificate-manager/v2/sites/%d/client-certificates", c.config.BaseURLAPI, siteID)
+
+	if accountId != "" {
+		reqURL = fmt.Sprintf("%s?caid=%s", reqURL, accountId)
+	}
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadMtlsClientToImpervaCertifiateSiteAssociation)
 	if err != nil {
@@ -57,9 +61,14 @@ func (c *Client) GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certif
 	}
 }
 
-func (c *Client) CreateSiteMtlsClientToImpervaCertificateAssociation(certificateID, siteID int) error {
+func (c *Client) CreateSiteMtlsClientToImpervaCertificateAssociation(certificateID, siteID int, accountId string) error {
 	log.Printf("[INFO] Updating Site to mutual TLS Client to Imperva Certificate Association certificate ID %d for Site ID %d", certificateID, siteID)
 	reqURL := fmt.Sprintf("%s/certificate-manager/v2/sites/%d/client-certificates/%d", c.config.BaseURLAPI, siteID, certificateID)
+
+	if accountId != "" {
+		reqURL = fmt.Sprintf("%s?caid=%s", reqURL, accountId)
+	}
+
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, nil, CreateMtlsClientToImpervaCertifiateSiteAssociation)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error creating Incapsula Site to mutual TLS Client to Imperva Certificate Association for certificate ID %d, Site ID %d\n%s", certificateID, siteID, err)
@@ -76,9 +85,13 @@ func (c *Client) CreateSiteMtlsClientToImpervaCertificateAssociation(certificate
 	return nil
 }
 
-func (c *Client) DeleteSiteMtlsClientToImpervaCertificateAssociation(certificateID, siteID int) error {
+func (c *Client) DeleteSiteMtlsClientToImpervaCertificateAssociation(certificateID, siteID int, accountId string) error {
 	log.Printf("[INFO] Unassigning Site to mutual TLS Client to Imperva Certificate Association certificate ID %d for Site ID %d", certificateID, siteID)
 	reqURL := fmt.Sprintf("%s/certificate-manager/v2/sites/%d/client-certificates/%d", c.config.BaseURLAPI, siteID, certificateID)
+
+	if accountId != "" {
+		reqURL = fmt.Sprintf("%s?caid=%s", reqURL, accountId)
+	}
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteMtlsClientToImpervaCertifiateSiteAssociation)
 	if err != nil {
