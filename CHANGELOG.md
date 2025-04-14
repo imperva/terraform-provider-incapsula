@@ -1,3 +1,11 @@
+## 3.32.0 (Mar 31, 2025)
+
+IMPROVEMENTS:
+- support sub account on incapsula_mtls_imperva_to_origin_certificate_site_association resource ([#540](https://github.com/imperva/terraform-provider-incapsula/pull/540)
+- Added support for ref_id and active fields in incapsula_site_v3 resource ([#544](https://github.com/imperva/terraform-provider-incapsula/pull/544))
+- Added site masking settings to site-log-configuration resource ([#545](https://github.com/imperva/terraform-provider-incapsula/pull/545))
+
+
 ## 3.31.0 (Mar 24, 2025)
 
 FEATURES:

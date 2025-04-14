@@ -1,6 +1,7 @@
 package incapsula
 
 import (
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
@@ -47,6 +48,25 @@ func resourceSiteLogConfiguration() *schema.Resource {
 				Computed:    true,
 				Optional:    true,
 			},
+			"hashing_enabled": {
+				Description: "Specify if hashing (masking setting) should be enabled.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Optional:    true,
+			},
+			"hash_salt": {
+				Description: "Specify the hash salt (masking setting), required if hashing is enabled. Maximum length of 64 characters.",
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					salt := val.(string)
+					if len(salt) > 64 {
+						errs = append(errs, fmt.Errorf("%q must be a max of 64 characters, got: %s", key, salt))
+					}
+					return
+				},
+			},
 		},
 	}
 }
@@ -74,7 +94,9 @@ func resourceSiteLogConfigurationCreate(d *schema.ResourceData, m interface{}) e
 func resourceSiteLogConfigurationRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	siteId, err := strconv.Atoi(d.Get("site_id").(string))
+	siteIdStr, _ := d.Get("site_id").(string)
+
+	siteId, err := strconv.Atoi(siteIdStr)
 	if err != nil {
 		log.Printf("[ERROR] Could not convert site_id to int: %s\n", err)
 		return err
@@ -87,12 +109,21 @@ func resourceSiteLogConfigurationRead(d *schema.ResourceData, m interface{}) err
 	}
 
 	// Get the data storage region for the site
-	dataStorageRegionResponse, err := client.GetDataStorageRegion(d.Get("site_id").(string))
+	dataStorageRegionResponse, err := client.GetDataStorageRegion(siteIdStr)
 	if err != nil {
-		log.Printf("[ERROR] Could not read Incapsula site data storage region for site id: %s, %s\n", d.Get("site_id").(string), err)
+		log.Printf("[ERROR] Could not read Incapsula site data storage region for site id: %s, %s\n", siteIdStr, err)
 		return err
 	}
 	d.Set("data_storage_region", dataStorageRegionResponse.Region)
+
+	// Get the masking settings for the site
+	maskingResponse, err := client.GetMaskingSettings(siteIdStr)
+	if err != nil {
+		log.Printf("[ERROR] Could not read Incapsula site masking settings for site id: %s, %s\n", siteIdStr, err)
+		return err
+	}
+	d.Set("hashing_enabled", maskingResponse.HashingEnabled)
+	d.Set("hash_salt", maskingResponse.HashSalt)
 
 	return nil
 }
@@ -108,6 +139,12 @@ func resourceSiteLogConfigurationUpdate(d *schema.ResourceData, m interface{}) e
 
 	// Update the data storage region for the site
 	err = updateSiteDataStorageRegion(client, d)
+	if err != nil {
+		return err
+	}
+
+	// Update the masking settings for the site
+	err = updateSiteMaskingSettings(client, d)
 	if err != nil {
 		return err
 	}
@@ -143,6 +180,21 @@ func updateSiteDataStorageRegion(client *Client, d *schema.ResourceData) error {
 		_, err := client.UpdateDataStorageRegion(siteID, dataStorageRegion)
 		if err != nil {
 			log.Printf("[ERROR] Could not set Incapsula site data storage region with value (%s) for site_id: %s %s\n", dataStorageRegion, siteID, err)
+			return err
+		}
+	}
+	return nil
+}
+
+func updateSiteMaskingSettings(client *Client, d *schema.ResourceData) error {
+	if d.HasChange("hashing_enabled") || d.HasChange("hash_salt") {
+		siteID := d.Get("site_id").(string)
+		hashingEnabled := d.Get("hashing_enabled").(bool)
+		hashSalt := d.Get("hash_salt").(string)
+		maskingSettings := MaskingSettings{HashingEnabled: hashingEnabled, HashSalt: hashSalt}
+		err := client.UpdateMaskingSettings(siteID, &maskingSettings)
+		if err != nil {
+			log.Printf("[ERROR] Could not update Incapsula site masking settings for site_id: %s %s\n", d.Id(), err)
 			return err
 		}
 	}

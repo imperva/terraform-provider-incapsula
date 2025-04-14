@@ -2,17 +2,19 @@ package incapsula
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
+	"strconv"
 	"time"
 )
 
 func resourceSiteDomainConfiguration() *schema.Resource {
 	return &schema.Resource{
 		Read:   resourceDomainRead,
-		Create: resourceDomainsUpdate,
+		Create: resourceDomainsCreate,
 		Delete: resourceDomainDelete,
 		Update: resourceDomainsUpdate,
 		Importer: &schema.ResourceImporter{
@@ -35,16 +37,18 @@ func resourceSiteDomainConfiguration() *schema.Resource {
 				Computed:    true,
 			},
 			"domain": {
-				Description: "A set of domains.",
-				Required:    true,
-				Type:        schema.TypeSet,
-				Set:         getHashFromDomain,
+				Description:      "A set of domains.",
+				Required:         true,
+				Type:             schema.TypeSet,
+				Set:              getHashFromDomain,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
-							Type:        schema.TypeString,
-							Description: "Domain name",
-							Required:    true,
+							Type:             schema.TypeString,
+							Description:      "Domain name",
+							Required:         true,
+							DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 						},
 						"id": {
 							Type:        schema.TypeInt,
@@ -65,7 +69,29 @@ func resourceSiteDomainConfiguration() *schema.Resource {
 							Computed: true,
 						}}},
 			},
+			"deprecated": {
+				Description: "Use 'true' to deprecate this resource, any change on the resource will not take effect. Deleting the resource will not delete the domains. Default value: false",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					oldBool, _ := strconv.ParseBool(old)
+					newBool, _ := strconv.ParseBool(new)
+					return oldBool == false && newBool == false
+				},
+			},
 		},
+
+		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+			if d.HasChange("deprecated") {
+				oldVal, newVal := d.GetChange("deprecated")
+				if oldVal.(bool) && !newVal.(bool) {
+					return fmt.Errorf("deprecated flag cannot be changed from true to false")
+				}
+			}
+			return nil
+		},
+
 		Timeouts: &schema.ResourceTimeout{
 			Update: schema.DefaultTimeout(3 * time.Minute),
 			Read:   schema.DefaultTimeout(3 * time.Minute),
@@ -98,7 +124,17 @@ func populateFromResourceToDTO(d *schema.ResourceData) []SiteDomainDetails {
 	return siteDomainDetails
 }
 
+func resourceDomainsCreate(d *schema.ResourceData, m interface{}) error {
+	if d.Get("deprecated").(bool) {
+		return fmt.Errorf("cannot create deprecated resource")
+	}
+	return resourceDomainsUpdate(d, m)
+}
+
 func resourceDomainsUpdate(d *schema.ResourceData, m interface{}) error {
+	if d.Get("deprecated").(bool) {
+		return nil
+	}
 	client := m.(*Client)
 	siteID := d.Get("site_id").(string)
 	siteDomainDetails := populateFromResourceToDTO(d)
@@ -110,6 +146,10 @@ func resourceDomainsUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
+	if d.Get("deprecated").(bool) {
+		fmt.Printf("[WARN] Resource incapsula_site_domain_configuration is deprecated. Any future changes will be ignored.\n")
+		return nil
+	}
 	client := m.(*Client)
 	siteDomainDetailsDto, err := client.GetWebsiteDomains(d.Get("site_id").(string))
 	if err != nil {
@@ -156,6 +196,10 @@ func resourceDomainRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceDomainDelete(d *schema.ResourceData, m interface{}) error {
+	if d.Get("deprecated").(bool) {
+		d.SetId("")
+		return nil
+	}
 	client := m.(*Client)
 	siteID := d.Get("site_id").(string)
 	err := client.BulkUpdateDomainsToSite(siteID, []SiteDomainDetails{})

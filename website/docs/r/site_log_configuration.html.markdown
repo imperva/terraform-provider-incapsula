@@ -25,6 +25,8 @@ resource "incapsula_site_log_configuration" "example" {
   logs_account_id     = "67890"
   log_level           = "full"
   data_storage_region = "US"
+  hashing_enabled     = true
+  hash_salt           = "EJKHRT48375N4TKE7956NG"
 }
 ```
 
@@ -36,7 +38,8 @@ The following arguments are supported:
 * `logs_account_id` - (Optional) Numeric identifier of the account that collects the logs.
 * `log_level` - (Optional) The log level options are `full`, `security`, and `none`. Full logging includes both security and access logs.
 * `data_storage_region` - (Optional) The data region to use. Options are `APAC`, `AU`, `EU`, and `US`.
-
+* `hashing_enabled` - (Optional) Use the hashing method for masking fields in your logs and in the Security Events page, instead of the default (XXX) data masking.
+* `hash_salt` - (Optional) Hashing salt to use for the hashing process. Required if hashing is enabled. Maximum length of 64 characters.
 ## Attributes Reference
 
 The following attributes are exported:
