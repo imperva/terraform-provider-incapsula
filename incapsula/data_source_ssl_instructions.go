@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"strconv"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"golang.org/x/exp/slices"
+	"strconv"
+	"time"
 )
 
 func dataSourceSSLInstructions() *schema.Resource {
@@ -36,6 +35,12 @@ func dataSourceSSLInstructions() *schema.Resource {
 				Description: "Numeric identifier of the site certificate id.",
 				Type:        schema.TypeString,
 				Required:    true,
+			},
+			"validation_timeout": {
+				Description: "Length of time in seconds to wait for SSL validation.",
+				Type:        schema.TypeInt,
+				Required:    false,
+				Default:     200,
 			},
 			// Computed Attributes
 			"instructions": {
@@ -76,7 +81,9 @@ func dataSourceSSLInstructionsRead(ctx context.Context, d *schema.ResourceData, 
 	client := m.(*Client)
 	siteIdStr := d.Get("site_id").(string)
 	siteId, _ := strconv.Atoi(siteIdStr)
-	waitForInstructions(client, siteId)
+	timeoutStr := d.Get("validation_timeout").(string)
+	timeout, _ := strconv.Atoi(timeoutStr)
+	waitForInstructions(client, siteId, timeout)
 	sSLInstructionsResponse, err := client.GetSiteSSLInstructions(siteId)
 	if err != nil {
 		return diag.Errorf("Error request site SSL instructions: %v", err)
@@ -88,20 +95,34 @@ func dataSourceSSLInstructionsRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func waitForInstructions(client *Client, siteId int) diag.Diagnostics {
+func getSslValidationStatus(client *Client, siteId int, dtoData []SiteDomainDetails) bool {
+	siteCertificateV3Response, _ := client.GetSiteCertificateRequestStatus(siteId, nil)
+	b := siteCertificateV3Response != nil && siteCertificateV3Response.Data != nil && len(siteCertificateV3Response.Data) > 0
+	b = b && siteCertificateV3Response.Data[0].CertificatesDetails != nil && validateSans(siteCertificateV3Response.Data[0], dtoData)
+	return b
+}
+
+func waitForInstructions(client *Client, siteId int, timeout int) diag.Diagnostics {
 	siteDomainDetailsDto, err := client.GetWebsiteDomains(strconv.Itoa(siteId))
 	if err != nil {
 		return diag.Errorf("Error getting site %d domains: %v", siteId, err)
 	}
 	if siteDomainDetailsDto.Data != nil && len(siteDomainDetailsDto.Data) > 0 {
-		for i := 0; i < 20; i++ {
-			siteCertificateV3Response, _ := client.GetSiteCertificateRequestStatus(siteId, nil)
-			b := siteCertificateV3Response != nil && siteCertificateV3Response.Data != nil && len(siteCertificateV3Response.Data) > 0
-			b = b && siteCertificateV3Response.Data[0].CertificatesDetails != nil && validateSans(siteCertificateV3Response.Data[0], siteDomainDetailsDto.Data)
-			if b {
+		// Base case
+		if getSslValidationStatus(client, siteId, siteDomainDetailsDto.Data) {
+			return nil
+		}
+		// Try with delay until timeout
+		limit := time.Duration(timeout) * time.Second
+		start := time.Now()
+		current := time.Now()
+		for current.Sub(start) <= limit {
+			time.Sleep(10 * time.Second)
+			current = time.Now()
+
+			if getSslValidationStatus(client, siteId, siteDomainDetailsDto.Data) {
 				return nil
 			}
-			time.Sleep(10 * time.Second)
 		}
 		panic("managed certificate was not created as expected")
 	}
