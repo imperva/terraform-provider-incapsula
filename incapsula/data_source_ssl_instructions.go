@@ -74,17 +74,17 @@ func dataSourceSSLInstructions() *schema.Resource {
 
 func dataSourceSSLInstructionsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
-	siteId := d.Get("site_id").(string)
-	atoi, _ := strconv.Atoi(siteId)
-	waitForInstructions(client, atoi)
-	sSLInstructionsResponse, err := client.GetSiteSSLInstructions(atoi)
+	siteIdStr := d.Get("site_id").(string)
+	siteId, _ := strconv.Atoi(siteIdStr)
+	waitForInstructions(client, siteId)
+	sSLInstructionsResponse, err := client.GetSiteSSLInstructions(siteId)
 	if err != nil {
 		return diag.Errorf("Error request site SSL instructions: %v", err)
 	}
 	if sSLInstructionsResponse.Data != nil && len(sSLInstructionsResponse.Data) > 0 {
 		populateInstructionsFromDTO(d, sSLInstructionsResponse.Data)
 	}
-	d.SetId(siteId)
+	d.SetId(siteIdStr)
 	return nil
 }
 
