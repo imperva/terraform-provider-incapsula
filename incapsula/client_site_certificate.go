@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
@@ -13,6 +14,9 @@ import (
 const endpointSiteCertV3BasePath = "/certificates-ui/v3/sites/"
 const endpointSiteCertV3Suffix = "/certificates/managed"
 const endpointSSLValidationSuffix = "/certificates/managed/validate"
+
+const certRequestRetries = 3
+const sleepBeforeRequestSeconds = 10
 
 // SiteAddResponse contains the relevant site information when adding an Incapsula managed site
 
@@ -72,6 +76,30 @@ func (c *Client) RequestSiteCertificate(siteId int, validationMethod string, acc
 		})
 		return nil, diags
 	}
+
+	// Retry on HTTP error response
+	retries := certRequestRetries
+	for err == nil && resp.StatusCode != 200 && retries > 0 {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Error response from Imperva service on request site certificate. Retrying...",
+			Detail:   fmt.Sprintf("Failed to request site certificate for site %d, got response status %d", siteId, resp.StatusCode),
+		})
+
+		retries -= 1
+		time.Sleep(sleepBeforeRequestSeconds * time.Second)
+
+		resp, err = c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodPost, url, []byte(siteCertificateDTOJSON), nil, RequestSiteCert)
+	}
+	if err != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Error response from Imperva service on request site certificate",
+			Detail:   fmt.Sprintf("Failed to request site certificate for site %d,%s", siteId, err.Error()),
+		})
+		return nil, diags
+	}
+
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
