@@ -36,11 +36,11 @@ func resourceFastRenewal() *schema.Resource {
 				Description: "The fast renewal configuration. If true, then fast renewal is enabled. If false, then fast renewal is disabled.",
 				Required:    true,
 			},
-			"id": {
-				Type:        schema.TypeString,
-				Description: "The fast renewal configuration id",
-				Computed:    true,
-			},
+			//"id": {
+			//	Type:        schema.TypeString,
+			//	Description: "The fast renewal configuration id.",
+			//	Computed:    true,
+			//},
 		},
 	}
 }
@@ -54,7 +54,7 @@ func resourceFastRenewalConfigurationRead(d *schema.ResourceData, m interface{})
 
 	if fastRenewalConfigurationDto.Errors != nil && len(fastRenewalConfigurationDto.Errors) > 0 {
 		if fastRenewalConfigurationDto.Errors[0].Status == 404 || fastRenewalConfigurationDto.Errors[0].Status == 401 {
-			log.Printf("[INFO] Operation not allowed: %s\n", fastRenewalConfigurationDto.Errors[0].Detail)
+			log.Printf("[INFO] operation not allowed: %s\n", fastRenewalConfigurationDto.Errors[0].Detail)
 			d.SetId("")
 			return nil
 		}
@@ -94,7 +94,7 @@ func resourceFastRenewalConfigurationCreate(d *schema.ResourceData, m interface{
 
 	if fastRenewalConfigurationDto.Errors != nil && len(fastRenewalConfigurationDto.Errors) > 0 {
 		if fastRenewalConfigurationDto.Errors[0].Status == 404 || fastRenewalConfigurationDto.Errors[0].Status == 401 {
-			log.Printf("[INFO] Operation not allowed: %s\n", fastRenewalConfigurationDto.Errors[0].Detail)
+			log.Printf("[INFO] operation not allowed: %s\n", fastRenewalConfigurationDto.Errors[0].Detail)
 			d.SetId("")
 			return nil
 		}
@@ -122,7 +122,7 @@ func resourceFastRenewalConfigurationReadDelete(d *schema.ResourceData, m interf
 
 	if fastRenewalConfigurationDto.Errors != nil && len(fastRenewalConfigurationDto.Errors) > 0 {
 		if fastRenewalConfigurationDto.Errors[0].Status == 404 || fastRenewalConfigurationDto.Errors[0].Status == 401 {
-			log.Printf("[INFO] Operation not allowed: %s\n", fastRenewalConfigurationDto.Errors[0].Detail)
+			log.Printf("[INFO] operation not allowed: %s\n", fastRenewalConfigurationDto.Errors[0].Detail)
 			d.SetId("")
 			return nil
 		}

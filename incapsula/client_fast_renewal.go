@@ -21,7 +21,7 @@ type FastRenewalConfiguration struct {
 
 func (c *Client) GetFastRenewalConfiguration(siteId string, caid string) (*FastRenewalConfigurationDto, error) {
 	if siteId == "" {
-		fmt.Errorf("[ERROR] site ID was not provided")
+		fmt.Errorf("[ERROR] site id was not provided")
 	}
 	endpoint := fmt.Sprintf(endpointFastRenewalConfiguration, siteId)
 	reqURL := fmt.Sprintf("%s%s", c.config.BaseURLAPI, endpoint)
@@ -33,21 +33,21 @@ func (c *Client) GetFastRenewalConfiguration(siteId string, caid string) (*FastR
 	}
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, reqURL, nil, params, ReadFastRenewalConfiguration)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when reading fast renewal configuration %s: %s", siteId, err)
+		return nil, fmt.Errorf("[ERROR] error from Incapsula service when reading fast renewal configuration %s: %s", siteId, err)
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("[ERROR] bad status code %d from Incapsula service when reading fast renewal configuration. site ID: %s", resp.StatusCode, siteId)
+		return nil, fmt.Errorf("[ERROR] bad status code %d from Incapsula service when reading fast renewal configuration. site id: %s", resp.StatusCode, siteId)
 	}
 
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
-	log.Printf("[DEBUG] Incapsula Get fast renewal configuration response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] incapsula Get fast renewal configuration response: %s\n", string(responseBody))
 
 	var fastRenewalConfigurationResponse FastRenewalConfigurationDto
 	err = json.Unmarshal([]byte(responseBody), &fastRenewalConfigurationResponse)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error parsing get fast renewal configuration response for site Id %s: %s\nresponse: %s", siteId, err, string(responseBody))
+		return nil, fmt.Errorf("[ERROR] error parsing get fast renewal configuration response for site id %s: %s\nresponse: %s", siteId, err, string(responseBody))
 	}
 
 	return &fastRenewalConfigurationResponse, nil
@@ -55,7 +55,7 @@ func (c *Client) GetFastRenewalConfiguration(siteId string, caid string) (*FastR
 
 func (c *Client) EnableFastRenewalConfiguration(siteId string, caid string) (*FastRenewalConfigurationDto, error) {
 	if siteId == "" {
-		fmt.Errorf("[ERROR] site ID was not provided")
+		fmt.Errorf("[ERROR] site id was not provided")
 	}
 	endpoint := fmt.Sprintf(endpointFastRenewalConfiguration, siteId)
 	reqURL := fmt.Sprintf("%s%s", c.config.BaseURLAPI, endpoint)
@@ -67,21 +67,21 @@ func (c *Client) EnableFastRenewalConfiguration(siteId string, caid string) (*Fa
 	}
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodPost, reqURL, nil, params, CreateFastRenewalConfiguration)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when enabling fast renewal configuration %s: %s", siteId, err)
+		return nil, fmt.Errorf("[ERROR] error from Incapsula service when enabling fast renewal configuration %s: %s", siteId, err)
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("[ERROR] bad status code %d from Incapsula service when enabling fast renewal configuration. site ID: %s", resp.StatusCode, siteId)
+		return nil, fmt.Errorf("[ERROR] bad status code %d from Incapsula service when enabling fast renewal configuration. site id: %s", resp.StatusCode, siteId)
 	}
 
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
-	log.Printf("[DEBUG] Incapsula create fast renewal configuration response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] incapsula create fast renewal configuration response: %s\n", string(responseBody))
 
 	var fastRenewalConfigurationResponse FastRenewalConfigurationDto
 	err = json.Unmarshal([]byte(responseBody), &fastRenewalConfigurationResponse)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error parsing get fast renewal create configuration response for site Id %s: %s\nresponse: %s", siteId, err, string(responseBody))
+		return nil, fmt.Errorf("[ERROR] error parsing get fast renewal create configuration response for site id %s: %s\nresponse: %s", siteId, err, string(responseBody))
 	}
 
 	return &fastRenewalConfigurationResponse, nil
@@ -89,7 +89,7 @@ func (c *Client) EnableFastRenewalConfiguration(siteId string, caid string) (*Fa
 
 func (c *Client) DeleteFastRenewalConfiguration(siteId string, caid string) (*FastRenewalConfigurationDto, error) {
 	if siteId == "" {
-		fmt.Errorf("[ERROR] site ID was not provided")
+		fmt.Errorf("[ERROR] site id was not provided")
 	}
 	endpoint := fmt.Sprintf(endpointFastRenewalConfiguration, siteId)
 	reqURL := fmt.Sprintf("%s%s", c.config.BaseURLAPI, endpoint)
@@ -101,26 +101,26 @@ func (c *Client) DeleteFastRenewalConfiguration(siteId string, caid string) (*Fa
 	}
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodDelete, reqURL, nil, params, DeleteFastRenewalConfiguration)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when deleting fast renewal configuration. site ID: %s\n: %s", siteId, err)
+		return nil, fmt.Errorf("[ERROR] error from Incapsula service when deleting fast renewal configuration. site id: %s\n: %s", siteId, err)
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("[ERROR] bad status code %d from Incapsula service when deleting fast renewal configuration. site ID: %s", resp.StatusCode, siteId)
+		return nil, fmt.Errorf("[ERROR] bad status code %d from Incapsula service when deleting fast renewal configuration. site id: %s", resp.StatusCode, siteId)
 	}
 
 	resp, err = c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, reqURL, nil, params, ReadFastRenewalConfiguration)
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
-	log.Printf("[DEBUG] Incapsula delete fast renewal configuration response: %s\n", string(responseBody))
+	log.Printf("[DEBUG] incapsula delete fast renewal configuration response: %s\n", string(responseBody))
 
 	var fastRenewalConfigurationResponse FastRenewalConfigurationDto
 	err = json.Unmarshal([]byte(responseBody), &fastRenewalConfigurationResponse)
 	if err != nil {
-		return nil, fmt.Errorf("[ERROR] Error parsing get fast renewal delete configuration response for site Id %s: %s\nresponse: %s", siteId, err, string(responseBody))
+		return nil, fmt.Errorf("[ERROR] error parsing get fast renewal delete configuration response for site id %s: %s\nresponse: %s", siteId, err, string(responseBody))
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("[ERROR] bad status code %d from Incapsula service when parsing response on deleting fast renewal configuration. site ID: %s", resp.StatusCode, siteId)
+		return nil, fmt.Errorf("[ERROR] bad status code %d from Incapsula service when parsing response on deleting fast renewal configuration. site id: %s", resp.StatusCode, siteId)
 	}
 
 	return &fastRenewalConfigurationResponse, nil

@@ -12,10 +12,10 @@ import (
 )
 
 var randomSuffix = strconv.FormatInt(time.Now().UnixNano()%99999, 10)
-var siteV3NameFr = "test-cloudwaf-site-for-fast-renewal" + randomSuffix
+var siteV3NameFr = "v3site-fast-renewal-test" + randomSuffix
 var siteV3ResourceNameFr = siteV3NameFr
-var manageCertSettingsResourceNameFr = "testacc-terraform-managed_certificate_settings"
-var fastRenewalResourceName = "incapsula_fast_renewal" + randomSuffix
+var manageCertSettingsResourceNameFr = "cert-settings-fast-renewal-test" + randomSuffix
+var fastRenewalResourceName = "fast-renewal-test" + randomSuffix
 
 func TestAccFastRenewalCertificate_Basic(t *testing.T) {
 	log.Printf("========================BEGIN TEST========================")
@@ -43,7 +43,7 @@ func TestAccFastRenewalCertificate_Basic(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      siteCertificateResource,
+				ResourceName:      "incapsula_fast_renewal." + fastRenewalResourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateIdFunc: testACCStateFastRenewal,
@@ -58,7 +58,6 @@ func testAccFastRenewalCertificateDestroy(s *terraform.State) error {
 
 func testAccFastRenewalCertificateRequestConfig(t *testing.T) string {
 	res := fmt.Sprintf(`
-	
    resource "incapsula_site_v3" "%s" {
 			name = "%s"
 	}
@@ -72,7 +71,6 @@ func testAccFastRenewalCertificateRequestConfig(t *testing.T) string {
   	fast_renewal = true
   	depends_on = [ incapsula_managed_certificate_settings.%s ]
 }
-
 	`,
 		siteV3ResourceNameFr, siteV3NameFr, manageCertSettingsResourceNameFr, siteV3ResourceNameFr, fastRenewalResourceName, siteV3ResourceNameFr, manageCertSettingsResourceNameFr,
 	)
