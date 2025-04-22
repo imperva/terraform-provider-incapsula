@@ -18,7 +18,6 @@ func dataSourceSSLInstructions() *schema.Resource {
 		Description: "Provides data about SSL instructions",
 
 		Schema: map[string]*schema.Schema{
-			// Computed Attributes
 			"site_id": {
 				Description: "Numeric identifier of the site to operate on.",
 				Type:        schema.TypeString,
@@ -38,6 +37,7 @@ func dataSourceSSLInstructions() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			// Computed Attributes
 			"instructions": {
 				Description: "A set of SSL instructions.",
 				Computed:    true,
