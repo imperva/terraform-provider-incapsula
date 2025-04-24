@@ -88,7 +88,6 @@ func resourceSiteV3() *schema.Resource {
 func resourceSiteV3Add(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 	var diags diag.Diagnostics
-	log.Printf("[DEBUG] ************************* test2")
 	accountID, _ := d.Get("account_id").(string)
 	log.Printf("[INFO] adding v3 site to Account ID: %s to %v", accountID, d)
 	siteV3Request := SiteV3Request{}
@@ -167,7 +166,6 @@ func resourceSiteV3Read(ctx context.Context, d *schema.ResourceData, m interface
 	var diags diag.Diagnostics
 
 	accountID, _ := d.Get("account_id").(string)
-	log.Printf("[DEBUG] ************************* test")
 	log.Printf("[INFO] getting v3 site of Account ID: %s to %v", accountID, d)
 	siteV3Request := SiteV3Request{}
 	siteV3Request.SiteType = d.Get("type").(string)
