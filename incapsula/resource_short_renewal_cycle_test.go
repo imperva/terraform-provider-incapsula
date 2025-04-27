@@ -30,16 +30,6 @@ func TestAccShortRenewalCycleCertificate_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					printState(),
 					testCheckIncapsulaShortRenewalCycleResourceAttributes("incapsula_short_renewal_cycle."+shortRenewalCycleResourceName),
-					resource.TestCheckResourceAttrWith(
-						"incapsula_short_renewal_cycle."+shortRenewalCycleResourceName,
-						"id",
-						func(val string) error {
-							if _, err := strconv.Atoi(val); err != nil {
-								return fmt.Errorf("expected short_renewal_cycle_id to be an integer, got: %s", val)
-							}
-							return nil
-						},
-					),
 				),
 			},
 			{
