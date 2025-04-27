@@ -24,12 +24,12 @@ func resourceMtlsClientToImpervaCertificateSiteAssociation() *schema.Resource {
 
 				_, err := strconv.Atoi(idSlice[0])
 				if err != nil {
-					fmt.Errorf("failed to convert Site Id from import command, actual value: %s, expected numeric id", idSlice[0])
+					return nil, fmt.Errorf("failed to convert Site Id from import command, actual value: %s, expected numeric id", idSlice[0])
 				}
 
 				_, err = strconv.Atoi(idSlice[1])
 				if err != nil {
-					fmt.Errorf("failed to convert Certificate Id from import command, actual value: %s, expected numeric id", idSlice[1])
+					return nil, fmt.Errorf("failed to convert Certificate Id from import command, actual value: %s, expected numeric id", idSlice[1])
 				}
 
 				d.Set("site_id", idSlice[0])
@@ -38,7 +38,7 @@ func resourceMtlsClientToImpervaCertificateSiteAssociation() *schema.Resource {
 				if len(idSlice) == 3 {
 					_, err = strconv.Atoi(idSlice[2])
 					if err != nil || idSlice[2] == "" {
-						fmt.Errorf("failed to convert account Id from import command, actual value: %s, expected numeric id", idSlice[1])
+						return nil, fmt.Errorf("failed to convert account Id from import command, actual value: %s, expected numeric id", idSlice[1])
 					}
 
 					d.Set("account_id", idSlice[2])
