@@ -155,7 +155,7 @@ func Provider() *schema.Provider {
 			"incapsula_delivery_rules_configuration":                           resourceDeliveryRulesConfiguration(),
 			"incapsula_simplified_redirect_rules_configuration":                resourceSimplifiedRedirectRulesConfiguration(),
 			"incapsula_site_cache_configuration":                               resourceSiteCacheConfiguration(),
-			"incapsula_fast_renewal":                                           resourceFastRenewal(),
+			"incapsula_short_renewal_cycle":                                    resourceShortRenewalCycle(),
 		},
 	}
 

@@ -12,14 +12,14 @@ var (
 	apiID    = "foo"
 	apiKey   = "bar"
 	siteId   = "123"
-	endpoint = fmt.Sprintf(endpointFastRenewalConfiguration, siteId)
+	endpoint = fmt.Sprintf(endpointShortRenewalCycleConfiguration, siteId)
 )
 
-func TestGetFastRenewalConfiguration(t *testing.T) {
+func TestClient_GetShortRenewalCycleConfigurationConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
 		if req.Method == http.MethodGet && req.URL.String() == endpoint {
-			rw.Write([]byte(`{"data": [{"fastRenewal": false}]}`))
+			rw.Write([]byte(`{"data": [{"shortRenewalCycle": false}]}`))
 		}
 	}))
 	defer server.Close()
@@ -27,14 +27,14 @@ func TestGetFastRenewalConfiguration(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	response, err := client.GetFastRenewalConfiguration(siteId, "")
+	response, err := client.GetShortRenewalCycleConfiguration(siteId, "")
 	if err != nil {
 		t.Errorf("unexcpected error: %s", err)
 	}
 
-	var fastRenewal = response.Data[0].FastRenewal
-	if fastRenewal {
-		t.Errorf("expected to get fastRnewal = false but got %t", fastRenewal)
+	var shortRenewalCycle = response.Data[0].ShortRenewalCycle
+	if shortRenewalCycle {
+		t.Errorf("expected to get shortRenewalCycle = false but got %t", shortRenewalCycle)
 	}
 
 	if response.Errors != nil && len(response.Errors) > 0 {
@@ -42,11 +42,11 @@ func TestGetFastRenewalConfiguration(t *testing.T) {
 	}
 }
 
-func TestEnableFastRenewalConfiguration(t *testing.T) {
+func TestClient_EnableShortRenewalCycleConfigurationConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
 		if req.Method == http.MethodPost && req.URL.String() == endpoint {
-			rw.Write([]byte(`{"data": [{"fastRenewal": true}]}`))
+			rw.Write([]byte(`{"data": [{"shortRenewalCycle": true}]}`))
 		}
 	}))
 	defer server.Close()
@@ -54,14 +54,14 @@ func TestEnableFastRenewalConfiguration(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	response, err := client.EnableFastRenewalConfiguration(siteId, "")
+	response, err := client.EnableShortRenewalCycleConfiguration(siteId, "")
 	if err != nil {
 		t.Errorf("unexcpected error: %s", err)
 	}
 
-	var fastRenewal = response.Data[0].FastRenewal
-	if !fastRenewal {
-		t.Errorf("expected to get fastRnewal = true but got %t", fastRenewal)
+	var shortRenewalCycle = response.Data[0].ShortRenewalCycle
+	if !shortRenewalCycle {
+		t.Errorf("expected to get shortRenewalCycle = true but got %t", shortRenewalCycle)
 	}
 
 	if response.Errors != nil && len(response.Errors) > 0 {
@@ -69,11 +69,11 @@ func TestEnableFastRenewalConfiguration(t *testing.T) {
 	}
 }
 
-func TestDeleteFastRenewalConfiguration(t *testing.T) {
+func TestDeleteShortRenewalCycleConfiguration(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(200)
 		if req.Method == http.MethodGet && req.URL.String() == endpoint {
-			rw.Write([]byte(`{"data": [{"fastRenewal": false}]}`))
+			rw.Write([]byte(`{"data": [{"shortRenewalCycle": false}]}`))
 		}
 	}))
 	defer server.Close()
@@ -81,14 +81,14 @@ func TestDeleteFastRenewalConfiguration(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	response, err := client.DeleteFastRenewalConfiguration(siteId, "")
+	response, err := client.DeleteShortRenewalCycleConfiguration(siteId, "")
 	if err != nil {
 		t.Errorf("unexcpected error: %s", err)
 	}
 
-	var fastRenewal = response.Data[0].FastRenewal
-	if fastRenewal {
-		t.Errorf("expected to get fastRnewal = false but got %t", fastRenewal)
+	var shortRenewalCycle = response.Data[0].ShortRenewalCycle
+	if shortRenewalCycle {
+		t.Errorf("expected to get shortRenewalCycle = false but got %t", shortRenewalCycle)
 	}
 
 	if response.Errors != nil && len(response.Errors) > 0 {
@@ -96,7 +96,7 @@ func TestDeleteFastRenewalConfiguration(t *testing.T) {
 	}
 }
 
-func TestDeleteFastRenewalConfigurationError(t *testing.T) {
+func TestDeleteShortRenewalCycleConfigurationError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
 		if req.Method == http.MethodDelete && req.URL.String() == endpoint {
@@ -106,10 +106,10 @@ func TestDeleteFastRenewalConfigurationError(t *testing.T) {
             "status": 404,
             "id": "850c4b95fffac0e1",
             "source": {
-                "pointer": "/v3/sites/1027036767/certificate/fastRenewal"
+                "pointer": "/v3/sites/1027036767/certificate/shortRenewalCycle"
             },
             "title": "Not Found",
-            "detail": "account 1111 is not allowed to manage fast renewal configuration"
+            "detail": "account 1111 is not allowed to manage short renewal cycle configuration"
         }
     ]
 }`))
@@ -120,17 +120,17 @@ func TestDeleteFastRenewalConfigurationError(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	_, err := client.DeleteFastRenewalConfiguration(siteId, "")
+	_, err := client.DeleteShortRenewalCycleConfiguration(siteId, "")
 	if err == nil {
 		t.Errorf("expected to get error")
 	}
-	var expectedError = "[ERROR] bad status code 404 from Incapsula service when deleting fast renewal configuration. site ID: 123"
+	var expectedError = "[ERROR] bad status code 404 from Incapsula service when deleting short renewal cycle configuration. site id: 123"
 	if !strings.Contains(err.Error(), expectedError) {
 		t.Errorf("expected to get error: %s", expectedError)
 	}
 }
 
-func TestEnableFastRenewalConfigurationError(t *testing.T) {
+func TestEnableShortRenewalCycleConfigurationError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(404)
 		if req.Method == http.MethodPost && req.URL.String() == endpoint {
@@ -140,10 +140,10 @@ func TestEnableFastRenewalConfigurationError(t *testing.T) {
             "status": 404,
             "id": "850c4b95fffac0e1",
             "source": {
-                "pointer": "/v3/sites/1027036767/certificate/fastRenewal"
+                "pointer": "/v3/sites/1027036767/certificate/shortRenewalCycle"
             },
             "title": "Not Found",
-            "detail": "account 1111 is not allowed to manage fast renewal configuration"
+            "detail": "account 1111 is not allowed to manage short renewal cycle configuration"
         }
     ]
 }`))
@@ -154,11 +154,11 @@ func TestEnableFastRenewalConfigurationError(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	_, err := client.EnableFastRenewalConfiguration(siteId, "")
+	_, err := client.EnableShortRenewalCycleConfiguration(siteId, "")
 	if err == nil {
 		t.Errorf("expected to get error")
 	}
-	var expectedError = "[ERROR] bad status code 404 from Incapsula service when enabling fast renewal configuration. site ID: 123"
+	var expectedError = "[ERROR] bad status code 404 from Incapsula service when enabling short renewal cycle configuration. site id: 123"
 	if !strings.Contains(err.Error(), expectedError) {
 		t.Errorf("expected to get error: %s", expectedError)
 	}
