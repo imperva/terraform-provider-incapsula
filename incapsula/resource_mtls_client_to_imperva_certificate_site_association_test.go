@@ -48,7 +48,7 @@ func testACCStateSiteClientToImervaCertificateAssociationDestroy(s *terraform.St
 
 		siteID, certificateID := getResourceDetails(res)
 
-		_, _, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID)
+		_, _, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID, "")
 		if err == nil {
 			return fmt.Errorf("Resource %s with siteID ID %d still exists", siteMtlsCrtificateAssociationResourceName, siteID)
 		}
@@ -88,7 +88,7 @@ func testCheckClientToImervaCertificateAssociationExists() resource.TestCheckFun
 			}
 			siteID, certificateID := getResourceDetails(resource)
 
-			response, _, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID)
+			response, _, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID, "")
 			if err != nil || response == nil {
 				return fmt.Errorf("Incapsula mTLS certificate ID %d is not assigned to Site ID %d", certificateID, siteID)
 			}
