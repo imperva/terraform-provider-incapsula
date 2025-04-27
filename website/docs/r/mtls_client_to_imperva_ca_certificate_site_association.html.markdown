@@ -49,6 +49,7 @@ The following arguments are supported:
 
 * `certificate_id` - (Required) The Mutual TLS Client to Imperva CA Certificate ID.
 * `site_id` - (Required) Numeric identifier of the site to operate on.
+* `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
 
 ## Attributes Reference
 

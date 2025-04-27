@@ -19,7 +19,7 @@ func TestClientGetSiteMtlsClientToImpervaCertificateAssociationBadConnection(t *
 	siteID := 42
 	certificateID := 100
 
-	_, _, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID)
+	_, _, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID, "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -49,7 +49,7 @@ func TestClientGetSiteMtlsClientToImpervaCertificateAssociationBadJSON(t *testin
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	clientCaCertificateWithSites, _, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID)
+	clientCaCertificateWithSites, _, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID, "")
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -94,7 +94,7 @@ func TestClientGetSiteMtlsClientToImpervaCertificateAssociationInvalidConfig(t *
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	clientCaCertificateWithSites, _, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID)
+	clientCaCertificateWithSites, _, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID, "")
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -143,7 +143,7 @@ func TestClientGetSiteMtlsClientToImpervaCertificateAssociationValidConfig(t *te
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	clientCaCertificateWithSites, _, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID)
+	clientCaCertificateWithSites, _, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID, "")
 
 	if err != nil {
 		t.Errorf("Should not have received an error")
@@ -163,7 +163,7 @@ func TestClientCreateSiteMtlsClientToImpervaCertificateAssociationBadConnection(
 	siteID := 42
 	certificateID := 100
 
-	err := client.CreateSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID)
+	err := client.CreateSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID, "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -191,7 +191,7 @@ func TestClientCreateSiteMtlsClientToImpervaCertificateAssociationInvalidConfig(
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	err := client.CreateSiteMtlsClientToImpervaCertificateAssociation(certificateID, siteID)
+	err := client.CreateSiteMtlsClientToImpervaCertificateAssociation(certificateID, siteID, "")
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -220,7 +220,7 @@ func TestClientCreateSiteMtlsClientToImpervaCertificateAssociationValidConfig(t 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	err := client.CreateSiteMtlsClientToImpervaCertificateAssociation(certificateID, siteID)
+	err := client.CreateSiteMtlsClientToImpervaCertificateAssociation(certificateID, siteID, "")
 
 	if err != nil {
 		t.Errorf("Should not have received an error")
@@ -237,7 +237,7 @@ func TestClientDeleteSiteMtlsClientToImpervaCertificateAssociationBadConnection(
 	siteID := 42
 	certificateID := 100
 
-	err := client.DeleteSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID)
+	err := client.DeleteSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID, "")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -265,7 +265,7 @@ func TestClientDeleteSiteMtlsClientToImpervaCertificateAssociationInvalidConfig(
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	err := client.DeleteSiteMtlsClientToImpervaCertificateAssociation(certificateID, siteID)
+	err := client.DeleteSiteMtlsClientToImpervaCertificateAssociation(certificateID, siteID, "")
 
 	if err == nil {
 		t.Errorf("Should have received an error")
@@ -294,7 +294,7 @@ func TestClientDeleteSiteMtlsClientToImpervaCertificateAssociationValidConfig(t 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	err := client.DeleteSiteMtlsClientToImpervaCertificateAssociation(certificateID, siteID)
+	err := client.DeleteSiteMtlsClientToImpervaCertificateAssociation(certificateID, siteID, "")
 
 	if err != nil {
 		t.Errorf("Should not have received an error on delete Client to Imperva Certificate Association ")
