@@ -38,7 +38,7 @@ func resourceMtlsClientToImpervaCertificateSiteAssociation() *schema.Resource {
 				if len(idSlice) == 3 {
 					_, err = strconv.Atoi(idSlice[2])
 					if err != nil || idSlice[2] == "" {
-						return nil, fmt.Errorf("failed to convert account Id from import command, actual value: %s, expected numeric id", idSlice[1])
+						return nil, fmt.Errorf("failed to convert account Id from import command, actual value: %s, expected numeric id", idSlice[2])
 					}
 
 					d.Set("account_id", idSlice[2])
