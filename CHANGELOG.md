@@ -1,3 +1,11 @@
+## 3.33.0 (Apr 27, 2025)
+
+IMPROVEMENTS:
+- Allow deletion of the last domain for v1 sites that have migrated to the v3 resource  ([#553](https://github.com/imperva/terraform-provider-incapsula/pull/553)
+- Ignore grace period for site deletion ([#554](https://github.com/imperva/terraform-provider-incapsula/pull/554)
+- Support sub-account on resource_mtls_client_to_imperva_certificate_site_association  ([#555](https://github.com/imperva/terraform-provider-incapsula/pull/555)
+
+
 ## 3.32.0 (Mar 31, 2025)
 
 IMPROVEMENTS:
