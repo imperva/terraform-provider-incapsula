@@ -209,3 +209,7 @@ const UpdateV3Site = "update_v3_site"
 
 const ReadDeliveryRuleConfiguration = "read_delivery_rules_configuration"
 const UpdateDeliveryRuleConfiguration = "update_delivery_rules_configuration"
+
+const ReadShortRenewalCycleConfiguration = "read_short_renewal_cycle_configuration"
+const CreateShortRenewalCycleConfiguration = "create_short_renewal_cycle_configuration"
+const DeleteShortRenewalCycleConfiguration = "delete_short_renewal_cycle_configuration"
