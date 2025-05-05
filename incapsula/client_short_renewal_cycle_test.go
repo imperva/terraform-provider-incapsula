@@ -86,24 +86,19 @@ func TestDeleteShortRenewalCycleConfiguration(t *testing.T) {
 		t.Errorf("unexcpected error: %s", err)
 	}
 
-	var shortRenewalCycle = response.Data[0].ShortRenewalCycle
-	if shortRenewalCycle {
-		t.Errorf("expected to get shortRenewalCycle = false but got %t", shortRenewalCycle)
-	}
-
-	if response.Errors != nil && len(response.Errors) > 0 {
-		t.Errorf("expected no errors, got %s", response.Errors[0].Detail)
+	if response != nil {
+		t.Errorf("expected nil response, got %v", response)
 	}
 }
 
 func TestDeleteShortRenewalCycleConfigurationError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.WriteHeader(404)
+		rw.WriteHeader(400)
 		if req.Method == http.MethodDelete && req.URL.String() == endpoint {
 			rw.Write([]byte(`{
     "errors": [
         {
-            "status": 404,
+            "status": 400,
             "id": "850c4b95fffac0e1",
             "source": {
                 "pointer": "/v3/sites/1027036767/certificate/shortRenewalCycle"
@@ -120,12 +115,13 @@ func TestDeleteShortRenewalCycleConfigurationError(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	_, err := client.DeleteShortRenewalCycleConfiguration(siteId, "")
-	if err == nil {
+	shortRenewalCycleConfigurationDto, err := client.DeleteShortRenewalCycleConfiguration(siteId, "")
+	if err != nil {
 		t.Errorf("expected to get error")
 	}
-	var expectedError = "[ERROR] bad status code 404 from Incapsula service when deleting short renewal cycle configuration. site id: 123"
-	if !strings.Contains(err.Error(), expectedError) {
+	var expectedError = "account 1111 is not allowed to manage short renewal cycle configuration"
+
+	if !strings.Contains(shortRenewalCycleConfigurationDto.Errors[0].Detail, expectedError) {
 		t.Errorf("expected to get error: %s", expectedError)
 	}
 }
@@ -154,12 +150,12 @@ func TestEnableShortRenewalCycleConfigurationError(t *testing.T) {
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	_, err := client.EnableShortRenewalCycleConfiguration(siteId, "")
-	if err == nil {
-		t.Errorf("expected to get error")
+	shortRenewalCycleConfigurationDto, err := client.EnableShortRenewalCycleConfiguration(siteId, "")
+	if err != nil {
+		t.Errorf("unexcpected error: %s", err)
 	}
-	var expectedError = "[ERROR] bad status code 404 from Incapsula service when enabling short renewal cycle configuration. site id: 123"
-	if !strings.Contains(err.Error(), expectedError) {
+	var expectedError = "account 1111 is not allowed to manage short renewal cycle configuration"
+	if !strings.Contains(shortRenewalCycleConfigurationDto.Errors[0].Detail, expectedError) {
 		t.Errorf("expected to get error: %s", expectedError)
 	}
 }
