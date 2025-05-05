@@ -13,8 +13,8 @@ func resourceShortRenewalCycle() *schema.Resource {
 	return &schema.Resource{
 		Read:   resourceShortRenewalCycleConfigurationRead,
 		Create: resourceShortRenewalCycleConfigurationCreate,
-		Delete: resourceShortRenewalCycleConfigurationReadDelete,
-		Update: resourceShortRenewalCycleConfigurationReadUpdate,
+		Delete: resourceShortRenewalCycleConfigurationDelete,
+		Update: resourceShortRenewalCycleConfigurationUpdate,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				idSlice := strings.Split(d.Id(), "/")
@@ -93,10 +93,9 @@ func resourceShortRenewalCycleConfigurationRead(d *schema.ResourceData, m interf
 	}
 
 	if shortRenewalCycleConfigurationDto.Errors != nil && len(shortRenewalCycleConfigurationDto.Errors) > 0 {
-		if shortRenewalCycleConfigurationDto.Errors[0].Status == 404 || shortRenewalCycleConfigurationDto.Errors[0].Status == 401 {
-			log.Printf("[INFO] operation not allowed: %s\n", shortRenewalCycleConfigurationDto.Errors[0].Detail)
+		if shortRenewalCycleConfigurationDto.Errors[0].Status != 200 {
 			d.SetId("")
-			return nil
+			return fmt.Errorf("%s", shortRenewalCycleConfigurationDto.Errors[0].Detail)
 		}
 
 		out, err := json.Marshal(shortRenewalCycleConfigurationDto.Errors)
@@ -119,10 +118,16 @@ func resourceShortRenewalCycleConfigurationCreate(d *schema.ResourceData, m inte
 	var shortRenewalCycleConfigurationDto *ShortRenewalCycleConfigurationDto
 	var err error
 	if shortRenewalCycle {
-		log.Printf("[DEBUG] going to enable short renewal cyclefor site %s\n", siteId)
+		log.Printf("[DEBUG] going to enable short renewal cycle for site %s\n", siteId)
 		shortRenewalCycleConfigurationDto, err = client.EnableShortRenewalCycleConfiguration(siteId, accountId)
 		if err != nil {
 			return err
+		}
+		if shortRenewalCycleConfigurationDto.Errors != nil && len(shortRenewalCycleConfigurationDto.Errors) > 0 {
+			if shortRenewalCycleConfigurationDto.Errors[0].Status != 200 {
+				d.SetId("")
+				return fmt.Errorf("%s", shortRenewalCycleConfigurationDto.Errors[0].Detail)
+			}
 		}
 	} else {
 		log.Printf("[DEBUG] going to disable short renewal cyclefor site %s\n", siteId)
@@ -132,11 +137,10 @@ func resourceShortRenewalCycleConfigurationCreate(d *schema.ResourceData, m inte
 		}
 	}
 
-	if shortRenewalCycleConfigurationDto.Errors != nil && len(shortRenewalCycleConfigurationDto.Errors) > 0 {
-		if shortRenewalCycleConfigurationDto.Errors[0].Status == 404 || shortRenewalCycleConfigurationDto.Errors[0].Status == 401 {
-			log.Printf("[INFO] operation not allowed: %s\n", shortRenewalCycleConfigurationDto.Errors[0].Detail)
+	if shortRenewalCycleConfigurationDto != nil && shortRenewalCycleConfigurationDto.Errors != nil && len(shortRenewalCycleConfigurationDto.Errors) > 0 {
+		if shortRenewalCycleConfigurationDto.Errors[0].Status != 200 {
 			d.SetId("")
-			return nil
+			return fmt.Errorf("%s", shortRenewalCycleConfigurationDto.Errors[0].Detail)
 		}
 
 		out, err := json.Marshal(shortRenewalCycleConfigurationDto.Errors)
@@ -147,11 +151,11 @@ func resourceShortRenewalCycleConfigurationCreate(d *schema.ResourceData, m inte
 	}
 
 	d.SetId(siteId)
-	d.Set("short_renewal_cycle", shortRenewalCycleConfigurationDto.Data[0].ShortRenewalCycle)
+	d.Set("short_renewal_cycle", shortRenewalCycle)
 	return nil
 }
 
-func resourceShortRenewalCycleConfigurationReadDelete(d *schema.ResourceData, m interface{}) error {
+func resourceShortRenewalCycleConfigurationDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	siteId := d.Get("site_id").(string)
 	accountId := d.Get("account_id").(string)
@@ -160,25 +164,18 @@ func resourceShortRenewalCycleConfigurationReadDelete(d *schema.ResourceData, m 
 		return err
 	}
 
-	if shortRenewalCycleConfigurationDto.Errors != nil && len(shortRenewalCycleConfigurationDto.Errors) > 0 {
-		if shortRenewalCycleConfigurationDto.Errors[0].Status == 404 || shortRenewalCycleConfigurationDto.Errors[0].Status == 401 {
-			log.Printf("[INFO] operation not allowed: %s\n", shortRenewalCycleConfigurationDto.Errors[0].Detail)
+	if shortRenewalCycleConfigurationDto != nil && shortRenewalCycleConfigurationDto.Errors != nil && len(shortRenewalCycleConfigurationDto.Errors) > 0 {
+		if shortRenewalCycleConfigurationDto.Errors[0].Status != 200 {
 			d.SetId("")
-			return nil
+			return fmt.Errorf("%s", shortRenewalCycleConfigurationDto.Errors[0].Detail)
 		}
-
-		out, err := json.Marshal(shortRenewalCycleConfigurationDto.Errors)
-		if err != nil {
-			return err
-		}
-		return fmt.Errorf("error getting delete short renewal cycleconfiguration for site (%s): %s", d.Get("site_id"), string(out))
 	}
 
 	d.SetId(d.Get("site_id").(string))
-	d.Set("short_renewal_cycle", shortRenewalCycleConfigurationDto.Data[0].ShortRenewalCycle)
+	d.Set("short_renewal_cycle", false)
 	return nil
 }
 
-func resourceShortRenewalCycleConfigurationReadUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceShortRenewalCycleConfigurationUpdate(d *schema.ResourceData, m interface{}) error {
 	return resourceShortRenewalCycleConfigurationCreate(d, m)
 }
