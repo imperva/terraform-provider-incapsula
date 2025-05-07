@@ -18,22 +18,31 @@ func resourceMtlsClientToImpervaCertificateSiteAssociation() *schema.Resource {
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				d.MarkNewResource()
 				idSlice := strings.Split(d.Id(), "/")
-				if len(idSlice) != 2 || idSlice[0] == "" || idSlice[1] == "" {
-					return nil, fmt.Errorf("unexpected format of Incapsula Client to Imperva CA Certificate Site Association resource ID, expected site_id/certificate_id, got %s", d.Id())
+				if len(idSlice) < 2 || len(idSlice) > 3 || idSlice[0] == "" || idSlice[1] == "" {
+					return nil, fmt.Errorf("unexpected format of Incapsula Client to Imperva CA Certificate Site Association resource ID, expected site_id/certificate_id/account_id(optional), got %s", d.Id())
 				}
 
 				_, err := strconv.Atoi(idSlice[0])
 				if err != nil {
-					fmt.Errorf("failed to convert Site Id from import command, actual value: %s, expected numeric id", idSlice[0])
+					return nil, fmt.Errorf("failed to convert Site Id from import command, actual value: %s, expected numeric id", idSlice[0])
 				}
 
 				_, err = strconv.Atoi(idSlice[1])
 				if err != nil {
-					fmt.Errorf("failed to convert Certificate Id from import command, actual value: %s, expected numeric id", idSlice[1])
+					return nil, fmt.Errorf("failed to convert Certificate Id from import command, actual value: %s, expected numeric id", idSlice[1])
 				}
 
 				d.Set("site_id", idSlice[0])
 				d.Set("certificate_id", idSlice[1])
+
+				if len(idSlice) == 3 {
+					_, err = strconv.Atoi(idSlice[2])
+					if err != nil || idSlice[2] == "" {
+						return nil, fmt.Errorf("failed to convert account Id from import command, actual value: %s, expected numeric id", idSlice[2])
+					}
+
+					d.Set("account_id", idSlice[2])
+				}
 
 				log.Printf("[DEBUG] Importing Incapsula Client to Imperva CA Certificate Site Association for Site ID %s, mutual TLS Certificate Id %s,", idSlice[0], idSlice[1])
 				return []*schema.ResourceData{d}, nil
@@ -53,6 +62,11 @@ func resourceMtlsClientToImpervaCertificateSiteAssociation() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"account_id": {
+				Description: "(Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -60,12 +74,12 @@ func resourceMtlsClientToImpervaCertificateSiteAssociation() *schema.Resource {
 func resourceSiteMtlsClientToImpervaCertificateAssociationRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	siteID, certificateID, _, err := validateInput(d)
+	siteID, certificateID, accountID, err := validateInput(d)
 	if err != nil {
 		return err
 	}
 
-	mTLSCertificateData, associationExists, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID)
+	mTLSCertificateData, associationExists, err := client.GetSiteMtlsClientToImpervaCertificateAssociation(siteID, certificateID, accountID)
 	if err != nil {
 		return err
 	}
@@ -87,7 +101,7 @@ func resourceSiteMtlsClientToImpervaCertificateAssociationRead(d *schema.Resourc
 
 func resourceSiteMtlsClientToImpervaCertificateAssociationCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siteID, certificateID, _, err := validateInput(d)
+	siteID, certificateID, accountID, err := validateInput(d)
 	if err != nil {
 		return err
 	}
@@ -95,6 +109,7 @@ func resourceSiteMtlsClientToImpervaCertificateAssociationCreate(d *schema.Resou
 	err = client.CreateSiteMtlsClientToImpervaCertificateAssociation(
 		certificateID,
 		siteID,
+		accountID,
 	)
 	if err != nil {
 		return err
@@ -105,11 +120,12 @@ func resourceSiteMtlsClientToImpervaCertificateAssociationCreate(d *schema.Resou
 
 func resourceSiteMtlsClientToImpervaCertificateAssociationDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siteID, certificateID, _, err := validateInput(d)
+	siteID, certificateID, accountID, err := validateInput(d)
 
 	err = client.DeleteSiteMtlsClientToImpervaCertificateAssociation(
 		certificateID,
 		siteID,
+		accountID,
 	)
 	if err != nil {
 		//todo - check error
