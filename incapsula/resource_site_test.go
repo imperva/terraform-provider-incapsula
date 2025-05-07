@@ -121,7 +121,7 @@ func TestAccIncapsulaSite_DeprecationFlagChangeAttributes(t *testing.T) {
 			{
 				Config: testAccCheckIncapsulaSiteConfigAllParams(resource_name, domainName, false, "aggressive", "active",
 					true, "dns", false, false,
-					"ref123", "api.seal_location.bottom_right", true, false, false,
+					"ref123", "api.seal_location.bottom_right", false, false,
 					"EU", true, "salt123", "full",
 					false, false, false, true,
 					false, "dont_include_html", "smart", 7200,
@@ -141,7 +141,6 @@ func TestAccIncapsulaSite_DeprecationFlagChangeAttributes(t *testing.T) {
 					resource.TestCheckResourceAttr(full_resource_name, "remove_ssl", "false"),
 					resource.TestCheckResourceAttr(full_resource_name, "ref_id", "ref123"),
 					resource.TestCheckResourceAttr(full_resource_name, "seal_location", "api.seal_location.bottom_right"),
-					resource.TestCheckResourceAttr(full_resource_name, "restricted_cname_reuse", "true"),
 					resource.TestCheckResourceAttr(full_resource_name, "naked_domain_san", "false"),
 					resource.TestCheckResourceAttr(full_resource_name, "wildcard_san", "false"),
 					resource.TestCheckResourceAttr(full_resource_name, "data_storage_region", "EU"),
@@ -174,7 +173,7 @@ func TestAccIncapsulaSite_DeprecationFlagChangeAttributes(t *testing.T) {
 			{
 				Config: testAccCheckIncapsulaSiteConfigAllParams(resource_name, domainName, true, "none", "bypass",
 					false, "email", true, true,
-					"ref456", "api.seal_location.bottom_left", false, true, true,
+					"ref456", "api.seal_location.bottom_left", true, true,
 					"APAC", false, "salt456", "none",
 					true, true, true, false,
 					true, "disabled", "disable", 3600,
@@ -194,7 +193,7 @@ func TestAccIncapsulaSite_DeprecationFlagChangeAttributes(t *testing.T) {
 					resource.TestCheckResourceAttr(full_resource_name, "remove_ssl", "false"),
 					resource.TestCheckResourceAttr(full_resource_name, "ref_id", "ref123"),
 					resource.TestCheckResourceAttr(full_resource_name, "seal_location", "api.seal_location.bottom_right"),
-					resource.TestCheckResourceAttr(full_resource_name, "restricted_cname_reuse", "true"),
+					//resource.TestCheckResourceAttr(full_resource_name, "restricted_cname_reuse", "true"),
 					resource.TestCheckResourceAttr(full_resource_name, "naked_domain_san", "false"),
 					resource.TestCheckResourceAttr(full_resource_name, "wildcard_san", "false"),
 					resource.TestCheckResourceAttr(full_resource_name, "data_storage_region", "EU"),
@@ -316,7 +315,7 @@ func testAccCheckIncapsulaSiteConfigDeprecated(resource_name string, domain stri
 
 func testAccCheckIncapsulaSiteConfigAllParams(resource_name string, domain string, deprecated bool, accelerationLevel string, active string,
 	domainRedirectToFull bool, domainValidation string, ignoreSsl bool, removeSsl bool, refId string, sealLocation string,
-	restrictedCnameReuse bool, nakedDomainSan bool, wildcardSan bool, dataStorageRegion string, hashingEnabled bool,
+	nakedDomainSan bool, wildcardSan bool, dataStorageRegion string, hashingEnabled bool,
 	hashSalt string, logLevel string, perfClientComplyNoCache bool, perfClientEnableClientSideCaching bool,
 	perfClientSendAgeHeader bool, perfKeyComplyVary bool, perfKeyUniteNakedFullCache bool, perfModeHttps string,
 	perfModeLevel string, perfModeTime int, perfResponseCache300x bool, perfResponseCache404Enabled bool,
@@ -337,7 +336,6 @@ resource "incapsula_site"         "%s" {
   remove_ssl                      = %t
   ref_id                          = "%s"
   seal_location                   = "%s"
-  restricted_cname_reuse          = %t
   naked_domain_san                = %t
   wildcard_san                    = %t
   data_storage_region             = "%s"
@@ -367,7 +365,7 @@ resource "incapsula_site"         "%s" {
   perf_ttl_use_shortest_caching   = %t
 }`,
 		resource_name, domain, deprecated, accelerationLevel, active, domainRedirectToFull, domainValidation, ignoreSsl, removeSsl, refId,
-		sealLocation, restrictedCnameReuse, nakedDomainSan, wildcardSan, dataStorageRegion, hashingEnabled, hashSalt, logLevel,
+		sealLocation, nakedDomainSan, wildcardSan, dataStorageRegion, hashingEnabled, hashSalt, logLevel,
 		perfClientComplyNoCache, perfClientEnableClientSideCaching, perfClientSendAgeHeader, perfKeyComplyVary, perfKeyUniteNakedFullCache, perfModeHttps,
 		perfModeLevel, perfModeTime, perfResponseCache300x, perfResponseCache404Enabled, perfResponseCache404Time, perfResponseCacheEmptyResponses,
 		perfResponseCacheHttp10Responses, perfResponseCacheResponseHeaderMode, strings.Join(perfResponseCacheResponseHeaders, "\", \""),
