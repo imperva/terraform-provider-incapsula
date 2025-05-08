@@ -2,11 +2,12 @@ package incapsula
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceApiSecurityApiConfig() *schema.Resource {
@@ -134,7 +135,7 @@ func resourceApiSecurityAPIConfigCreate(d *schema.ResourceData, m interface{}) e
 	}
 
 	apiSecurityApiConfigPostResponse, err := client.CreateApiSecurityApiConfig(
-		d.Get("site_id").(int),
+		d.Get("site_id").(int64),
 		&payload)
 
 	if err != nil {
@@ -142,7 +143,7 @@ func resourceApiSecurityAPIConfigCreate(d *schema.ResourceData, m interface{}) e
 		return err
 	}
 
-	apiID := strconv.Itoa(apiSecurityApiConfigPostResponse.Value.ApiId)
+	apiID := strconv.FormatInt(apiSecurityApiConfigPostResponse.Value.ApiId, 10)
 	d.SetId(apiID)
 	log.Printf("[INFO] Updated Incapsula API-security api configuration with ID: %s\n", apiID)
 
@@ -167,7 +168,7 @@ func resourceApiSecurityAPIConfigUpdate(d *schema.ResourceData, m interface{}) e
 	}
 
 	_, err := client.UpdateApiSecurityApiConfig(
-		d.Get("site_id").(int),
+		d.Get("site_id").(int64),
 		d.Id(),
 		&payload)
 
@@ -182,8 +183,8 @@ func resourceApiSecurityAPIConfigUpdate(d *schema.ResourceData, m interface{}) e
 
 func resourceApiSecurityAPIConfigRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siteID := d.Get("site_id").(int)
-	apiID, err := strconv.Atoi(d.Id())
+	siteID := d.Get("site_id").(int64)
+	apiID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		log.Printf("[ERROR] Could not read API Security API Config ID: %s - %s\n", d.Id(), err)
 		return err
@@ -196,7 +197,7 @@ func resourceApiSecurityAPIConfigRead(d *schema.ResourceData, m interface{}) err
 		return err
 	}
 	// Set computed values
-	d.SetId(strconv.Itoa(apiSecurityApiConfigGetResponse.Value.Id))
+	d.SetId(strconv.FormatInt(apiSecurityApiConfigGetResponse.Value.Id, 10))
 	d.Set("site_id", apiSecurityApiConfigGetResponse.Value.SiteId)
 	d.Set("host_name", apiSecurityApiConfigGetResponse.Value.HostName)
 	d.Set("base_path", apiSecurityApiConfigGetResponse.Value.BasePath)
@@ -220,8 +221,8 @@ func resourceApiSecurityAPIConfigRead(d *schema.ResourceData, m interface{}) err
 
 func resourceApiSecurityAPIConfigDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siteID := d.Get("site_id").(int)
-	apiID, err := strconv.Atoi(d.Id())
+	siteID := d.Get("site_id").(int64)
+	apiID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error converting Api Security API configuration ID for site (%d). Expected numeric value, got %s", siteID, d.Id())
 	}

@@ -48,7 +48,7 @@ func testCheckApiSecuritySiteConfigExists(name string) resource.TestCheckFunc {
 		if !ok {
 			return fmt.Errorf("Incapsula Api Security Site Config resource not found: %s", name)
 		}
-		siteId, err := strconv.Atoi(res.Primary.ID)
+		siteId, err := strconv.ParseInt(res.Primary.ID, 10, 64)
 		if err != nil {
 			return fmt.Errorf("Error parsing ID %v to int", res.Primary.ID)
 		}

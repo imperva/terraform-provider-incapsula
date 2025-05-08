@@ -16,7 +16,7 @@ func TestGetApiSecurityEndpointConfigBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	//siteID := 42
-	apiID := 100
+	apiID := int64(100)
 	endpointId := "92"
 	//
 	apiSecurityEndpointConfigGetResponse, err := client.GetApiSecurityEndpointConfig(apiID, endpointId)
@@ -35,7 +35,7 @@ func TestGetApiSecurityEndpointConfigBadConnection(t *testing.T) {
 func TestGetApiSecurityEndpointConfigBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	apiConfigID := 100
+	apiConfigID := int64(100)
 	endpointId := "92"
 	endpoint := fmt.Sprintf("%s%d/%s", endpointConfigUrl, apiConfigID, endpointId)
 
@@ -66,7 +66,7 @@ func TestGetApiSecurityEndpointConfigBadJSON(t *testing.T) {
 func TestGetApiSecurityEndpointConfigInvalidApiConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	apiConfigID := 100
+	apiConfigID := int64(100)
 	endpointId := "92"
 	endpoint := fmt.Sprintf("%s%d/%s", endpointConfigUrl, apiConfigID, endpointId)
 
@@ -100,7 +100,7 @@ func TestGetApiSecurityEndpointConfigInvalidApiConfig(t *testing.T) {
 func TestGetApiSecurityEndpointConfigValidApiConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	apiConfigID := 100
+	apiConfigID := int64(100)
 	endpointId := "92"
 	endpoint := fmt.Sprintf("%s%d/%s", endpointConfigUrl, apiConfigID, endpointId)
 
@@ -147,8 +147,8 @@ func TestGetApiSecurityEndpointConfigValidApiConfig(t *testing.T) {
 func TestPostApiSecurityEndpointConfigBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	apiConfigID := 100
-	endpointId := 92
+	apiConfigID := int64(100)
+	endpointId := int64(92)
 	payload := ApiSecurityEndpointConfigPostPayload{
 		ViolationActions: UserViolationActions{
 			MissingParamViolationAction:      "IGNORE",
@@ -174,8 +174,8 @@ func TestPostApiSecurityEndpointConfigBadConnection(t *testing.T) {
 func TestPostApiSecurityEndpointConfigBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	apiConfigID := 100
-	endpointId := 92
+	apiConfigID := int64(100)
+	endpointId := int64(92)
 	endpoint := fmt.Sprintf("%s%d"+"/"+"%d", endpointConfigUrl, apiConfigID, endpointId)
 
 	payload := ApiSecurityEndpointConfigPostPayload{
@@ -214,8 +214,8 @@ func TestPostApiSecurityEndpointConfigBadJSON(t *testing.T) {
 func TestPostApiSecurityEndpointConfigInvalidApiConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	apiConfigID := 100
-	endpointId := 92
+	apiConfigID := int64(100)
+	endpointId := int64(92)
 	endpoint := fmt.Sprintf("%s%d"+"/"+"%d", endpointConfigUrl, apiConfigID, endpointId)
 
 	payload := ApiSecurityEndpointConfigPostPayload{
@@ -263,8 +263,8 @@ func TestPostApiSecurityEndpointConfigInvalidApiConfig(t *testing.T) {
 func TestPostApiSecurityEndpointConfigValidApiConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	apiConfigID := 100
-	endpointId := 92
+	apiConfigID := int64(100)
+	endpointId := int64(92)
 	endpoint := fmt.Sprintf("%s%d"+"/"+"%d", endpointConfigUrl, apiConfigID, endpointId)
 
 	payload := ApiSecurityEndpointConfigPostPayload{

@@ -2,10 +2,11 @@ package incapsula
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceApiSecuritySiteConfig() *schema.Resource {
@@ -113,7 +114,7 @@ func resourceApiSecuritySiteConfigUpdate(d *schema.ResourceData, m interface{}) 
 	}
 
 	apiSecuritySiteConfigPostResponse, err := client.UpdateApiSecuritySiteConfig(
-		d.Get("site_id").(int),
+		d.Get("site_id").(int64),
 		&payload)
 
 	if err != nil {
@@ -121,7 +122,7 @@ func resourceApiSecuritySiteConfigUpdate(d *schema.ResourceData, m interface{}) 
 		return err
 	}
 
-	siteID := strconv.Itoa(apiSecuritySiteConfigPostResponse.Value.SiteId)
+	siteID := strconv.FormatInt(apiSecuritySiteConfigPostResponse.Value.SiteId, 10)
 	d.SetId(siteID)
 	log.Printf("[INFO] Updated Incapsula API-security site configuration with ID: %s\n", siteID)
 
@@ -132,7 +133,7 @@ func resourceApiSecuritySiteConfigRead(d *schema.ResourceData, m interface{}) er
 	client := m.(*Client)
 	siteId := d.Get("site_id")
 
-	apiSecuritySiteConfigGetResponse, err := client.ReadApiSecuritySiteConfig(siteId.(int))
+	apiSecuritySiteConfigGetResponse, err := client.ReadApiSecuritySiteConfig(siteId.(int64))
 	if err != nil {
 		log.Printf("[ERROR] Could not get Incapsula API-security site configuration for site ID: %d - %s\n", siteId, err)
 		return err

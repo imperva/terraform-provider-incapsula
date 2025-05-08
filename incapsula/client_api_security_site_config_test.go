@@ -32,7 +32,7 @@ func TestUpdateApiSecuritySiteConfigBadConnection(t *testing.T) {
 	}
 
 	apiSecuritySiteConfigPostResponse, err := client.UpdateApiSecuritySiteConfig(
-		siteID,
+		int64(siteID),
 		&payload)
 
 	if err == nil {
@@ -78,7 +78,7 @@ func TestUpdateApiSecuritySiteConfigBadJSON(t *testing.T) {
 	}
 
 	apiSecuritySiteConfigPostResponse, err := client.UpdateApiSecuritySiteConfig(
-		siteID,
+		int64(siteID),
 		&payload)
 
 	if err == nil {
@@ -118,7 +118,7 @@ func TestUpdateApiSecuritySiteConfigInvalidSiteConfig(t *testing.T) {
 	}
 
 	apiSecuritySiteConfigPostResponse, err := client.UpdateApiSecuritySiteConfig(
-		siteID,
+		int64(siteID),
 		&payload)
 
 	if err == nil {
@@ -164,7 +164,7 @@ func TestUpdateApiSecuritySiteConfigValidSiteConfig(t *testing.T) {
 	}
 
 	apiSecuritySiteConfigPostResponse, err := client.UpdateApiSecuritySiteConfig(
-		siteID,
+		int64(siteID),
 		&payload)
 
 	if err != nil {
@@ -184,7 +184,7 @@ func TestUpdateApiSecuritySiteConfigValidSiteConfig(t *testing.T) {
 func TestClientReadApiSecuritySiteConfigBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	siteID := 42
+	siteID := int64(42)
 
 	apiSecuritySiteConfigGetResponse, err := client.ReadApiSecuritySiteConfig(siteID)
 	if err == nil {
@@ -201,7 +201,7 @@ func TestClientReadApiSecuritySiteConfigBadConnection(t *testing.T) {
 func TestClientReadApiSecuritySiteConfigBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := 42
+	siteID := int64(42)
 
 	endpoint := fmt.Sprintf("%s%d", siteConfigUrl, siteID)
 
@@ -232,7 +232,7 @@ func TestClientReadApiSecuritySiteConfigBadJSON(t *testing.T) {
 func TestClientReadApiSecuritySiteConfigInvalidSiteConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := 42
+	siteID := int64(42)
 
 	endpoint := fmt.Sprintf("%s%d", siteConfigUrl, siteID)
 
@@ -265,7 +265,7 @@ func TestClientReadApiSecuritySiteConfigInvalidSiteConfig(t *testing.T) {
 func TestClientReadApiSecuritySiteConfigValidSiteConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := 42
+	siteID := int64(42)
 
 	endpoint := fmt.Sprintf("%s%d", siteConfigUrl, siteID)
 
