@@ -15,7 +15,7 @@ type UserViolationActions struct {
 }
 
 type EndpointResponse struct {
-	Id                           int64                  `json:"id"`
+	Id                           int64                `json:"id"`
 	Path                         string               `json:"path"`
 	Method                       string               `json:"method"`
 	ViolationActions             UserViolationActions `json:"violationActions"`
