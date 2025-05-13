@@ -2,11 +2,12 @@ package incapsula
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceApiSecurityEndpointConfig() *schema.Resource {
@@ -91,7 +92,7 @@ func resourceApiSecurityEndpointConfig() *schema.Resource {
 func resourceApiSecurityEndpointConfigRead(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Read Incapsula API-security endpoint configuration for ID: %s", d.Id())
 	client := m.(*Client)
-	endpointGetResponse, err := client.GetApiSecurityEndpointConfig(d.Get("api_id").(int), d.Id())
+	endpointGetResponse, err := client.GetApiSecurityEndpointConfig(d.Get("api_id").(int64), d.Id())
 	if err != nil {
 		log.Printf("[ERROR] Could not get Incapsula API-security endpoint: %s - %s\n", d.Get("id"), err)
 		return err
@@ -107,12 +108,12 @@ func resourceApiSecurityEndpointConfigRead(d *schema.ResourceData, m interface{}
 
 func resourceApiSecurityEndpointConfigCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	endpointGetAllResponse, _ := client.GetApiSecurityAllEndpointsConfig(d.Get("api_id").(int))
+	endpointGetAllResponse, _ := client.GetApiSecurityAllEndpointsConfig(d.Get("api_id").(int64))
 	var found bool
 	var endpointId string
 	for _, entry := range endpointGetAllResponse.Value {
 		if entry.Path == d.Get("path").(string) && entry.Method == d.Get("method").(string) {
-			endpointId = strconv.Itoa(entry.Id)
+			endpointId = strconv.FormatInt(entry.Id, 10)
 			found = true
 			break
 		}
@@ -138,11 +139,11 @@ func resourceApiSecurityEndpointConfigUpdate(d *schema.ResourceData, m interface
 		},
 	}
 
-	endpointId, err := strconv.Atoi(d.Id())
+	endpointId, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		fmt.Errorf("Endpoint ID should be numeric. Actual value: %s", d.Id())
 	}
-	_, err = client.PostApiSecurityEndpointConfig(d.Get("api_id").(int), endpointId, &payload)
+	_, err = client.PostApiSecurityEndpointConfig(d.Get("api_id").(int64), endpointId, &payload)
 
 	if err != nil {
 		return err
