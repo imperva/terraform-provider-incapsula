@@ -110,13 +110,13 @@ func resourceAccount() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
-            "inactivity_timeout": {
-                Description:  "Duration of inactivity in minutes before timeout. Options are 15,30,60,90,120.",
-                Type:         schema.TypeInt,
-                Default:      15,
-                Optional:     true,
-                ValidateFunc: validation.IntInSlice([]int{15, 30, 60, 90, 120}),
-            },
+			"inactivity_timeout": {
+				Description:  "Duration of inactivity in minutes before timeout. Options are 15,30,60,90,120.",
+				Type:         schema.TypeInt,
+				Default:      15,
+				Optional:     true,
+				ValidateFunc: validation.IntInSlice([]int{15, 30, 60, 90, 120}),
+			},
 			"enable_http2_for_new_sites": {
 				Description: "Enable HTTP/2 for traffic between end-users (visitors) and Imperva for newly created SSL sites. Options are `true` and `false`. Defaults to `true`",
 				Type:        schema.TypeString,
@@ -304,7 +304,7 @@ func resourceAccountDelete(d *schema.ResourceData, m interface{}) error {
 func updateAdditionalAccountProperties(client *Client, d *schema.ResourceData) error {
 	consentRequiredParam := "consent_required"
 	defaultInactivityTimeout := "15"
-    updateParams := [7]string{"account_name", "error_page_template", "support_all_tls_versions", "naked_domain_san_for_new_www_sites", "wildcard_san_for_new_sites", consentRequiredParam, "inactivity_timeout"}
+	updateParams := [7]string{"account_name", "error_page_template", "support_all_tls_versions", "naked_domain_san_for_new_www_sites", "wildcard_san_for_new_sites", consentRequiredParam, "inactivity_timeout"}
 	for i := 0; i < len(updateParams); i++ {
 		param := updateParams[i]
 		if d.HasChange(param) {
@@ -313,12 +313,12 @@ func updateAdditionalAccountProperties(client *Client, d *schema.ResourceData) e
 			if param == consentRequiredParam {
 				paramValStr = strconv.FormatBool(d.Get(param).(bool))
 			} else if param == "inactivity_timeout" {
-                if d.Get(param).(int) == 0 {
-                    paramValStr = defaultInactivityTimeout
-                } else {
-                    paramValStr = strconv.Itoa(d.Get(param).(int))
-                }
-            } else {
+				if d.Get(param).(int) == 0 {
+					paramValStr = defaultInactivityTimeout
+				} else {
+					paramValStr = strconv.Itoa(d.Get(param).(int))
+				}
+			} else {
 				paramValStr = d.Get(param).(string)
 			}
 

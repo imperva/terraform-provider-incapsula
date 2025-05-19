@@ -181,10 +181,10 @@ func (c *Client) AccountStatus(accountID int, operation string) (*AccountStatusR
 	}
 
 	// Convert inactivity timeout from millis to minutes
-    if accountStatusResponse.Account.InactivityTimeout != 0 {
-        accountStatusResponse.Account.InactivityTimeout /= 60000
-        accountStatusResponse.InactivityTimeout /= 60000
-    }
+	if accountStatusResponse.Account.InactivityTimeout != 0 {
+		accountStatusResponse.Account.InactivityTimeout /= 60000
+		accountStatusResponse.InactivityTimeout /= 60000
+	}
 
 	return &accountStatusResponse, nil
 }
@@ -194,13 +194,13 @@ func (c *Client) UpdateAccount(accountID, param, value string) (*AccountUpdateRe
 	log.Printf("[INFO] Updating Incapsula account for accountID: %s. Param: %s. Value: %s\n", accountID, param, value)
 
 	// Convert inactivity timeout from minutes to millis
-    if param == "inactivity_timeout" {
-        millis, err := convertMinutesToMilliseconds(value)
-        if err != nil {
-            return nil, fmt.Errorf("Error converting inactivity timeout from minutes to millis: %s", err)
-        }
-        value = strconv.Itoa(millis)
-    }
+	if param == "inactivity_timeout" {
+		millis, err := convertMinutesToMilliseconds(value)
+		if err != nil {
+			return nil, fmt.Errorf("Error converting inactivity timeout from minutes to millis: %s", err)
+		}
+		value = strconv.Itoa(millis)
+	}
 
 	values := url.Values{
 		"account_id": {accountID},
