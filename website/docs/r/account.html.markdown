@@ -53,7 +53,7 @@ The following arguments are supported:
 * `wildcard_san_for_new_sites` - (Optional) Add wildcard SAN to Incapsula SSL certificates for new sites. Options are `true`, `false` and `default`. Defaults to `default`.  
                                Note: This argument is deprecated. Use use_wild_card_san_instead_of_fqdn in the account_ssl_settings resource instead.
 * `error_page_template` - (Optional) Base64 encoded template for an error page.
-* `inactivity_timeout` - (Optional) Duration of inactivity in minutes before timeout. Options are 15,30,60,90,120. Defaults to 15 (recommended and compliance with regulatory requirements).
+* `inactivity_timeout` - (Optional) The length of time the session can be inactive before it times out. Options are 15,30,60,90,120. Default: 15 (The recommended value in compliance with regulatory requirements.)
 * `enable_http2_for_new_sites` - (Optional) Use this option to enable HTTP/2 support for traffic between end-users (visitors) and Imperva for newly created SSL sites. Options are `true` and `false`. Defaults to `true`.
 * `enable_http2_to_origin_for_new_sites` - (Optional) Use this option to enable HTTP/2 support for traffic between Imperva and your origin server for newly created SSL sites. This option can only be 'true' once 'enable_http2_for_new_sites' is enabled for newly created sites. Options are `true` and `false`. Defaults to `false`.
 
