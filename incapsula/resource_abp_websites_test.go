@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -399,8 +400,10 @@ func createTestDomain(t *testing.T, id string) string {
 	// Using examplewebsite.com like the other tests gives an error
 	// "Error from Incapsula service when adding site for domain id1165506sites-1.examplewebsite.com:
 	// {"res":1,"res_message":"Unexpected error","debug_info":{"problem":"[Load Balancing mode is disabled for this site, you need to reduce number of servers to 1]","id-info":"999999"}}"
-	generatedDomain = strings.ToLower(strings.ReplaceAll(t.Name(), "_", "-")) + "-" + id + ".distil.ninja"
-	return generatedDomain
+	unique := time.Now().UnixNano()
+	return fmt.Sprintf("%s-%s-%d.distil.ninja", strings.ToLower(strings.ReplaceAll(t.Name(), "_", "-")), id, unique)
+	//generatedDomain = strings.ToLower(strings.ReplaceAll(t.Name(), "_", "-")) + "-" + id + ".distil.ninja"
+	//return generatedDomain
 }
 
 func testAccAbpWebsitesMultipleWebsites(t *testing.T) string {
