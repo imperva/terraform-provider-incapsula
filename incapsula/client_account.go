@@ -60,6 +60,7 @@ type AccountStatusResponse struct {
 		SupportAllTLSVersions          bool   `json:"supprt_all_tls_versions"`
 		WildcardSANForNewSites         string `json:"wildcard_san_for_new_sites"`
 		NakedDomainSANForNewWWWSites   bool   `json:"naked_domain_san_for_new_www_sites"`
+		InactivityTimeout              int    `json:"inactivity_timeout,omitempty"`
 		EnableHttp2ForNewSites         bool   `json:"enable_http2_for_new_sites"`
 		EnableHttp2ToOriginForNewSites bool   `json:"enable_http2_to_origin_for_new_sites"`
 	} `json:"account"`
@@ -81,6 +82,7 @@ type AccountStatusResponse struct {
 	SupportAllTLSVersions        bool        `json:"supprt_all_tls_versions"`
 	WildcardSANForNewSites       string      `json:"wildcard_san_for_new_sites"`
 	NakedDomainSANForNewWWWSites bool        `json:"naked_domain_san_for_new_www_sites"`
+	InactivityTimeout            int         `json:"inactivity_timeout,omitempty"`
 	ConsentRequired              bool        `json:"consent_required"`
 	Res                          interface{} `json:"res"`
 	ResMessage                   string      `json:"res_message"`
@@ -178,12 +180,27 @@ func (c *Client) AccountStatus(accountID int, operation string) (*AccountStatusR
 		return &accountStatusResponse, fmt.Errorf("Error from Incapsula service when getting account status for account id %d: %s", accountID, string(responseBody))
 	}
 
+	// Convert inactivity timeout from millis to minutes
+	if accountStatusResponse.Account.InactivityTimeout != 0 {
+		accountStatusResponse.Account.InactivityTimeout /= 60000
+		accountStatusResponse.InactivityTimeout /= 60000
+	}
+
 	return &accountStatusResponse, nil
 }
 
 // UpdateAccount will update the specific param/value on the account resource
 func (c *Client) UpdateAccount(accountID, param, value string) (*AccountUpdateResponse, error) {
 	log.Printf("[INFO] Updating Incapsula account for accountID: %s. Param: %s. Value: %s\n", accountID, param, value)
+
+	// Convert inactivity timeout from minutes to millis
+	if param == "inactivity_timeout" {
+		millis, err := convertMinutesToMilliseconds(value)
+		if err != nil {
+			return nil, fmt.Errorf("Error converting inactivity timeout from minutes to millis: %s", err)
+		}
+		value = strconv.Itoa(millis)
+	}
 
 	values := url.Values{
 		"account_id": {accountID},
@@ -264,4 +281,12 @@ func (accountStatus AccountStatusResponse) isSubAccount() bool {
 		return true
 	}
 	return false
+}
+
+func convertMinutesToMilliseconds(value string) (int, error) {
+	minutes, err := strconv.Atoi(value)
+	if err != nil {
+		return 0, err
+	}
+	return minutes * 60000, nil
 }
