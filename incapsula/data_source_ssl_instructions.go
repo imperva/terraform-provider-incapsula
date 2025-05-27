@@ -186,13 +186,15 @@ func validateExistDomainOrDeletedSan(s SanDTO, domains []SiteDomainDetails) bool
 func populateInstructionsFromDTO(d *schema.ResourceData, instructionsDTO []InstructionsDTO) {
 	instructions := &schema.Set{F: getHashSanId}
 	for _, v := range instructionsDTO {
-		ins := map[string]interface{}{}
-		ins["name"] = v.Domain
-		ins["type"] = v.RecordType
-		ins["value"] = v.VerificationCode
-		ins["domain_id"] = v.RelatedSansDetails[0].DomainIds[0]
-		ins["san_id"] = v.RelatedSansDetails[0].SanId
-		instructions.Add(ins)
+		if v.CertificateLevel == "SITE" {
+			ins := map[string]interface{}{}
+			ins["name"] = v.Domain
+			ins["type"] = v.RecordType
+			ins["value"] = v.VerificationCode
+			ins["domain_id"] = v.RelatedSansDetails[0].DomainIds[0]
+			ins["san_id"] = v.RelatedSansDetails[0].SanId
+			instructions.Add(ins)
+		}
 	}
 	d.Set("instructions", instructions)
 }

@@ -21,6 +21,7 @@ type InstructionsDTO struct {
 	VerificationCode               string          `json:"verificationCode,omitempty"`
 	VerificationCodeExpirationDate int64           `json:"verificationCodeExpirationDate,omitempty"`
 	LastNotificationDate           int64           `json:"lastNotificationDate,omitempty"`
+	CertificateLevel               string          `json:"certificateLevel,omitempty"`
 	RelatedSansDetails             []SanDetailsDTO `json:"relatedSansDetails,omitempty"`
 }
 type SanDetailsDTO struct {
