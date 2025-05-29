@@ -294,17 +294,14 @@ func getSubAccountsDtoListFromResource(d *schema.ResourceData) []SubAccountDTO {
 
 func getAssetsFromResource(d *schema.ResourceData) []AssetDto {
 	var assetList []AssetDto
-	assets, ok := d.GetOk("asset")
-	if ok {
-		assetSet := assets.(*schema.Set)
-		for _, asset := range assetSet.List() {
-			assetResource := asset.(map[string]interface{})
-			assetDto := AssetDto{
-				AssetType: assetResource["asset_type"].(string),
-				AssetId:   assetResource["asset_id"].(int),
-			}
-			assetList = append(assetList, assetDto)
+	assets := d.Get("asset").(*schema.Set)
+	for _, asset := range assets.List() {
+		assetResource := asset.(map[string]interface{})
+		assetDto := AssetDto{
+			AssetType: assetResource["asset_type"].(string),
+			AssetId:   assetResource["asset_id"].(int),
 		}
+		assetList = append(assetList, assetDto)
 	}
 	return assetList
 }
