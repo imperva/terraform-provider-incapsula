@@ -13,7 +13,7 @@ func TestGetSslInstructions(t *testing.T) {
 	log.Printf("[DEBUG] Running test client_ssl_instructions_test.TestGetSslInstructions")
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("%s", endpointSSLInstructions+"?extSiteId=123") {
+		if req.URL.String() != fmt.Sprintf("%s", endpointSSLInstructions+"?certificateType=MANAGED&extSiteId=123") {
 			t.Errorf("Should have hit %s endpoint. Got: %s", endpointSSLInstructions, req.URL.String())
 		}
 		rw.WriteHeader(200)
