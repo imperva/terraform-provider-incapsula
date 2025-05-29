@@ -21,6 +21,7 @@ type InstructionsDTO struct {
 	VerificationCode               string          `json:"verificationCode,omitempty"`
 	VerificationCodeExpirationDate int64           `json:"verificationCodeExpirationDate,omitempty"`
 	LastNotificationDate           int64           `json:"lastNotificationDate,omitempty"`
+	CertificateLevel               string          `json:"certificateLevel,omitempty"`
 	RelatedSansDetails             []SanDetailsDTO `json:"relatedSansDetails,omitempty"`
 }
 type SanDetailsDTO struct {
@@ -38,8 +39,11 @@ func (c *Client) GetSiteSSLInstructions(siteId int) (*SSLInstructionsResponse, d
 	var diags diag.Diagnostics
 	log.Printf("[INFO] request site SSL instructions to: %d ", siteId)
 
-	url := fmt.Sprintf("%s%s?extSiteId=%s", c.config.BaseURLAPI, endpointSSLInstructions, strconv.Itoa(siteId))
-	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, url, []byte("{}"), nil, RequestSiteCert)
+	url := fmt.Sprintf("%s%s", c.config.BaseURLAPI, endpointSSLInstructions)
+	var params = map[string]string{}
+	params["extSiteId"] = strconv.Itoa(siteId)
+	params["certificateType"] = "MANAGED"
+	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, url, []byte("{}"), params, RequestSiteCert)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
