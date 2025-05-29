@@ -91,14 +91,9 @@ The following arguments are supported:
   We recommend always setting this field's value to `FALSE`, to disable automatic updates of sub-accounts on the policy, 
   so you have full control over your resources.
 
-
-<<<<<<< HEAD:website/docs/r/notification_policy.html.markdown
-Under the following conditions, you need to define at least 1 asset:\
-If the `policy_type` argument is `ACCOUNT`, and the selected `sub_category` requires that the policy be applied to assets in the account, and the 
-=======
+  
 Under the following conditions, you need to define at least 1 asset:
-If the `policy_type` argument is `ACCOUNT`, and the chosen `sub_category` requires configuration of assets, and the 
->>>>>>> docs-update:website/docs/r/notification_center_policy.html.markdown
+If the `policy_type` argument is `ACCOUNT`, and the chosen `sub_category` requires configuration of assets, and the
 argument `apply_to_new_assets` is `FALSE`, then at least 1 asset must be defined.\
 For example, when configuring a policy for the `SITE_NOTIFICATIONS` `sub_category`, if the argument `apply_to_new_assets` is FALSE, at least one SITE asset must be specified.
 The arguments that are supported in `asset` sub resource are:
