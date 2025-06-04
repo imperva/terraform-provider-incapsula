@@ -1,7 +1,25 @@
+## 3.34.0 (May 19, 2025)
+
+IMPROVEMENTS:
+- Added to incapsula_account resource optional field inactivity_timeout ([#563](https://github.com/imperva/terraform-provider-incapsula/pull/563))
+
+BUG FIXES:
+- Converting datatype int to int64 to handle 32 bit systems ([#566](https://github.com/imperva/terraform-provider-incapsula/pull/566))
+
+
+
+## 3.33.0 (Apr 27, 2025)
+
+IMPROVEMENTS:
+- Allow deletion of the last domain for v1 sites that have migrated to the v3 resource  ([#553](https://github.com/imperva/terraform-provider-incapsula/pull/553))
+- Ignore grace period for site deletion ([#554](https://github.com/imperva/terraform-provider-incapsula/pull/554))
+- Support sub-account on resource_mtls_client_to_imperva_certificate_site_association  ([#555](https://github.com/imperva/terraform-provider-incapsula/pull/555))
+
+
 ## 3.32.0 (Mar 31, 2025)
 
 IMPROVEMENTS:
-- support sub account on incapsula_mtls_imperva_to_origin_certificate_site_association resource ([#540](https://github.com/imperva/terraform-provider-incapsula/pull/540)
+- support sub account on incapsula_mtls_imperva_to_origin_certificate_site_association resource ([#540](https://github.com/imperva/terraform-provider-incapsula/pull/540))
 - Added support for ref_id and active fields in incapsula_site_v3 resource ([#544](https://github.com/imperva/terraform-provider-incapsula/pull/544))
 - Added site masking settings to site-log-configuration resource ([#545](https://github.com/imperva/terraform-provider-incapsula/pull/545))
 

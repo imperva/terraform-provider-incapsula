@@ -77,7 +77,7 @@ func testCheckIncapsulaApiSecurityEndpointExists(name string) resource.TestCheck
 		if apiId == "" {
 			return fmt.Errorf("incapsula api security endpoint ID does not exist")
 		}
-		apiIdInt, err := strconv.Atoi(apiId)
+		apiIdInt, err := strconv.ParseInt(apiId, 10, 64)
 		if err != nil {
 			return fmt.Errorf("failed to convert api security API ID is not numeric")
 		}
