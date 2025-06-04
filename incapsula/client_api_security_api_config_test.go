@@ -15,8 +15,8 @@ import (
 func TestGetApiSecurityApiConfigBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	siteID := 42
-	apiID := 100
+	siteID := int64(42)
+	apiID := int64(100)
 
 	apiConfigGetResponse, err := client.GetApiSecurityApiConfig(siteID, apiID)
 	if err == nil {
@@ -34,8 +34,8 @@ func TestGetApiSecurityApiConfigBadConnection(t *testing.T) {
 func TestGetApiSecurityApiConfigBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := 42
-	apiConfigID := 100
+	siteID := int64(42)
+	apiConfigID := int64(100)
 	endpoint := fmt.Sprintf("%s%d/%d", apiConfigUrl, siteID, apiConfigID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -65,8 +65,8 @@ func TestGetApiSecurityApiConfigBadJSON(t *testing.T) {
 func TestGetApiSecurityApiConfigInvalidApiConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := 42
-	apiConfigID := 100
+	siteID := int64(42)
+	apiConfigID := int64(100)
 	endpoint := fmt.Sprintf("%s%d/%d", apiConfigUrl, siteID, apiConfigID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -100,8 +100,8 @@ func TestGetApiSecurityApiConfigInvalidApiConfig(t *testing.T) {
 func TestGetApiSecurityApiConfigValidApiConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := 42
-	apiConfigID := 100
+	siteID := int64(42)
+	apiConfigID := int64(100)
 	endpoint := fmt.Sprintf("%s%d/%d", apiConfigUrl, siteID, apiConfigID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -157,7 +157,7 @@ func TestGetApiSecurityApiConfigValidApiConfig(t *testing.T) {
 func TestCreateApiSecurityApiConfigBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	siteID := 42
+	siteID := int64(42)
 
 	payload := ApiSecurityApiConfigPostPayload{
 		ValidateHost:     true,
@@ -187,7 +187,7 @@ func TestCreateApiSecurityApiConfigBadConnection(t *testing.T) {
 func TestCreateApiSecurityApiConfigBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := 42
+	siteID := int64(42)
 	endpoint := fmt.Sprintf("%s%d", apiConfigUrl, siteID)
 
 	payload := ApiSecurityApiConfigPostPayload{
@@ -231,7 +231,7 @@ func TestCreateApiSecurityApiConfigBadJSON(t *testing.T) {
 func TestCreateApiSecurityApiConfigInvalidApiConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := 42
+	siteID := int64(42)
 	//apiConfigID := 100
 	endpoint := fmt.Sprintf("%s%d", apiConfigUrl, siteID)
 
@@ -278,7 +278,7 @@ func TestCreateApiSecurityApiConfigInvalidApiConfig(t *testing.T) {
 func TestCreateApiSecurityApiConfigValidApiConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := 42
+	siteID := int64(42)
 	endpoint := fmt.Sprintf("%s%d", apiConfigUrl, siteID)
 
 	payload := ApiSecurityApiConfigPostPayload{
@@ -332,7 +332,7 @@ func TestCreateApiSecurityApiConfigValidApiConfig(t *testing.T) {
 func TestUpdateApiSecurityApiConfigBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	siteID := 42
+	siteID := int64(42)
 	apiConfigID := "100"
 
 	payload := ApiSecurityApiConfigPostPayload{
@@ -363,7 +363,7 @@ func TestUpdateApiSecurityApiConfigBadConnection(t *testing.T) {
 func TestUpdateApiSecurityApiConfigBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := 42
+	siteID := int64(42)
 	apiConfigID := "100"
 	endpoint := fmt.Sprintf("%s%d/%s", apiConfigUrl, siteID, apiConfigID)
 
@@ -408,7 +408,7 @@ func TestUpdateApiSecurityApiConfigBadJSON(t *testing.T) {
 func TestUpdateApiSecurityApiConfigInvalidApiConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := 42
+	siteID := int64(42)
 	apiConfigID := "100"
 	endpoint := fmt.Sprintf("%s%d/%s", apiConfigUrl, siteID, apiConfigID)
 
@@ -457,7 +457,7 @@ func TestUpdateApiSecurityApiConfigInvalidApiConfig(t *testing.T) {
 func TestUpdateApiSecurityApiConfigValidApiConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := 42
+	siteID := int64(42)
 	apiConfigID := "100"
 	endpoint := fmt.Sprintf("%s%d/%s", apiConfigUrl, siteID, apiConfigID)
 
@@ -514,7 +514,7 @@ func TestUpdateApiSecurityApiConfigValidApiConfig(t *testing.T) {
 func TestDeleteApiSecurityApiConfigBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com", BaseURLRev2: "badness.incapsula.com", BaseURLAPI: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	siteID := 42
+	siteID := int64(42)
 	apiConfigID := "100"
 
 	err := client.DeleteApiSecurityApiConfig(siteID, apiConfigID)
@@ -529,7 +529,7 @@ func TestDeleteApiSecurityApiConfigBadConnection(t *testing.T) {
 func TestDeleteApiSecurityApiConfigBadJSON(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := 42
+	siteID := int64(42)
 	apiConfigID := "100"
 	endpoint := fmt.Sprintf("%s%d/%s", apiConfigUrl, siteID, apiConfigID)
 
@@ -556,7 +556,7 @@ func TestDeleteApiSecurityApiConfigBadJSON(t *testing.T) {
 func TestDeleteApiSecurityApiConfigInvalidApiConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := 42
+	siteID := int64(42)
 	apiConfigID := "100"
 	endpoint := fmt.Sprintf("%s%d/%s", apiConfigUrl, siteID, apiConfigID)
 
@@ -587,7 +587,7 @@ func TestDeleteApiSecurityApiConfigInvalidApiConfig(t *testing.T) {
 func TestDeleteApiSecurityApiConfigValidApiConfig(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
-	siteID := 42
+	siteID := int64(42)
 	apiConfigID := "100"
 	endpoint := fmt.Sprintf("%s%d/%s", apiConfigUrl, siteID, apiConfigID)
 

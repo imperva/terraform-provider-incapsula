@@ -57,12 +57,12 @@ func testACCStateApiSecurityApiConfigDestroy(s *terraform.State) error {
 		if siteID == "" {
 			fmt.Errorf("Parameter site_id was not found in resource %s", apiSecApiConfigResourceName)
 		}
-		siteIDInt, err := strconv.Atoi(siteID)
+		siteIDInt, err := strconv.ParseInt(siteID, 10, 64)
 		if err != nil {
 			fmt.Errorf("failed to convert Site Id from import command, actual value : %s, expected numeric id", siteID)
 		}
 
-		apiID, err := strconv.Atoi(rs.Primary.ID)
+		apiID, err := strconv.ParseInt(rs.Primary.ID, 10, 64)
 		if err != nil {
 			fmt.Errorf("failed to convert API Id from import command, actual value : %s, expected numeric id", rs.Primary.ID)
 		}
@@ -106,13 +106,13 @@ func testCheckIncapsulaApiConfigExists() resource.TestCheckFunc {
 		if !ok || siteID != siteID {
 			return fmt.Errorf("Incapsula API Security Site ID %s does not exist for API Site Config", siteID)
 		}
-		siteIdInt, err := strconv.Atoi(siteID)
+		siteIdInt, err := strconv.ParseInt(siteID, 10, 64)
 
 		apiID := res.Primary.ID
 		if !ok || apiID == "" {
 			return fmt.Errorf("Incapsula API Security API ID%s does not exist for API Config", siteID)
 		}
-		apiIDInt, err := strconv.Atoi(apiID)
+		apiIDInt, err := strconv.ParseInt(apiID, 10, 64)
 
 		client := testAccProvider.Meta().(*Client)
 		_, err = client.GetApiSecurityApiConfig(siteIdInt, apiIDInt)

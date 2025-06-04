@@ -12,7 +12,7 @@ const siteConfigUrl = "/api-security/config/site/"
 
 type ApiSecuritySiteConfigGetResponse struct {
 	Value struct {
-		SiteId                                    int              `json:"siteId"`
+		SiteId                                    int64            `json:"siteId"`
 		ApiOnlySite                               bool             `json:"apiOnlySite"`
 		NonApiRequestViolationAction              string           `json:"nonApiRequestViolationAction"`
 		LastModified                              int64            `json:"lastModified"`
@@ -24,7 +24,7 @@ type ApiSecuritySiteConfigGetResponse struct {
 
 type ApiSecuritySiteConfigPostResponse struct {
 	Value struct {
-		SiteId int `json:"siteId"`
+		SiteId int64 `json:"siteId"`
 	} `json:"value"`
 	IsError bool `json:"isError"`
 }
@@ -37,7 +37,7 @@ type ApiSecuritySiteConfigPostPayload struct {
 }
 
 // ReadApiSecuritySiteConfig gets the Api-Security Site Config
-func (c *Client) ReadApiSecuritySiteConfig(siteId int) (*ApiSecuritySiteConfigGetResponse, error) {
+func (c *Client) ReadApiSecuritySiteConfig(siteId int64) (*ApiSecuritySiteConfigGetResponse, error) {
 	log.Printf("[INFO] Getting Incapsula Api-Security Site Config: %d\n", siteId)
 
 	// Post form to Incapsula
@@ -72,7 +72,7 @@ func (c *Client) ReadApiSecuritySiteConfig(siteId int) (*ApiSecuritySiteConfigGe
 }
 
 // UpdateApiSecuritySiteConfig updates an Api-Security Site Config
-func (c *Client) UpdateApiSecuritySiteConfig(siteId int, siteConfigPayload *ApiSecuritySiteConfigPostPayload) (*ApiSecuritySiteConfigPostResponse, error) {
+func (c *Client) UpdateApiSecuritySiteConfig(siteId int64, siteConfigPayload *ApiSecuritySiteConfigPostPayload) (*ApiSecuritySiteConfigPostResponse, error) {
 	siteConfigJSON, err := json.Marshal(siteConfigPayload)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to JSON marshal api security site config: %s", err)

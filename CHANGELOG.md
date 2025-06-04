@@ -1,3 +1,13 @@
+## 3.34.0 (May 19, 2025)
+
+IMPROVEMENTS:
+- Added to incapsula_account resource optional field inactivity_timeout ([#563](https://github.com/imperva/terraform-provider-incapsula/pull/563))
+
+BUG FIXES:
+- Converting datatype int to int64 to handle 32 bit systems ([#566](https://github.com/imperva/terraform-provider-incapsula/pull/566))
+
+
+
 ## 3.33.0 (Apr 27, 2025)
 
 IMPROVEMENTS:
