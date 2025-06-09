@@ -82,8 +82,7 @@ func dataSourceSSLInstructionsRead(ctx context.Context, d *schema.ResourceData, 
 	client := m.(*Client)
 	siteIdStr := d.Get("site_id").(string)
 	siteId, _ := strconv.Atoi(siteIdStr)
-	timeoutStr := d.Get("validation_timeout").(string)
-	timeout, _ := strconv.Atoi(timeoutStr)
+	timeout := d.Get("validation_timeout").(int)
 	waitForInstructions(client, siteId, timeout)
 	sSLInstructionsResponse, err := client.GetSiteSSLInstructions(siteId)
 	if err != nil {
