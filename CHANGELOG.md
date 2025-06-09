@@ -1,3 +1,12 @@
+## 3.34.1 (Jun 09, 2025)
+
+BUG FIXES:
+- Bug fix on incapsula_ssl_instuctions where account certificate was not ignored  ([#573](https://github.com/imperva/terraform-provider-incapsula/pull/573))
+- Documentation update to remove the unwanted html tag ([#574](https://github.com/imperva/terraform-provider-incapsula/pull/574))
+- Omit refId in incapsula_site_v3 when marshaling to JSON if the field has no value ([#575](https://github.com/imperva/terraform-provider-incapsula/pull/575))
+
+
+
 ## 3.34.0 (May 19, 2025)
 
 IMPROVEMENTS:
