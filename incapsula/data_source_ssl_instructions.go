@@ -40,7 +40,7 @@ func dataSourceSSLInstructions() *schema.Resource {
 			"validation_timeout": {
 				Description: "Length of time in seconds to wait for SSL validation.",
 				Type:        schema.TypeInt,
-				Required:    false,
+				Optional:    true,
 				Default:     200,
 			},
 			// Computed Attributes
