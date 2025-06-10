@@ -135,7 +135,7 @@ func resourceApiSecurityAPIConfigCreate(d *schema.ResourceData, m interface{}) e
 	}
 
 	apiSecurityApiConfigPostResponse, err := client.CreateApiSecurityApiConfig(
-		d.Get("site_id").(int64),
+		int64(d.Get("site_id").(int)),
 		&payload)
 
 	if err != nil {
@@ -168,7 +168,7 @@ func resourceApiSecurityAPIConfigUpdate(d *schema.ResourceData, m interface{}) e
 	}
 
 	_, err := client.UpdateApiSecurityApiConfig(
-		d.Get("site_id").(int64),
+		int64(d.Get("site_id").(int)),
 		d.Id(),
 		&payload)
 
@@ -183,7 +183,7 @@ func resourceApiSecurityAPIConfigUpdate(d *schema.ResourceData, m interface{}) e
 
 func resourceApiSecurityAPIConfigRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siteID := d.Get("site_id").(int64)
+	siteID := int64(d.Get("site_id").(int))
 	apiID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		log.Printf("[ERROR] Could not read API Security API Config ID: %s - %s\n", d.Id(), err)
@@ -221,7 +221,7 @@ func resourceApiSecurityAPIConfigRead(d *schema.ResourceData, m interface{}) err
 
 func resourceApiSecurityAPIConfigDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siteID := d.Get("site_id").(int64)
+	siteID := int64(d.Get("site_id").(int))
 	apiID, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
 		return fmt.Errorf("Error converting Api Security API configuration ID for site (%d). Expected numeric value, got %s", siteID, d.Id())
