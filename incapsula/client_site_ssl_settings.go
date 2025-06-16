@@ -17,7 +17,7 @@ type HSTSConfiguration struct {
 
 type InboundTLSSettingsConfiguration struct {
 	ConfigurationProfile string             `json:"configurationProfile"`
-	TLSConfigurations    []TLSConfiguration `json:"tlsConfiguration"`
+	TLSConfigurations    []TLSConfiguration `json:"tlsConfiguration,omitempty"`
 }
 
 type TLSConfiguration struct {
