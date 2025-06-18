@@ -1,3 +1,10 @@
+## 3.34.1 (Jun 18, 2025)
+
+BUG FIXES:
+- Parse error while converting from int to int64. Added a fix to convert it properly. ([#578](https://github.com/imperva/terraform-provider-incapsula/pull/578))
+
+
+
 ## 3.34.1 (Jun 09, 2025)
 
 BUG FIXES:
