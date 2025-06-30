@@ -1,4 +1,13 @@
-## 3.34.1 (Jun 18, 2025)
+## 3.34.3 (Jun 30, 2025)
+
+BUG FIXES:
+- Fixing the waf_security_rule.html.markdown documentation. ([#580](https://github.com/imperva/terraform-provider-incapsula/pull/580))
+- Remove validation from domain field . ([#581](https://github.com/imperva/terraform-provider-incapsula/pull/581))
+- Omit the HstsConfiguration and TLSConfigurations. ([#582](https://github.com/imperva/terraform-provider-incapsula/pull/582))
+
+
+
+## 3.34.2 (Jun 18, 2025)
 
 BUG FIXES:
 - Parse error while converting from int to int64. Added a fix to convert it properly. ([#578](https://github.com/imperva/terraform-provider-incapsula/pull/578))
