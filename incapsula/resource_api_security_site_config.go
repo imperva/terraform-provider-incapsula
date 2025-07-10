@@ -114,7 +114,7 @@ func resourceApiSecuritySiteConfigUpdate(d *schema.ResourceData, m interface{}) 
 	}
 
 	apiSecuritySiteConfigPostResponse, err := client.UpdateApiSecuritySiteConfig(
-		d.Get("site_id").(int64),
+		int64(d.Get("site_id").(int)),
 		&payload)
 
 	if err != nil {
@@ -131,9 +131,9 @@ func resourceApiSecuritySiteConfigUpdate(d *schema.ResourceData, m interface{}) 
 
 func resourceApiSecuritySiteConfigRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	siteId := d.Get("site_id")
+	siteId := int64(d.Get("site_id").(int))
 
-	apiSecuritySiteConfigGetResponse, err := client.ReadApiSecuritySiteConfig(siteId.(int64))
+	apiSecuritySiteConfigGetResponse, err := client.ReadApiSecuritySiteConfig(siteId)
 	if err != nil {
 		log.Printf("[ERROR] Could not get Incapsula API-security site configuration for site ID: %d - %s\n", siteId, err)
 		return err

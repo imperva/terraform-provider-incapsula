@@ -92,7 +92,7 @@ func resourceApiSecurityEndpointConfig() *schema.Resource {
 func resourceApiSecurityEndpointConfigRead(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Read Incapsula API-security endpoint configuration for ID: %s", d.Id())
 	client := m.(*Client)
-	endpointGetResponse, err := client.GetApiSecurityEndpointConfig(d.Get("api_id").(int64), d.Id())
+	endpointGetResponse, err := client.GetApiSecurityEndpointConfig(int64(d.Get("api_id").(int)), d.Id())
 	if err != nil {
 		log.Printf("[ERROR] Could not get Incapsula API-security endpoint: %s - %s\n", d.Get("id"), err)
 		return err
@@ -108,7 +108,7 @@ func resourceApiSecurityEndpointConfigRead(d *schema.ResourceData, m interface{}
 
 func resourceApiSecurityEndpointConfigCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
-	endpointGetAllResponse, _ := client.GetApiSecurityAllEndpointsConfig(d.Get("api_id").(int64))
+	endpointGetAllResponse, _ := client.GetApiSecurityAllEndpointsConfig(int64(d.Get("api_id").(int)))
 	var found bool
 	var endpointId string
 	for _, entry := range endpointGetAllResponse.Value {
@@ -143,7 +143,7 @@ func resourceApiSecurityEndpointConfigUpdate(d *schema.ResourceData, m interface
 	if err != nil {
 		fmt.Errorf("Endpoint ID should be numeric. Actual value: %s", d.Id())
 	}
-	_, err = client.PostApiSecurityEndpointConfig(d.Get("api_id").(int64), endpointId, &payload)
+	_, err = client.PostApiSecurityEndpointConfig(int64(d.Get("api_id").(int)), endpointId, &payload)
 
 	if err != nil {
 		return err
