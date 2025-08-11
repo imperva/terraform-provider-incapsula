@@ -17,7 +17,7 @@ type HSTSConfiguration struct {
 
 type InboundTLSSettingsConfiguration struct {
 	ConfigurationProfile string             `json:"configurationProfile"`
-	TLSConfigurations    []TLSConfiguration `json:"tlsConfiguration"`
+	TLSConfigurations    []TLSConfiguration `json:"tlsConfiguration,omitempty"`
 }
 
 type TLSConfiguration struct {
@@ -26,7 +26,7 @@ type TLSConfiguration struct {
 }
 
 type SSLSettingsDTO struct {
-	HstsConfiguration               *HSTSConfiguration               `json:"hstsConfiguration"`
+	HstsConfiguration               *HSTSConfiguration               `json:"hstsConfiguration,omitempty"`
 	InboundTLSSettingsConfiguration *InboundTLSSettingsConfiguration `json:"inboundTlsSettings,omitempty"`
 }
 
