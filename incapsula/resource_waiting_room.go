@@ -129,6 +129,12 @@ func resourceWaitingRoom() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"hide_position_in_line": {
+				Description: "Enable to hide the user's position in line.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
@@ -153,6 +159,7 @@ func resourceWaitingRoomCreate(ctx context.Context, data *schema.ResourceData, m
 		Enabled:                 data.Get("enabled").(bool),
 		BotsActionInQueuingMode: data.Get("bots_action_in_queuing_mode").(string),
 		QueueInactivityTimeout:  data.Get("queue_inactivity_timeout").(int),
+		HidePositionInLine:      data.Get("hide_position_in_line").(bool),
 		ThresholdSettings:       thresholdSettings,
 	}
 
@@ -251,6 +258,7 @@ func resourceWaitingRoomRead(ctx context.Context, data *schema.ResourceData, m i
 	data.Set("last_modified_at", strconv.FormatInt(waitingRoom.LastModifiedAt, 10))
 	data.Set("last_modified_by", waitingRoom.LastModifiedBy)
 	data.Set("mode", waitingRoom.Mode)
+	data.Set("hide_position_in_line", waitingRoom.HidePositionInLine)
 
 	return diags
 }
@@ -286,6 +294,7 @@ func resourceWaitingRoomUpdate(ctx context.Context, data *schema.ResourceData, m
 		Enabled:                 data.Get("enabled").(bool),
 		BotsActionInQueuingMode: data.Get("bots_action_in_queuing_mode").(string),
 		QueueInactivityTimeout:  data.Get("queue_inactivity_timeout").(int),
+		HidePositionInLine:      data.Get("hide_position_in_line").(bool),
 		ThresholdSettings:       thresholdSettings,
 	}
 
