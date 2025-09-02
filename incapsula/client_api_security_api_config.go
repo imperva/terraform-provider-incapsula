@@ -16,24 +16,24 @@ import (
 const apiConfigUrl = "/api-security/api/"
 
 type ApiConfigurationResponse struct {
-	Id                           int              `json:"id"`
-	SiteId                       int              `json:"siteId"`
+	Id                           int64            `json:"id"`
+	SiteId                       int64            `json:"siteId"`
 	HostName                     string           `json:"hostName"`
 	BasePath                     string           `json:"basePath"`
 	Description                  string           `json:"description"`
-	LastModified                 int              `json:"lastModified"`
+	LastModified                 int64            `json:"lastModified"`
 	ViolationActions             ViolationActions `json:"violationActions"`
 	SpecificationViolationAction string           `json:"specificationViolationAction"`
 }
 type ApiSecurityApiConfigGetResponse struct {
 	Value struct {
 		//ApiConfig ApiConfigurationResponse
-		Id                           int              `json:"id"`
-		SiteId                       int              `json:"siteId"`
+		Id                           int64            `json:"id"`
+		SiteId                       int64            `json:"siteId"`
 		HostName                     string           `json:"hostName"`
 		BasePath                     string           `json:"basePath"`
 		Description                  string           `json:"description"`
-		LastModified                 int              `json:"lastModified"`
+		LastModified                 int64            `json:"lastModified"`
 		ViolationActions             ViolationActions `json:"violationActions"`
 		SpecificationViolationAction string           `json:"specificationViolationAction"`
 	} `json:"value"`
@@ -50,7 +50,7 @@ type ApiSecurityApiConfigGetAllResponse struct {
 
 type ApiSecurityApiConfigPostResponse struct {
 	Value struct {
-		ApiId int `json:"apiId"`
+		ApiId int64 `json:"apiId"`
 	} `json:"value"`
 	IsError bool `json:"isError"`
 }
@@ -73,7 +73,7 @@ type ApiSecurityApiConfigDeleteResponse struct {
 	IsError bool   `json:"isError"`
 }
 
-func (c *Client) CreateApiSecurityApiConfig(siteId int, apiConfigPayload *ApiSecurityApiConfigPostPayload) (*ApiSecurityApiConfigPostResponse, error) {
+func (c *Client) CreateApiSecurityApiConfig(siteId int64, apiConfigPayload *ApiSecurityApiConfigPostPayload) (*ApiSecurityApiConfigPostResponse, error) {
 	log.Printf("[INFO] Creating Incapsula API Security API Configuration for Site ID %d\\n", siteId)
 
 	body := &bytes.Buffer{}
@@ -160,7 +160,7 @@ func (c *Client) CreateApiSecurityApiConfig(siteId int, apiConfigPayload *ApiSec
 }
 
 // UpdateApiSecurityApiConfig updates the Api-Security Api Config
-func (c *Client) UpdateApiSecurityApiConfig(siteId int, apiId string, apiConfigPayload *ApiSecurityApiConfigPostPayload) (*ApiSecurityApiConfigPostResponse, error) {
+func (c *Client) UpdateApiSecurityApiConfig(siteId int64, apiId string, apiConfigPayload *ApiSecurityApiConfigPostPayload) (*ApiSecurityApiConfigPostResponse, error) {
 	log.Printf("[INFO] Updating Incapsula API Security API Configuration for Site ID %d, API Config ID %s\n", siteId, apiId)
 
 	bodyMap := map[string]interface{}{}
@@ -217,7 +217,7 @@ func (c *Client) UpdateApiSecurityApiConfig(siteId int, apiId string, apiConfigP
 }
 
 // GetApiSecurityApiConfig gets the Api-Security Api Config
-func (c *Client) GetApiSecurityApiConfig(siteId int, apiId int) (*ApiSecurityApiConfigGetResponse, error) {
+func (c *Client) GetApiSecurityApiConfig(siteId int64, apiId int64) (*ApiSecurityApiConfigGetResponse, error) {
 	log.Printf("[INFO] Getting Incapsula Api-Security API Config for Site ID %d, API Config ID %d\n", siteId, apiId)
 
 	url := fmt.Sprintf("%s%s%d/%d", c.config.BaseURLAPI, apiConfigUrl, siteId, apiId)
@@ -246,7 +246,7 @@ func (c *Client) GetApiSecurityApiConfig(siteId int, apiId int) (*ApiSecurityApi
 }
 
 // GetApiSecurityApiSwaggerConfig gets the Api-Security  API Config Swagger file content
-func (c *Client) GetApiSecurityApiSwaggerConfig(siteId int, apiId int) (*ApiSecurityApiConfigGetFileResponse, error) {
+func (c *Client) GetApiSecurityApiSwaggerConfig(siteId int64, apiId int64) (*ApiSecurityApiConfigGetFileResponse, error) {
 	log.Printf("[INFO] Getting Incapsula Api-Security API Swagger Config for Site ID %d, API Config ID %d\n", siteId, apiId)
 
 	url := fmt.Sprintf("%s%sfile/%d/%d", c.config.BaseURLAPI, apiConfigUrl, siteId, apiId)
@@ -275,7 +275,7 @@ func (c *Client) GetApiSecurityApiSwaggerConfig(siteId int, apiId int) (*ApiSecu
 }
 
 // DeleteApiSecurityApiConfig deletes the Api-Security Api + endpoints Config
-func (c *Client) DeleteApiSecurityApiConfig(siteID int, apiID string) error {
+func (c *Client) DeleteApiSecurityApiConfig(siteID int64, apiID string) error {
 	log.Printf("[INFO] Deleting Incapsula API Security API for ID %s\n", apiID)
 
 	// Delete request to Incapsula

@@ -1,6 +1,7 @@
 package incapsula
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
@@ -34,33 +35,39 @@ func resourceSite() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
-				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-					d := val.(string)
-					parts := strings.Split(d, ".")
-					if len(parts) <= 2 {
-						errs = append(errs, fmt.Errorf("%q must be a fully qualified domain name (www.example.com, not example.com), got: %s", key, d))
-					}
-					return
-				},
 			},
 
 			// Optional Arguments
 			"account_id": {
-				Description: "Numeric identifier of the account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.",
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
+				Description:      "Numeric identifier of the account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.",
+				Type:             schema.TypeInt,
+				Optional:         true,
+				Computed:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"ref_id": {
-				Description: "Customer specific identifier for this operation.",
-				Type:        schema.TypeString,
+				Description:      "Customer specific identifier for this operation.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
+			},
+			"deprecated": {
+				Description: "Once set to true, this setting is irreversible. Use true to deprecate the resource, preventing any further changes from taking effect. Deleting the resource will not remove the site. Default: false.",
+				Type:        schema.TypeBool,
 				Optional:    true,
+				Default:     false,
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					oldBool, _ := strconv.ParseBool(old)
+					newBool, _ := strconv.ParseBool(new)
+					return oldBool == false && newBool == false
+				},
 			},
 			"send_site_setup_emails": {
-				Description: "If this value is false, end users will not get emails about the add site process such as DNS instructions and SSL setup.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:      "If this value is false, end users will not get emails about the add site process such as DNS instructions and SSL setup.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"site_ip": {
 				Description: "Manually set the web server IP/CNAME.",
@@ -72,80 +79,92 @@ func resourceSite() *schema.Resource {
 					if old != "" && new != "" {
 						return true
 					}
-
-					return false
+					return d.Get("deprecated").(bool)
 				},
 			},
 			"force_ssl": {
-				Description: "If this value is true, manually set the site to support SSL. This option is only available for sites with manually configured IP/CNAME and for specific accounts.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:      "If this value is true, manually set the site to support SSL. This option is only available for sites with manually configured IP/CNAME and for specific accounts.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"logs_account_id": {
-				Description: "Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:      "Available only for Enterprise Plan customers that purchased the Logs Integration SKU. Numeric identifier of the account that purchased the logs integration SKU and which collects the logs. If not specified, operation will be performed on the account identified by the authentication parameters.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"active": {
-				Description: "active or bypass.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
+				Description:      "active or bypass.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"domain_validation": {
-				Description: "email or html or dns or cname.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:      "email or html or dns or cname.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"approver": {
-				Description: "my.approver@email.com (some approver email address).",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:      "my.approver@email.com (some approver email address).",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"ignore_ssl": {
-				Description: "true or empty string.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:      "true or empty string.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"acceleration_level": {
-				Description: "none | standard | aggressive.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
+				Description:      "none | standard | aggressive.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"seal_location": {
-				Description: "api.seal_location.bottom_left | api.seal_location.none | api.seal_location.right_bottom | api.seal_location.right | api.seal_location.left | api.seal_location.bottom_right | api.seal_location.bottom.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
+				Description:      "api.seal_location.bottom_left | api.seal_location.none | api.seal_location.right_bottom | api.seal_location.right | api.seal_location.left | api.seal_location.bottom_right | api.seal_location.bottom.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"restricted_cname_reuse": {
-				Description: "Use this option to allow Imperva to detect and add domains that are using the Imperva-provided CNAME (not recommended). One of: true | false",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
+				Description:      "Use this option to allow Imperva to detect and add domains that are using the Imperva-provided CNAME (not recommended). One of: true | false",
+				Type:             schema.TypeString,
+				Optional:         true,
+				Computed:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"domain_redirect_to_full": {
-				Description: "true or empty string.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:      "true or empty string.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"remove_ssl": {
-				Description: "true or empty string.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:      "true or empty string.",
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"data_storage_region": {
-				Description: "The data region to use. Options are `APAC`, `AU`, `EU`, and `US`.",
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
+				Description:      "The data region to use. Options are `APAC`, `AU`, `EU`, and `US`.",
+				Type:             schema.TypeString,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"hashing_enabled": {
-				Description: "Specify if hashing (masking setting) should be enabled.",
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
+				Description:      "Specify if hashing (masking setting) should be enabled.",
+				Type:             schema.TypeBool,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"hash_salt": {
 				Description: "Specify the hash salt (masking setting), required if hashing is enabled. Maximum length of 64 characters.",
@@ -159,97 +178,113 @@ func resourceSite() *schema.Resource {
 					}
 					return
 				},
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"log_level": {
-				Description: "The log level. Options are `full`, `security`, and `none`.",
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
+				Description:      "The log level. Options are `full`, `security`, and `none`.",
+				Type:             schema.TypeString,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_client_comply_no_cache": {
-				Description: "Comply with No-Cache and Max-Age directives in client requests. By default, these cache directives are ignored. Resources are dynamically profiled and re-configured to optimize performance.",
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
+				Description:      "Comply with No-Cache and Max-Age directives in client requests. By default, these cache directives are ignored. Resources are dynamically profiled and re-configured to optimize performance.",
+				Type:             schema.TypeBool,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_client_enable_client_side_caching": {
-				Description: "Cache content on client browsers or applications. When not enabled, content is cached only on the Imperva proxies.",
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
+				Description:      "Cache content on client browsers or applications. When not enabled, content is cached only on the Imperva proxies.",
+				Type:             schema.TypeBool,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_client_send_age_header": {
-				Description: "Send Cache-Control: max-age and Age headers.",
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
+				Description:      "Send Cache-Control: max-age and Age headers.",
+				Type:             schema.TypeBool,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_key_comply_vary": {
-				Description: "Comply with Vary. Cache resources in accordance with the Vary response header.",
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
+				Description:      "Comply with Vary. Cache resources in accordance with the Vary response header.",
+				Type:             schema.TypeBool,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_key_unite_naked_full_cache": {
-				Description: "Use the Same Cache for Full and Naked Domains. For example, use the same cached resource for www.example.com/a and example.com/a.",
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
+				Description:      "Use the Same Cache for Full and Naked Domains. For example, use the same cached resource for www.example.com/a and example.com/a.",
+				Type:             schema.TypeBool,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_mode_https": {
-				Description: "The resources that are cached over HTTPS, the general level applies. Options are `disabled`, `dont_include_html`, `include_html`, and `include_all_resources`.",
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
+				Description:      "The resources that are cached over HTTPS, the general level applies. Options are `disabled`, `dont_include_html`, `include_html`, and `include_all_resources`.",
+				Type:             schema.TypeString,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_mode_level": {
-				Description: "Caching level. Options are `disable`, `standard`, `smart`, and `all_resources`.",
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
+				Description:      "Caching level. Options are `disable`, `standard`, `smart`, and `all_resources`.",
+				Type:             schema.TypeString,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_mode_time": {
-				Description: "The time, in seconds, that you set for this option determines how often the cache is refreshed. Relevant for the `include_html` and `include_all_resources` levels only.",
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Optional:    true,
+				Description:      "The time, in seconds, that you set for this option determines how often the cache is refreshed. Relevant for the `include_html` and `include_all_resources` levels only.",
+				Type:             schema.TypeInt,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_response_cache_300x": {
-				Description: "When this option is checked Imperva will cache 301, 302, 303, 307, and 308 redirect response headers containing the target URI.",
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
+				Description:      "When this option is checked Imperva will cache 301, 302, 303, 307, and 308 redirect response headers containing the target URI.",
+				Type:             schema.TypeBool,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_response_cache_404_enabled": {
-				Description: "Whether or not to cache 404 responses.",
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
+				Description:      "Whether or not to cache 404 responses.",
+				Type:             schema.TypeBool,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_response_cache_404_time": {
-				Description:  "The time in seconds to cache 404 responses.",
-				Type:         schema.TypeInt,
-				Computed:     true,
-				Optional:     true,
-				ValidateFunc: validation.IntDivisibleBy(60),
+				Description:      "The time in seconds to cache 404 responses.",
+				Type:             schema.TypeInt,
+				Computed:         true,
+				Optional:         true,
+				ValidateFunc:     validation.IntDivisibleBy(60),
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_response_cache_empty_responses": {
-				Description: "Cache responses that don’t have a message body.",
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
+				Description:      "Cache responses that don’t have a message body.",
+				Type:             schema.TypeBool,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_response_cache_http_10_responses": {
-				Description: "Cache HTTP 1.0 type responses that don’t include the Content-Length header or chunking.",
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
+				Description:      "Cache HTTP 1.0 type responses that don’t include the Content-Length header or chunking.",
+				Type:             schema.TypeBool,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_response_cache_response_header_mode": {
-				Description: "The working mode for caching response headers. Options are `all`, `custom` and `disabled`.",
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
+				Description:      "The working mode for caching response headers. Options are `all`, `custom` and `disabled`.",
+				Type:             schema.TypeString,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_response_cache_response_headers": {
 				Description: "An array of strings representing the response headers to be cached when working in `custom` mode. If empty, no response headers are cached.",
@@ -259,55 +294,63 @@ func resourceSite() *schema.Resource {
 				},
 				Computed:         true,
 				Optional:         true,
-				DiffSuppressFunc: suppressEquivalentStringDiffs,
+				DiffSuppressFunc: suppressEquivalentStringDiffsPlusDeprecated(),
 			},
 			"perf_response_cache_shield": {
-				Description: "Adds an intermediate cache between other Imperva PoPs and your origin servers to protect your servers from redundant requests.",
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
+				Description:      "Adds an intermediate cache between other Imperva PoPs and your origin servers to protect your servers from redundant requests.",
+				Type:             schema.TypeBool,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_response_stale_content_mode": {
-				Description: "The working mode for serving stale content. Options are `disabled`, `adaptive`, and `custom`.",
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
+				Description:      "The working mode for serving stale content. Options are `disabled`, `adaptive`, and `custom`.",
+				Type:             schema.TypeString,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_response_stale_content_time": {
-				Description: "The time, in seconds, to serve stale content for when working in `custom` work mode.",
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Optional:    true,
+				Description:      "The time, in seconds, to serve stale content for when working in `custom` work mode.",
+				Type:             schema.TypeInt,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_response_tag_response_header": {
-				Description: "Tag the response according to the value of this header. Specify which origin response header contains the cache tags in your resources.",
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
+				Description:      "Tag the response according to the value of this header. Specify which origin response header contains the cache tags in your resources.",
+				Type:             schema.TypeString,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_ttl_prefer_last_modified": {
-				Description: "Prefer 'Last Modified' over eTag. When this option is checked, Imperva prefers using Last Modified values (if available) over eTag values (recommended on multi-server setups).",
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
+				Description:      "Prefer 'Last Modified' over eTag. When this option is checked, Imperva prefers using Last Modified values (if available) over eTag values (recommended on multi-server setups).",
+				Type:             schema.TypeBool,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"perf_ttl_use_shortest_caching": {
-				Description: "Use shortest caching duration in case of conflicts. By default, the longest duration is used in case of conflict between caching rules or modes. When this option is checked, Imperva uses the shortest duration in case of conflict.",
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
+				Description:      "Use shortest caching duration in case of conflicts. By default, the longest duration is used in case of conflict between caching rules or modes. When this option is checked, Imperva uses the shortest duration in case of conflict.",
+				Type:             schema.TypeBool,
+				Computed:         true,
+				Optional:         true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"naked_domain_san": {
-				Description: "Use 'true' to add the naked domain SAN to a www site’s SSL certificate. Default value: true",
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
+				Description:      "Use 'true' to add the naked domain SAN to a www site’s SSL certificate. Default value: true",
+				Type:             schema.TypeBool,
+				Optional:         true,
+				Default:          true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"wildcard_san": {
-				Description: "Use 'true' to add the wildcard SAN or 'false' to add the full domain SAN to the site’s SSL certificate. Default value: true",
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
+				Description:      "Use 'true' to add the wildcard SAN or 'false' to add the full domain SAN to the site’s SSL certificate. Default value: true",
+				Type:             schema.TypeBool,
+				Optional:         true,
+				Default:          true,
+				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			// Computed Attributes
 			"site_creation_date": {
@@ -356,13 +399,38 @@ func resourceSite() *schema.Resource {
 			},
 		},
 
+		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+			if d.HasChange("deprecated") {
+				oldVal, newVal := d.GetChange("deprecated")
+				if oldVal.(bool) && !newVal.(bool) {
+					return fmt.Errorf("deprecated flag cannot be changed from true to false")
+				}
+			}
+			return nil
+		},
+
 		Timeouts: &schema.ResourceTimeout{
 			Delete: schema.DefaultTimeout(1 * time.Minute),
 		},
 	}
 }
 
+func deprecatedFlagDiffSuppress() func(k string, old string, new string, d *schema.ResourceData) bool {
+	return func(k, old, new string, d *schema.ResourceData) bool {
+		return d.Get("deprecated").(bool)
+	}
+}
+
+func suppressEquivalentStringDiffsPlusDeprecated() func(k string, old string, new string, d *schema.ResourceData) bool {
+	return func(k, old, new string, d *schema.ResourceData) bool {
+		return suppressEquivalentStringDiffs(k, old, new, d) || d.Get("deprecated").(bool)
+	}
+}
+
 func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
+	if d.Get("deprecated").(bool) {
+		return fmt.Errorf("cannot create deprecated resource")
+	}
 	client := m.(*Client)
 	domain := d.Get("domain").(string)
 
@@ -423,6 +491,10 @@ func resourceSiteCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
+	if d.Get("deprecated").(bool) {
+		fmt.Printf("[WARN] Resource incapsule_site for domain %s is deprecated. Any future changes will be ignored.\n", d.Get("domain").(string))
+		return nil
+	}
 	client := m.(*Client)
 
 	domain := d.Get("domain").(string)
@@ -575,6 +647,10 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceSiteUpdate(d *schema.ResourceData, m interface{}) error {
+	if d.Get("deprecated").(bool) {
+		return nil
+	}
+
 	client := m.(*Client)
 
 	err := updateAdditionalSiteProperties(update_retries, client, d)
@@ -607,6 +683,11 @@ func resourceSiteUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceSiteDelete(d *schema.ResourceData, m interface{}) error {
+	if d.Get("deprecated").(bool) {
+		d.SetId("")
+		return nil
+	}
+
 	client := m.(*Client)
 	domain := d.Get("domain").(string)
 	siteID, _ := strconv.Atoi(d.Id())

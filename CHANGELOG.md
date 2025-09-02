@@ -1,7 +1,50 @@
+## 3.34.3 (Jun 30, 2025)
+
+BUG FIXES:
+- Fixing the waf_security_rule.html.markdown documentation. ([#580](https://github.com/imperva/terraform-provider-incapsula/pull/580))
+- Remove validation from domain field . ([#581](https://github.com/imperva/terraform-provider-incapsula/pull/581))
+- Omit the HstsConfiguration and TLSConfigurations. ([#582](https://github.com/imperva/terraform-provider-incapsula/pull/582))
+
+
+
+## 3.34.2 (Jun 18, 2025)
+
+BUG FIXES:
+- Parse error while converting from int to int64. Added a fix to convert it properly. ([#578](https://github.com/imperva/terraform-provider-incapsula/pull/578))
+
+
+
+## 3.34.1 (Jun 09, 2025)
+
+BUG FIXES:
+- Bug fix on incapsula_ssl_instuctions where account certificate was not ignored  ([#573](https://github.com/imperva/terraform-provider-incapsula/pull/573))
+- Documentation update to remove the unwanted html tag ([#574](https://github.com/imperva/terraform-provider-incapsula/pull/574))
+- Omit refId in incapsula_site_v3 when marshaling to JSON if the field has no value ([#575](https://github.com/imperva/terraform-provider-incapsula/pull/575))
+
+
+
+## 3.34.0 (May 19, 2025)
+
+IMPROVEMENTS:
+- Added to incapsula_account resource optional field inactivity_timeout ([#563](https://github.com/imperva/terraform-provider-incapsula/pull/563))
+
+BUG FIXES:
+- Converting datatype int to int64 to handle 32 bit systems ([#566](https://github.com/imperva/terraform-provider-incapsula/pull/566))
+
+
+
+## 3.33.0 (Apr 27, 2025)
+
+IMPROVEMENTS:
+- Allow deletion of the last domain for v1 sites that have migrated to the v3 resource  ([#553](https://github.com/imperva/terraform-provider-incapsula/pull/553))
+- Ignore grace period for site deletion ([#554](https://github.com/imperva/terraform-provider-incapsula/pull/554))
+- Support sub-account on resource_mtls_client_to_imperva_certificate_site_association  ([#555](https://github.com/imperva/terraform-provider-incapsula/pull/555))
+
+
 ## 3.32.0 (Mar 31, 2025)
 
 IMPROVEMENTS:
-- support sub account on incapsula_mtls_imperva_to_origin_certificate_site_association resource ([#540](https://github.com/imperva/terraform-provider-incapsula/pull/540)
+- support sub account on incapsula_mtls_imperva_to_origin_certificate_site_association resource ([#540](https://github.com/imperva/terraform-provider-incapsula/pull/540))
 - Added support for ref_id and active fields in incapsula_site_v3 resource ([#544](https://github.com/imperva/terraform-provider-incapsula/pull/544))
 - Added site masking settings to site-log-configuration resource ([#545](https://github.com/imperva/terraform-provider-incapsula/pull/545))
 

@@ -40,7 +40,7 @@ type ApiSecurityEndpointConfigPostPayload struct {
 }
 
 // PostApiSecurityEndpointConfig updates an Api-Security Endpoint Config
-func (c *Client) PostApiSecurityEndpointConfig(apiId, endpointId int, endpointConfigPayload *ApiSecurityEndpointConfigPostPayload) (*ApiSecurityEndpointConfigPostResponse, error) {
+func (c *Client) PostApiSecurityEndpointConfig(apiId, endpointId int64, endpointConfigPayload *ApiSecurityEndpointConfigPostPayload) (*ApiSecurityEndpointConfigPostResponse, error) {
 	log.Printf("[INFO] Updating Incapsula API security Enpoint Configuration\n")
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
@@ -95,7 +95,7 @@ func (c *Client) PostApiSecurityEndpointConfig(apiId, endpointId int, endpointCo
 }
 
 // GetApiSecurityEndpointConfig gets the Api-Security Endpoint Config
-func (c *Client) GetApiSecurityEndpointConfig(apiId int, endpointId string) (*ApiSecurityEndpointConfigGetResponse, error) {
+func (c *Client) GetApiSecurityEndpointConfig(apiId int64, endpointId string) (*ApiSecurityEndpointConfigGetResponse, error) {
 	log.Printf("[INFO] Getting Incapsula Api-Security Endpoint Config on API: %d and Endpoint: %s\n", apiId, endpointId)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, fmt.Sprintf("%s%s%d/%s", c.config.BaseURLAPI, endpointConfigUrl, apiId, endpointId), nil, ReadApiSecEndpointConfig)
@@ -124,7 +124,7 @@ func (c *Client) GetApiSecurityEndpointConfig(apiId int, endpointId string) (*Ap
 }
 
 // GetApiSecurityAllEndpointsConfig gets all the Api-Security Endpoints for API Config ID
-func (c *Client) GetApiSecurityAllEndpointsConfig(apiId int) (*ApiSecurityEndpointConfigGetAllResponse, error) {
+func (c *Client) GetApiSecurityAllEndpointsConfig(apiId int64) (*ApiSecurityEndpointConfigGetAllResponse, error) {
 	log.Printf("[INFO] Getting Incapsula Api-Security all Endpoints Config on API: %d\n", apiId)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, fmt.Sprintf("%s%s%d", c.config.BaseURLAPI, endpointConfigUrl, apiId), nil, ReadApiSecEndpointConfig)
