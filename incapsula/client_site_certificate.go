@@ -20,9 +20,9 @@ type SanDTO struct {
 	SanId                int    `json:"sanId,omitempty"`
 	SanValue             string `json:"sanValue,omitempty"`
 	ValidationMethod     string `json:"validationMethod,omitempty"`
-	ExpirationDate       int    `json:"expirationDate,omitempty"`
+	ExpirationDate       int64  `json:"expirationDate,omitempty"`
 	Status               string `json:"status,omitempty"`
-	StatusDate           int    `json:"statusDate,omitempty"`
+	StatusDate           int64  `json:"statusDate,omitempty"`
 	NumSitesCovered      int    `json:"numSitesCovered,omitempty"`
 	VerificationCode     string `json:"verificationCode,omitempty"`
 	CnameValidationValue string `json:"cnameValidationValue,omitempty"`
