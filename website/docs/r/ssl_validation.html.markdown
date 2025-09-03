@@ -55,8 +55,8 @@ data "incapsula_ssl_instructions" "example-site-instructions" {
 }
 
 # Add the SSL validation records on your DNS provider
-# Use the response from data.incapsula_ssl_instructions.example-site-instructions.instructions and loop over the instructions
-# Note: In some cases the incapsula_ssl_instructions data source does not return instructions for all the domains. 
+# Use the response from data.incapsula_ssl_instructions.example-site-instructions.instructions and review the instructions for each for each domain.
+# Note: In some cases the incapsula_ssl_instructions data source does not return instructions for all the domains.
 # For more details see the documentation of incapsula_ssl_instructions.
 
 # Block until the certificate is ready
@@ -65,7 +65,7 @@ resource "incapsula_ssl_validation" "example-ssl-validation" {
   domain_ids = local.domain_ids
 
   depends_on = [
-    # Your DNS provider resources that create the records
+    # Your DNS provider resource that creates the records
   ]
 }
 
