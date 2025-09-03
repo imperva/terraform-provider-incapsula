@@ -10,7 +10,8 @@ description: |-
 Provides an Incapsula Site SSL instruction resource.
 
 This data resource enables you to retrieve instructions for configuring your DNS and SSL for completing the domain validation process.
-<br/>
+It supports domains with CNAME validation method only.
+When multiple domains share the same instructions, only one will receive the instructions.
 **Note: This resource is designed to work with sites represented by the "incapsula_site_v3" resource only.**
 
 
