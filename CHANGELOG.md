@@ -1,3 +1,11 @@
+## 3.34.4 (Sep 7, 2025)
+
+BUT FIXES:
+Fixed documentation for ssl_instructions and ssl_validation ([#588](https://github.com/imperva/terraform-provider-incapsula/pull/588))
+Converting datatype int to int64 to handle 32 bit systems ([#590](https://github.com/imperva/terraform-provider-incapsula/pull/590))
+incapsula_custom_certificate resource update flow crash ([#591](https://github.com/imperva/terraform-provider-incapsula/pull/591))
+
+
 ## 3.34.3 (Jun 30, 2025)
 
 BUG FIXES:
