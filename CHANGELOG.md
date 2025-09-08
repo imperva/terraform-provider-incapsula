@@ -6,6 +6,7 @@ Converting datatype int to int64 to handle 32 bit systems ([#590](https://github
 incapsula_custom_certificate resource update flow crash ([#591](https://github.com/imperva/terraform-provider-incapsula/pull/591))
 
 
+
 ## 3.34.3 (Jun 30, 2025)
 
 BUG FIXES:
