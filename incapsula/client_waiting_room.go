@@ -32,6 +32,7 @@ type WaitingRoomDTO struct {
 	Mode                    string            `json:"mode,omitempty"`
 	BotsActionInQueuingMode string            `json:"botsActionInQueuingMode,omitempty"`
 	QueueInactivityTimeout  int               `json:"queueInactivityTimeout,omitempty"`
+	HidePositionInLine      bool              `json:"hidePositionInLine"`
 	ThresholdSettings       ThresholdSettings `json:"thresholdSettings"`
 }
 
