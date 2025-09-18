@@ -2,19 +2,19 @@ package incapsula
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceApiClient() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceApiClientCreate,
-		Read:   resourceApiClientRead,
-		Update: resourceApiClientUpdate,
-		Delete: resourceApiClientDelete,
+		CreateContext: resourceApiClientCreate,
+		ReadContext:   resourceApiClientRead,
+		UpdateContext: resourceApiClientUpdate,
+		DeleteContext: resourceApiClientDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -30,18 +30,14 @@ func resourceApiClient() *schema.Resource {
 			"enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     true,
+				Default:     false,
 				Description: "Whether the API client is enabled.",
 			},
 			"grace_period": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Default:     0,
 				Description: "Grace period in seconds.",
-			},
-			"regenerate_version": {
-				Type:        schema.TypeFloat,
-				Optional:    true,
-				Description: "Increment to trigger API key regeneration.",
 			},
 			"api_key": {
 				Type:        schema.TypeString,
@@ -57,7 +53,7 @@ func resourceApiClient() *schema.Resource {
 			"expiration_date": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Expiration date of the API key.",
+				Description: "Expiration date of the API key. Must be a future date. Changing this value will cause regeneration of the key.",
 			},
 			"last_used_at": {
 				Type:        schema.TypeString,
@@ -68,8 +64,12 @@ func resourceApiClient() *schema.Resource {
 	}
 }
 
-// PATCH /v3/api-client/{client_id} for create, update, enable/disable, regenerate
-func resourceApiClientCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceApiClientCreate(_ context.Context, _ *schema.ResourceData, _ interface{}) diag.Diagnostics {
+	return diag.Errorf("creation of an API Client is not supported yet. Implement this method as part of the API_client creation epic later in the quarter")
+}
+
+//TODO: Implement resourceApiClientCreate function when the feature is supported by the API
+/* func resourceApiClientCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
 	ctx := context.Background()
 
@@ -122,20 +122,25 @@ func resourceApiClientCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	return nil
-}
+}*/
 
-func resourceApiClientUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceApiClientUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*Client)
-	ctx := context.Background()
 	id := d.Id()
 
 	request := &APIClientUpdateRequest{}
 	changed := false
+	regenerate := false
 
 	if d.HasChange("expiration_period") {
-		str := d.Get("expiration_period").(string)
+		old, newVal := d.GetChange("expiration_period")
+		str := newVal.(string)
 		request.ExpirationPeriod = &str
 		changed = true
+		// If expiration is extended, set regenerate to true
+		if oldStr, ok := old.(string); ok && oldStr != "" && str != "" && str > oldStr {
+			regenerate = true
+		}
 	}
 	if d.HasChange("enabled") {
 		b := d.Get("enabled").(bool)
@@ -147,48 +152,44 @@ func resourceApiClientUpdate(d *schema.ResourceData, meta interface{}) error {
 		request.GracePeriod = &gp
 		changed = true
 	}
-	if d.HasChange("regenerate_version") {
-		regenerate := true
+	if regenerate {
 		request.Regenerate = &regenerate
-		changed = true
 	}
-
 	if !changed {
-		return resourceApiClientRead(d, meta)
+		return resourceApiClientRead(ctx, d, meta)
 	}
 
 	resp, err := client.PatchAPIClient(ctx, id, request)
 	if err != nil {
-		return fmt.Errorf("error updating API client: %w", err)
+		return diag.Errorf("error updating API client: %v", err)
 	}
 	if err := d.Set("api_key", resp.APIKey); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("api_client_id", resp.APIClientID); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("enabled", resp.Enabled); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("expiration_date", resp.ExpirationDate); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("last_used_at", resp.LastUsedAt); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("grace_period", resp.GracePeriod); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("name", d.Get("name")); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	return nil
 }
 
 // After: Implemented resourceApiClientRead function
-func resourceApiClientRead(d *schema.ResourceData, meta interface{}) error {
+func resourceApiClientRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*Client)
-	ctx := context.Background()
 	id := d.Id()
 	if id == "" {
 		return nil
@@ -199,36 +200,35 @@ func resourceApiClientRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 	if err := d.Set("name", d.Get("name")); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("api_key", resp.APIKey); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("api_client_id", resp.APIClientID); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("enabled", resp.Enabled); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("expiration_date", resp.ExpirationDate); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("last_used_at", resp.LastUsedAt); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := d.Set("grace_period", resp.GracePeriod); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	return nil
 }
 
 // DELETE /v3/api-client/{client_id}
-func resourceApiClientDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceApiClientDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*Client)
-	ctx := context.Background()
 	id := d.Id()
 	if err := client.DeleteAPIClient(ctx, id); err != nil {
-		return fmt.Errorf("error deleting API client: %w", err)
+		return diag.Errorf("error deleting API client: %v", err)
 	}
 	d.SetId("")
 	return nil
