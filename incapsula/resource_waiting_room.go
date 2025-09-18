@@ -130,7 +130,7 @@ func resourceWaitingRoom() *schema.Resource {
 				Computed:    true,
 			},
 			"hide_position_in_line": {
-				Description: "Enable to hide the user's position in line.",
+				Description: "Enable to hide the user's position in waiting room queue.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
