@@ -31,6 +31,7 @@ resource "incapsula_waiting_room" "example-waiting-room" {
     concurrent_sessions_threshold = 600
     inactivity_timeout = 30
     queue_inactivity_timeout = 1
+    hide_position_in_line = true
 }
 ```
 
@@ -71,6 +72,8 @@ Possible values:
 * `inactivity_timeout` - (Optional, Mandatory if concurrent_sessions_threshold is used) Inactivity timeout, from 1 to 30 minutes. If waiting room conditions that limit the scope of the waiting room to a subset of the website have been defined, the user is considered active only when navigating the pages in scope of the conditions. A user who is inactive for a longer period of time is considered as having left the site. On returning to the site, the user needs to wait in line again if the waiting room is active. **Tip:** When enabling the concurrent_sessions_threshold, the inactivity timeout is very important. Once the site is at full capacity (the threshold has been passed), no new user can access the site until another user leaves and frees up space. To optimize the user experience, we recommend setting a balanced inactivity timeout value — long enough so that the user's session is still open if they return quickly, but not so long that it unnecessarily prevents access to other waiting visitors. The default timeout of 5 minutes is the recommended minimum value. **Default:** 5 minutes.
 
 * `queue_inactivity_timeout` - (Optional) Queue inactivity timeout, from 1 to 10 minutes. A user in the waiting room who is inactive for a longer period of time is considered as having left the queue. On returning to the site, the user moves to the end of the queue and needs to wait in line again if the waiting room is active. **Default:** 1 minute.
+
+* `hide_position_in_line` - (Optional) Enable to hide the user's position in waiting room queue. **Default:** false.
 
 ## Attributes Reference
 
