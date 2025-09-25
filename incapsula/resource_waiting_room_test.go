@@ -48,6 +48,7 @@ func TestAccWaitingRoom_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(waitingRoomResource, "last_modified_at"),
 					resource.TestCheckResourceAttrSet(waitingRoomResource, "last_modified_by"),
 					resource.TestCheckResourceAttr(waitingRoomResource, "mode", "NOT_QUEUING"),
+					resource.TestCheckResourceAttr(waitingRoomResource, "hide_position_in_line", "false"),
 				),
 			},
 			{
@@ -73,6 +74,13 @@ func TestAccWaitingRoom_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(waitingRoomResource, "enabled", "false"),
 					resource.TestCheckResourceAttr(waitingRoomResource, "entrance_rate_threshold", "0"),
 					resource.TestCheckResourceAttr(waitingRoomResource, "concurrent_sessions_threshold", "50"),
+				),
+			},
+			{
+				Config: testAccWaitingRoomHidePositionInLine(t),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWaitingRoomExists(&waitingRoomDTOResponse),
+					resource.TestCheckResourceAttr(waitingRoomResource, "hide_position_in_line", "true"),
 				),
 			},
 			{
@@ -155,6 +163,15 @@ func testAccWaitingRoomConcurrentSessionsOnly(t *testing.T, concurrentSessions i
 		enabled = false
 		concurrent_sessions_threshold = %d
 	}`, waitingRoomResourceName, waitingRoomConfigName, rand.New(rand.NewSource(time.Now().UnixNano())).Intn(1000), concurrentSessions)
+}
+
+func testAccWaitingRoomHidePositionInLine(t *testing.T) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+	resource "%s" "%s" {
+		site_id = incapsula_site.testacc-terraform-site.id
+		name = "testWaitingRoom%d"
+		hide_position_in_line = "true"
+	}`, waitingRoomResourceName, waitingRoomConfigName, rand.New(rand.NewSource(time.Now().UnixNano())).Intn(1000))
 }
 
 func testAccCheckWaitingRoomThresholds(waitingRoomDTOresponse *WaitingRoomDTO, entranceRate int, concurrentSessions int, inactivityTimeout int, queueInactivityTimeout int) resource.TestCheckFunc {
