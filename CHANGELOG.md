@@ -1,3 +1,9 @@
+## 3.35.0 (Sep 28, 2025)
+
+IMPROVEMENTS:
+- Added HidePositionInLine attribute to the waiting room resource ([#584](https://github.com/imperva/terraform-provider-incapsula/pull/584))
+
+
 ## 3.34.4 (Sep 7, 2025)
 
 BUT FIXES:
