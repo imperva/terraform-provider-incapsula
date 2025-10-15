@@ -13,7 +13,7 @@ The provider will add/delete domains to/from an Imperva site, based on this reso
 These domains are protected by Imperva and share the website settings and configuration of the onboarded website. Legitimate traffic for all verified domains is allowed.
 
 Note:
-This resource is designed to work with sites represented by the "incapsula_site_v3" resource, and cannot be used together in the same configuration with the "incapsula_site_domain_configuration" resource.
+This resource applies only to sites managed by the incapsula_site_v3 resource. for sites managed by the incapsula_site resouce, please use the incapsula_site_domain_configuration resource instead.
 Adding an apex domain without its corresponding www subdomain is not supported.
 
 ## Example Usage
