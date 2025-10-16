@@ -115,6 +115,7 @@ func resourceAccount() *schema.Resource {
 				Type:         schema.TypeInt,
 				Default:      15,
 				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validation.IntInSlice([]int{15, 30, 60, 90, 120}),
 			},
 			"enable_http2_for_new_sites": {
