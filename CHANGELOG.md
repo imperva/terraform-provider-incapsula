@@ -1,3 +1,9 @@
+## 3.35.1 (Oct 27, 2025)
+
+IMPROVEMENTS:
+- Improve documentation for compatibility constraints for v1/v3 site resources ([#595](https://github.com/imperva/terraform-provider-incapsula/pull/595))
+
+
 ## 3.35.0 (Sep 28, 2025)
 
 IMPROVEMENTS:
