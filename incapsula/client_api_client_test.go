@@ -67,7 +67,7 @@ func TestClientPatchAPIClientValid(t *testing.T) {
 	if err != nil {
 		t.Errorf("Should not have received an error: %s", err)
 	}
-	if resp.APIClientID != "1234" || resp.APIKey != "key-abc" {
+	if resp.APIClientID != 1234 || resp.APIKey != "key-abc" {
 		t.Errorf("Unexpected response: %+v", resp)
 	}
 }
@@ -131,7 +131,7 @@ func TestClientGetAPIClientValid(t *testing.T) {
 	if err != nil {
 		t.Errorf("Should not have received an error: %s", err)
 	}
-	if resp.APIClientID != "1234" || resp.APIKey != "key-abc" {
+	if resp.APIClientID != 1234 || resp.APIKey != "key-abc" {
 		t.Errorf("Unexpected response: %+v", resp)
 	}
 }

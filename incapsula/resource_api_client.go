@@ -7,7 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"net/mail"
+	"strconv"
 	"strings"
+	"time"
 )
 
 func resourceApiClient() *schema.Resource {
@@ -61,7 +63,7 @@ func resourceApiClient() *schema.Resource {
 			"grace_period_in_seconds": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Default:     1200,
+				Default:     0,
 				Description: "Grace period in seconds.",
 			},
 			"api_key": {
@@ -71,7 +73,7 @@ func resourceApiClient() *schema.Resource {
 				Description: "Generated API key for client authentication.",
 			},
 			"api_client_id": {
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "ID of the API client.",
 			},
@@ -92,12 +94,17 @@ func resourceApiClient() *schema.Resource {
 func resourceApiClientCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 
-	email := d.Get("user_email").(string)
-	accountId := d.Get("account_id").(int)
+	apiClient := APIClientUpdateRequest{
+		Name:             d.Get("name").(string),
+		Description:      d.Get("description").(string),
+		ExpirationPeriod: d.Get("expiration_period").(string),
+		Enabled:          Bool(d.Get("enabled").(bool)),
+	}
 
 	apiClientResponse, err := client.CreateAPIClient(
-		accountId,
-		email,
+		d.Get("account_id").(int),
+		d.Get("user_email").(string),
+		&apiClient,
 	)
 
 	if err != nil {
@@ -105,8 +112,8 @@ func resourceApiClientCreate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	// Set the User ID
-	d.SetId(apiClientResponse.APIClientID)
-	log.Printf("[INFO] Created Incapsula API client with ID: %s ", apiClientResponse.APIClientID)
+	d.SetId(strconv.Itoa(apiClientResponse.APIClientID))
+	log.Printf("[INFO] Created Incapsula API client with ID: %d ", apiClientResponse.APIClientID)
 
 	// Set the rest of the state from the resource read
 	return resourceApiClientRead(ctx, d, m)
@@ -123,9 +130,11 @@ func resourceApiClientUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	if d.HasChange("expiration_period") {
 		log.Printf("[DEBUG] **** exp. changed true")
 		old, newVal := d.GetChange("expiration_period")
+		log.Printf("[DEBUG] **** old value:%s", old.(string))
+		log.Printf("[DEBUG] **** new value:%s", newVal.(string))
 		str := newVal.(string)
 		log.Printf("[DEBUG] **** str: %s", str)
-		request.ExpirationPeriod = &str
+		request.ExpirationPeriod = d.Get("expiration_period").(string)
 		changed = true
 		// If expiration is extended, set regenerate to true
 		if oldStr, ok := old.(string); ok && oldStr != "" && str != "" && str > oldStr {
@@ -134,21 +143,31 @@ func resourceApiClientUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		}
 	}
 	if d.HasChange("enabled") {
-		b := d.Get("enabled").(bool)
-		request.Enabled = &b
+		request.Enabled = Bool(d.Get("enabled").(bool))
 		changed = true
 	}
 	if d.HasChange("grace_period_in_seconds") {
-		gp := d.Get("grace_period_in_seconds").(int)
-		request.GracePeriod = &gp
+		request.GracePeriod = d.Get("grace_period_in_seconds").(int)
 		changed = true
 	}
+
+	if d.HasChange("name") {
+		request.Name = d.Get("name").(string)
+		changed = true
+	}
+
+	if d.HasChange("description") {
+		request.Description = d.Get("description").(string)
+		changed = true
+	}
+
 	if regenerate {
-		request.Regenerate = &regenerate
+		request.Regenerate = regenerate
 	}
 	if !changed {
 		return resourceApiClientRead(ctx, d, meta)
 	}
+	log.Printf("[DEBUG] **** rsource file Patch API client request:%+v", request)
 
 	resp, err := client.PatchAPIClient(d.Get("account_id").(int), id, request)
 	if err != nil {
@@ -157,6 +176,12 @@ func resourceApiClientUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	if resp.APIKey != "" {
 		d.Set("api_key", d.Get("api_key"))
 	}
+
+	// There may be a timing/race condition here
+	// Set an arbitrary period to sleep
+	log.Printf("[DEBUG] Avoid timing/race condition, sleeping %d seconds\n", sleepTimeSeconds)
+	time.Sleep(10 * time.Second)
+
 	return resourceApiClientRead(ctx, d, meta)
 }
 
