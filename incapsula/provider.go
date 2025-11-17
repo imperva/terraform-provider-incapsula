@@ -3,9 +3,10 @@ package incapsula
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -186,26 +187,28 @@ func Provider() *schema.Provider {
 
 func getLLMSuggestions(d *schema.ResourceData) diag.Diagnostics {
 	var diags diag.Diagnostics
-	statePath := "terraform_client/nir-terraform-tf-testing/terraform.tfstate"
-	allResources := getAllResourcesFromState(statePath)
-	for _, res := range allResources {
+	folderPath := "terraform_client/nir-terraform-tf-testing/"
+	allResourcesFromState := getAllResourcesFromState(folderPath + "terraform.tfstate")
+	for _, res := range allResourcesFromState {
 		log.Printf("Resource: %s\n", res)
 	}
 
-	resources := getAllResourcesTypeAndId(statePath)
+	resources := getAllResourcesTypeAndId(folderPath + "terraform.tfstate")
 	for _, res := range resources {
 		log.Printf("Resource Type: %s, ID: %s\n", res.Type, res.Id)
 	}
+	allResourcesFromFiles, _ := getAllResourcesFromTfFiles(folderPath)
+	log.Printf("Resource from file: %s\n", allResourcesFromFiles)
 
 	diags = getMissingResources(d, resources, diags)
-	diags = getBestPractices(d, allResources, diags)
-	diags = getResourceReplaceSuggestions(d, allResources, diags)
-	diags = getResourceSuggestions(d, allResources, diags)
+	diags = getBestPractices(d, allResourcesFromFiles, diags)
+	diags = getResourceReplaceSuggestions(d, allResourcesFromFiles, diags)
+	diags = getResourceSuggestions(d, allResourcesFromFiles, diags)
 
 	return diags
 }
 
-func getResourceSuggestions(d *schema.ResourceData, resources []map[string]interface{}, diags diag.Diagnostics) diag.Diagnostics {
+func getResourceSuggestions(d *schema.ResourceData, resources string, diags diag.Diagnostics) diag.Diagnostics {
 	question := "you are slim shady, whats your name? out put should be a string only."
 
 	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
@@ -217,7 +220,7 @@ func getResourceSuggestions(d *schema.ResourceData, resources []map[string]inter
 	return diags
 }
 
-func getResourceReplaceSuggestions(d *schema.ResourceData, resources []map[string]interface{}, diags diag.Diagnostics) diag.Diagnostics {
+func getResourceReplaceSuggestions(d *schema.ResourceData, resources string, diags diag.Diagnostics) diag.Diagnostics {
 	question := "you are slim shady, whats your name? out put should be a string only."
 
 	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
@@ -229,7 +232,7 @@ func getResourceReplaceSuggestions(d *schema.ResourceData, resources []map[strin
 	return diags
 }
 
-func getBestPractices(d *schema.ResourceData, resources []map[string]interface{}, diags diag.Diagnostics) diag.Diagnostics {
+func getBestPractices(d *schema.ResourceData, resources string, diags diag.Diagnostics) diag.Diagnostics {
 	question := "you are slim shady, whats your name? out put should be a string only."
 
 	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
@@ -242,14 +245,18 @@ func getBestPractices(d *schema.ResourceData, resources []map[string]interface{}
 }
 
 func getMissingResources(d *schema.ResourceData, resources []TfResource, diags diag.Diagnostics) diag.Diagnostics {
-	question := "Based on the giving resources, which comes in the following structure [{{resource name resource id}}]" +
-		" fetch all the sites from the backend and compare them with the given sites resources. " +
-		" check which resources are missing and output the missing resources only" +
-		" output should be in the following json format: " +
-		"[{{ \"resource_type\": \"<resource_type>\", \"resource_id\": \"<resource_id>\", \"site name\": \"<site_name>\" }}]" +
-		" given resources: " + fmt.Sprintf("%v", resources)
+	//question := "Based on the giving resources, which comes in the following structure [{{resource name resource id}}]" +
+	//	" fetch all the sites from the backend and compare them with the given sites resources. " +
+	//	" check which resources are missing and output the missing resources only" +
+	//	" output should be in the following json format: " +
+	//	"[{{ \"resource_type\": \"<resource_type>\", \"resource_id\": \"<resource_id>\", \"site name\": \"<site_name>\" }}]" +
+	//	" given resources: " + fmt.Sprintf("%v", resources)
+
+	question := "Fetch all the sites from the backend, use pagination 50, or fetch all pages. then output all the sites in the following json format: " +
+		"[{{ \"resource_type\": \"<resource_type>\", \"resource_id\": \"<resource_id>\", \"site name\": \"<site_name>\" }}]"
 
 	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
+	log.Printf("[Info] LLM Missing Resources Answer: %s\n", answer)
 	diags = append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Missing Resource Suggestion",
@@ -335,4 +342,20 @@ func getAllResourcesFromState(statePath string) []map[string]interface{} {
 		}
 	}
 	return resources
+}
+
+func getAllResourcesFromTfFiles(dir string) (string, error) {
+	files, err := filepath.Glob(filepath.Join(dir, "*.tf"))
+	if err != nil {
+		return "", err
+	}
+	var content string
+	for _, file := range files {
+		src, err := ioutil.ReadFile(file)
+		if err != nil {
+			continue
+		}
+		content += string(src) + "\n"
+	}
+	return content, nil
 }
