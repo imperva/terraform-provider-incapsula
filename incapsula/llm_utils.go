@@ -122,6 +122,74 @@ func (a *Agent) Answer(ctx context.Context, prompt string) (string, error) {
 	return textBlock.Value, nil
 }
 
+func getToolToExecute(ctx context.Context, mcpSess *mcp.ClientSession, question string, agent Agent) (*ToolCall, error) {
+	mcpTools, err := getMcpTools(ctx, mcpSess)
+	if err != nil {
+		log.Fatalf("failed to get MCP tools: %v", err)
+	}
+
+	toolsDesc, err := marshalToolsForPrompt(mcpTools)
+	if err != nil {
+		log.Fatalf("failed to marshal tools: %v", err)
+	}
+
+	// ----- First Bedrock call: which tool to use? -----
+	prompt := buildToolSelectionPrompt(question, toolsDesc)
+
+	selectionRaw, err := agent.Answer(ctx, prompt)
+
+	if err != nil {
+		log.Fatalf("Bedrock (selection) error: %v", err)
+		return nil, errors.New("failed to get tool selection from Bedrock")
+	}
+
+	var tc ToolCall
+	if err := json.Unmarshal([]byte(selectionRaw), &tc); err != nil {
+		// Model didn't follow the JSON contract – just dump its text.
+		fmt.Println("Bedrock replied (non-JSON):")
+		fmt.Println(selectionRaw)
+		return nil, nil
+	}
+
+	if tc.Tool == nil || *tc.Tool == "" {
+		// Model decided no tool needed – just treat selectionRaw as the final answer.
+		fmt.Println("Bedrock answer (no tool needed):")
+		fmt.Println(selectionRaw)
+		return nil, nil
+	}
+
+	return &tc, nil
+
+}
+
+func executeMCPTool(ctx context.Context, mcpSess *mcp.ClientSession, toolName string, argumensts map[string]any) (*mcp.CallToolResult, error) {
+	return mcpSess.CallTool(ctx, &mcp.CallToolParams{
+		Name:      toolName,
+		Arguments: argumensts,
+	})
+}
+
+func queryAgent(prompt string) (string, error) {
+	ctx := context.Background()
+	brClient, err := newBedrockClient(ctx, "us-west-2", "dev")
+	if err != nil {
+		log.Fatalf("failed to create Bedrock client: %v", err)
+	}
+	agent := &Agent{
+		br:      brClient,
+		modelID: "anthropic.claude-3-sonnet-20240229-v1:0",
+	}
+
+	finalAnswer, err := agent.Answer(ctx, prompt)
+	if err != nil {
+		log.Fatalf("Bedrock (answer) error: %v", err)
+		return "", errors.New("llm fail to answer")
+	}
+
+	fmt.Println("Agent answered for prompt %s: %s", prompt, finalAnswer)
+	return finalAnswer, nil
+}
+
 func answerWithTools(question string, api_id string, api_key string) (string, error) {
 	ctx := context.Background()
 
@@ -139,16 +207,6 @@ func answerWithTools(question string, api_id string, api_key string) (string, er
 	}
 	defer mcpSess.Close()
 
-	mcpTools, err := getMcpTools(ctx, mcpSess)
-	if err != nil {
-		log.Fatalf("failed to get MCP tools: %v", err)
-	}
-
-	toolsDesc, err := marshalToolsForPrompt(mcpTools)
-	if err != nil {
-		log.Fatalf("failed to marshal tools: %v", err)
-	}
-
 	agent := &Agent{
 		br:      brClient,
 		modelID: "anthropic.claude-3-sonnet-20240229-v1:0",
@@ -159,40 +217,16 @@ func answerWithTools(question string, api_id string, api_key string) (string, er
 	if question == "" {
 		return "", errors.New("question cannot be empty")
 	}
-
-	// ----- First Bedrock call: which tool to use? -----
-	prompt := buildToolSelectionPrompt(question, toolsDesc)
-
-	selectionRaw, err := agent.Answer(ctx, prompt)
-
+	tc, err := getToolToExecute(ctx, mcpSess, question, *agent)
 	if err != nil {
-		log.Fatalf("Bedrock (selection) error: %v", err)
-		return "", errors.New("failed to get tool selection from Bedrock")
-	}
-
-	var tc ToolCall
-	if err := json.Unmarshal([]byte(selectionRaw), &tc); err != nil {
-		// Model didn't follow the JSON contract – just dump its text.
-		fmt.Println("Bedrock replied (non-JSON):")
-		fmt.Println(selectionRaw)
-		return selectionRaw, nil
-	}
-
-	if tc.Tool == nil || *tc.Tool == "" {
-		// Model decided no tool needed – just treat selectionRaw as the final answer.
-		fmt.Println("Bedrock answer (no tool needed):")
-		fmt.Println(selectionRaw)
-		return selectionRaw, nil
+		log.Fatalf("failed to get tool to execute: %v", err)
+		return "", errors.New("failed to get tool to execute")
 	}
 
 	toolName := *tc.Tool
 	fmt.Printf("Bedrock chose tool: %s\n", toolName)
 
-	// ----- Call MCP tool -----
-	callToolRes, err := mcpSess.CallTool(ctx, &mcp.CallToolParams{
-		Name:      toolName,
-		Arguments: tc.Arguments,
-	})
+	callToolRes, err := executeMCPTool(ctx, mcpSess, toolName, tc.Arguments)
 	if err != nil {
 		log.Fatalf("MCP CallTool %q failed: %v", toolName, err)
 		return "", errors.New("tool call failed")

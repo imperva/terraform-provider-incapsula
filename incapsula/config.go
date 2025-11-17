@@ -31,7 +31,8 @@ type Config struct {
 	// Base URL API
 	// API V2
 	// Same as revision 2 but with a different subdomain
-	BaseURLAPI string
+	BaseURLAPI   string
+	ExecutionDir string
 }
 
 var missingAPIIDMessage = "API Identifier (api_id) must be provided"

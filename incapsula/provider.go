@@ -3,10 +3,13 @@ package incapsula
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -50,12 +53,13 @@ func init() {
 
 func providerConfigure(d *schema.ResourceData, terraformVersion string) (interface{}, error) {
 	config := Config{
-		APIID:       d.Get("api_id").(string),
-		APIKey:      d.Get("api_key").(string),
-		BaseURL:     d.Get("base_url").(string),
-		BaseURLRev2: d.Get("base_url_rev_2").(string),
-		BaseURLRev3: d.Get("base_url_rev_3").(string),
-		BaseURLAPI:  d.Get("base_url_api").(string),
+		APIID:        d.Get("api_id").(string),
+		APIKey:       d.Get("api_key").(string),
+		ExecutionDir: d.Get("execution_dir").(string),
+		BaseURL:      d.Get("base_url").(string),
+		BaseURLRev2:  d.Get("base_url_rev_2").(string),
+		BaseURLRev3:  d.Get("base_url_rev_3").(string),
+		BaseURLAPI:   d.Get("base_url_api").(string),
 	}
 
 	return config.Client()
@@ -76,6 +80,12 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("INCAPSULA_API_KEY", ""),
 				Description: descriptions["api_key"],
+			},
+			"execution_dir": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("EXECUTION_DIR", ""),
+				Description: descriptions["execution_dir"],
 			},
 			"base_url": {
 				Type:        schema.TypeString,
@@ -187,21 +197,26 @@ func Provider() *schema.Provider {
 
 func getLLMSuggestions(d *schema.ResourceData) diag.Diagnostics {
 	var diags diag.Diagnostics
-	folderPath := "terraform_client/nir-terraform-tf-testing/"
-	allResourcesFromState := getAllResourcesFromState(folderPath + "terraform.tfstate")
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("Failed to get current working directory: %v", err)
+	}
+	log.Printf(cwd)
+	dir := d.Get("execution_dir").(string)
+	allResourcesFromState := getAllResourcesFromState(dir + "terraform.tfstate")
 	for _, res := range allResourcesFromState {
 		log.Printf("Resource: %s\n", res)
 	}
 
-	resources := getAllResourcesTypeAndId(folderPath + "terraform.tfstate")
+	resources := getAllResourcesTypeAndId(dir + "terraform.tfstate")
 	for _, res := range resources {
 		log.Printf("Resource Type: %s, ID: %s\n", res.Type, res.Id)
 	}
-	allResourcesFromFiles, _ := getAllResourcesFromTfFiles(folderPath)
+	allResourcesFromFiles, _ := getAllResourcesFromTfFiles(dir)
 	log.Printf("Resource from file: %s\n", allResourcesFromFiles)
 
 	diags = getMissingResources(d, resources, diags)
-	diags = getBestPractices(d, allResourcesFromFiles, diags)
+	diags = getBestPractices(allResourcesFromFiles, diags)
 	diags = getResourceReplaceSuggestions(d, allResourcesFromFiles, diags)
 	diags = getResourceSuggestions(d, allResourcesFromFiles, diags)
 
@@ -221,7 +236,111 @@ func getResourceSuggestions(d *schema.ResourceData, resources string, diags diag
 }
 
 func getResourceReplaceSuggestions(d *schema.ResourceData, resources string, diags diag.Diagnostics) diag.Diagnostics {
-	question := "you are slim shady, whats your name? out put should be a string only."
+	docs, _ := readAndConcatWebsiteFiles("website")
+	question := fmt.Sprintf(`
+You are an expert Terraform engineer specializing in provider-level correctness.
+Your task is to analyze Terraform files I provide and compare them against the current official provider documentation.
+
+Your goal is to identify:
+
+Deprecated resources
+
+Deprecated arguments or attributes
+
+Removed or breaking-change arguments
+
+Misconfigurations that differ from current provider requirements
+
+Arguments that should be nested or relocated (based on provider updates)
+
+Required attributes that are missing
+
+Any incorrect or outdated configuration patterns
+
+You must then propose specific fixes, including exact Terraform snippets that replace the existing ones.
+
+What You Must Do
+1. Use Current Provider Documentation
+
+For every Terraform block I provide, you must mentally check against the latest relevant documentation for its provider (AWS, Azure, GCP, Cloudflare, etc.).
+
+You must identify:
+
+Deprecated resources
+
+Deprecated or renamed fields
+
+Missing required fields
+
+Incorrect block structure
+
+Fields that have moved to new blocks
+
+Arguments that have changed behavior or constraints
+
+Fields that require new nested blocks due to provider updates
+
+2. For Every Issue Found, Output the Following
+A. Issue title (short)
+B. Original snippet (copied exactly):
+<original>
+
+C. Improved snippet (full replacement, ready to paste):
+<improved>
+
+D. Explanation
+
+Explain:
+
+Why the original is deprecated or incorrect
+
+What provider documentation changed
+
+Why the new snippet is correct
+
+All fixes must be fully syntactically valid and immediately usable.
+
+3. Output Format (strict)
+Issue <number> — <short name>
+
+Original snippet:
+
+<original>
+
+
+Improved snippet:
+
+<improved>
+
+
+Explanation:
+<why this fixes the deprecated or misconfigured resource>
+
+After all issues:
+
+Summary of Provider-Related Fixes
+
+Bullet list of top deprecations and misconfigurations fixed.
+
+Important Rules
+
+Always prefer the most recent stable Terraform provider syntax.
+
+Never invent arguments that do not exist.
+
+If a resource has a new required field, include it.
+
+If a resource is fully deprecated, propose the correct replacement resource type.
+
+If multiple fixes touch the same block, provide one consolidated improved snippet.
+
+If no deprecated or incorrect usages exist, explicitly confirm compliance with the latest provider docs.
+
+The Imperva provider docs are: %s
+
+The current Terraform code is as follows:
+%s
+`, docs, resources)
 
 	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
 	diags = append(diags, diag.Diagnostic{
@@ -232,16 +351,116 @@ func getResourceReplaceSuggestions(d *schema.ResourceData, resources string, dia
 	return diags
 }
 
-func getBestPractices(d *schema.ResourceData, resources string, diags diag.Diagnostics) diag.Diagnostics {
-	question := "you are slim shady, whats your name? out put should be a string only."
+func getBestPractices(resources string, diags diag.Diagnostics) diag.Diagnostics {
+	question := fmt.Sprintf(`You are an expert Terraform engineer and cloud architect.
+Your task is to analyze the Terraform code I provide and suggest improvements strictly following Terraform and cloud best practices.
 
-	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
+When I give you Terraform files, follow all instructions below:
+
+What You Must Do
+1. Identify Issues
+
+Find any problems, risks, or opportunities for improvement, including:
+
+  - Security issues (IAM, secrets handling, encryption, least privilege)
+  - Missing or weak variables, types, validation
+  - Resource naming inconsistencies
+  - Lack of version pinning
+  - Poor module structure or missing modules
+  - Inefficient or costly configurations
+  - Missing tags/labels
+  - Provider misconfigurations
+  - Deprecated resources or arguments
+  - Hard-coded values
+  - Anything that violates Terraform or cloud best practices
+
+2. Provide Exact Replacement Snippets
+
+For each issue, you must output:
+
+A. Original snippet (copied exactly):
+<original>
+
+B. Improved snippet (full replacement, ready to paste):
+<improved>
+
+C. Brief explanation of why this is better
+
+Keep context and variable names unless renaming is part of the improvement.
+
+Combine multiple improvements into one clean replacement snippet.
+
+Replacement must be syntactically correct.
+
+Never output partial fragments—always show complete blocks.
+
+3. Output Format (Must Follow Exactly)
+
+For every issue:
+
+Issue <number> — <short title>
+
+Original snippet:
+
+<original>
+
+Improved snippet:
+
+<improved>
+
+Explanation:
+<clear explanation>
+
+After analyzing all issues:
+
+Summary of Improvements
+
+Bullet points summarizing key changes.
+
+Important Rules
+
+Do not invent architecture not implied by the code.
+
+Only modify what is necessary.
+
+Keep improvements realistic and aligned with actual Terraform usage.
+
+If something looks dangerous or costly, call it out clearly.
+
+If the provided Terraform is already optimal, say so and explain why.
+
+The current Terraform resources are as follows: %s`, resources)
+
+	answer, _ := queryAgent(question)
 	diags = append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Best Practice Suggestion",
 		Detail:   answer,
 	})
 	return diags
+}
+
+func readAndConcatWebsiteFiles(root string) (string, error) {
+	var builder strings.Builder
+
+	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() {
+			content, err := ioutil.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			builder.Write(content)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+	return builder.String(), nil
 }
 
 func getMissingResources(d *schema.ResourceData, resources []TfResource, diags diag.Diagnostics) diag.Diagnostics {
@@ -256,7 +475,6 @@ func getMissingResources(d *schema.ResourceData, resources []TfResource, diags d
 		"[{{ \"resource_type\": \"<resource_type>\", \"resource_id\": \"<resource_id>\", \"site name\": \"<site_name>\" }}]"
 
 	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
-	log.Printf("[Info] LLM Missing Resources Answer: %s\n", answer)
 	diags = append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Missing Resource Suggestion",
