@@ -1,14 +1,11 @@
 package incapsula
 
 import (
-	"bufio"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
-	"os"
 	"os/exec"
 	"strings"
 
@@ -125,7 +122,7 @@ func (a *Agent) Answer(ctx context.Context, prompt string) (string, error) {
 	return textBlock.Value, nil
 }
 
-func (a *Agent) AnswerWithTools(ctx context.Context, question string) (string, error) {
+func answerWithTools(question string, api_id string, api_key string) (string, error) {
 	ctx := context.Background()
 
 	brClient, err := newBedrockClient(ctx, "us-west-2", "dev")
@@ -133,7 +130,7 @@ func (a *Agent) AnswerWithTools(ctx context.Context, question string) (string, e
 		log.Fatalf("failed to create Bedrock client: %v", err)
 	}
 
-	mcpArgs := strings.Fields("mcp-remote https://api.stage.impervaservices.com/cwaf-external-mcp/mcp/ --header X-Api-Id:2966514 --header X-Api-Key:7bf8f82c-6cbe-42ef-a2a7-3ae63880d006")
+	mcpArgs := strings.Fields("mcp-remote https://api.stage.impervaservices.com/cwaf-external-mcp/mcp/ --header X-Api-Id:" + api_id + " --header X-Api-Key:" + api_key)
 
 	mcpSess, err := newMCPSession(ctx, "npx", mcpArgs...)
 
@@ -164,7 +161,7 @@ func (a *Agent) AnswerWithTools(ctx context.Context, question string) (string, e
 	}
 
 	// ----- First Bedrock call: which tool to use? -----
-	prompt := buildToolSelectionPrompt(userQuestion, toolsDesc)
+	prompt := buildToolSelectionPrompt(question, toolsDesc)
 
 	selectionRaw, err := agent.Answer(ctx, prompt)
 

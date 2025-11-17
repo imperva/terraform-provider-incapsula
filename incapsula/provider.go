@@ -1,10 +1,13 @@
 package incapsula
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -168,33 +171,95 @@ func Provider() *schema.Provider {
 		},
 	}
 
-	provider.ConfigureFunc = func(d *schema.ResourceData) (interface{}, error) {
+	provider.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		terraformVersion := provider.TerraformVersion
 		if terraformVersion == "" {
-			// Terraform 0.12 introduced this field to the protocol
-			// We can therefore assume that if it's missing it's 0.10 or 0.11
 			terraformVersion = "0.11+compatible"
 		}
-		return providerConfigure(d, terraformVersion)
+		diags := getLLMSuggestions(d)
+		client, _ := providerConfigure(d, terraformVersion)
+		return client, diags
 	}
-	//use_llm, _ := provider.Schema["use_llm"].DefaultFunc()
 
-	getLLMSuggestions()
 	return provider
 }
 
-func getLLMSuggestions() {
+func getLLMSuggestions(d *schema.ResourceData) diag.Diagnostics {
+	var diags diag.Diagnostics
+	statePath := "terraform_client/nir-terraform-tf-testing/terraform.tfstate"
+	allResources := getAllResourcesFromState(statePath)
+	for _, res := range allResources {
+		log.Printf("Resource: %s\n", res)
+	}
 
-	resources := getAllResourcesTypeAndId()
+	resources := getAllResourcesTypeAndId(statePath)
 	for _, res := range resources {
 		log.Printf("Resource Type: %s, ID: %s\n", res.Type, res.Id)
-
 	}
+
+	diags = getMissingResources(d, resources, diags)
+	diags = getBestPractices(d, allResources, diags)
+	diags = getResourceReplaceSuggestions(d, allResources, diags)
+	diags = getResourceSuggestions(d, allResources, diags)
+
+	return diags
 }
 
-func getAllResourcesTypeAndId() []TfResource {
+func getResourceSuggestions(d *schema.ResourceData, resources []map[string]interface{}, diags diag.Diagnostics) diag.Diagnostics {
+	question := ""
+
+	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
+	diags = append(diags, diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "New Resources Suggestion",
+		Detail:   answer,
+	})
+	return diags
+}
+
+func getResourceReplaceSuggestions(d *schema.ResourceData, resources []map[string]interface{}, diags diag.Diagnostics) diag.Diagnostics {
+	question := ""
+
+	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
+	diags = append(diags, diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Resource Replacement Suggestion",
+		Detail:   answer,
+	})
+	return diags
+}
+
+func getBestPractices(d *schema.ResourceData, resources []map[string]interface{}, diags diag.Diagnostics) diag.Diagnostics {
+	question := ""
+
+	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
+	diags = append(diags, diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Best Practice Suggestion",
+		Detail:   answer,
+	})
+	return diags
+}
+
+func getMissingResources(d *schema.ResourceData, resources []TfResource, diags diag.Diagnostics) diag.Diagnostics {
+	question := "Based on the giving resources, which comes in the following structure [{{resource name resource id}}]" +
+		" fetch all the sites from the backend and compare them with the given sites resources. " +
+		" check which resources are missing and output the missing resources only" +
+		" output should be in the following json format: " +
+		"[{{ \"resource_type\": \"<resource_type>\", \"resource_id\": \"<resource_id>\", \"site name\": \"<site_name>\" }}]" +
+		" given resources: " + fmt.Sprintf("%v", resources)
+
+	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
+	diags = append(diags, diag.Diagnostic{
+		Severity: diag.Warning,
+		Summary:  "Missing Resource Suggestion",
+		Detail:   answer,
+	})
+	return diags
+}
+
+func getAllResourcesTypeAndId(statePath string) []TfResource {
 	var resources []TfResource
-	statePath := "terraform.tfstate"
 	file, err := os.Open(statePath)
 	if err != nil {
 		log.Printf("[Error] Unable to open state file: %v", err)
@@ -230,6 +295,43 @@ func getAllResourcesTypeAndId() []TfResource {
 					resources = append(resources, TfResource{Type: resource.Type, Id: idStr})
 				}
 			}
+		}
+	}
+	return resources
+}
+
+func getAllResourcesFromState(statePath string) []map[string]interface{} {
+	var resources []map[string]interface{}
+	file, err := os.Open(statePath)
+	if err != nil {
+		log.Printf("[Error] Unable to open state file: %v", err)
+		return resources
+	}
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			log.Printf("[Error] Unable to close state file: %v", err)
+		}
+	}(file)
+
+	var state struct {
+		Resources []struct {
+			Type      string `json:"type"`
+			Instances []struct {
+				Attributes map[string]interface{} `json:"attributes"`
+			} `json:"instances"`
+		} `json:"resources"`
+	}
+
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&state); err != nil {
+		log.Printf("[Error] Unable to decode state file: %v", err)
+		return resources
+	}
+
+	for _, resource := range state.Resources {
+		for _, instance := range resource.Instances {
+			resources = append(resources, instance.Attributes)
 		}
 	}
 	return resources
