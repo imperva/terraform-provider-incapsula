@@ -1,8 +1,17 @@
 package incapsula
 
 import (
+	"encoding/json"
+	"log"
+	"os"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+type TfResource struct {
+	Type string
+	Id   string
+}
 
 var baseURL string
 var baseURLRev2 string
@@ -168,6 +177,60 @@ func Provider() *schema.Provider {
 		}
 		return providerConfigure(d, terraformVersion)
 	}
+	//use_llm, _ := provider.Schema["use_llm"].DefaultFunc()
 
+	getLLMSuggestions()
 	return provider
+}
+
+func getLLMSuggestions() {
+
+	resources := getAllResourcesTypeAndId()
+	for _, res := range resources {
+		log.Printf("Resource Type: %s, ID: %s\n", res.Type, res.Id)
+
+	}
+}
+
+func getAllResourcesTypeAndId() []TfResource {
+	var resources []TfResource
+	statePath := "terraform.tfstate"
+	file, err := os.Open(statePath)
+	if err != nil {
+		log.Printf("[Error] Unable to open state file: %v", err)
+		return resources
+	}
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			log.Printf("[Error] Unable to close state file: %v", err)
+		}
+	}(file)
+
+	var state struct {
+		Resources []struct {
+			Type      string `json:"type"`
+			Instances []struct {
+				Attributes map[string]interface{} `json:"attributes"`
+			} `json:"instances"`
+		} `json:"resources"`
+	}
+
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&state); err != nil {
+		log.Printf("[Error] Unable to decode state file: %v", err)
+		return resources
+	}
+
+	for _, resource := range state.Resources {
+		for _, instance := range resource.Instances {
+			id, ok := instance.Attributes["id"]
+			if ok {
+				if idStr, isStr := id.(string); isStr {
+					resources = append(resources, TfResource{Type: resource.Type, Id: idStr})
+				}
+			}
+		}
+	}
+	return resources
 }
