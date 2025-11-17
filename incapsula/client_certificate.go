@@ -144,7 +144,7 @@ func (c *Client) EditCertificate(siteID, certificate, privateKey, passphrase, au
 	if passphrase != "" {
 		values.Set("passphrase", passphrase)
 	}
-	if passphrase != "" {
+	if authType != "" {
 		values.Set("auth_type", authType)
 	}
 
