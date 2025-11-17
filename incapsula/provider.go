@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -196,7 +197,6 @@ func Provider() *schema.Provider {
 }
 
 func getLLMSuggestions(d *schema.ResourceData) diag.Diagnostics {
-	var diags diag.Diagnostics
 	cwd, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("Failed to get current working directory: %v", err)
@@ -215,10 +215,48 @@ func getLLMSuggestions(d *schema.ResourceData) diag.Diagnostics {
 	allResourcesFromFiles, _ := getAllResourcesFromTfFiles(dir)
 	log.Printf("Resource from file: %s\n", allResourcesFromFiles)
 
+	return runDiagnostics(d, resources, allResourcesFromFiles)
+	//return runDiagnosticsParallel(d, resources, allResourcesFromFiles)
+}
+
+func runDiagnostics(d *schema.ResourceData, resources []TfResource, allResourcesFromFiles string) diag.Diagnostics {
+	var diags diag.Diagnostics
 	diags = getMissingResources(d, resources, diags)
 	diags = getBestPractices(allResourcesFromFiles, diags)
 	diags = getResourceReplaceSuggestions(d, allResourcesFromFiles, diags)
 	diags = getResourceSuggestions(d, allResourcesFromFiles, diags)
+	return diags
+}
+
+func runDiagnosticsParallel(d *schema.ResourceData, resources []TfResource, allResourcesFromFiles string) diag.Diagnostics {
+	var wg sync.WaitGroup
+	results := make(chan diag.Diagnostics, 4)
+
+	wg.Add(4)
+	go func() {
+		defer wg.Done()
+		results <- getMissingResources(d, resources, nil)
+	}()
+	go func() {
+		defer wg.Done()
+		results <- getBestPractices(allResourcesFromFiles, nil)
+	}()
+	go func() {
+		defer wg.Done()
+		results <- getResourceReplaceSuggestions(d, allResourcesFromFiles, nil)
+	}()
+	go func() {
+		defer wg.Done()
+		results <- getResourceSuggestions(d, allResourcesFromFiles, nil)
+	}()
+
+	wg.Wait()
+	close(results)
+
+	var diags diag.Diagnostics
+	for r := range results {
+		diags = append(diags, r...)
+	}
 
 	return diags
 }
@@ -227,10 +265,11 @@ func getResourceSuggestions(d *schema.ResourceData, resources string, diags diag
 	question := "you are slim shady, whats your name? out put should be a string only."
 
 	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
+	answerWithImage := getAiAnswer(answer)
 	diags = append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "New Resources Suggestion",
-		Detail:   answer,
+		Detail:   answerWithImage,
 	})
 	return diags
 }
@@ -343,10 +382,11 @@ The current Terraform code is as follows:
 `, docs, resources)
 
 	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
+	answerWithImage := getAiAnswer(answer)
 	diags = append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Resource Replacement Suggestion",
-		Detail:   answer,
+		Detail:   answerWithImage,
 	})
 	return diags
 }
@@ -432,12 +472,29 @@ If the provided Terraform is already optimal, say so and explain why.
 The current Terraform resources are as follows: %s`, resources)
 
 	answer, _ := queryAgent(question)
+	answerWithImage := getAiAnswer(answer)
 	diags = append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Best Practice Suggestion",
-		Detail:   answer,
+		Detail:   answerWithImage,
 	})
 	return diags
+}
+
+func getAiAnswer(answer string) string {
+	return `
+      [Robot AI Assistant]
+        _____
+       | . . |
+       |  ^  |
+       | '-' |
+       +-----+
+      /|     |\
+     /_|_____|_\
+       /  |  \
+      (   |   )
+       \_/ \_/
+` + answer
 }
 
 func readAndConcatWebsiteFiles(root string) (string, error) {
@@ -475,10 +532,11 @@ func getMissingResources(d *schema.ResourceData, resources []TfResource, diags d
 		"[{{ \"resource_type\": \"<resource_type>\", \"resource_id\": \"<resource_id>\", \"site name\": \"<site_name>\" }}]"
 
 	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
+	answerWithImage := getAiAnswer(answer)
 	diags = append(diags, diag.Diagnostic{
 		Severity: diag.Warning,
 		Summary:  "Missing Resource Suggestion",
-		Detail:   answer,
+		Detail:   answerWithImage,
 	})
 	return diags
 }
