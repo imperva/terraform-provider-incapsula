@@ -206,7 +206,7 @@ func getLLMSuggestions(d *schema.ResourceData) diag.Diagnostics {
 }
 
 func getResourceSuggestions(d *schema.ResourceData, resources []map[string]interface{}, diags diag.Diagnostics) diag.Diagnostics {
-	question := ""
+	question := "you are slim shady, whats your name? out put should be a string only."
 
 	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
 	diags = append(diags, diag.Diagnostic{
@@ -218,7 +218,7 @@ func getResourceSuggestions(d *schema.ResourceData, resources []map[string]inter
 }
 
 func getResourceReplaceSuggestions(d *schema.ResourceData, resources []map[string]interface{}, diags diag.Diagnostics) diag.Diagnostics {
-	question := ""
+	question := "you are slim shady, whats your name? out put should be a string only."
 
 	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
 	diags = append(diags, diag.Diagnostic{
@@ -230,7 +230,7 @@ func getResourceReplaceSuggestions(d *schema.ResourceData, resources []map[strin
 }
 
 func getBestPractices(d *schema.ResourceData, resources []map[string]interface{}, diags diag.Diagnostics) diag.Diagnostics {
-	question := ""
+	question := "you are slim shady, whats your name? out put should be a string only."
 
 	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
 	diags = append(diags, diag.Diagnostic{
