@@ -3,6 +3,7 @@ package incapsula
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"testing"
 	"time"
 
@@ -19,6 +20,7 @@ const apiClientDesc = "Test terraform description"
 const apiClientDescUpdated = "Test terraform description updated"
 const apiClientExpPeriod = "2026-01-30T23:59:59Z"
 const apiClientExpPeriodUpdated = "2026-02-30T23:59:59Z"
+const apiClientEmail = "test-terraform@www.com"
 
 func TestIncapsulaApiClient_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -33,6 +35,20 @@ func TestIncapsulaApiClient_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(accountResourceApiClientTypeName, "name", apiClientName),
 					resource.TestCheckResourceAttr(accountResourceApiClientTypeName, "description", apiClientDesc),
 				),
+			},
+		},
+	})
+}
+
+func TestIncapsulaApiClient_WithEmail(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testCheckIncapsulaApiClientDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testCheckIncapsulaApiClientConfigWithEmail(t),
+				ExpectError: regexp.MustCompile(`Can't find user with email`),
 			},
 		},
 	})
@@ -65,24 +81,6 @@ func TestIncapsulaApiClient_Update(t *testing.T) {
 	})
 }
 
-func TestIncapsulaApiClient_ImportBasic(t *testing.T) {
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testCheckIncapsulaApiClientDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testCheckIncapsulaApiClientConfigBasic(t),
-			},
-			{
-				ResourceName:      accountResourceApiClientTypeName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
 func testCheckIncapsulaApiClientDestroy(state *terraform.State) error {
 	client := testAccProvider.Meta().(*Client)
 
@@ -100,7 +98,7 @@ func testCheckIncapsulaApiClientDestroy(state *terraform.State) error {
 		// Set an arbitrary period to sleep
 		time.Sleep(15 * time.Second)
 
-		apiClientResponse, _ := client.GetAPIClient(0, "", apiClientIDStr)
+		apiClientResponse, _ := client.GetAPIClient(0, apiClientIDStr)
 
 		// Account object may have been deleted
 		if apiClientResponse != nil {
@@ -129,7 +127,7 @@ func testCheckIncapsulaApiClientExists(name string) resource.TestCheckFunc {
 		}
 
 		client := testAccProvider.Meta().(*Client)
-		apiClientStatusResponse, _ := client.GetAPIClient(0, "", apiClientIDStr)
+		apiClientStatusResponse, _ := client.GetAPIClient(0, apiClientIDStr)
 		if apiClientStatusResponse == nil {
 			return fmt.Errorf(
 				"Incapsula api client with id: %s does not exist", apiClientIDStr)
@@ -148,6 +146,19 @@ func testCheckIncapsulaApiClientConfigBasic(t *testing.T) string {
 			expiration_period = "%s"
 		}`,
 		accountResourceApiClientType, accountResourceApiClientName, apiClientName, apiClientDesc, true, apiClientExpPeriod,
+	)
+}
+
+func testCheckIncapsulaApiClientConfigWithEmail(t *testing.T) string {
+	return fmt.Sprintf(`
+		resource "%s" "%s" {
+			user_email = "%s"
+			name = "%s"
+			description = "%s"
+			enabled = %v
+			expiration_period = "%s"
+		}`,
+		accountResourceApiClientType, accountResourceApiClientName, apiClientEmail, apiClientName, apiClientDesc, true, apiClientExpPeriod,
 	)
 }
 

@@ -72,11 +72,6 @@ func resourceApiClient() *schema.Resource {
 				Sensitive:   true,
 				Description: "Generated API key for client authentication.",
 			},
-			"api_client_id": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "ID of the API client.",
-			},
 			"expiration_date": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -192,7 +187,7 @@ func resourceApiClientRead(ctx context.Context, d *schema.ResourceData, meta int
 	if id == "" {
 		return nil
 	}
-	resp, err := client.GetAPIClient(d.Get("account_id").(int), d.Get("user_email").(string), id)
+	resp, err := client.GetAPIClient(d.Get("account_id").(int), id)
 	if err != nil {
 		d.SetId("")
 		return nil
@@ -200,7 +195,6 @@ func resourceApiClientRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("name", d.Get("name"))
 	d.Set("description", d.Get("description"))
 	d.Set("api_key", resp.APIKey)
-	d.Set("api_client_id", resp.APIClientID)
 	d.Set("enabled", resp.Enabled)
 	d.Set("expiration_date", resp.ExpirationDate)
 	d.Set("last_used_at", resp.LastUsedAt)
@@ -244,7 +238,8 @@ func resourceApiClientImport(ctx context.Context, d *schema.ResourceData, meta i
 
 	// Only set account_id if it was provided.
 	if accountID != "" {
-		if err := d.Set("account_id", accountID); err != nil {
+		caid, _ := strconv.Atoi(accountID)
+		if err := d.Set("account_id", caid); err != nil {
 			return nil, fmt.Errorf("setting account_id: %w", err)
 		}
 	}

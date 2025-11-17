@@ -85,18 +85,16 @@ func (c *Client) PatchAPIClient(accountID int, clientID string, req *APIClientUp
 	return &apiClientResponse, nil
 }
 
-func (c *Client) GetAPIClient(accountID int, userEmail string, clientID string) (*APIClientResponse, error) {
+func (c *Client) GetAPIClient(accountID int, clientID string) (*APIClientResponse, error) {
 
-	log.Printf("[DEBUG] Reading incapsula api_client with account_id:%d, user_email:%s, client_id:%s", accountID, userEmail, clientID)
+	log.Printf("[DEBUG] Reading incapsula api_client with account_id:%d, client_id:%s", accountID, clientID)
 
 	reqURL := fmt.Sprintf("%s%s", c.config.BaseURLAPI, endpointAPIClient)
 	log.Printf("[DEBUG] **** GET URL: %s", string(reqURL))
 
 	params := GetRequestParamsWithCaid(accountID)
 	params["id"] = clientID
-	if userEmail != "" {
-		params["userEmail"] = userEmail
-	}
+
 	log.Printf("[DEBUG] **** GET params: %s", params)
 
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, reqURL, nil, params, ReadApiClient)

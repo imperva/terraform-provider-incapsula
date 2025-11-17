@@ -1,6 +1,7 @@
 package incapsula
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -8,188 +9,151 @@ import (
 	"time"
 )
 
-func TestClientPatchAPIClientBadConnection(t *testing.T) {
+func TestClientAddApiClientBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	_, err := client.PatchAPIClient(12345, "test-client", &APIClientUpdateRequest{})
+
+	email := "example@example.com"
+
+	request := &APIClientUpdateRequest{}
+	request.Name = "test"
+
+	apiClientResponse, err := client.CreateAPIClient(1234, email, request)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.Contains(err.Error(), "PATCH request failed") {
-		t.Errorf("Should have received a PATCH request error, got: %s", err)
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error adding api client for email %s", email)) {
+		t.Errorf("Should have received an client error, got: %s", err)
+	}
+	if apiClientResponse != nil {
+		t.Errorf("Should have received a nil apiClientResponse instance")
 	}
 }
 
-func TestClientPatchAPIClientBadJSON(t *testing.T) {
+func TestClientAddApiClientBadJSON(t *testing.T) {
+	accountID := 123
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.Write([]byte(`{`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	_, err := client.PatchAPIClient(12345, "test-client", &APIClientUpdateRequest{})
+	email := "example@example.com"
+	request := &APIClientUpdateRequest{}
+	request.Name = "test"
+
+	apiClientResponse, err := client.CreateAPIClient(accountID, email, request)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.Contains(err.Error(), "failed to unmarshal PATCH response") {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing add api client JSON response for email %s", email)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
-}
-
-func TestClientPatchAPIClientInvalidStatus(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.WriteHeader(400)
-		rw.Write([]byte(`{"error":"bad request"}`))
-	}))
-	defer server.Close()
-
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
-	client := &Client{config: config, httpClient: &http.Client{}}
-	_, err := client.PatchAPIClient(12345, "test-client", &APIClientUpdateRequest{})
-	if err == nil {
-		t.Errorf("Should have received an error")
-	}
-	if !strings.Contains(err.Error(), "PATCH /v3/api-client/test-client failed") {
-		t.Errorf("Should have received a bad status error, got: %s", err)
+	if apiClientResponse != nil {
+		t.Errorf("Should have received a nil apiClientResponse instance")
 	}
 }
 
-func TestClientPatchAPIClientValid(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.Write([]byte(`{"api_client_id":"1234","api_key":"key-abc","enabled":true,"expiration_date":"2026-01-01T00:00:00Z","last_used_at":"2025-09-08T10:15:00Z","grace_period":2000}`))
-	}))
-	defer server.Close()
-
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
-	client := &Client{config: config, httpClient: &http.Client{}}
-	resp, err := client.PatchAPIClient(12345, "test-client", &APIClientUpdateRequest{})
-	if err != nil {
-		t.Errorf("Should not have received an error: %s", err)
-	}
-	if resp.APIClientID != 1234 || resp.APIKey != "key-abc" {
-		t.Errorf("Unexpected response: %+v", resp)
-	}
-}
-
-func TestClientGetAPIClientBadConnection(t *testing.T) {
+func TestClientApiClientStatusBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	_, err := client.GetAPIClient(12345, "aaa@email.com", "test-client")
+	accountID := 123
+	email := "example@example.com"
+	apiClientResponse, err := client.GetAPIClient(accountID, "1234")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.Contains(err.Error(), "GET request failed") {
-		t.Errorf("Should have received a GET request error, got: %s", err)
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error getting api client for email %s", email)) {
+		t.Errorf("Should have received an client error, got: %s", err)
+	}
+	if apiClientResponse != nil {
+		t.Errorf("Should have received a nil apiClientResponse instance")
 	}
 }
 
-func TestClientGetAPIClientBadJSON(t *testing.T) {
+func TestClientApiClientStatusBadJSON(t *testing.T) {
+	accountID := 123
+	clientID := "1234"
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != fmt.Sprintf("%s?caid=%d&id=%s", endpointAPIClient, accountID, clientID) {
+			t.Errorf("Should have have hit %s?caid=%d&id=%s endpoint. Got: %s", endpointAPIClient, accountID, clientID, req.URL.String())
+		}
 		rw.Write([]byte(`{`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	_, err := client.GetAPIClient(12345, "aaa@email.com", "test-client")
+	apiClientResponse, err := client.GetAPIClient(accountID, "1234")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.Contains(err.Error(), "failed to unmarshal GET response") {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing api_client status JSON response for api_client id %s", clientID)) {
 		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
-}
-
-func TestClientGetAPIClientInvalidStatus(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.WriteHeader(404)
-		rw.Write([]byte(`{"error":"not found"}`))
-	}))
-	defer server.Close()
-
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
-	client := &Client{config: config, httpClient: &http.Client{}}
-	_, err := client.GetAPIClient(12345, "aaa@email.com", "test-client")
-	if err == nil {
-		t.Errorf("Should have received an error")
-	}
-	if !strings.Contains(err.Error(), "GET /v3/api-client/test-client failed") {
-		t.Errorf("Should have received a bad status error, got: %s", err)
+	if apiClientResponse != nil {
+		t.Errorf("Should have received a nil apiClientResponse instance")
 	}
 }
 
-func TestClientGetAPIClientValid(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.Write([]byte(`{"api_client_id":"1234","api_key":"key-abc","enabled":true,"expiration_date":"2026-01-01T00:00:00Z","last_used_at":"2025-09-08T10:15:00Z","grace_period":2000}`))
-	}))
-	defer server.Close()
-
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
-	client := &Client{config: config, httpClient: &http.Client{}}
-	resp, err := client.GetAPIClient(12345, "aaa@email.com", "test-client")
-	if err != nil {
-		t.Errorf("Should not have received an error: %s", err)
-	}
-	if resp.APIClientID != 1234 || resp.APIKey != "key-abc" {
-		t.Errorf("Unexpected response: %+v", resp)
-	}
-}
-
-func TestClientDeleteAPIClientBadConnection(t *testing.T) {
+func TestClientDeleteApiClientBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
-	err := client.DeleteAPIClient(12345, "test-client")
+	accountID := 123
+	err := client.DeleteAPIClient(accountID, "1234")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.Contains(err.Error(), "DELETE request failed") {
-		t.Errorf("Should have received a DELETE request error, got: %s", err)
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error from Incapsula service when deleting api-client: %s", "1234")) {
+		t.Errorf("Should have received an client error, got: %s", err)
 	}
 }
 
-func TestClientDeleteAPIClientBadJSON(t *testing.T) {
+func TestClientUpdateApiClientBadConnection(t *testing.T) {
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
+	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
+	accountID := 123
+	clientID := "1234"
+	name := "testest"
+	request := &APIClientUpdateRequest{}
+	request.Name = name
+	apiClientResponse, err := client.PatchAPIClient(accountID, clientID, request)
+	if err == nil {
+		t.Errorf("Should have received an error")
+	}
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error updating api_client with Id %s", clientID)) {
+		t.Errorf("Should have received an client error, got: %s", err)
+	}
+	if apiClientResponse != nil {
+		t.Errorf("Should have received a nil apiClientResponse instance")
+	}
+}
+
+func TestClientUpdateApiClientBadJSON(t *testing.T) {
+	accountID := 123
+	clientID := "1234"
+
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != fmt.Sprintf("%s/%s?caid=%d", endpointAPIClient, clientID, accountID) {
+			t.Errorf("Should have have hit %s/%s?caid=%d endpoint. Got: %s", endpointAPIClient, clientID, accountID, req.URL.String())
+		}
 		rw.Write([]byte(`{`))
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
+	request := &APIClientUpdateRequest{}
+	request.Name = "test"
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	err := client.DeleteAPIClient(12345, "test-client")
-	if err != nil {
-		t.Errorf("Should not have received an error for DELETE (body ignored): %s", err)
-	}
-}
-
-func TestClientDeleteAPIClientInvalidStatus(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.WriteHeader(400)
-		rw.Write([]byte(`{"error":"bad request"}`))
-	}))
-	defer server.Close()
-
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
-	client := &Client{config: config, httpClient: &http.Client{}}
-	err := client.DeleteAPIClient(12345, "test-client")
+	apiClientResponse, err := client.PatchAPIClient(accountID, clientID, request)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.Contains(err.Error(), "DELETE /v3/api-client/test-client failed") {
-		t.Errorf("Should have received a bad status error, got: %s", err)
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing update api_client JSON response for id %s", clientID)) {
+		t.Errorf("Should have received a JSON parse error, got: %s", err)
 	}
-}
-
-func TestClientDeleteAPIClientValid(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.Write([]byte(`{"result":"ok"}`))
-	}))
-	defer server.Close()
-
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
-	client := &Client{config: config, httpClient: &http.Client{}}
-	err := client.DeleteAPIClient(12345, "test-client")
-	if err != nil {
-		t.Errorf("Should not have received an error: %s", err)
+	if apiClientResponse != nil {
+		t.Errorf("Should have received a nil apiClientResponse instance")
 	}
 }
