@@ -222,9 +222,9 @@ func getLLMSuggestions(d *schema.ResourceData) diag.Diagnostics {
 func runDiagnostics(d *schema.ResourceData, resources []TfResource, allResourcesFromFiles string) diag.Diagnostics {
 	var diags diag.Diagnostics
 	diags = getMissingResources(d, resources, diags)
-	diags = getBestPractices(allResourcesFromFiles, diags)
-	diags = getResourceReplaceSuggestions(d, allResourcesFromFiles, diags)
-	diags = getResourceSuggestions(d, allResourcesFromFiles, diags)
+	diags = getGeneralTFBestPractices(allResourcesFromFiles, diags)
+	diags = getImpervaResourceReplaceSuggestions(d, allResourcesFromFiles, diags)
+	diags = getImpervaNewFeaturesSuggestions(d, allResourcesFromFiles, diags)
 	return diags
 }
 
@@ -239,15 +239,15 @@ func runDiagnosticsParallel(d *schema.ResourceData, resources []TfResource, allR
 	}()
 	go func() {
 		defer wg.Done()
-		results <- getBestPractices(allResourcesFromFiles, nil)
+		results <- getGeneralTFBestPractices(allResourcesFromFiles, nil)
 	}()
 	go func() {
 		defer wg.Done()
-		results <- getResourceReplaceSuggestions(d, allResourcesFromFiles, nil)
+		results <- getImpervaResourceReplaceSuggestions(d, allResourcesFromFiles, nil)
 	}()
 	go func() {
 		defer wg.Done()
-		results <- getResourceSuggestions(d, allResourcesFromFiles, nil)
+		results <- getImpervaNewFeaturesSuggestions(d, allResourcesFromFiles, nil)
 	}()
 
 	wg.Wait()
@@ -261,7 +261,7 @@ func runDiagnosticsParallel(d *schema.ResourceData, resources []TfResource, allR
 	return diags
 }
 
-func getResourceSuggestions(d *schema.ResourceData, resources string, diags diag.Diagnostics) diag.Diagnostics {
+func getImpervaNewFeaturesSuggestions(d *schema.ResourceData, resources string, diags diag.Diagnostics) diag.Diagnostics {
 	question := "you are slim shady, whats your name? out put should be a string only."
 
 	answer, _ := answerWithTools(question, d.Get("api_id").(string), d.Get("api_key").(string))
@@ -274,7 +274,7 @@ func getResourceSuggestions(d *schema.ResourceData, resources string, diags diag
 	return diags
 }
 
-func getResourceReplaceSuggestions(d *schema.ResourceData, resources string, diags diag.Diagnostics) diag.Diagnostics {
+func getImpervaResourceReplaceSuggestions(d *schema.ResourceData, resources string, diags diag.Diagnostics) diag.Diagnostics {
 	docs, _ := readAndConcatWebsiteFiles("website")
 	question := fmt.Sprintf(`
 You are an expert Terraform engineer specializing in provider-level correctness.
@@ -391,7 +391,7 @@ The current Terraform code is as follows:
 	return diags
 }
 
-func getBestPractices(resources string, diags diag.Diagnostics) diag.Diagnostics {
+func getGeneralTFBestPractices(resources string, diags diag.Diagnostics) diag.Diagnostics {
 	question := fmt.Sprintf(`You are an expert Terraform engineer and cloud architect.
 Your task is to analyze the Terraform code I provide and suggest improvements strictly following Terraform and cloud best practices.
 
