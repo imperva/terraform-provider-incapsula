@@ -101,7 +101,7 @@ func (a *Agent) Answer(ctx context.Context, prompt string) (string, error) {
 		ModelId:  aws.String(a.modelID),
 		Messages: messages,
 		InferenceConfig: &brtypes.InferenceConfiguration{
-			MaxTokens:   aws.Int32(512),
+			MaxTokens:   aws.Int32(4096),
 			Temperature: aws.Float32(0.4),
 			TopP:        aws.Float32(0.9),
 		},
