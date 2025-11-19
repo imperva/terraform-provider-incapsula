@@ -1,3 +1,24 @@
+## 3.35.1 (Oct 27, 2025)
+
+IMPROVEMENTS:
+- Improve documentation for compatibility constraints for v1/v3 site resources ([#595](https://github.com/imperva/terraform-provider-incapsula/pull/595))
+
+
+## 3.35.0 (Sep 28, 2025)
+
+IMPROVEMENTS:
+- Added HidePositionInLine attribute to the waiting room resource ([#584](https://github.com/imperva/terraform-provider-incapsula/pull/584))
+
+
+## 3.34.4 (Sep 7, 2025)
+
+BUT FIXES:
+Fixed documentation for ssl_instructions and ssl_validation ([#588](https://github.com/imperva/terraform-provider-incapsula/pull/588))
+Converting datatype int to int64 to handle 32 bit systems ([#590](https://github.com/imperva/terraform-provider-incapsula/pull/590))
+incapsula_custom_certificate resource update flow crash ([#591](https://github.com/imperva/terraform-provider-incapsula/pull/591))
+
+
+
 ## 3.34.3 (Jun 30, 2025)
 
 BUG FIXES:

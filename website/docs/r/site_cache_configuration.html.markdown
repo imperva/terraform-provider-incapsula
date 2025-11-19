@@ -10,7 +10,7 @@ description: |-
 
 Configure content caching for your website.
 
-**Note:** This resource is designed to work with sites represented by the "incapsula_site_v3" resource, and cannot be used together in the same configuration with the "incapsula_site" resource.
+Note: This resource applies only to sites managed by the incapsula_site_v3 resource. For sites managed by the incapsula_site resource, please use the relevant fields from the incapsula_site resource instead.
 
 ## Example Usage
 
