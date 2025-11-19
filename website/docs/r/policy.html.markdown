@@ -114,7 +114,7 @@ The following arguments are supported:
 
 * `name` - (Required) The policy name.
 * `enabled` - (Required) Enables the policy.
-* `policy_type` - (Required) The policy type. Possible values: ACL, WHITELIST, WAF_RULES.  Note: For (policy_type=WAF_RULES), all 4 setting types (policySettingType) are mandatory (REMOTE_FILE_INCLUSION, ILLEGAL_RESOURCE_ACCESS, CROSS_SITE_SCRIPTING, SQL_INJECTION).
+* `policy_type` - (Required) The policy type. Possible values: ACL, WHITELIST, WAF_RULES.  Note: For (policy_type=WAF_RULES), all 4 setting types (policySettingType) are mandatory (REMOTE_FILE_INCLUSION, ILLEGAL_RESOURCE_ACCESS, CROSS_SITE_SCRIPTING, SQL_INJECTION). </br>RESP_DATA_LEAK is optional and can be added only if this feature is included with your plan.
 * `policy_settings` - (Required) The policy settings as JSON string. See Imperva documentation for help with constructing a correct value.
 Policy_settings internal values:
 policySettingType: IP, GEO, URL
