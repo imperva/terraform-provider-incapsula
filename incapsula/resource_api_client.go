@@ -9,7 +9,6 @@ import (
 	"net/mail"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func resourceApiClient() *schema.Resource {
@@ -49,22 +48,11 @@ func resourceApiClient() *schema.Resource {
 				Optional:    true,
 				Description: "Description of the API client.",
 			},
-			"expiration_period": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Expiration period for the API key (RFC3339 or duration, e.g. 30d).",
-			},
 			"enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
 				Description: "Whether the API client is enabled.",
-			},
-			"grace_period_in_seconds": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     0,
-				Description: "Grace period in seconds.",
 			},
 			"api_key": {
 				Type:        schema.TypeString,
@@ -74,8 +62,8 @@ func resourceApiClient() *schema.Resource {
 			},
 			"expiration_date": {
 				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Expiration date of the API key. Must be a future date. Changing this value will cause regeneration of the key.",
+				Optional:    true,
+				Description: "Expiration date of the API key (YYYY-MM-DD format only). Must be a future date. Changing this value will cause regeneration of the key.",
 			},
 			"last_used_at": {
 				Type:        schema.TypeString,
@@ -90,13 +78,13 @@ func resourceApiClientCreate(ctx context.Context, d *schema.ResourceData, m inte
 	client := m.(*Client)
 
 	apiClient := APIClientUpdateRequest{
-		Name:             d.Get("name").(string),
-		Description:      d.Get("description").(string),
-		ExpirationPeriod: d.Get("expiration_period").(string),
-		Enabled:          Bool(d.Get("enabled").(bool)),
+		Name:           d.Get("name").(string),
+		Description:    d.Get("description").(string),
+		ExpirationDate: d.Get("expiration_date").(string),
+		Enabled:        Bool(d.Get("enabled").(bool)),
 	}
 
-	apiClientResponse, err := client.CreateAPIClient(
+	resp, err := client.CreateAPIClient(
 		d.Get("account_id").(int),
 		d.Get("user_email").(string),
 		&apiClient,
@@ -107,10 +95,13 @@ func resourceApiClientCreate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	// Set the User ID
-	d.SetId(strconv.Itoa(apiClientResponse.APIClientID))
-	log.Printf("[INFO] Created Incapsula API client with ID: %d ", apiClientResponse.APIClientID)
+	d.SetId(strconv.Itoa(resp.APIClientID))
+	log.Printf("[INFO] Created Incapsula API client with ID: %d ", resp.APIClientID)
 
-	// Set the rest of the state from the resource read
+	if resp.APIKey != "" {
+		d.Set("api_key", resp.APIKey)
+	}
+
 	return resourceApiClientRead(ctx, d, m)
 }
 
@@ -120,29 +111,14 @@ func resourceApiClientUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	request := &APIClientUpdateRequest{}
 	changed := false
-	regenerate := false
 
-	if d.HasChange("expiration_period") {
-		log.Printf("[DEBUG] **** exp. changed true")
-		old, newVal := d.GetChange("expiration_period")
-		log.Printf("[DEBUG] **** old value:%s", old.(string))
-		log.Printf("[DEBUG] **** new value:%s", newVal.(string))
-		str := newVal.(string)
-		log.Printf("[DEBUG] **** str: %s", str)
-		request.ExpirationPeriod = d.Get("expiration_period").(string)
+	if d.HasChange("expiration_date") {
+		request.ExpirationDate = d.Get("expiration_date").(string)
+		request.Regenerate = true
 		changed = true
-		// If expiration is extended, set regenerate to true
-		if oldStr, ok := old.(string); ok && oldStr != "" && str != "" && str > oldStr {
-			regenerate = true
-			log.Printf("[DEBUG] **** regenerate: %v", regenerate)
-		}
 	}
 	if d.HasChange("enabled") {
 		request.Enabled = Bool(d.Get("enabled").(bool))
-		changed = true
-	}
-	if d.HasChange("grace_period_in_seconds") {
-		request.GracePeriod = d.Get("grace_period_in_seconds").(int)
 		changed = true
 	}
 
@@ -156,26 +132,17 @@ func resourceApiClientUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		changed = true
 	}
 
-	if regenerate {
-		request.Regenerate = regenerate
-	}
 	if !changed {
 		return resourceApiClientRead(ctx, d, meta)
 	}
-	log.Printf("[DEBUG] **** rsource file Patch API client request:%+v", request)
 
 	resp, err := client.PatchAPIClient(d.Get("account_id").(int), id, request)
 	if err != nil {
 		return diag.Errorf("error updating API client: %v", err)
 	}
 	if resp.APIKey != "" {
-		d.Set("api_key", d.Get("api_key"))
+		d.Set("api_key", resp.APIKey)
 	}
-
-	// There may be a timing/race condition here
-	// Set an arbitrary period to sleep
-	log.Printf("[DEBUG] Avoid timing/race condition, sleeping %d seconds\n", sleepTimeSeconds)
-	time.Sleep(10 * time.Second)
 
 	return resourceApiClientRead(ctx, d, meta)
 }
@@ -192,13 +159,11 @@ func resourceApiClientRead(ctx context.Context, d *schema.ResourceData, meta int
 		d.SetId("")
 		return nil
 	}
-	d.Set("name", d.Get("name"))
-	d.Set("description", d.Get("description"))
-	d.Set("api_key", resp.APIKey)
+	d.Set("name", resp.Name)
+	d.Set("description", resp.Description)
 	d.Set("enabled", resp.Enabled)
 	d.Set("expiration_date", resp.ExpirationDate)
 	d.Set("last_used_at", resp.LastUsedAt)
-	d.Set("grace_period_in_seconds", resp.GracePeriod)
 	return nil
 }
 

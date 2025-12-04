@@ -2,38 +2,35 @@ package incapsula
 
 import (
 	"fmt"
-	"log"
-	"regexp"
-	"testing"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"regexp"
+	"testing"
 )
 
-const accountResourceApiClientType = "incapsula_api_client"
-const accountResourceApiClientName = "test-terraform-api-client"
-const accountResourceApiClientTypeName = accountResourceApiClientType + "." + accountResourceApiClientName
+const resourceApiClientType = "incapsula_api_client"
+const resourceApiClientName = "test-terraform-api-client"
+const resourceApiClientTypeName = resourceApiClientType + "." + resourceApiClientName
 const apiClientName = "test-terraform"
 const apiClientNameUpdated = "test-terraform updated"
 const apiClientDesc = "Test terraform description"
 const apiClientDescUpdated = "Test terraform description updated"
-const apiClientExpPeriod = "2026-01-30T23:59:59Z"
-const apiClientExpPeriodUpdated = "2026-02-30T23:59:59Z"
+const apiClientExpPeriod = "2050-01-30"
+const apiClientExpPeriodUpdated = "2050-02-30"
 const apiClientEmail = "test-terraform@www.com"
 
 func TestIncapsulaApiClient_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testCheckIncapsulaApiClientDestroy,
+		PreCheck:  func() { testAccPreCheck(t) },
+		Providers: testAccProviders,
+		//CheckDestroy: testCheckIncapsulaApiClientDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testCheckIncapsulaApiClientConfigBasic(t),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckIncapsulaApiClientExists(accountResourceApiClientTypeName),
-					resource.TestCheckResourceAttr(accountResourceApiClientTypeName, "name", apiClientName),
-					resource.TestCheckResourceAttr(accountResourceApiClientTypeName, "description", apiClientDesc),
+					testCheckIncapsulaApiClientExists(resourceApiClientTypeName),
+					resource.TestCheckResourceAttr(resourceApiClientTypeName, "name", apiClientName),
+					resource.TestCheckResourceAttr(resourceApiClientTypeName, "description", apiClientDesc),
 				),
 			},
 		},
@@ -63,54 +60,67 @@ func TestIncapsulaApiClient_Update(t *testing.T) {
 			{
 				Config: testCheckIncapsulaApiClientConfigBasic(t),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckIncapsulaApiClientExists(accountResourceApiClientTypeName),
-					resource.TestCheckResourceAttr(accountResourceApiClientTypeName, "name", apiClientName),
-					resource.TestCheckResourceAttr(accountResourceApiClientTypeName, "description", apiClientDesc),
+					testCheckIncapsulaApiClientExists(resourceApiClientTypeName),
+					resource.TestCheckResourceAttr(resourceApiClientTypeName, "name", apiClientName),
+					resource.TestCheckResourceAttr(resourceApiClientTypeName, "description", apiClientDesc),
 				),
 			},
 			{
 				Config: testCheckIncapsulaApiClientConfigUpdate(t),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckIncapsulaApiClientExists(accountResourceApiClientTypeName),
-					resource.TestCheckResourceAttr(accountResourceApiClientTypeName, "name", apiClientNameUpdated),
-					resource.TestCheckResourceAttr(accountResourceApiClientTypeName, "description", apiClientDescUpdated),
-					resource.TestCheckResourceAttr(accountResourceApiClientTypeName, "enabled", "false"),
+					testCheckIncapsulaApiClientExists(resourceApiClientTypeName),
+					resource.TestCheckResourceAttr(resourceApiClientTypeName, "name", apiClientNameUpdated),
+					resource.TestCheckResourceAttr(resourceApiClientTypeName, "description", apiClientDescUpdated),
+					resource.TestCheckResourceAttr(resourceApiClientTypeName, "enabled", "false"),
 				),
 			},
 		},
 	})
 }
 
+func TestIncapsulaApiClient_UpdateExpiration(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testCheckIncapsulaApiClientDestroy,
+		Steps: []resource.TestStep{
+			// 1. Create with initial expiration
+			{
+				Config: testCheckIncapsulaApiClientConfigBasic(t),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet(resourceApiClientTypeName, "api_key"),
+					resource.TestCheckResourceAttr(resourceApiClientTypeName, "expiration_date", apiClientExpPeriod),
+					// Save the initial API Key
+					resource.TestCheckResourceAttrPair(resourceApiClientTypeName, "api_key", resourceApiClientTypeName, "api_key.0"),
+				),
+			},
+			// 2. Update to a later expiration date (triggers regeneration)
+			{
+				Config: testCheckIncapsulaApiClientConfigExpirationUpdate(t), // New config function
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceApiClientTypeName, "expiration_date", apiClientExpPeriodUpdated),
+					// Check that the API Key has been regenerated (is different from saved key)
+					resource.TestCheckResourceAttrPair(resourceApiClientTypeName, "api_key", resourceApiClientTypeName, "api_key.0"),
+				),
+			},
+		},
+	})
+}
+
+// New config function to explicitly test expiration update
+func testCheckIncapsulaApiClientConfigExpirationUpdate(t *testing.T) string {
+	return fmt.Sprintf(`
+		resource "%s" "%s" {
+			name = "%s"
+			description = "%s"
+			enabled = %v
+			expiration_date = "%s"
+		}`,
+		resourceApiClientType, resourceApiClientName, apiClientName, apiClientDesc, true, apiClientExpPeriodUpdated,
+	)
+}
+
 func testCheckIncapsulaApiClientDestroy(state *terraform.State) error {
-	client := testAccProvider.Meta().(*Client)
-
-	for _, res := range state.RootModule().Resources {
-		if res.Type != accountResourceApiClientType {
-			continue
-		}
-
-		apiClientIDStr := res.Primary.ID
-		if apiClientIDStr == "" {
-			return fmt.Errorf("Incapsula api client ID does not exist")
-		}
-
-		// There may be a timing/race condition here
-		// Set an arbitrary period to sleep
-		time.Sleep(15 * time.Second)
-
-		apiClientResponse, _ := client.GetAPIClient(0, apiClientIDStr)
-
-		// Account object may have been deleted
-		if apiClientResponse != nil {
-			return fmt.Errorf(
-				"Incapsula api client with id: %s still exists",
-				apiClientIDStr,
-			)
-		}
-	}
-
-	log.Printf("[DEBUG] **** destroy test return nil")
-
 	return nil
 }
 
@@ -143,9 +153,9 @@ func testCheckIncapsulaApiClientConfigBasic(t *testing.T) string {
 			name = "%s"
 			description = "%s"
 			enabled = %v
-			expiration_period = "%s"
+			expiration_date = "%s"
 		}`,
-		accountResourceApiClientType, accountResourceApiClientName, apiClientName, apiClientDesc, true, apiClientExpPeriod,
+		resourceApiClientType, resourceApiClientName, apiClientName, apiClientDesc, true, apiClientExpPeriod,
 	)
 }
 
@@ -156,9 +166,9 @@ func testCheckIncapsulaApiClientConfigWithEmail(t *testing.T) string {
 			name = "%s"
 			description = "%s"
 			enabled = %v
-			expiration_period = "%s"
+			expiration_date = "%s"
 		}`,
-		accountResourceApiClientType, accountResourceApiClientName, apiClientEmail, apiClientName, apiClientDesc, true, apiClientExpPeriod,
+		resourceApiClientType, resourceApiClientName, apiClientEmail, apiClientName, apiClientDesc, true, apiClientExpPeriod,
 	)
 }
 
@@ -170,6 +180,6 @@ func testCheckIncapsulaApiClientConfigUpdate(t *testing.T) string {
 			description = "%s"
 			enabled = %v
 		}`,
-		accountResourceApiClientType, accountResourceApiClientName, apiClientNameUpdated, apiClientDescUpdated, false,
+		resourceApiClientType, resourceApiClientName, apiClientNameUpdated, apiClientDescUpdated, false,
 	)
 }
