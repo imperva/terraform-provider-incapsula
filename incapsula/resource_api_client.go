@@ -46,12 +46,13 @@ func resourceApiClient() *schema.Resource {
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Description of the API client.",
 			},
 			"enabled": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
+				Computed:    true,
 				Description: "Whether the API client is enabled.",
 			},
 			"api_key": {
@@ -63,6 +64,7 @@ func resourceApiClient() *schema.Resource {
 			"expiration_date": {
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Description: "Expiration date of the API key (YYYY-MM-DD format only). Must be a future date. Changing this value will cause regeneration of the key.",
 			},
 			"last_used_at": {
