@@ -2,14 +2,15 @@ package incapsula
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
+	"regexp"
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"math/rand"
 )
 
 const siteV3ResourceName = "incapsula_site_v3.test-terraform-site-v3"
@@ -98,6 +99,27 @@ func TestIncapsulaSiteV3_isActive(t *testing.T) {
 	})
 }
 
+func TestIncapsulaSiteV3_AccountIdUpdateFails(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		Providers:    testAccProviders,
+		CheckDestroy: testCheckIncapsulaSiteV3Destroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testCheckIncapsulaSiteV3ConfigBasic(GenerateTestSiteName(nil), "CLOUD_WAF", ""),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaSiteExists(siteV3ResourceName),
+					resource.TestCheckResourceAttr(siteV3ResourceName, "name", siteName),
+					resource.TestCheckResourceAttr(siteV3ResourceName, "type", "CLOUD_WAF"),
+				),
+			},
+			{
+				Config:      testCheckIncapsulaSiteV3ConfigWithAccountId(siteName, "CLOUD_WAF", "999999"),
+				ExpectError: regexp.MustCompile("account_id cannot be updated for an existing site"),
+			},
+		},
+	})
+}
+
 func testCheckIncapsulaSiteV3Destroy(state *terraform.State) error {
 	client := testAccProvider.Meta().(*Client)
 
@@ -138,6 +160,19 @@ func testCheckIncapsulaSiteV3ConfigBasic(name string, siteType string, extraAttr
 		name,
 		siteType,
 		extraAttr,
+	)
+}
+
+func testCheckIncapsulaSiteV3ConfigWithAccountId(name string, siteType string, accountId string) string {
+	return fmt.Sprintf(`
+		resource "incapsula_site_v3" "test-terraform-site-v3" {
+			name = "%s"
+		    type = "%s"
+			account_id = "%s"
+		}`,
+		name,
+		siteType,
+		accountId,
 	)
 }
 
