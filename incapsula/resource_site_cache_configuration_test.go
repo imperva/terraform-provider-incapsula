@@ -115,7 +115,7 @@ func TestAccIncapsulaApplicationPerformance_basic(t *testing.T) {
 				Config: testSmartCaching(domainName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckApplicationPerformanceExists(applicationPerformanceResource),
-					resource.TestCheckResourceAttr(applicationPerformanceResource, "client_comply_no_cache", "true"),
+					resource.TestCheckResourceAttr(applicationPerformanceResource, "client_comply_no_cache", "false"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "client_enable_client_side_caching", "true"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "client_send_age_header", "true"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "key_comply_vary", "true"),
@@ -164,7 +164,7 @@ func TestAccIncapsulaApplicationPerformance_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_cache_response_header_mode", "all"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_cache_response_headers.#", "0"),
 
-					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_stale_content_mode", "adaptive"),
+					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_stale_content_mode", "disabled"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "response_tag_response_header", "myHeader"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "ttl_prefer_last_modified", "true"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "ttl_use_shortest_caching", "true"),
@@ -175,7 +175,7 @@ func TestAccIncapsulaApplicationPerformance_basic(t *testing.T) {
 				Config: testMultipleResponseHeaders(domainName),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckApplicationPerformanceExists(applicationPerformanceResource),
-					resource.TestCheckResourceAttr(applicationPerformanceResource, "client_comply_no_cache", "true"),
+					resource.TestCheckResourceAttr(applicationPerformanceResource, "client_comply_no_cache", "false"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "client_enable_client_side_caching", "true"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "client_send_age_header", "true"),
 					resource.TestCheckResourceAttr(applicationPerformanceResource, "key_comply_vary", "true"),
@@ -355,7 +355,7 @@ func testSmartCaching(domainName string) string {
 resource "%s" "%s" {
 	site_id = incapsula_site_v3.test-terraform-site-v3.id
 	depends_on = ["incapsula_site_v3.test-terraform-site-v3"]
-	client_comply_no_cache = true
+	client_comply_no_cache = false
 	client_enable_client_side_caching = true
 	client_send_age_header = true
 	key_comply_vary = true
@@ -399,7 +399,7 @@ resource "%s" "%s" {
 	response_cache_empty_responses = true
 	response_cache_http_10_responses = true
 	response_cache_response_header_mode = "all"
-	response_stale_content_mode = "adaptive"
+	response_stale_content_mode = "disabled"
 	response_tag_response_header = "myHeader"
 	ttl_prefer_last_modified = true
 	ttl_use_shortest_caching = true
@@ -413,7 +413,7 @@ func testMultipleResponseHeaders(domainName string) string {
 resource "%s" "%s" {
 	site_id = incapsula_site_v3.test-terraform-site-v3.id
 	depends_on = ["incapsula_site_v3.test-terraform-site-v3"]
-	client_comply_no_cache = true
+	client_comply_no_cache = false
 	client_enable_client_side_caching = true
 	client_send_age_header = true
 	key_comply_vary = true
