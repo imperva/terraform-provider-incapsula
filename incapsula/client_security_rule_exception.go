@@ -22,7 +22,7 @@ var securityRuleExceptionParamMapping = map[string][]string{
 	blacklistedURLsExceptionRuleID:      {"client_apps", "countries", "continents", "ips", "urls"},
 	// WAF RuleIDs
 	backdoorExceptionRuleID:              {"client_apps", "countries", "continents", "ips", "urls", "user_agents", "parameters"},
-	botAccessControlExceptionRuleID:      {"client_app_types", "ips", "urls", "user_agents"},
+	botAccessControlExceptionRuleID:      {"client_app_types", "client_apps", "countries", "continents", "ips", "urls", "user_agents"},
 	crossSiteScriptingExceptionRuleID:    {"client_apps", "countries", "continents", "urls", "parameters"},
 	ddosExceptionRuleID:                  {"client_apps", "countries", "continents", "ips", "urls"},
 	illegalResourceAccessExceptionRuleID: {"client_apps", "countries", "continents", "ips", "urls", "parameters"},
