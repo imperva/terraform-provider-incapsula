@@ -51,7 +51,6 @@ func testACCStateApiSecurityApiConfigDestroy(s *terraform.State) error {
 		if rs.Type != apiSecApiConfigResourceName {
 			continue
 		}
-		return nil
 
 		siteID := rs.Primary.Attributes["site_id"]
 		if siteID == "" {

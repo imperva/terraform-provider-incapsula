@@ -44,7 +44,6 @@ func testACCStateSiteClientToImervaCertificateAssociationDestroy(s *terraform.St
 		if res.Type != siteClientToImervaCertificateAssociationResourceName {
 			continue
 		}
-		return nil
 
 		siteID, certificateID := getResourceDetails(res)
 

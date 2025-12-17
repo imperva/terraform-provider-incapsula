@@ -166,7 +166,7 @@ func resourceATOSiteAllowlistUpdate(d *schema.ResourceData, m interface{}) error
 	atoAllowlistDTO, err := formAtoAllowlistDTOFromMap(atoAllowlistMap)
 	if err != nil {
 		e := fmt.Errorf("[Error] Error forming ATO allow list object for API call : %s", err)
-		log.Printf(e.Error())
+		log.Print(e.Error())
 		return err
 	}
 

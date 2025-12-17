@@ -60,7 +60,7 @@ func TestClientGetDomainsForSiteValidCase(t *testing.T) {
 }`))
 	}))
 	defer server.Close()
-	log.Printf("ENDPOINT: " + endpoint)
+	log.Print("ENDPOINT: " + endpoint)
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
@@ -74,8 +74,8 @@ func TestClientGetDomainsForSiteValidCase(t *testing.T) {
 }
 
 func TestClientGetDomainsForSiteBadJsonResponse(t *testing.T) {
-	log.Printf("======================== BEGIN TEST ========================")
-	log.Printf("[DEBUG] Running test client_site_domain_configuration_test.TestClientGetDomainsForSiteBadJsonResponse")
+	log.Print("======================== BEGIN TEST ========================")
+	log.Print("[DEBUG] Running test client_site_domain_configuration_test.TestClientGetDomainsForSiteBadJsonResponse")
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "111"
@@ -90,7 +90,7 @@ func TestClientGetDomainsForSiteBadJsonResponse(t *testing.T) {
 		rw.Write([]byte(`{`))
 	}))
 	defer server.Close()
-	log.Printf("ENDPOINT: " + endpoint)
+	log.Print("ENDPOINT: " + endpoint)
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
@@ -126,7 +126,7 @@ func TestClientGetDomainsForSiteUnAuthorizedResponse(t *testing.T) {
 		rw.Write([]byte(`{}`))
 	}))
 	defer server.Close()
-	log.Printf("ENDPOINT: " + endpoint)
+	log.Print("ENDPOINT: " + endpoint)
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
@@ -194,7 +194,7 @@ func TestClientAddDomainsForSiteValidCase(t *testing.T) {
 	}))
 
 	defer server.Close()
-	log.Printf("ENDPOINT: " + bulkUpdateEndpoint)
+	log.Print("ENDPOINT: " + bulkUpdateEndpoint)
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
@@ -258,7 +258,7 @@ func TestClientAddDomainsForSiteErrorResponse(t *testing.T) {
 	}))
 
 	defer server.Close()
-	log.Printf("ENDPOINT: " + bulkUpdateEndpoint)
+	log.Print("ENDPOINT: " + bulkUpdateEndpoint)
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
