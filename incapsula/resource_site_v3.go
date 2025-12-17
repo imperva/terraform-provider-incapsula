@@ -3,11 +3,12 @@ package incapsula
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceSiteV3() *schema.Resource {
@@ -16,6 +17,12 @@ func resourceSiteV3() *schema.Resource {
 		ReadContext:   resourceSiteV3Read,
 		UpdateContext: resourceSiteV3Update,
 		DeleteContext: resourceSiteV3Delete,
+		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
+			if d.HasChange("account_id") {
+				return fmt.Errorf("account_id cannot be updated for an existing site")
+			}
+			return nil
+		},
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 
