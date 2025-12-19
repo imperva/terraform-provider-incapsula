@@ -437,7 +437,7 @@ func TestClientDeleteSiemLogConfigurationFailure(t *testing.T) {
 			t.Errorf("Error is expected for status %d", k)
 		}
 
-		if !strings.Contains(err.Error(), fmt.Sprintf(v)) {
+		if !strings.Contains(err.Error(), v) {
 			t.Errorf("Should have received a %s response, got: %s", v, err)
 		}
 	}

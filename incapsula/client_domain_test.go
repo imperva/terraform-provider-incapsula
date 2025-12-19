@@ -34,7 +34,7 @@ func TestClientGetDomainForSiteValidCase(t *testing.T) {
 }`))
 	}))
 	defer server.Close()
-	log.Printf("ENDPOINT: " + endpoint)
+	log.Print("ENDPOINT: " + endpoint)
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
@@ -49,8 +49,8 @@ func TestClientGetDomainForSiteValidCase(t *testing.T) {
 	verifyResponse(t, addDomainResponse)
 }
 func TestClientAddDomainForSiteValidCase(t *testing.T) {
-	log.Printf("======================== BEGIN TEST ========================")
-	log.Printf("[DEBUG] Running test client_site_domain_configuration_test.TestClientGetDomainsForSiteValidCase")
+	log.Print("======================== BEGIN TEST ========================")
+	log.Print("[DEBUG] Running test client_site_domain_configuration_test.TestClientGetDomainsForSiteValidCase")
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "111"
@@ -73,7 +73,7 @@ func TestClientAddDomainForSiteValidCase(t *testing.T) {
 }`))
 	}))
 	defer server.Close()
-	log.Printf("ENDPOINT: " + endpoint)
+	log.Print("ENDPOINT: " + endpoint)
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
@@ -90,8 +90,8 @@ func TestClientAddDomainForSiteValidCase(t *testing.T) {
 }
 
 func TestClientAddDomainForSiteInvalidCase(t *testing.T) {
-	log.Printf("======================== BEGIN TEST ========================")
-	log.Printf("[DEBUG] Running test client_site_domain_configuration_test.TestClientGetDomainsForSiteValidCase")
+	log.Print("======================== BEGIN TEST ========================")
+	log.Print("[DEBUG] Running test client_site_domain_configuration_test.TestClientGetDomainsForSiteValidCase")
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "111"
@@ -120,7 +120,7 @@ func TestClientAddDomainForSiteInvalidCase(t *testing.T) {
 		}`))
 	}))
 	defer server.Close()
-	log.Printf("ENDPOINT: " + endpoint)
+	log.Print("ENDPOINT: " + endpoint)
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
