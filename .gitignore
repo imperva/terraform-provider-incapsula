@@ -7,6 +7,7 @@ examples/ignore
 incapsula/c.out
 terraform-provider-incapsula
 mock-server
+incapsula.test
 .idea/
 .tmp/
 .claude/

@@ -1,3 +1,14 @@
+// Mock Imperva API Server
+//
+// This file implements a mock server for the Imperva API, enabling tests to run
+// without requiring real API credentials.
+//
+// API Documentation:
+//   - Cloud v1 API: https://docs-cybersec-be.thalesgroup.com/api/bundle/api-docs/page/cloud-v1-api-definition.htm
+//   - CSP API: https://docs-cybersec-be.thalesgroup.com/api/bundle/api-docs/page/csp-api-definition.htm
+//
+// Implemented endpoints are documented in README.md under "Mock Server for Testing".
+
 package incapsula
 
 import (
@@ -33,12 +44,22 @@ type MockImpervaServer struct {
 
 // MockAccount represents an account in the mock server
 type MockAccount struct {
-	AccountID   int    `json:"account_id"`
-	Email       string `json:"email"`
-	ParentID    int    `json:"parent_id"`
-	AccountName string `json:"account_name"`
-	PlanID      string `json:"plan_id"`
-	RefID       string `json:"ref_id"`
+	AccountID    int         `json:"account_id"`
+	Email        string      `json:"email"`
+	ParentID     int         `json:"parent_id"`
+	AccountName  string      `json:"account_name"`
+	PlanID       string      `json:"plan_id"`
+	RefID        string      `json:"ref_id"`
+	UserName     string      `json:"user_name"`
+	TrialEndDate string      `json:"trial_end_date"`
+	Logins       []MockLogin `json:"logins"`
+}
+
+// MockLogin represents a login entry for an account
+type MockLogin struct {
+	LoginID       float64 `json:"login_id"`
+	Email         string  `json:"email"`
+	EmailVerified bool    `json:"email_verified"`
 }
 
 // MockSite represents a site in the mock server
@@ -54,25 +75,33 @@ type MockSite struct {
 }
 
 // MockCSPDomain represents a CSP pre-approved domain in the mock server
+// See: https://docs-cybersec-be.thalesgroup.com/api/bundle/api-docs/page/csp-api-definition.htm
 type MockCSPDomain struct {
-	Domain      string         `json:"domain"`
-	Subdomains  bool           `json:"subdomains"`
-	ReferenceID string         `json:"referenceId"`
-	Notes       []MockCSPNote  `json:"notes,omitempty"`
-	Status      *MockCSPStatus `json:"status,omitempty"`
+	Domain                   string         `json:"domain"`
+	Subdomains               bool           `json:"subdomains"`
+	ReferenceID              string         `json:"referenceId"`
+	ApplyToAllOnboardedPaths bool           `json:"applyToAllOnboardedPaths"`
+	Notes                    []MockCSPNote  `json:"notes,omitempty"`
+	Status                   *MockCSPStatus `json:"status,omitempty"`
 }
 
-// MockCSPNote represents a note on a CSP domain
+// MockCSPNote represents a note on a CSP domain (FullNote in API docs)
 type MockCSPNote struct {
 	Text   string `json:"text"`
 	Author string `json:"author"`
 	Date   int64  `json:"date"`
 }
 
-// MockCSPStatus represents the status of a CSP domain
+// MockCSPStatus represents the authorization status of a CSP domain (AuthorizationStatus in API docs)
+// See: https://docs-cybersec-be.thalesgroup.com/api/bundle/api-docs/page/csp-api-definition.htm
 type MockCSPStatus struct {
-	Blocked  *bool `json:"blocked,omitempty"`
-	Reviewed *bool `json:"reviewed,omitempty"`
+	Blocked     *bool  `json:"blocked,omitempty"`
+	Reviewed    *bool  `json:"reviewed,omitempty"`
+	Note        string `json:"note,omitempty"`
+	Author      string `json:"author,omitempty"`
+	ReviewedAt  int64  `json:"reviewedAt,omitempty"`
+	LastNoteAt  int64  `json:"lastNoteAt,omitempty"`
+	ForceChange bool   `json:"forceChange,omitempty"`
 }
 
 // NewMockImpervaServer creates a new mock server instance
@@ -123,6 +152,10 @@ func (m *MockImpervaServer) router(w http.ResponseWriter, r *http.Request) {
 		m.handleAccountUpdate(w, r)
 	case path == "accounts/delete" && r.Method == http.MethodPost:
 		m.handleAccountDelete(w, r)
+	case path == "accounts/data-privacy/show" && r.Method == http.MethodPost:
+		m.handleDataPrivacyShow(w, r)
+	case path == "accounts/data-privacy/set-region-default" && r.Method == http.MethodPost:
+		m.handleDataPrivacySetRegionDefault(w, r)
 
 	// Site endpoints
 	case path == "sites/add" && r.Method == http.MethodPost:
@@ -191,43 +224,58 @@ func (m *MockImpervaServer) parseFormInt(r *http.Request, key string) int {
 
 // Account Handlers
 
+// handleAccountAdd handles POST /accounts/add
+// See: https://docs-cybersec-be.thalesgroup.com/api/bundle/api-docs/page/cloud-v1-api-definition.htm
 func (m *MockImpervaServer) handleAccountAdd(w http.ResponseWriter, r *http.Request) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	// Parse form data
 	r.ParseForm()
 	email := m.parseFormValue(r, "email")
+	userName := m.parseFormValue(r, "user_name")
 
-	// Generate new account ID
 	accountID := m.nextAccountID
 	m.nextAccountID++
 
-	// Create account
+	logins := []MockLogin{
+		{
+			LoginID:       float64(accountID),
+			Email:         email,
+			EmailVerified: true,
+		},
+	}
+
 	account := &MockAccount{
-		AccountID:   accountID,
-		Email:       email,
-		ParentID:    m.parseFormInt(r, "parent_id"),
-		AccountName: m.parseFormValue(r, "account_name"),
-		PlanID:      m.parseFormValue(r, "plan_id"),
-		RefID:       m.parseFormValue(r, "ref_id"),
+		AccountID:    accountID,
+		Email:        email,
+		ParentID:     m.parseFormInt(r, "parent_id"),
+		AccountName:  m.parseFormValue(r, "account_name"),
+		PlanID:       m.parseFormValue(r, "plan_id"),
+		RefID:        m.parseFormValue(r, "ref_id"),
+		UserName:     userName,
+		TrialEndDate: "",
+		Logins:       logins,
 	}
 
 	m.accounts[accountID] = account
 
-	// Return response
 	response := map[string]interface{}{
 		"res": 0,
-		"Account": map[string]interface{}{
+		"account": map[string]interface{}{
 			"account_id":   accountID,
 			"email":        email,
 			"parent_id":    account.ParentID,
 			"account_name": account.AccountName,
+			"plan_id":      account.PlanID,
+			"user_name":    account.UserName,
+			"logins":       logins,
 		},
 	}
 	m.writeJSONResponse(w, response)
 }
 
+// handleAccountStatus handles POST /account
+// See: https://docs-cybersec-be.thalesgroup.com/api/bundle/api-docs/page/cloud-v1-api-definition.htm
 func (m *MockImpervaServer) handleAccountStatus(w http.ResponseWriter, r *http.Request) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -237,12 +285,34 @@ func (m *MockImpervaServer) handleAccountStatus(w http.ResponseWriter, r *http.R
 
 	// If no account_id specified, return default account status (for credential verification)
 	if accountID == 0 {
+		defaultLogins := []map[string]interface{}{
+			{"login_id": 1000.0, "email": "test@example.com", "email_verified": true},
+		}
 		response := map[string]interface{}{
 			"res":         0,
 			"res_message": "OK",
 			"account_id":  1000,
 			"email":       "test@example.com",
 			"plan_name":   "Enterprise",
+			"plan_id":     "entTrial",
+			"user_name":   "test",
+			"logins":      defaultLogins,
+			"account": map[string]interface{}{
+				"account_id":                           1000,
+				"email":                                "test@example.com",
+				"plan_name":                            "Enterprise",
+				"plan_id":                              "entTrial",
+				"user_name":                            "test",
+				"trial_end_date":                       "",
+				"logins":                               defaultLogins,
+				"support_level":                        "Standard",
+				"supprt_all_tls_versions":              false,
+				"wildcard_san_for_new_sites":           "Default",
+				"naked_domain_san_for_new_www_sites":   true,
+				"inactivity_timeout":                   15,
+				"enable_http2_for_new_sites":           true,
+				"enable_http2_to_origin_for_new_sites": false,
+			},
 		}
 		m.writeJSONResponse(w, response)
 		return
@@ -254,6 +324,15 @@ func (m *MockImpervaServer) handleAccountStatus(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	loginsInterface := make([]map[string]interface{}, len(account.Logins))
+	for i, login := range account.Logins {
+		loginsInterface[i] = map[string]interface{}{
+			"login_id":       login.LoginID,
+			"email":          login.Email,
+			"email_verified": login.EmailVerified,
+		}
+	}
+
 	response := map[string]interface{}{
 		"res":          0,
 		"res_message":  "OK",
@@ -262,10 +341,37 @@ func (m *MockImpervaServer) handleAccountStatus(w http.ResponseWriter, r *http.R
 		"parent_id":    account.ParentID,
 		"account_name": account.AccountName,
 		"plan_name":    "Enterprise",
+		"plan_id":      account.PlanID,
+		"user_name":    account.UserName,
+		"ref_id":       account.RefID,
+		"account_type": "SubAccount",
+		"logins":       loginsInterface,
+		"account": map[string]interface{}{
+			"account_id":                           account.AccountID,
+			"email":                                account.Email,
+			"parent_id":                            account.ParentID,
+			"account_name":                         account.AccountName,
+			"plan_name":                            "Enterprise",
+			"plan_id":                              account.PlanID,
+			"ref_id":                               account.RefID,
+			"user_name":                            account.UserName,
+			"trial_end_date":                       account.TrialEndDate,
+			"logins":                               loginsInterface,
+			"support_level":                        "Standard",
+			"supprt_all_tls_versions":              false,
+			"wildcard_san_for_new_sites":           "Default",
+			"naked_domain_san_for_new_www_sites":   true,
+			"inactivity_timeout":                   15,
+			"enable_http2_for_new_sites":           true,
+			"enable_http2_to_origin_for_new_sites": false,
+		},
 	}
 	m.writeJSONResponse(w, response)
 }
 
+// handleAccountUpdate handles POST /accounts/configure
+// Uses param/value pattern as per API documentation
+// See: https://docs-cybersec-be.thalesgroup.com/api/bundle/api-docs/page/cloud-v1-api-definition.htm
 func (m *MockImpervaServer) handleAccountUpdate(w http.ResponseWriter, r *http.Request) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -279,17 +385,42 @@ func (m *MockImpervaServer) handleAccountUpdate(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	// Update fields if provided
-	if name := m.parseFormValue(r, "account_name"); name != "" {
-		account.AccountName = name
-	}
-	if refID := m.parseFormValue(r, "ref_id"); refID != "" {
-		account.RefID = refID
+	// API uses param/value pattern for updates
+	param := m.parseFormValue(r, "param")
+	value := m.parseFormValue(r, "value")
+
+	if param != "" {
+		switch param {
+		case "account_name", "name":
+			account.AccountName = value
+		case "email":
+			account.Email = value
+		case "ref_id":
+			account.RefID = value
+		case "plan_id":
+			account.PlanID = value
+		case "user_name":
+			account.UserName = value
+		case "support_all_tls_versions",
+			"naked_domain_san_for_new_www_sites",
+			"wildcard_san_for_new_sites",
+			"enable_http2_for_new_sites",
+			"enable_http2_to_origin_for_new_sites",
+			"error_page_template",
+			"consent_required",
+			"inactivity_timeout":
+			// Accept these parameters silently - mock server just acknowledges them
+		default:
+			// Unknown param - return error code 6001 as per docs
+			m.writeErrorResponse(w, 6001, fmt.Sprintf("Invalid parameter: %s", param))
+			return
+		}
 	}
 
 	response := map[string]interface{}{
 		"res":         0,
 		"res_message": "OK",
+		"account_id":  account.AccountID,
 	}
 	m.writeJSONResponse(w, response)
 }
@@ -307,6 +438,29 @@ func (m *MockImpervaServer) handleAccountDelete(w http.ResponseWriter, r *http.R
 	}
 
 	delete(m.accounts, accountID)
+
+	response := map[string]interface{}{
+		"res":         0,
+		"res_message": "OK",
+	}
+	m.writeJSONResponse(w, response)
+}
+
+func (m *MockImpervaServer) handleDataPrivacyShow(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+
+	response := map[string]interface{}{
+		"res":                    0,
+		"res_message":            "OK",
+		"region":                 "US",
+		"waf_log_setup_link":     "",
+		"regions_on_setup_alarm": false,
+	}
+	m.writeJSONResponse(w, response)
+}
+
+func (m *MockImpervaServer) handleDataPrivacySetRegionDefault(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
 
 	response := map[string]interface{}{
 		"res":         0,
@@ -396,6 +550,9 @@ func (m *MockImpervaServer) handleSiteStatus(w http.ResponseWriter, r *http.Requ
 	m.writeJSONResponse(w, response)
 }
 
+// handleSiteUpdate handles POST /sites/configure
+// Uses param/value pattern as per API documentation
+// See: https://docs-cybersec-be.thalesgroup.com/api/bundle/api-docs/page/cloud-v1-api-definition.htm
 func (m *MockImpervaServer) handleSiteUpdate(w http.ResponseWriter, r *http.Request) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -409,17 +566,29 @@ func (m *MockImpervaServer) handleSiteUpdate(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// Update fields if provided
-	if status := m.parseFormValue(r, "status"); status != "" {
-		site.Status = status
-	}
-	if refID := m.parseFormValue(r, "ref_id"); refID != "" {
-		site.RefID = refID
+	// API uses param/value pattern for updates
+	param := m.parseFormValue(r, "param")
+	value := m.parseFormValue(r, "value")
+
+	if param != "" {
+		switch param {
+		case "domain":
+			site.Domain = value
+		case "ref_id":
+			site.RefID = value
+		case "site_type":
+			site.SiteType = value
+		default:
+			// Unknown param - return error
+			m.writeErrorResponse(w, 6001, fmt.Sprintf("Invalid parameter: %s", param))
+			return
+		}
 	}
 
 	response := map[string]interface{}{
 		"res":         0,
 		"res_message": "OK",
+		"site_id":     site.SiteID,
 	}
 	m.writeJSONResponse(w, response)
 }
@@ -500,6 +669,7 @@ func (m *MockImpervaServer) handleCSPPreapprovedList(w http.ResponseWriter, r *h
 }
 
 // handleCSPListAllDomains returns all pre-approved domains for a site
+// See: https://docs-cybersec-be.thalesgroup.com/api/bundle/api-docs/page/csp-api-definition.htm
 func (m *MockImpervaServer) handleCSPListAllDomains(w http.ResponseWriter, siteID int) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -508,9 +678,10 @@ func (m *MockImpervaServer) handleCSPListAllDomains(w http.ResponseWriter, siteI
 	if siteDomains, exists := m.cspDomains[siteID]; exists {
 		for _, domain := range siteDomains {
 			domains = append(domains, map[string]interface{}{
-				"domain":      domain.Domain,
-				"subdomains":  domain.Subdomains,
-				"referenceId": domain.ReferenceID,
+				"domain":                   domain.Domain,
+				"subdomains":               domain.Subdomains,
+				"referenceId":              domain.ReferenceID,
+				"applyToAllOnboardedPaths": domain.ApplyToAllOnboardedPaths,
 			})
 		}
 	}
@@ -519,6 +690,7 @@ func (m *MockImpervaServer) handleCSPListAllDomains(w http.ResponseWriter, siteI
 }
 
 // handleCSPGetDomain returns a specific pre-approved domain
+// See: https://docs-cybersec-be.thalesgroup.com/api/bundle/api-docs/page/csp-api-definition.htm
 func (m *MockImpervaServer) handleCSPGetDomain(w http.ResponseWriter, siteID int, domainRef string) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -545,14 +717,17 @@ func (m *MockImpervaServer) handleCSPGetDomain(w http.ResponseWriter, siteID int
 	}
 
 	response := map[string]interface{}{
-		"domain":      cspDomain.Domain,
-		"subdomains":  cspDomain.Subdomains,
-		"referenceId": cspDomain.ReferenceID,
+		"domain":                   cspDomain.Domain,
+		"subdomains":               cspDomain.Subdomains,
+		"referenceId":              cspDomain.ReferenceID,
+		"applyToAllOnboardedPaths": cspDomain.ApplyToAllOnboardedPaths,
 	}
 	m.writeJSONResponse(w, response)
 }
 
 // handleCSPAddDomain adds a new pre-approved domain
+// Request body: ShallowPreApprovedDomain, Response: PreApprovedDomain
+// See: https://docs-cybersec-be.thalesgroup.com/api/bundle/api-docs/page/csp-api-definition.htm
 func (m *MockImpervaServer) handleCSPAddDomain(w http.ResponseWriter, r *http.Request, siteID int) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -565,8 +740,9 @@ func (m *MockImpervaServer) handleCSPAddDomain(w http.ResponseWriter, r *http.Re
 	}
 
 	var domainReq struct {
-		Domain     string `json:"domain"`
-		Subdomains bool   `json:"subdomains"`
+		Domain                   string `json:"domain"`
+		Subdomains               bool   `json:"subdomains"`
+		ApplyToAllOnboardedPaths bool   `json:"applyToAllOnboardedPaths"`
 	}
 	if err := json.Unmarshal(body, &domainReq); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -580,19 +756,21 @@ func (m *MockImpervaServer) handleCSPAddDomain(w http.ResponseWriter, r *http.Re
 
 	refID := base64.RawURLEncoding.EncodeToString([]byte(domainReq.Domain))
 	cspDomain := &MockCSPDomain{
-		Domain:      domainReq.Domain,
-		Subdomains:  domainReq.Subdomains,
-		ReferenceID: refID,
-		Notes:       []MockCSPNote{},
-		Status:      &MockCSPStatus{},
+		Domain:                   domainReq.Domain,
+		Subdomains:               domainReq.Subdomains,
+		ReferenceID:              refID,
+		ApplyToAllOnboardedPaths: domainReq.ApplyToAllOnboardedPaths,
+		Notes:                    []MockCSPNote{},
+		Status:                   &MockCSPStatus{},
 	}
 	m.cspDomains[siteID][domainReq.Domain] = cspDomain
 
 	w.WriteHeader(http.StatusCreated)
 	response := map[string]interface{}{
-		"domain":      cspDomain.Domain,
-		"subdomains":  cspDomain.Subdomains,
-		"referenceId": cspDomain.ReferenceID,
+		"domain":                   cspDomain.Domain,
+		"subdomains":               cspDomain.Subdomains,
+		"referenceId":              cspDomain.ReferenceID,
+		"applyToAllOnboardedPaths": cspDomain.ApplyToAllOnboardedPaths,
 	}
 	m.writeJSONResponse(w, response)
 }
@@ -645,14 +823,15 @@ func (m *MockImpervaServer) handleCSPDomainStatus(w http.ResponseWriter, r *http
 	}
 }
 
-// handleCSPGetDomainStatus returns the status of a domain
+// handleCSPGetDomainStatus returns the authorization status of a domain
+// Returns AuthorizationStatus object as per API documentation
+// See: https://docs-cybersec-be.thalesgroup.com/api/bundle/api-docs/page/csp-api-definition.htm
 func (m *MockImpervaServer) handleCSPGetDomainStatus(w http.ResponseWriter, siteID int, domain string) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
 	siteDomains, exists := m.cspDomains[siteID]
 	if !exists {
-		// Return default status for non-existent domains
 		m.writeJSONResponse(w, map[string]interface{}{})
 		return
 	}
@@ -675,6 +854,20 @@ func (m *MockImpervaServer) handleCSPGetDomainStatus(w http.ResponseWriter, site
 	if cspDomain.Status.Reviewed != nil {
 		response["reviewed"] = *cspDomain.Status.Reviewed
 	}
+	if cspDomain.Status.Note != "" {
+		response["note"] = cspDomain.Status.Note
+	}
+	if cspDomain.Status.Author != "" {
+		response["author"] = cspDomain.Status.Author
+	}
+	if cspDomain.Status.ReviewedAt != 0 {
+		response["reviewedAt"] = cspDomain.Status.ReviewedAt
+	}
+	if cspDomain.Status.LastNoteAt != 0 {
+		response["lastNoteAt"] = cspDomain.Status.LastNoteAt
+	}
+	response["forceChange"] = cspDomain.Status.ForceChange
+
 	m.writeJSONResponse(w, response)
 }
 
@@ -716,13 +909,30 @@ func (m *MockImpervaServer) handleCSPUpdateDomainStatus(w http.ResponseWriter, r
 	if cspDomain.Status == nil {
 		cspDomain.Status = &MockCSPStatus{}
 	}
+
+	// Update all AuthorizationStatus fields from request
+	// See: https://docs-cybersec-be.thalesgroup.com/api/bundle/api-docs/page/csp-api-definition.htm
 	if statusReq.Blocked != nil {
 		cspDomain.Status.Blocked = statusReq.Blocked
 	}
 	if statusReq.Reviewed != nil {
 		cspDomain.Status.Reviewed = statusReq.Reviewed
 	}
+	if statusReq.Note != "" {
+		cspDomain.Status.Note = statusReq.Note
+	}
+	if statusReq.Author != "" {
+		cspDomain.Status.Author = statusReq.Author
+	}
+	if statusReq.ReviewedAt != 0 {
+		cspDomain.Status.ReviewedAt = statusReq.ReviewedAt
+	}
+	if statusReq.LastNoteAt != 0 {
+		cspDomain.Status.LastNoteAt = statusReq.LastNoteAt
+	}
+	cspDomain.Status.ForceChange = statusReq.ForceChange
 
+	// Build response with all AuthorizationStatus fields
 	response := map[string]interface{}{}
 	if cspDomain.Status.Blocked != nil {
 		response["blocked"] = *cspDomain.Status.Blocked
@@ -730,6 +940,19 @@ func (m *MockImpervaServer) handleCSPUpdateDomainStatus(w http.ResponseWriter, r
 	if cspDomain.Status.Reviewed != nil {
 		response["reviewed"] = *cspDomain.Status.Reviewed
 	}
+	if cspDomain.Status.Note != "" {
+		response["note"] = cspDomain.Status.Note
+	}
+	if cspDomain.Status.Author != "" {
+		response["author"] = cspDomain.Status.Author
+	}
+	if cspDomain.Status.ReviewedAt != 0 {
+		response["reviewedAt"] = cspDomain.Status.ReviewedAt
+	}
+	if cspDomain.Status.LastNoteAt != 0 {
+		response["lastNoteAt"] = cspDomain.Status.LastNoteAt
+	}
+	response["forceChange"] = cspDomain.Status.ForceChange
 	m.writeJSONResponse(w, response)
 }
 

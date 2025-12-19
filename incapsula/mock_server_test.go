@@ -3,11 +3,62 @@ package incapsula
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 	"testing"
 )
+
+func TestAccountStatusResponseParsing(t *testing.T) {
+	mock := NewMockImpervaServer()
+	defer mock.Close()
+
+	// Create account
+	resp, err := http.PostForm(mock.URL()+"/accounts/add", url.Values{
+		"email":        {"test@example.com"},
+		"account_name": {"Test Account"},
+		"parent_id":    {"0"},
+	})
+	if err != nil {
+		t.Fatalf("Failed to create account: %v", err)
+	}
+	body, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+
+	var createResp map[string]interface{}
+	json.Unmarshal(body, &createResp)
+	account := createResp["account"].(map[string]interface{})
+	accountID := int(account["account_id"].(float64))
+
+	// Get status
+	resp, err = http.PostForm(mock.URL()+"/account", url.Values{
+		"account_id": {fmt.Sprintf("%d", accountID)},
+	})
+	if err != nil {
+		t.Fatalf("Failed to get status: %v", err)
+	}
+	body, _ = ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+
+	t.Logf("Raw account status response: %s", string(body))
+
+	// Parse using the actual AccountStatusResponse struct
+	var statusResponse AccountStatusResponse
+	if err := json.Unmarshal(body, &statusResponse); err != nil {
+		t.Fatalf("Failed to parse status response: %v", err)
+	}
+
+	t.Logf("Parsed InactivityTimeout: %d", statusResponse.Account.InactivityTimeout)
+	t.Logf("Parsed WildcardSANForNewSites: %s", statusResponse.Account.WildcardSANForNewSites)
+
+	if statusResponse.Account.InactivityTimeout != 15 {
+		t.Errorf("Expected InactivityTimeout=15, got %d", statusResponse.Account.InactivityTimeout)
+	}
+	if statusResponse.Account.WildcardSANForNewSites != "Default" {
+		t.Errorf("Expected WildcardSANForNewSites='Default', got '%s'", statusResponse.Account.WildcardSANForNewSites)
+	}
+}
 
 func TestMockServerAccountLifecycle(t *testing.T) {
 	mock := NewMockImpervaServer()
@@ -33,7 +84,7 @@ func TestMockServerAccountLifecycle(t *testing.T) {
 		t.Errorf("Expected res=0, got %v", createResp["res"])
 	}
 
-	account := createResp["Account"].(map[string]interface{})
+	account := createResp["account"].(map[string]interface{})
 	accountID := int(account["account_id"].(float64))
 
 	if accountID < 1000 {
@@ -51,6 +102,19 @@ func TestMockServerAccountLifecycle(t *testing.T) {
 		t.Fatalf("Failed to get account status: %v", err)
 	}
 	defer resp.Body.Close()
+
+	var statusResp map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&statusResp); err != nil {
+		t.Fatalf("Failed to decode status response: %v", err)
+	}
+
+	statusAccount := statusResp["account"].(map[string]interface{})
+	if inactivityTimeout, ok := statusAccount["inactivity_timeout"].(float64); !ok || inactivityTimeout != 15 {
+		t.Errorf("Expected inactivity_timeout=15, got %v", statusAccount["inactivity_timeout"])
+	}
+	if wildcardSan, ok := statusAccount["wildcard_san_for_new_sites"].(string); !ok || wildcardSan != "Default" {
+		t.Errorf("Expected wildcard_san_for_new_sites='Default', got %v", statusAccount["wildcard_san_for_new_sites"])
+	}
 
 	// Test account delete
 	resp, err = http.PostForm(mock.URL()+"/accounts/delete", url.Values{
