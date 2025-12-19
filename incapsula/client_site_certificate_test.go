@@ -158,11 +158,11 @@ func TestClientGetSiteCertificateRequestStatusError500(t *testing.T) {
 }
 
 func TestClientGetSiteCertificateRequestStatusBadConnection(t *testing.T) {
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "http://badness.incapsula.com"}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "http://invalid.invalid"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	updateAccountSSLSettingsResponse, diag := client.GetSiteCertificateRequestStatus(123, nil)
-	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "Timeout exceeded while awaiting") {
-		t.Errorf("Should have received an time out error")
+	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "Failed to get request site certificate") {
+		t.Errorf("Should have received an error, got: %v", diag)
 	}
 	if updateAccountSSLSettingsResponse != nil {
 		t.Errorf("Should have received a nil addAccountResponse instance")
@@ -170,11 +170,11 @@ func TestClientGetSiteCertificateRequestStatusBadConnection(t *testing.T) {
 }
 
 func TestClientDeleteRequestSiteCertificateBadConnection(t *testing.T) {
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "http://badness.incapsula.com"}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "http://invalid.invalid"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	_, diag := client.DeleteRequestSiteCertificate(123, nil)
-	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "Timeout exceeded while awaiting") {
-		t.Errorf("Should have received an time out error")
+	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "Failed to delete request site certificate") {
+		t.Errorf("Should have received an error, got: %v", diag)
 	}
 }
 
@@ -217,11 +217,11 @@ func TestClientDeleteRequestSiteCertificateWithAccountId(t *testing.T) {
 }
 
 func TestClientValidateDomainBadConnection(t *testing.T) {
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "http://badness.incapsula.com"}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "http://invalid.invalid"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	diag := client.ValidateDomains(123, []int{222})
-	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "Timeout exceeded while awaiting") {
-		t.Errorf("Should have received an time out error")
+	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "Failed to request site SSL validation") {
+		t.Errorf("Should have received an error, got: %v", diag)
 	}
 }
 func TestClientValidateDomainError500(t *testing.T) {
