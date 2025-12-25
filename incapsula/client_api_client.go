@@ -20,6 +20,7 @@ type APIClientUpdateRequest struct {
 
 type APIClientResponse struct {
 	APIClientID    int    `json:"id"`
+	UserEmail      string `json:"userEmail"`
 	Name           string `json:"name"`
 	Description    string `json:"description"`
 	APIKey         string `json:"apiKey"`

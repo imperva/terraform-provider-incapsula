@@ -30,6 +30,7 @@ func resourceApiClient() *schema.Resource {
 				Description: "Email address of the user that the api client belongs to",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					email := val.(string)
 					if _, err := mail.ParseAddress(email); err != nil {
@@ -166,6 +167,7 @@ func resourceApiClientRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("enabled", resp.Enabled)
 	d.Set("expiration_date", resp.ExpirationDate)
 	d.Set("last_used_at", resp.LastUsedAt)
+	d.Set("user_email", resp.UserEmail)
 	return nil
 }
 

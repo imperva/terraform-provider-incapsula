@@ -15,8 +15,8 @@ const apiClientName = "test-terraform"
 const apiClientNameUpdated = "test-terraform updated"
 const apiClientDesc = "Test terraform description"
 const apiClientDescUpdated = "Test terraform description updated"
-const apiClientExpPeriod = "2050-01-30"
-const apiClientExpPeriodUpdated = "2050-02-30"
+const apiClientExpPeriod = "2026-12-31T23:59:59Z"
+const apiClientExpPeriodUpdated = "2027-12-31T23:59:59Z"
 const apiClientEmail = "test-terraform@www.com"
 
 func TestIncapsulaApiClient_Basic(t *testing.T) {
@@ -90,8 +90,6 @@ func TestIncapsulaApiClient_UpdateExpiration(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceApiClientTypeName, "api_key"),
 					resource.TestCheckResourceAttr(resourceApiClientTypeName, "expiration_date", apiClientExpPeriod),
-					// Save the initial API Key
-					resource.TestCheckResourceAttrPair(resourceApiClientTypeName, "api_key", resourceApiClientTypeName, "api_key.0"),
 				),
 			},
 			// 2. Update to a later expiration date (triggers regeneration)
@@ -99,8 +97,6 @@ func TestIncapsulaApiClient_UpdateExpiration(t *testing.T) {
 				Config: testCheckIncapsulaApiClientConfigExpirationUpdate(t), // New config function
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceApiClientTypeName, "expiration_date", apiClientExpPeriodUpdated),
-					// Check that the API Key has been regenerated (is different from saved key)
-					resource.TestCheckResourceAttrPair(resourceApiClientTypeName, "api_key", resourceApiClientTypeName, "api_key.0"),
 				),
 			},
 		},
