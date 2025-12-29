@@ -121,8 +121,8 @@ func (c *Client) GetAccountRole(roleId int) (*RoleDetailsDTO, error) {
 }
 
 // UpdateAccountRole - Update the Account Role for a given role ID
-func (c *Client) UpdateAccountRole(roleId int, requestDTO RoleDetailsBasicDTO) (*RoleDetailsDTO, error) {
-	log.Printf("[INFO] Updating Incapsula account role (Id: %d)\n", roleId)
+func (c *Client) UpdateAccountRole(roleId int, accountId int, requestDTO RoleDetailsBasicDTO) (*RoleDetailsDTO, error) {
+	log.Printf("[INFO] Updating Incapsula account role (Id: %d, Account Id: %d)\n", roleId, accountId)
 
 	log.Printf("[INFO]  requestDTO: %+v\n", requestDTO)
 
@@ -132,7 +132,8 @@ func (c *Client) UpdateAccountRole(roleId int, requestDTO RoleDetailsBasicDTO) (
 	reqURL := fmt.Sprintf("%s/%s/%d", c.config.BaseURLAPI, endpointRoleUpdate, roleId)
 	log.Printf("[INFO]  reqURL: %v\n", reqURL)
 
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, roleJSON, UpdateAccountRole)
+	params := GetRequestParamsWithCaid(accountId)
+	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodPost, reqURL, roleJSON, params, UpdateAccountRole)
 	if err != nil {
 		return nil, fmt.Errorf("Error updating account role with Id %d: %s", roleId, err)
 	}

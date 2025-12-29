@@ -142,11 +142,12 @@ func resourceAccountRoleRead(d *schema.ResourceData, m interface{}) error {
 func resourceAccountRoleUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	roleID, _ := strconv.Atoi(d.Id())
+	accountId := d.Get("account_id").(int)
 
-	log.Printf("[INFO] Updating Incapsula account role with id: %d\n", roleID)
+	log.Printf("[INFO] Updating Incapsula account role with id: %d (account id: %d)\n", roleID, accountId)
 
 	requestDTO := populateRoleDetailsDTO(d)
-	responseDTO, err := client.UpdateAccountRole(roleID, requestDTO)
+	responseDTO, err := client.UpdateAccountRole(roleID, accountId, requestDTO)
 
 	if err != nil {
 		log.Printf("[ERROR] Could not create Incapsula account role: %s\n", err)
