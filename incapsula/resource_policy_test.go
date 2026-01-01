@@ -85,54 +85,6 @@ const aclPolicySettingsUrlExceptions = "[\n" +
 	"    }\n" +
 	"]"
 
-const FileUploadPolicySettingsHashException = "[\n" +
-	"    {\n" +
-	"        \"settingsAction\": \"BLOCK\",\n" +
-	"        \"policySettingType\": \"MALICIOUS_FILE_UPLOAD\",\n" +
-	"        \"data\": {},\n" +
-	"        \"policyDataExceptions\": [\n" +
-	"            {\n" +
-	"                \"data\": [\n" +
-	"                    {\n" +
-	"                        \"exceptionType\": \"FILE_HASH\",\n" +
-	"                        \"values\": [\n" +
-	"                            \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"\n" +
-	"                        ]\n" +
-	"                    }\n" +
-	"                ],\n" +
-	"                \"comment\": \"Adding first exception to policy settings\"\n" +
-	"            }\n" +
-	"        ]\n" +
-	"    }\n" +
-	"]"
-
-const FileUploadPolicySettingsHashAndIPException = "[\n" +
-	"    {\n" +
-	"        \"settingsAction\": \"BLOCK\",\n" +
-	"        \"policySettingType\": \"MALICIOUS_FILE_UPLOAD\",\n" +
-	"        \"data\": {},\n" +
-	"        \"policyDataExceptions\": [\n" +
-	"            {\n" +
-	"                \"data\": [\n" +
-	"                    {\n" +
-	"                        \"exceptionType\": \"FILE_HASH\",\n" +
-	"                        \"values\": [\n" +
-	"                            \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"\n" +
-	"                        ]\n" +
-	"                    },\n" +
-	"                    {\n" +
-	"                        \"exceptionType\": \"IP\",\n" +
-	"                        \"values\": [\n" +
-	"                            \"10.10.192.10\"\n" +
-	"                        ]\n" +
-	"                    }\n" +
-	"                ],\n" +
-	"                \"comment\": \"Updating exception in policy settings\"\n" +
-	"            }\n" +
-	"        ]\n" +
-	"    }\n" +
-	"]"
-
 func TestAccIncapsulaPolicy_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -159,6 +111,54 @@ func TestAccIncapsulaPolicy_basic(t *testing.T) {
 }
 
 func TestAccIncapsulaFileUploadPolicy(t *testing.T) {
+	const FileUploadPolicySettingsHashException = "[\n" +
+		"    {\n" +
+		"        \"settingsAction\": \"BLOCK\",\n" +
+		"        \"policySettingType\": \"MALICIOUS_FILE_UPLOAD\",\n" +
+		"        \"data\": {},\n" +
+		"        \"policyDataExceptions\": [\n" +
+		"            {\n" +
+		"                \"data\": [\n" +
+		"                    {\n" +
+		"                        \"exceptionType\": \"FILE_HASH\",\n" +
+		"                        \"values\": [\n" +
+		"                            \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"\n" +
+		"                        ]\n" +
+		"                    }\n" +
+		"                ],\n" +
+		"                \"comment\": \"Adding first exception to policy settings\"\n" +
+		"            }\n" +
+		"        ]\n" +
+		"    }\n" +
+		"]"
+
+	const FileUploadPolicySettingsHashAndIPException = "[\n" +
+		"    {\n" +
+		"        \"settingsAction\": \"BLOCK\",\n" +
+		"        \"policySettingType\": \"MALICIOUS_FILE_UPLOAD\",\n" +
+		"        \"data\": {},\n" +
+		"        \"policyDataExceptions\": [\n" +
+		"            {\n" +
+		"                \"data\": [\n" +
+		"                    {\n" +
+		"                        \"exceptionType\": \"FILE_HASH\",\n" +
+		"                        \"values\": [\n" +
+		"                            \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"\n" +
+		"                        ]\n" +
+		"                    },\n" +
+		"                    {\n" +
+		"                        \"exceptionType\": \"IP\",\n" +
+		"                        \"values\": [\n" +
+		"                            \"10.10.192.10\"\n" +
+		"                        ]\n" +
+		"                    }\n" +
+		"                ],\n" +
+		"                \"comment\": \"Updating exception in policy settings\"\n" +
+		"            }\n" +
+		"        ]\n" +
+		"    }\n" +
+		"]"
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
