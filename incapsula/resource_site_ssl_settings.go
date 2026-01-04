@@ -2,10 +2,11 @@ package incapsula
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var hstsConfigResource = schema.Resource{
@@ -126,6 +127,12 @@ func resourceSiteSSLSettings() *schema.Resource {
 				Elem:     &inboundTLSSettingsResource,
 				Set:      schema.HashResource(&inboundTLSSettingsResource),
 			},
+			"disable_pqc_support": {
+				Type:        schema.TypeBool,
+				Description: "Disable Post-Quantum Cryptography support for SNI traffic",
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
@@ -165,6 +172,7 @@ func resourceSiteSSLSettingsRead(d *schema.ResourceData, m interface{}) error {
 
 	mapHSTSResponseToHSTSResource(d, settingsData)
 	mapInboundTLSSettingsResponseToResource(d, settingsData)
+	d.Set("disable_pqc_support", settingsData.Data[0].DisablePQCSupport)
 	// map other settings here
 
 	return nil
@@ -334,7 +342,7 @@ func getSSLSettingsDTO(d *schema.ResourceData) SSLSettingsResponse {
 			{
 				HstsConfiguration:               hstsSettings,
 				InboundTLSSettingsConfiguration: inboundTLSSettings,
-				// add more setting types here
+				DisablePQCSupport:               d.Get("disable_pqc_support").(bool),
 			},
 		},
 	}
