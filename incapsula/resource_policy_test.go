@@ -196,6 +196,73 @@ func TestAccIncapsulaFileUploadPolicy(t *testing.T) {
 	})
 }
 
+func TestAccIncapsulaFileUploadPolicyWithoutExceptionsAndUpdate(t *testing.T) {
+	const FileUploadPolicySettings = "[\n" +
+		"    {\n" +
+		"        \"settingsAction\": \"BLOCK\",\n" +
+		"        \"policySettingType\": \"MALICIOUS_FILE_UPLOAD\",\n" +
+		"        \"data\": {}\n" +
+		"    }\n" +
+		"]"
+
+	const FileUploadPolicySettingsHashException = "[\n" +
+		"    {\n" +
+		"        \"settingsAction\": \"BLOCK\",\n" +
+		"        \"policySettingType\": \"MALICIOUS_FILE_UPLOAD\",\n" +
+		"        \"data\": {},\n" +
+		"        \"policyDataExceptions\": [\n" +
+		"            {\n" +
+		"                \"data\": [\n" +
+		"                    {\n" +
+		"                        \"exceptionType\": \"FILE_HASH\",\n" +
+		"                        \"values\": [\n" +
+		"                            \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"\n" +
+		"                        ]\n" +
+		"                    }\n" +
+		"                ],\n" +
+		"                \"comment\": \"Adding first exception to policy settings\"\n" +
+		"            }\n" +
+		"        ]\n" +
+		"    }\n" +
+		"]"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIncapsulaPolicyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIncapsulaPolicyConfigBasic(t, fileUploadPolicyName, true, "FILE_UPLOAD", FileUploadPolicySettings),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaPolicyExists(policyResourceTypeAndName+fileUploadPolicyName),
+					resource.TestCheckResourceAttr(policyResourceTypeAndName+fileUploadPolicyName, "name", fileUploadPolicyName),
+					resource.TestCheckResourceAttr(policyResourceTypeAndName+fileUploadPolicyName, "enabled", strconv.FormatBool(true)),
+					resource.TestCheckResourceAttr(policyResourceTypeAndName+fileUploadPolicyName, "policy_settings", FileUploadPolicySettings),
+				),
+			},
+			{
+				Config: testAccCheckIncapsulaPolicyConfigBasic(t, fileUploadPolicyName, true, "FILE_UPLOAD", FileUploadPolicySettingsHashException),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaPolicyExists(policyResourceTypeAndName+fileUploadPolicyName),
+					resource.TestCheckResourceAttr(policyResourceTypeAndName+fileUploadPolicyName, "name", fileUploadPolicyName),
+					resource.TestCheckResourceAttr(policyResourceTypeAndName+fileUploadPolicyName, "enabled", strconv.FormatBool(true)),
+					resource.TestMatchResourceAttr(
+						policyResourceTypeAndName+fileUploadPolicyName,
+						"policy_settings",
+						regexp.MustCompile(regexp.QuoteMeta(FileUploadPolicySettingsHashException)+`\n?`),
+					),
+				),
+			},
+			{
+				ResourceName:      policyResourceTypeAndName + fileUploadPolicyName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testAccStatePolicyID,
+			},
+		},
+	})
+}
+
 func testAccStatePolicyID(state *terraform.State) (string, error) {
 	for _, rs := range state.RootModule().Resources {
 		if rs.Type != policyResourceType {

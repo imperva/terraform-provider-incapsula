@@ -8,7 +8,7 @@ description: |-
 
 # incapsula_policy
 
-Provides a resource to define WAF security, Whitelist, and ACL policies. All policies are created at the parent account level. 
+Provides a resource to define WAF security, Whitelist, File Upload, and ACL policies. All policies are created at the parent account level. 
 
 The follow-on action is to use the `incapsula_account_policy_association` resource, to assign the policy to a sub account.
 
@@ -38,6 +38,33 @@ resource "incapsula_policy" "example-whitelist-ip-policy" {
       }
     ]
     POLICY
+}
+
+resource "incapsula_policy" "example-file-upload-policy" {
+  name        = "Example FILE-UPLOAD Policy"
+  enabled     = true
+  policy_type = "FILE_UPLOAD"
+  description = "Example FILE-UPLOAD Policy description"
+  policy_settings = <<POLICY
+  [
+    {
+      "settingsAction": "ALERT",
+      "policySettingType": "MALICIOUS_FILE_UPLOAD",
+      "policyDataExceptions": [
+        {
+          "data": [
+            {
+              "exceptionType": "FILE_HASH",
+              "values": [
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+  POLICY
 }
 
 resource "incapsula_policy" "example-acl-country-block-policy" {
@@ -114,7 +141,7 @@ The following arguments are supported:
 
 * `name` - (Required) The policy name.
 * `enabled` - (Required) Enables the policy.
-* `policy_type` - (Required) The policy type. Possible values: ACL, WHITELIST, WAF_RULES.  Note: For (policy_type=WAF_RULES), all 4 setting types (policySettingType) are mandatory (REMOTE_FILE_INCLUSION, ILLEGAL_RESOURCE_ACCESS, CROSS_SITE_SCRIPTING, SQL_INJECTION). </br>RESP_DATA_LEAK is optional and can be added only if this feature is included with your plan.
+* `policy_type` - (Required) The policy type. Possible values: ACL, WHITELIST, FILE_UPLOAD, WAF_RULES.  Note: For (policy_type=WAF_RULES), all 4 setting types (policySettingType) are mandatory (REMOTE_FILE_INCLUSION, ILLEGAL_RESOURCE_ACCESS, CROSS_SITE_SCRIPTING, SQL_INJECTION). </br>RESP_DATA_LEAK is optional and can be added only if this feature is included with your plan.
 * `policy_settings` - (Required) The policy settings as JSON string. See Imperva documentation for help with constructing a correct value.
 Policy_settings internal values:
 policySettingType: IP, GEO, URL
