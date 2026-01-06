@@ -80,6 +80,8 @@ func resourceApiClient() *schema.Resource {
 func resourceApiClientCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 
+	accountID := d.Get("account_id").(int)
+
 	apiClient := APIClientUpdateRequest{
 		Name:           d.Get("name").(string),
 		Description:    d.Get("description").(string),
@@ -88,7 +90,7 @@ func resourceApiClientCreate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	resp, err := client.CreateAPIClient(
-		d.Get("account_id").(int),
+		accountID,
 		d.Get("user_email").(string),
 		&apiClient,
 	)
@@ -101,6 +103,11 @@ func resourceApiClientCreate(ctx context.Context, d *schema.ResourceData, m inte
 	d.SetId(strconv.Itoa(resp.APIClientID))
 	log.Printf("[INFO] Created Incapsula API client with ID: %d ", resp.APIClientID)
 
+	// Set the account_id in state
+	if accountID != 0 {
+		d.Set("account_id", accountID)
+	}
+
 	if resp.APIKey != "" {
 		d.Set("api_key", resp.APIKey)
 	}
@@ -111,6 +118,7 @@ func resourceApiClientCreate(ctx context.Context, d *schema.ResourceData, m inte
 func resourceApiClientUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*Client)
 	id := d.Id()
+	accountID := d.Get("account_id").(int)
 
 	request := &APIClientUpdateRequest{}
 	changed := false
@@ -136,13 +144,23 @@ func resourceApiClientUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	if !changed {
+		// Set the account_id in state even if no changes
+		if accountID != 0 {
+			d.Set("account_id", accountID)
+		}
 		return resourceApiClientRead(ctx, d, meta)
 	}
 
-	resp, err := client.PatchAPIClient(d.Get("account_id").(int), id, request)
+	resp, err := client.PatchAPIClient(accountID, id, request)
 	if err != nil {
 		return diag.Errorf("error updating API client: %v", err)
 	}
+
+	// Set the account_id in state
+	if accountID != 0 {
+		d.Set("account_id", accountID)
+	}
+
 	if resp.APIKey != "" {
 		d.Set("api_key", resp.APIKey)
 	}
@@ -157,11 +175,18 @@ func resourceApiClientRead(ctx context.Context, d *schema.ResourceData, meta int
 	if id == "" {
 		return nil
 	}
-	resp, err := client.GetAPIClient(d.Get("account_id").(int), id)
+	accountID := d.Get("account_id").(int)
+	resp, err := client.GetAPIClient(accountID, id)
 	if err != nil {
 		d.SetId("")
 		return nil
 	}
+
+	// Set the account_id in state
+	if accountID != 0 {
+		d.Set("account_id", accountID)
+	}
+
 	d.Set("name", resp.Name)
 	d.Set("description", resp.Description)
 	d.Set("enabled", resp.Enabled)

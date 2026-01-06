@@ -8,32 +8,32 @@ Provides a Incapsula Account User resource.
 
 # incapsula_api_client
 
-Provides an api_client resource.
-This resource enables you to create api-client (credentials for API calls) for a user.
+Provides an api_client resource. 
+This resource lets you create an API client (credentials for API calls) for a user.
 
-This resource also provides the option to regenerate the API Key (the secret part of the credentials), by extending the expiration date.
+You can also regenerate the API key secret by updating the expiration date, which causes a new secret to be issued.
 
 ## Example Usage
 
-API-client creation for the current user.
+API client creation for the current user.
 
 ```hcl
 resource "incapsula_api_client" "api_client_1" {
   name = "First"
   description = "Last"
-  expiration_date = "2026-09-12"
+  expiration_date = "2026-09-12T10:33:29Z"
   enabled = true
 }
 ```
 
-API-client creation for another user.
+API client creation for another user.
 
 ```hcl
 resource "incapsula_api_client" "api_client_1" {
   user_email = "example@terraform.com"
   name = "First"
   description = "Last"
-  expiration_date = "2026-09-12"
+  expiration_date = "2026-09-12T10:33:29Z"
   enabled = true
 }
 ```
@@ -46,7 +46,7 @@ resource "incapsula_api_client" "api_client_1" {
   user_email = "example@terraform.com"
   name = "First"
   description = "Last"
-  expiration_date = "2026-09-12"
+  expiration_date = "2026-09-12T10:33:29Z"
   enabled = true
 }
 ```
@@ -56,13 +56,13 @@ resource "incapsula_api_client" "api_client_1" {
 The following arguments are supported:
 
 * `account_id` - (Optional) Numeric identifier of the account to operate on.
-* `user_email` - (Optional) Identifier of the user on whom the api-client will be created.
+* `user_email` - (Optional) Email address of the user for whom the API client will be created.
 * `name` - (Required) The name of the API client.
 * `description` - (Optional) The description of the API client.
-* `api_key` - (Computed) The API key. This attribute is a secret and will not be exposed on terraform show. to be used as a reference only.
-* `enabled` - (Optional) whether the API-client is enabled or not. The default is false. 
-* `expiration_date` - Expiration date of the API key (YYYY-MM-DD format only). Must be a future date. **Changing this value will cause regeneration of the key**. 
-* `last_used_at` - (Computed) The last time when the api client was used. 
+* `api_key` - (Computed) The API key secret. This attribute is sensitive and is not exposed in terraform show. Use it for reference only.
+* `enabled` - (Optional) Whether the API client is enabled. The default is false. 
+* `expiration_date` - (Optional) Expiration date of the API key, in YYYY-MM-DD format. Must be a future date. Changing this value causes regeneration of the API key secret. 
+* `last_used_at` - (Computed) The last time the API client was used. 
 
 
 
@@ -76,12 +76,12 @@ The following attributes are exported:
 
 ## Import
 
-Api Client can be imported using the `API ID`, e.g.:
+An API client can be imported using the API ID, for example:
 ```
 $ terraform import incapsula_api_client.demo 2222
 ```
 
-OR, it can be imported using the `account_id` and `API ID` separated by `/`, e.g.:
+Alternatively, import it using the account_id and API ID, separated by a slash (/):
 ```
 $ terraform import incapsula_api_client.demo 1234/2222
 ```
