@@ -25,6 +25,7 @@ func resourceApiClient() *schema.Resource {
 				Description: "Account ID",
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 			},
 			"user_email": {
 				Description: "Email address of the user that the api client belongs to",
