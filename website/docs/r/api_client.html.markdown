@@ -8,10 +8,11 @@ Provides a Incapsula Account User resource.
 
 # incapsula_api_client
 
-Provides an api_client resource. 
-This resource lets you create an API client (credentials for API calls) for a user.
+Provides an API client resource that manages API credentials (API ID and API key) for a user.
 
 You can also regenerate the API key secret by updating the expiration date, which causes a new secret to be issued.
+
+Note: Before creating API clients through this resource, an account administrator must explicitly enable API Client Creation Consent in the account settings in the Cloud Security Console.
 
 ## Example Usage
 
@@ -61,7 +62,7 @@ The following arguments are supported:
 * `description` - (Optional) The description of the API client.
 * `api_key` - (Computed) The API key secret. This attribute is sensitive and is not exposed in terraform show. Use it for reference only.
 * `enabled` - (Optional) Whether the API client is enabled. The default is false. 
-* `expiration_date` - (Optional) Expiration date of the API key, in YYYY-MM-DD format. Must be a future date. Changing this value causes regeneration of the API key secret. 
+* `expiration_date` - (Optional) Expiration date of the API key, in YYYY-MM-DDTHH:mm:ssZ format. Must be a future date. Changing this value causes regeneration of the API key secret. 
 * `last_used_at` - (Computed) The last time the API client was used. 
 
 
@@ -70,18 +71,21 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - Unique identifier in the API for the account user.
+* `id` - The API client ID (API ID), which is the unique identifier returned by the API.
+  Together with the API key (api_key), this value forms the API credentials used to authenticate API calls.
+  You can use this value to import an existing API client into Terraform.
 
 
 
 ## Import
 
-An API client can be imported using the API ID, for example:
+An API client can be imported using its API ID, which is the value exported as the `id` attribute for this resource.
+For example:
 ```
 $ terraform import incapsula_api_client.demo 2222
 ```
 
-Alternatively, import it using the account_id and API ID, separated by a slash (/):
+Alternatively, import it using the account ID and the API ID (the value exported as the `id` attribute), separated by a slash (/):
 ```
 $ terraform import incapsula_api_client.demo 1234/2222
 ```

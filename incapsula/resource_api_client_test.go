@@ -15,8 +15,8 @@ const apiClientName = "test-terraform"
 const apiClientNameUpdated = "test-terraform updated"
 const apiClientDesc = "Test terraform description"
 const apiClientDescUpdated = "Test terraform description updated"
-const apiClientExpPeriod = "2026-12-31T23:59:59Z"
-const apiClientExpPeriodUpdated = "2027-12-31T23:59:59Z"
+const apiClientExpPeriod = "2030-12-31T23:59:59Z"
+const apiClientExpPeriodUpdated = "2029-12-31T23:59:59Z"
 const apiClientEmail = "test-terraform@www.com"
 
 func TestIncapsulaApiClient_Basic(t *testing.T) {
