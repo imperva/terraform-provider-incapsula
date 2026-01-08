@@ -5,7 +5,7 @@ Terraform `Incapsula` Provider
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 - Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 
-<img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" width="600px">
+<img src="assets/HashiCorp_Logo.png" width="600px">
 
 Maintainers
 -----------
@@ -85,4 +85,96 @@ with installation command execution
 ```sh
 ./tf-provider-incap-orch.sh -i "youApiID" "youApiKey"
 ```
+
+Mock Server for Testing
+-----------------------
+
+A mock Imperva API server is provided for running tests without requiring real API credentials. This enables CI/CD pipelines and local development without access to a live Imperva environment.
+
+### Starting the Mock Server
+
+```sh
+make server
+```
+
+This starts the mock server on port 19443. The server outputs the required environment variables:
+
+```sh
+export INCAPSULA_API_ID=mock-api-id
+export INCAPSULA_API_KEY=mock-api-key
+export INCAPSULA_BASE_URL=http://localhost:19443
+export INCAPSULA_BASE_URL_REV_2=http://localhost:19443
+export INCAPSULA_BASE_URL_REV_3=http://localhost:19443
+export INCAPSULA_BASE_URL_API=http://localhost:19443
+export INCAPSULA_CUSTOM_TEST_DOMAIN=.mock.incaptest.com
+```
+
+### Running Tests with Mock Server
+
+```sh
+# Terminal 1: Start the mock server
+make server
+
+# Terminal 2: Run tests (requires mock server to be running)
+make test
+```
+
+### Implemented Endpoints
+
+The mock server implements the following Imperva API endpoints:
+
+#### Account Management ([Cloud v1 API Documentation](https://docs-cybersec-be.thalesgroup.com/api/bundle/api-docs/page/cloud-v1-api-definition.htm))
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/accounts/add` | POST | Create account |
+| `/account` | POST | Get account status |
+| `/accounts/configure` | POST | Update account |
+| `/accounts/delete` | POST | Delete account |
+| `/accounts/data-privacy/show` | POST | Get data privacy settings |
+| `/accounts/data-privacy/set-region-default` | POST | Set default data region |
+
+#### Site Management ([Cloud v1 API Documentation](https://docs-cybersec-be.thalesgroup.com/api/bundle/api-docs/page/cloud-v1-api-definition.htm))
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/sites/add` | POST | Create site |
+| `/sites/status` | POST | Get site status |
+| `/sites/configure` | POST | Update site |
+| `/sites/delete` | POST | Delete site |
+
+#### CSP Pre-Approved Domains ([CSP API Documentation](https://docs-cybersec-be.thalesgroup.com/api/bundle/api-docs/page/csp-api-definition.htm))
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/csp-api/v1/sites/{siteId}/preapprovedlist` | GET | List pre-approved domains |
+| `/csp-api/v1/sites/{siteId}/preapprovedlist` | POST | Add pre-approved domain |
+| `/csp-api/v1/sites/{siteId}/preapprovedlist/{domainRef}` | GET | Get specific domain |
+| `/csp-api/v1/sites/{siteId}/preapprovedlist/{domainRef}` | DELETE | Remove domain |
+| `/csp-api/v1/sites/{siteId}/domains/{domainRef}/status` | GET/PUT | Domain status |
+| `/csp-api/v1/sites/{siteId}/domains/{domainRef}/notes` | GET/POST/DELETE | Domain notes |
+
+### Response Format
+
+All API responses follow the standard Imperva format:
+
+```json
+{
+  "res": 0,
+  "res_message": "OK",
+  "debug_info": {...},
+  "account|site|data": {...}
+}
+```
+
+Error responses use non-zero `res` codes as documented in the [API documentation](https://docs-cybersec-be.thalesgroup.com/api/bundle/api-docs/page/cloud-v1-api-definition.htm).
+
+### Adding New Endpoints
+
+To add new endpoints to the mock server:
+
+1. Add the route in `mock_server.go` in the `router()` function
+2. Implement the handler function following existing patterns
+3. Add tests in `mock_server_test.go`
+4. Update this documentation
 
