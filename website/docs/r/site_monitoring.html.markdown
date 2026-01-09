@@ -62,8 +62,8 @@ The following arguments are supported:
 * `up_checks_interval` - (Optional) After an origin server was identified as down, Imperva will periodically test it to see whether it has recovered, according to the frequency defined in this parameter. 10-120 SECONDS or 1-2 MINUTES. Default: 20
 * `up_checks_interval_units` - (Optional) Time unit. Default: SECONDS.
 * `up_check_retries` - (Optional) Every time an origin server is tested to see whether it’s back up, the test will be retried this number of times. Default: 3
-* `alarm_on_stands_by_failover` - (Optional) Indicates whether or not an email will be sent upon failover to a standby data center. Default: true
-* `alarm_on_dc_failover`- (Optional) Indicates whether or not an email will be sent upon data center failover. Default: true
+* `alarm_on_stands_by_failover` - (Optional) Indicates whether or not an email will be sent upon failover to a standby data center. This parameter is relevant only for a multiple data center configuration that includes a standby data center. Default: true
+* `alarm_on_dc_failover`- (Optional) Indicates whether or not an email will be sent upon data center failover. This parameter is relevant only for a multiple data center configuration. Default: true
 * `alarm_on_server_failover` - (Optional) Indicates whether or not an email will be sent upon server failover. Default: false
 * `required_monitors` - (Optional) Monitors required to report server / data center as down. Default: "MOST"
 
