@@ -69,11 +69,6 @@ func resourceApiClient() *schema.Resource {
 				Computed:    true,
 				Description: "Expiration date of the API key (YYYY-MM-DD format only). Must be a future date. Changing this value will cause regeneration of the key.",
 			},
-			"last_used_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Last used timestamp.",
-			},
 		},
 	}
 }
@@ -192,7 +187,6 @@ func resourceApiClientRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("description", resp.Description)
 	d.Set("enabled", resp.Enabled)
 	d.Set("expiration_date", resp.ExpirationDate)
-	d.Set("last_used_at", resp.LastUsedAt)
 	d.Set("user_email", resp.UserEmail)
 	return nil
 }

@@ -62,9 +62,7 @@ The following arguments are supported:
 * `description` - (Optional) The description of the API client.
 * `api_key` - (Computed) The API key secret. This attribute is sensitive and is not exposed in terraform show. Use it for reference only.
 * `enabled` - (Optional) Whether the API client is enabled. The default is false. 
-* `expiration_date` - (Optional) Expiration date of the API key, in YYYY-MM-DDTHH:mm:ssZ format. Must be a future date. Changing this value causes regeneration of the API key secret. 
-* `last_used_at` - (Computed) The last time the API client was used. 
-
+* `expiration_date` - (Optional) Expiration date of the API key, in YYYY-MM-DDTHH:mm:ssZ format. Must be a future date. Changing this value causes regeneration of the API key secret.
 
 
 ## Attributes Reference
