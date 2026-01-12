@@ -213,3 +213,8 @@ const UpdateDeliveryRuleConfiguration = "update_delivery_rules_configuration"
 const ReadShortRenewalCycleConfiguration = "read_short_renewal_cycle_configuration"
 const CreateShortRenewalCycleConfiguration = "create_short_renewal_cycle_configuration"
 const DeleteShortRenewalCycleConfiguration = "delete_short_renewal_cycle_configuration"
+
+const CreateApiClient = "create_api_client"
+const ReadApiClient = "read_api_client"
+const UpdateApiClient = "update_api_client"
+const DeleteApiClient = "delete_api_client"
