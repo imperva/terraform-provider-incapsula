@@ -300,7 +300,7 @@ func getUpdateSiteSSLSettingsDTO() SSLSettingsResponse {
 						},
 					},
 				},
-				// add more setting types here
+				DisablePQCSupport: true,
 			},
 		},
 	}

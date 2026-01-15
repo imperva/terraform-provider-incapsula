@@ -6,12 +6,12 @@ NAMESPACE=terraform-providers
 PKG_NAME=incapsula
 BINARY=terraform-provider-${PKG_NAME}
 # Whenever bumping provider version, please update the version in incapsula/client.go (line 27) as well.
-VERSION=3.35.1
+VERSION=3.36.0
 
 # Mac Intel Chip
-OS_ARCH=darwin_amd64
-# For Mac M1 Chip
-# OS_ARCH=darwin_arm64
+#OS_ARCH=darwin_amd64
+# For Mac M series Chip
+OS_ARCH=darwin_arm64
 # OS_ARCH=linux_amd64
 
 default: install

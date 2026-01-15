@@ -143,8 +143,9 @@ func TestClientUpdateRoleBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	roleID := 123
+	accountID := 456
 	requestDTO := RoleDetailsBasicDTO{}
-	updateRoleResponse, err := client.UpdateAccountRole(roleID, requestDTO)
+	updateRoleResponse, err := client.UpdateAccountRole(roleID, accountID, requestDTO)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -158,9 +159,11 @@ func TestClientUpdateRoleBadConnection(t *testing.T) {
 
 func TestClientUpdateRoleBadJSON(t *testing.T) {
 	roleID := 123
+	accountID := 456
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s/%d", endpointRoleUpdate, roleID) {
-			t.Errorf("Should have have hit /%s/%d endpoint. Got: %s", endpointAccountUpdate, roleID, req.URL.String())
+		expectedURL := fmt.Sprintf("/%s/%d?caid=%d", endpointRoleUpdate, roleID, accountID)
+		if req.URL.String() != expectedURL {
+			t.Errorf("Should have hit %s endpoint. Got: %s", expectedURL, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
@@ -169,7 +172,7 @@ func TestClientUpdateRoleBadJSON(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	requestDTO := RoleDetailsBasicDTO{}
-	updateRoleResponse, err := client.UpdateAccountRole(roleID, requestDTO)
+	updateRoleResponse, err := client.UpdateAccountRole(roleID, accountID, requestDTO)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}

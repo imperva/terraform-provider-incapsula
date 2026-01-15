@@ -52,7 +52,8 @@ resource "incapsula_site_ssl_settings" "example"  {
         "TLS_AES_256_GCM_SHA384",
       ]
     }
-  }
+  },
+  disable_pqc_support: false
 }
 ```
 
@@ -66,6 +67,9 @@ The following arguments are supported:
     - Type: `set` of `hsts_config` resource (defined below)
 * `inbound_tls_settings` - (Optional): Transport Layer Security (TLS) configuration settings for the site.
   - Type: `set` of `inbound_tls_settings` resource (defined below)
+* `disable_pqc_support` - (Optional): Disable Post-Quantum Cryptography support for SNI traffic.
+    - Type: `bool`
+    - Default: `false`
 
 ## Schema of `hsts_config` resource
 

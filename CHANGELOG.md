@@ -1,3 +1,13 @@
+## 3.36.0 (Jan 04, 2026)
+
+IMPROVEMENTS:
+- Support client_apps & countries & continents in bot_access_control rule exception([#606](https://github.com/imperva/terraform-provider-incapsula/pull/606))
+
+BUT FIXES:
+Site_v3: Don't save account id change to state  ([#605](https://github.com/imperva/terraform-provider-incapsula/pull/605))
+Account_role: Support caid for account role editing  ([#610](https://github.com/imperva/terraform-provider-incapsula/pull/610))
+
+
 ## 3.35.1 (Oct 27, 2025)
 
 IMPROVEMENTS:

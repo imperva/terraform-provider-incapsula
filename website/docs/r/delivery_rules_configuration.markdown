@@ -135,7 +135,7 @@ resource "incapsula_delivery_rules_configuration" "rewrite-request-rules" {
 * `header_name` - (Required) The header name that the rules applies to.
 * `from` - (Optional) Header/Cookie/URL pattern to rewrite.
 * `to` - (Required) Header/Cookie/URL pattern to change to.
-* `add_missing` - (Optional) When rewriting cookie or header, add it if it doesn't exist.
+* `add_if_missing` - (Optional) When rewriting cookie or header, add it if it doesn't exist.
 * `rewrite_existing` - (Optional) Rewrite cookie or header even if it exists already.
 * `multiple_headers_deletion` - (Optional) Delete all header occurrences.
 * `enabled` - (Optional) Boolean that enables the rule. Default value is `true`.
