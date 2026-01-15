@@ -18,7 +18,8 @@ func resourceSiteV3() *schema.Resource {
 		UpdateContext: resourceSiteV3Update,
 		DeleteContext: resourceSiteV3Delete,
 		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
-			if d.HasChange("account_id") {
+			oldValue, _ := d.GetChange("account_id")
+			if oldValue != "" && d.HasChange("account_id") {
 				return fmt.Errorf("account_id cannot be updated for an existing site")
 			}
 			return nil
