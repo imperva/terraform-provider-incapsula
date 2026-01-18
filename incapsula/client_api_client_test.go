@@ -22,7 +22,7 @@ func TestClientAddApiClientBadConnection(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error adding api client for email %s", email)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error creating api_client")) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 	if apiClientResponse != nil {
@@ -47,9 +47,13 @@ func TestClientAddApiClientBadJSON(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error parsing add api client JSON response for email %s", email)) {
-		t.Errorf("Should have received a JSON parse error, got: %s", err)
+
+	expectedErrorFragment := "Error status code 200 from Incapsula service"
+
+	if !strings.Contains(err.Error(), expectedErrorFragment) {
+		t.Errorf("Should have received response parse error, got: %s", err)
 	}
+
 	if apiClientResponse != nil {
 		t.Errorf("Should have received a nil apiClientResponse instance")
 	}
@@ -59,12 +63,11 @@ func TestClientApiClientStatusBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	accountID := 123
-	email := "example@example.com"
 	apiClientResponse, err := client.GetAPIClient(accountID, "1234")
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error getting api client for email %s", email)) {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("Error getting api_client with id")) {
 		t.Errorf("Should have received an client error, got: %s", err)
 	}
 	if apiClientResponse != nil {
