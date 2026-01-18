@@ -162,10 +162,11 @@ func resourceAccountRoleUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceAccountRoleDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	roleID, _ := strconv.Atoi(d.Id())
+	accountID := d.Get("account_id").(int)
 
-	log.Printf("[INFO] Deleting Incapsula account role with id: %d\n", roleID)
+	log.Printf("[INFO] Deleting Incapsula account role with id: %d (account id: %d)\n", roleID, accountID)
 
-	err := client.DeleteAccountRole(roleID)
+	err := client.DeleteAccountRole(roleID, accountID)
 
 	if err != nil {
 		log.Printf("[ERROR] Could not delete Incapsula account role with id: %d, %s\n", roleID, err)
@@ -176,7 +177,7 @@ func resourceAccountRoleDelete(d *schema.ResourceData, m interface{}) error {
 	// Implicitly clears the resource
 	d.SetId("")
 
-	log.Printf("[INFO] Deleted Incapsula account role with id: %d\n", roleID)
+	log.Printf("[INFO] Deleted Incapsula account role with id: %d (account id: %d)\n", roleID, accountID)
 
 	return nil
 }

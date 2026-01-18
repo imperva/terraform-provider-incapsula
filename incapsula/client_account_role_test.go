@@ -105,7 +105,8 @@ func TestClientDeleteRoleBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	roleID := 123
-	err := client.DeleteAccountRole(roleID)
+	accountID := 456
+	err := client.DeleteAccountRole(roleID, accountID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -116,9 +117,11 @@ func TestClientDeleteRoleBadConnection(t *testing.T) {
 
 func TestClientDeleteRoleBadJSON(t *testing.T) {
 	roleID := 123
+	accountID := 456
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s/%d", endpointRoleDelete, roleID) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointRoleDelete, req.URL.String())
+		expectedURL := fmt.Sprintf("/%s/%d?caid=%d", endpointRoleDelete, roleID, accountID)
+		if req.URL.String() != expectedURL {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", expectedURL, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
