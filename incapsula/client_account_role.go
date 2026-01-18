@@ -162,12 +162,13 @@ func (c *Client) UpdateAccountRole(roleId int, accountId int, requestDTO RoleDet
 }
 
 // DeleteAccountRole - Delete the Account Role for a given role ID
-func (c *Client) DeleteAccountRole(roleId int) error {
-	log.Printf("[INFO] Delete Account Role (Id: %d)\n", roleId)
+func (c *Client) DeleteAccountRole(roleId int, accountId int) error {
+	log.Printf("[INFO] Delete Account Role (Id: %d, Account Id: %d))\n", roleId, accountId)
 
 	// Get request to Incapsula
 	reqURL := fmt.Sprintf("%s/%s/%d", c.config.BaseURLAPI, endpointRoleDelete, roleId)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteAccountRole)
+	params := GetRequestParamsWithCaid(accountId)
+	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodDelete, reqURL, nil, params, DeleteAccountRole)
 	if err != nil {
 		return fmt.Errorf("Error executing delete Account Role request for role with id %d: %s", roleId, err)
 	}
