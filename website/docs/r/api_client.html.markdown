@@ -3,7 +3,7 @@ subcategory: "Account and User Management"
 layout: "incapsula"
 page_title: "incapsula_api_client"
 description: |-
-Provides a Incapsula Account User resource.
+  Provides a Incapsula API client resource.
 ---
 
 # incapsula_api_client

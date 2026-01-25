@@ -1,3 +1,9 @@
+## 3.37.1 (Jan 25, 2026)
+
+BUT FIXES:
+- Account_role: support caid for role delete  ([#622](https://github.com/imperva/terraform-provider-incapsula/pull/622))
+
+
 ## 3.37.0 (Jan 18, 2026)
 
 FEATURES:
