@@ -129,7 +129,7 @@ func TestClientDeleteRoleBadJSON(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	err := client.DeleteAccountRole(roleID)
+	err := client.DeleteAccountRole(roleID, accountID)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
