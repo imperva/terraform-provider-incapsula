@@ -82,6 +82,26 @@ func TestIncapsulaAccountUser_Update(t *testing.T) {
 	})
 }
 
+func TestIncapsulaAccountUser_WithApprovedIps(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testCheckIncapsulaAccountUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testCheckIncapsulaAccountUserConfigWithApprovedIps(t, accountUserEmail),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaAccountUserExists(accountResourceUserTypeName),
+					resource.TestCheckResourceAttr(accountResourceUserTypeName, "email", accountUserEmail),
+					resource.TestCheckResourceAttr(accountResourceUserTypeName, "approved_ips.#", "2"),
+					resource.TestCheckResourceAttr(accountResourceUserTypeName, "approved_ips.0", "192.168.1.1"),
+					resource.TestCheckResourceAttr(accountResourceUserTypeName, "approved_ips.1", "10.0.0.5"),
+				),
+			},
+		},
+	})
+}
+
 func TestIncapsulaAccountUser_ImportBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -238,5 +258,20 @@ func testCheckIncapsulaAccountUserConfigUpdate(t *testing.T) string {
 			]
 		}`,
 		accountResourceUserType, accountResourceUserName, accountUserEmail, accountUserFirstName, accountUserLastName,
+	)
+}
+
+func testCheckIncapsulaAccountUserConfigWithApprovedIps(t *testing.T, email string) string {
+	return fmt.Sprintf(`
+		data "incapsula_account_data" "account_data" {}
+
+		resource "%s" "%s" {
+			account_id = data.incapsula_account_data.account_data.current_account
+			email = "%s"
+			first_name = "%s"
+			last_name = "%s"
+			approved_ips = ["192.168.1.1", "10.0.0.5"]
+		}`,
+		accountResourceUserType, accountResourceUserName, email, accountUserFirstName, accountUserLastName,
 	)
 }

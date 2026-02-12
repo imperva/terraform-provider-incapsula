@@ -77,6 +77,14 @@ func resourceAccountUser() *schema.Resource {
 				},
 				Optional: true,
 			},
+			"approved_ips": {
+				Description: "List of approved IP addresses from which the user is permitted to log in.",
+				Type:        schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional: true,
+			},
 
 			// Computed Arguments
 			"role_names": {
@@ -121,12 +129,14 @@ func resourceUserCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Creating Incapsula user for email: %s\n", email)
 
 	roleIds := d.Get("role_ids").(*schema.Set)
+	approvedIps := d.Get("approved_ips").([]interface{})
 	UserAddResponse, err := client.AddAccountUser(
 		accountId,
 		email,
 		d.Get("first_name").(string),
 		d.Get("last_name").(string),
 		roleIds.List(),
+		approvedIps,
 	)
 
 	if err != nil {
@@ -176,6 +186,7 @@ func resourceUserRead(d *schema.ResourceData, m interface{}) error {
 
 	d.Set("email", userStatusResponse.Data[0].Email)
 	d.Set("account_id", userStatusResponse.Data[0].AccountID)
+	d.Set("approved_ips", userStatusResponse.Data[0].ApprovedIps)
 
 	accountStatusResponse, err := client.AccountStatus(accountID, ReadAccount)
 	if accountStatusResponse != nil && accountStatusResponse.AccountType == "Sub Account" {
@@ -202,10 +213,12 @@ func resourceUserUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Creating Incapsula user for email: %s\n", email)
 
 	roleIds := d.Get("role_ids").(*schema.Set)
+	approvedIps := d.Get("approved_ips").([]interface{})
 	userUpdateResponse, err := client.UpdateAccountUser(
 		accountId,
 		email,
 		roleIds.List(),
+		approvedIps,
 	)
 	if err != nil {
 		log.Printf("[ERROR] Could not update user for email: %s, %s\n", email, err)

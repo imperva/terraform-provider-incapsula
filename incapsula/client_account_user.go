@@ -15,12 +15,13 @@ const endpointUserOperationNew = "identity-management/v3/idm-users"
 // UserApisResponse contains the relevant user information when adding, getting or updating a user
 type UserApisResponse struct {
 	Data []struct {
-		UserID    string `json:"id"`
-		AccountID int    `json:"accountId"`
-		FirstName string `json:"firstName"`
-		LastName  string `json:"lastName"`
-		Email     string `json:"email"`
-		Roles     []struct {
+		UserID      string `json:"id"`
+		AccountID   int    `json:"accountId"`
+		FirstName   string `json:"firstName"`
+		LastName    string `json:"lastName"`
+		Email       string `json:"email"`
+		ApprovedIps []string `json:"approvedIps"`
+		Roles       []struct {
 			RoleID   int    `json:"id"`
 			RoleName string `json:"name"`
 		} `json:"roles"`
@@ -29,12 +30,13 @@ type UserApisResponse struct {
 
 type UserApisUpdateResponse struct {
 	Data []struct {
-		UserID    string `json:"id"`
-		AccountID int    `json:"accountId"`
-		FirstName string `json:"firstName"`
-		LastName  string `json:"lastName"`
-		Email     string `json:"email"`
-		Roles     []struct {
+		UserID      string `json:"id"`
+		AccountID   int    `json:"accountId"`
+		FirstName   string `json:"firstName"`
+		LastName    string `json:"lastName"`
+		Email       string `json:"email"`
+		ApprovedIps []string `json:"approvedIps"`
+		Roles       []struct {
 			RoleID   int    `json:"id"`
 			RoleName string `json:"name"`
 		} `json:"roles"`
@@ -42,18 +44,20 @@ type UserApisUpdateResponse struct {
 }
 
 type UserAddReq struct {
-	UserEmail string `json:"email"`
-	RoleIds   []int  `json:"roleIds"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
+	UserEmail   string   `json:"email"`
+	RoleIds     []int    `json:"roleIds"`
+	FirstName   string   `json:"firstName"`
+	LastName    string   `json:"lastName"`
+	ApprovedIps []string `json:"approvedIps,omitempty"`
 }
 
 type UserUpdateReq struct {
-	RoleIds []int `json:"roleIds"`
+	RoleIds     []int    `json:"roleIds,omitempty"`
+	ApprovedIps []string `json:"approvedIps,omitempty"`
 }
 
 // AddAccountUser adds a user to Incapsula Account
-func (c *Client) AddAccountUser(accountID int, email, firstName, lastName string, roleIds []interface{}) (*UserApisResponse, error) {
+func (c *Client) AddAccountUser(accountID int, email, firstName, lastName string, roleIds []interface{}, approvedIps []interface{}) (*UserApisResponse, error) {
 	log.Printf("[INFO] Adding Incapsula account user for email: %s (account ID %d)\n", email, accountID)
 
 	listRoles := make([]int, len(roleIds))
@@ -61,7 +65,12 @@ func (c *Client) AddAccountUser(accountID int, email, firstName, lastName string
 		listRoles[i] = v.(int)
 	}
 
-	userAddReq := UserAddReq{UserEmail: email, RoleIds: listRoles, FirstName: firstName, LastName: lastName}
+	listApprovedIps := make([]string, len(approvedIps))
+	for i, v := range approvedIps {
+		listApprovedIps[i] = v.(string)
+	}
+
+	userAddReq := UserAddReq{UserEmail: email, RoleIds: listRoles, FirstName: firstName, LastName: lastName, ApprovedIps: listApprovedIps}
 
 	userJSON, err := json.Marshal(userAddReq)
 	if err != nil {
@@ -144,14 +153,19 @@ func (c *Client) GetAccountUser(accountID int, email string) (*UserApisResponse,
 }
 
 // UpdateAccountUser User Roles
-func (c *Client) UpdateAccountUser(accountID int, email string, roleIds []interface{}) (*UserApisUpdateResponse, error) {
+func (c *Client) UpdateAccountUser(accountID int, email string, roleIds []interface{}, approvedIps []interface{}) (*UserApisUpdateResponse, error) {
 	log.Printf("[INFO] Update Incapsula User for email: %s (account ID %d)\n", email, accountID)
 	listRoles := make([]int, len(roleIds))
 	for i, v := range roleIds {
 		listRoles[i] = v.(int)
 	}
 
-	userUpdateReq := UserUpdateReq{RoleIds: listRoles}
+	listApprovedIps := make([]string, len(approvedIps))
+	for i, v := range approvedIps {
+		listApprovedIps[i] = v.(string)
+	}
+
+	userUpdateReq := UserUpdateReq{RoleIds: listRoles, ApprovedIps: listApprovedIps}
 
 	userJSON, err := json.Marshal(userUpdateReq)
 	if err != nil {
