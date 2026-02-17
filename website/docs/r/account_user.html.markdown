@@ -167,7 +167,7 @@ The following arguments are supported:
 * `last_name` - (Optional) The user's last name. This attribute cannot be updated.
 * `role_ids` - (Optional) List of role ids to be associated with the user. <p/>
   Default value is an empty list (user with no roles).
-* `approved_ips` - (Optional) List of approved IP addresses from which the user is permitted to log in. <p/>
+* `approved_ips` - (Optional) List of approved IP addresses from which the user is allowed to access the Cloud Security Console via the UI or API. <p/>
   Supports individual IPs, IP ranges, and CIDR notation. Default value is an empty list (no IP restrictions).
 
 

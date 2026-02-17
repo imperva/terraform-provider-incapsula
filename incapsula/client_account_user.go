@@ -48,12 +48,12 @@ type UserAddReq struct {
 	RoleIds     []int    `json:"roleIds"`
 	FirstName   string   `json:"firstName"`
 	LastName    string   `json:"lastName"`
-	ApprovedIps []string `json:"approvedIps,omitempty"`
+	ApprovedIps []string `json:"approvedIps"`
 }
 
 type UserUpdateReq struct {
 	RoleIds     []int    `json:"roleIds,omitempty"`
-	ApprovedIps []string `json:"approvedIps,omitempty"`
+	ApprovedIps []string `json:"approvedIps"`
 }
 
 // AddAccountUser adds a user to Incapsula Account
