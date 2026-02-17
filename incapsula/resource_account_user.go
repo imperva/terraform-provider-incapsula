@@ -129,7 +129,7 @@ func resourceUserCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Creating Incapsula user for email: %s\n", email)
 
 	roleIds := d.Get("role_ids").(*schema.Set)
-	approvedIps := d.Get("approved_ips").(*schema.Set).List()
+	approvedIps := d.Get("approved_ips").([]interface{})
 	UserAddResponse, err := client.AddAccountUser(
 		accountId,
 		email,
@@ -213,7 +213,7 @@ func resourceUserUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Creating Incapsula user for email: %s\n", email)
 
 	roleIds := d.Get("role_ids").(*schema.Set)
-	approvedIps := d.Get("approved_ips").(*schema.Set).List()
+	approvedIps := d.Get("approved_ips").([]interface{})
 	userUpdateResponse, err := client.UpdateAccountUser(
 		accountId,
 		email,
