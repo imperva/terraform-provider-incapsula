@@ -156,6 +156,8 @@ func (c *Client) GetAccountUser(accountID int, email string) (*UserApisResponse,
 // Pass nil for roleIds or approvedIps to leave them unchanged (for PATCH semantics)
 func (c *Client) UpdateAccountUser(accountID int, email string, roleIds []interface{}, approvedIps []interface{}) (*UserApisUpdateResponse, error) {
 	log.Printf("[INFO] Update Incapsula User for email: %s (account ID %d)\n", email, accountID)
+	log.Printf("[DEBUG] UpdateAccountUser called with roleIds=%v (nil: %v), approvedIps=%v (nil: %v)\n",
+		roleIds, roleIds == nil, approvedIps, approvedIps == nil)
 
 	userUpdateReq := UserUpdateReq{}
 
@@ -166,6 +168,9 @@ func (c *Client) UpdateAccountUser(accountID int, email string, roleIds []interf
 			listRoles[i] = v.(int)
 		}
 		userUpdateReq.RoleIds = &listRoles
+		log.Printf("[DEBUG] Including roleIds in request: %v\n", listRoles)
+	} else {
+		log.Printf("[DEBUG] NOT including roleIds in request (nil parameter)\n")
 	}
 
 	// Only include approvedIps if provided (not nil)
@@ -175,9 +180,13 @@ func (c *Client) UpdateAccountUser(accountID int, email string, roleIds []interf
 			listApprovedIps[i] = v.(string)
 		}
 		userUpdateReq.ApprovedIps = &listApprovedIps
+		log.Printf("[DEBUG] Including approvedIps in request: %v\n", listApprovedIps)
+	} else {
+		log.Printf("[DEBUG] NOT including approvedIps in request (nil parameter)\n")
 	}
 
 	userJSON, err := json.Marshal(userUpdateReq)
+	log.Printf("[DEBUG] Final JSON payload: %s\n", string(userJSON))
 	if err != nil {
 		return nil, fmt.Errorf("Failed to JSON marshal IncapRule: %s", err)
 	}

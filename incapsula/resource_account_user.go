@@ -216,16 +216,26 @@ func resourceUserUpdate(d *schema.ResourceData, m interface{}) error {
 	var roleIds []interface{}
 	var approvedIps []interface{}
 
-	if d.HasChange("role_ids") {
+	roleIdsChanged := d.HasChange("role_ids")
+	approvedIpsChanged := d.HasChange("approved_ips")
+
+	log.Printf("[DEBUG] role_ids changed: %v, approved_ips changed: %v\n", roleIdsChanged, approvedIpsChanged)
+
+	if roleIdsChanged {
 		roleIds = d.Get("role_ids").(*schema.Set).List()
+		log.Printf("[DEBUG] role_ids will be updated: %v\n", roleIds)
 	} else {
 		roleIds = nil
+		log.Printf("[DEBUG] role_ids will NOT be updated (nil)\n")
 	}
 
-	if d.HasChange("approved_ips") {
+	if approvedIpsChanged {
 		approvedIps = d.Get("approved_ips").([]interface{})
+		log.Printf("[DEBUG] approved_ips will be updated: %v (is nil: %v, length: %d)\n",
+			approvedIps, approvedIps == nil, len(approvedIps))
 	} else {
 		approvedIps = nil
+		log.Printf("[DEBUG] approved_ips will NOT be updated (nil)\n")
 	}
 
 	userUpdateResponse, err := client.UpdateAccountUser(
