@@ -84,6 +84,7 @@ func resourceAccountUser() *schema.Resource {
 					Type: schema.TypeString,
 				},
 				Optional: true,
+				Computed: true,
 			},
 
 			// Computed Arguments
