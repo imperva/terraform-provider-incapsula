@@ -76,6 +76,7 @@ func resourceAccountUser() *schema.Resource {
 					Type: schema.TypeInt,
 				},
 				Optional: true,
+				Computed: true,
 			},
 			"approved_ips": {
 				Description: "List of approved IP addresses from which the user is allowed to access the Cloud Security Console via the UI or API.",
@@ -178,12 +179,23 @@ func resourceUserRead(d *schema.ResourceData, m interface{}) error {
 
 	log.Printf("[INFO]listRoles : %v\n", userStatusResponse.Data[0].Roles)
 
-	listRolesIds := make([]int, len(userStatusResponse.Data[0].Roles))
-	listRolesNames := make([]string, len(userStatusResponse.Data[0].Roles))
-	for i, v := range userStatusResponse.Data[0].Roles {
+	// Normalize roles: if API returns null, treat it as empty list
+	roles := userStatusResponse.Data[0].Roles
+	if roles == nil {
+		log.Printf("[DEBUG] API returned nil for roles, normalizing to empty list\n")
+		roles = make([]struct {
+			RoleID   int    `json:"id"`
+			RoleName string `json:"name"`
+		}, 0)
+	}
+
+	listRolesIds := make([]int, len(roles))
+	listRolesNames := make([]string, len(roles))
+	for i, v := range roles {
 		listRolesIds[i] = v.RoleID
 		listRolesNames[i] = v.RoleName
 	}
+	log.Printf("[DEBUG] Setting role_ids in state: %v\n", listRolesIds)
 
 	d.Set("email", userStatusResponse.Data[0].Email)
 	d.Set("account_id", userStatusResponse.Data[0].AccountID)
