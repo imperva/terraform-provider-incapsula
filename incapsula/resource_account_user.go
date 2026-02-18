@@ -210,14 +210,28 @@ func resourceUserUpdate(d *schema.ResourceData, m interface{}) error {
 	email := d.Get("email").(string)
 	accountId := d.Get("account_id").(int)
 
-	log.Printf("[INFO] Creating Incapsula user for email: %s\n", email)
+	log.Printf("[INFO] Updating Incapsula user for email: %s\n", email)
 
-	roleIds := d.Get("role_ids").(*schema.Set)
-	approvedIps := d.Get("approved_ips").([]interface{})
+	// Only send fields that have changed (PATCH semantics)
+	var roleIds []interface{}
+	var approvedIps []interface{}
+
+	if d.HasChange("role_ids") {
+		roleIds = d.Get("role_ids").(*schema.Set).List()
+	} else {
+		roleIds = nil
+	}
+
+	if d.HasChange("approved_ips") {
+		approvedIps = d.Get("approved_ips").([]interface{})
+	} else {
+		approvedIps = nil
+	}
+
 	userUpdateResponse, err := client.UpdateAccountUser(
 		accountId,
 		email,
-		roleIds.List(),
+		roleIds,
 		approvedIps,
 	)
 	if err != nil {

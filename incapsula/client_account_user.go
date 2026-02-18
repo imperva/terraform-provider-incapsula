@@ -15,11 +15,11 @@ const endpointUserOperationNew = "identity-management/v3/idm-users"
 // UserApisResponse contains the relevant user information when adding, getting or updating a user
 type UserApisResponse struct {
 	Data []struct {
-		UserID      string `json:"id"`
-		AccountID   int    `json:"accountId"`
-		FirstName   string `json:"firstName"`
-		LastName    string `json:"lastName"`
-		Email       string `json:"email"`
+		UserID      string   `json:"id"`
+		AccountID   int      `json:"accountId"`
+		FirstName   string   `json:"firstName"`
+		LastName    string   `json:"lastName"`
+		Email       string   `json:"email"`
 		ApprovedIps []string `json:"approvedIps"`
 		Roles       []struct {
 			RoleID   int    `json:"id"`
@@ -30,11 +30,11 @@ type UserApisResponse struct {
 
 type UserApisUpdateResponse struct {
 	Data []struct {
-		UserID      string `json:"id"`
-		AccountID   int    `json:"accountId"`
-		FirstName   string `json:"firstName"`
-		LastName    string `json:"lastName"`
-		Email       string `json:"email"`
+		UserID      string   `json:"id"`
+		AccountID   int      `json:"accountId"`
+		FirstName   string   `json:"firstName"`
+		LastName    string   `json:"lastName"`
+		Email       string   `json:"email"`
 		ApprovedIps []string `json:"approvedIps"`
 		Roles       []struct {
 			RoleID   int    `json:"id"`
@@ -52,8 +52,8 @@ type UserAddReq struct {
 }
 
 type UserUpdateReq struct {
-	RoleIds     []int    `json:"roleIds,omitempty"`
-	ApprovedIps []string `json:"approvedIps"`
+	RoleIds     *[]int    `json:"roleIds,omitempty"`
+	ApprovedIps *[]string `json:"approvedIps,omitempty"`
 }
 
 // AddAccountUser adds a user to Incapsula Account
@@ -153,19 +153,29 @@ func (c *Client) GetAccountUser(accountID int, email string) (*UserApisResponse,
 }
 
 // UpdateAccountUser User Roles
+// Pass nil for roleIds or approvedIps to leave them unchanged (for PATCH semantics)
 func (c *Client) UpdateAccountUser(accountID int, email string, roleIds []interface{}, approvedIps []interface{}) (*UserApisUpdateResponse, error) {
 	log.Printf("[INFO] Update Incapsula User for email: %s (account ID %d)\n", email, accountID)
-	listRoles := make([]int, len(roleIds))
-	for i, v := range roleIds {
-		listRoles[i] = v.(int)
+
+	userUpdateReq := UserUpdateReq{}
+
+	// Only include roleIds if provided (not nil)
+	if roleIds != nil {
+		listRoles := make([]int, len(roleIds))
+		for i, v := range roleIds {
+			listRoles[i] = v.(int)
+		}
+		userUpdateReq.RoleIds = &listRoles
 	}
 
-	listApprovedIps := make([]string, len(approvedIps))
-	for i, v := range approvedIps {
-		listApprovedIps[i] = v.(string)
+	// Only include approvedIps if provided (not nil)
+	if approvedIps != nil {
+		listApprovedIps := make([]string, len(approvedIps))
+		for i, v := range approvedIps {
+			listApprovedIps[i] = v.(string)
+		}
+		userUpdateReq.ApprovedIps = &listApprovedIps
 	}
-
-	userUpdateReq := UserUpdateReq{RoleIds: listRoles, ApprovedIps: listApprovedIps}
 
 	userJSON, err := json.Marshal(userUpdateReq)
 	if err != nil {
