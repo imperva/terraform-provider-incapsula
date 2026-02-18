@@ -186,7 +186,16 @@ func resourceUserRead(d *schema.ResourceData, m interface{}) error {
 
 	d.Set("email", userStatusResponse.Data[0].Email)
 	d.Set("account_id", userStatusResponse.Data[0].AccountID)
-	d.Set("approved_ips", userStatusResponse.Data[0].ApprovedIps)
+
+	// Normalize approved_ips: if API returns null, treat it as empty list
+	// This prevents Terraform from showing drift when approved_ips is not set
+	approvedIps := userStatusResponse.Data[0].ApprovedIps
+	if approvedIps == nil {
+		log.Printf("[DEBUG] API returned nil for approved_ips, normalizing to empty list\n")
+		approvedIps = []string{}
+	}
+	log.Printf("[DEBUG] Setting approved_ips in state: %v\n", approvedIps)
+	d.Set("approved_ips", approvedIps)
 
 	accountStatusResponse, err := client.AccountStatus(accountID, ReadAccount)
 	if accountStatusResponse != nil && accountStatusResponse.AccountType == "Sub Account" {
