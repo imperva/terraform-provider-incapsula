@@ -76,6 +76,16 @@ func resourceAccountUser() *schema.Resource {
 					Type: schema.TypeInt,
 				},
 				Optional: true,
+				Computed: true,
+			},
+			"approved_ips": {
+				Description: "List of approved IP addresses from which the user is allowed to access the Cloud Security Console via the UI or API.",
+				Type:        schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional: true,
+				Computed: true,
 			},
 
 			// Computed Arguments
@@ -121,12 +131,14 @@ func resourceUserCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Creating Incapsula user for email: %s\n", email)
 
 	roleIds := d.Get("role_ids").(*schema.Set)
+	approvedIps := d.Get("approved_ips").([]interface{})
 	UserAddResponse, err := client.AddAccountUser(
 		accountId,
 		email,
 		d.Get("first_name").(string),
 		d.Get("last_name").(string),
 		roleIds.List(),
+		approvedIps,
 	)
 
 	if err != nil {
@@ -167,15 +179,36 @@ func resourceUserRead(d *schema.ResourceData, m interface{}) error {
 
 	log.Printf("[INFO]listRoles : %v\n", userStatusResponse.Data[0].Roles)
 
-	listRolesIds := make([]int, len(userStatusResponse.Data[0].Roles))
-	listRolesNames := make([]string, len(userStatusResponse.Data[0].Roles))
-	for i, v := range userStatusResponse.Data[0].Roles {
+	// Normalize roles: if API returns null, treat it as empty list
+	roles := userStatusResponse.Data[0].Roles
+	if roles == nil {
+		log.Printf("[DEBUG] API returned nil for roles, normalizing to empty list\n")
+		roles = make([]struct {
+			RoleID   int    `json:"id"`
+			RoleName string `json:"name"`
+		}, 0)
+	}
+
+	listRolesIds := make([]int, len(roles))
+	listRolesNames := make([]string, len(roles))
+	for i, v := range roles {
 		listRolesIds[i] = v.RoleID
 		listRolesNames[i] = v.RoleName
 	}
+	log.Printf("[DEBUG] Setting role_ids in state: %v\n", listRolesIds)
 
 	d.Set("email", userStatusResponse.Data[0].Email)
 	d.Set("account_id", userStatusResponse.Data[0].AccountID)
+
+	// Normalize approved_ips: if API returns null, treat it as empty list
+	// This prevents Terraform from showing drift when approved_ips is not set
+	approvedIps := userStatusResponse.Data[0].ApprovedIps
+	if approvedIps == nil {
+		log.Printf("[DEBUG] API returned nil for approved_ips, normalizing to empty list\n")
+		approvedIps = []string{}
+	}
+	log.Printf("[DEBUG] Setting approved_ips in state: %v\n", approvedIps)
+	d.Set("approved_ips", approvedIps)
 
 	accountStatusResponse, err := client.AccountStatus(accountID, ReadAccount)
 	if accountStatusResponse != nil && accountStatusResponse.AccountType == "Sub Account" {
@@ -199,13 +232,39 @@ func resourceUserUpdate(d *schema.ResourceData, m interface{}) error {
 	email := d.Get("email").(string)
 	accountId := d.Get("account_id").(int)
 
-	log.Printf("[INFO] Creating Incapsula user for email: %s\n", email)
+	log.Printf("[INFO] Updating Incapsula user for email: %s\n", email)
 
-	roleIds := d.Get("role_ids").(*schema.Set)
+	// Only send fields that have changed (PATCH semantics)
+	var roleIds []interface{}
+	var approvedIps []interface{}
+
+	roleIdsChanged := d.HasChange("role_ids")
+	approvedIpsChanged := d.HasChange("approved_ips")
+
+	log.Printf("[DEBUG] role_ids changed: %v, approved_ips changed: %v\n", roleIdsChanged, approvedIpsChanged)
+
+	if roleIdsChanged {
+		roleIds = d.Get("role_ids").(*schema.Set).List()
+		log.Printf("[DEBUG] role_ids will be updated: %v\n", roleIds)
+	} else {
+		roleIds = nil
+		log.Printf("[DEBUG] role_ids will NOT be updated (nil)\n")
+	}
+
+	if approvedIpsChanged {
+		approvedIps = d.Get("approved_ips").([]interface{})
+		log.Printf("[DEBUG] approved_ips will be updated: %v (is nil: %v, length: %d)\n",
+			approvedIps, approvedIps == nil, len(approvedIps))
+	} else {
+		approvedIps = nil
+		log.Printf("[DEBUG] approved_ips will NOT be updated (nil)\n")
+	}
+
 	userUpdateResponse, err := client.UpdateAccountUser(
 		accountId,
 		email,
-		roleIds.List(),
+		roleIds,
+		approvedIps,
 	)
 	if err != nil {
 		log.Printf("[ERROR] Could not update user for email: %s, %s\n", email, err)
