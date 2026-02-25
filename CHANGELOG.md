@@ -1,3 +1,9 @@
+## 3.38.0 (Feb 25, 2026)
+
+FEATURES:
+Resource Update: Support approved_ips on account_user resource
+
+
 ## 3.37.1 (Jan 25, 2026)
 
 BUT FIXES:
