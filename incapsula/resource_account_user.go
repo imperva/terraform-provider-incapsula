@@ -80,7 +80,7 @@ func resourceAccountUser() *schema.Resource {
 			},
 			"approved_ips": {
 				Description: "List of approved IP addresses from which the user is allowed to access the Cloud Security Console via the UI or API.",
-				Type:        schema.TypeList,
+				Type:        schema.TypeSet,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -131,14 +131,14 @@ func resourceUserCreate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[INFO] Creating Incapsula user for email: %s\n", email)
 
 	roleIds := d.Get("role_ids").(*schema.Set)
-	approvedIps := d.Get("approved_ips").([]interface{})
+	approvedIps := d.Get("approved_ips").(*schema.Set)
 	UserAddResponse, err := client.AddAccountUser(
 		accountId,
 		email,
 		d.Get("first_name").(string),
 		d.Get("last_name").(string),
 		roleIds.List(),
-		approvedIps,
+		approvedIps.List(),
 	)
 
 	if err != nil {
