@@ -114,6 +114,7 @@ func Provider() *schema.Provider {
 			"incapsula_policy_asset_association":                               resourcePolicyAssetAssociation(),
 			"incapsula_security_rule_exception":                                resourceSecurityRuleException(),
 			"incapsula_site":                                                   resourceSite(),
+			"incapsula_cloud_origin_domain":                                    resourceCloudOriginDomain(),
 			"incapsula_managed_certificate_settings":                           resourceManagedCertificate(),
 			"incapsula_site_v3":                                                resourceSiteV3(),
 			"incapsula_waf_security_rule":                                      resourceWAFSecurityRule(),
