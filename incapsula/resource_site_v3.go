@@ -63,7 +63,7 @@ func resourceSiteV3() *schema.Resource {
 				Required:    true,
 			},
 			"type": {
-				Description: "The website type. Indicates which kind of website is created, e.g. CLOUD_WAF for a website onboarded to Imperva Cloud WAF.",
+				Description: "The website type. Indicates which kind of website is created, e.g. CLOUD_WAF for a website onboarded to Imperva Cloud WAF, or PUBLIC_CLOUD for a website onboarded to Imperva for a public cloud provider.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "CLOUD_WAF",
@@ -89,6 +89,12 @@ func resourceSiteV3() *schema.Resource {
 				Optional:    true,
 				Default:     true,
 			},
+			"cloud_type": {
+				Description: "(Optional) The cloud provider type. Required when site type is PUBLIC_CLOUD. Supported values: AWS, IGC.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+			},
 		},
 	}
 }
@@ -104,6 +110,9 @@ func resourceSiteV3Add(ctx context.Context, d *schema.ResourceData, m interface{
 	siteV3Request.AccountId, _ = strconv.Atoi(accountID)
 	if d.Get("ref_id") != nil {
 		siteV3Request.RefId = d.Get("ref_id").(string)
+	}
+	if v, ok := d.GetOk("cloud_type"); ok {
+		siteV3Request.CloudType = v.(string)
 	}
 	siteV3Request.Active = d.Get("active").(bool)
 	siteV3Response, diags := client.AddV3Site(&siteV3Request, accountID)
@@ -234,6 +243,13 @@ func resourceSiteV3Read(ctx context.Context, d *schema.ResourceData, m interface
 		log.Printf("[ERROR] Could not read Incapsula active mode after get v3 site of Account ID: %s, %s\n", accountID, err)
 		return diag.FromErr(err)
 	}
+
+	err = d.Set("cloud_type", siteV3Response.Data[0].CloudType)
+	if err != nil {
+		log.Printf("[ERROR] Could not read Incapsula cloud type after get v3 site of Account ID: %s, %s\n", accountID, err)
+		return diag.FromErr(err)
+	}
+
 	d.SetId(strconv.Itoa(siteV3Response.Data[0].Id))
 	return diags
 }
