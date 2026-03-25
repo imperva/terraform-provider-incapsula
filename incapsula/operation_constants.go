@@ -218,3 +218,8 @@ const CreateApiClient = "create_api_client"
 const ReadApiClient = "read_api_client"
 const UpdateApiClient = "update_api_client"
 const DeleteApiClient = "delete_api_client"
+
+const CreateCloudOriginDomain = "create_cloud_origin_domain"
+const ReadCloudOriginDomain = "read_cloud_origin_domain"
+const UpdateCloudOriginDomain = "update_cloud_origin_domain"
+const DeleteCloudOriginDomain = "delete_cloud_origin_domain"
