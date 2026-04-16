@@ -545,7 +545,7 @@ func TestClientUpdateIncapRuleDisableBeforeDelete(t *testing.T) {
 
 	// Step 1: Create rule with disabled state
 	rule := IncapRule{
-		Name:    "myfirstcoolrule",
+		Name:    "myrule",
 		Action:  "RULE_ACTION_ALERT",
 		Enabled: false,
 	}
@@ -561,7 +561,7 @@ func TestClientUpdateIncapRuleDisableBeforeDelete(t *testing.T) {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
 		// Step 2: Return the rule with enabled=false to confirm disabling worked
-		rw.Write([]byte(`{"filter":"Full-URL == \"/someurl\"","rule_id":290109,"name":"myfirstcoolrule","action":"RULE_ACTION_ALERT","enabled":false}`))
+		rw.Write([]byte(`{"filter":"Full-URL == \"/someurl\"","rule_id":290109,"name":"myrule","action":"RULE_ACTION_ALERT","enabled":false}`))
 	}))
 	defer server.Close()
 
