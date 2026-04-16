@@ -403,13 +403,27 @@ func resourceIncapRuleUpdate(d *schema.ResourceData, m interface{}) error {
 
 func resourceIncapRuleDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
+	siteID := d.Get("site_id").(string)
 
 	ruleID, err := strconv.Atoi(d.Id())
 	if err != nil {
 		return err
 	}
 
-	err = client.DeleteIncapRule(d.Get("site_id").(string), ruleID)
+	// Step 1: Disable the rule first (required by API before deletion)
+	disableRule := &IncapRule{
+		Name:    d.Get("name").(string),
+		Action:  d.Get("action").(string),
+		Enabled: false,
+	}
+
+	_, err = client.UpdateIncapRule(siteID, ruleID, disableRule)
+	if err != nil {
+		return fmt.Errorf("Error disabling Incap Rule %d before deletion: %s", ruleID, err)
+	}
+
+	// Step 2: Now delete the disabled rule
+	err = client.DeleteIncapRule(siteID, ruleID)
 	if err != nil {
 		return err
 	}
