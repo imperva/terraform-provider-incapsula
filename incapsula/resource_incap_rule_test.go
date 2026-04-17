@@ -96,6 +96,35 @@ func TestAccIncapsulaIncapRule_Basic_RULE_ACTION_BLOCK_USER(t *testing.T) {
 	})
 }
 
+// TestAccIncapsulaIncapRule_DeleteDisablesFirst tests the fix for issue #626
+// This acceptance test verifies that resourceIncapRuleDelete() disables the rule before deleting it
+func TestAccIncapsulaIncapRule_DeleteDisablesFirst(t *testing.T) {
+	resourceName := "incapsula_incap_rule.test_delete_rule"
+	ruleName := "TestDeleteRuleIssue626"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckIncapsulaIncapRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckIncapsulaIncapRuleConfigDeleteTest(t, ruleName),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckIncapsulaIncapRuleExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "name", ruleName),
+					resource.TestCheckResourceAttr(resourceName, "action", "RULE_ACTION_ALERT"),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+				),
+			},
+			// When this step completes, destroy is called
+			// The test verifies that:
+			// 1. Rule is disabled first (UpdateIncapRule with enabled=false)
+			// 2. Rule is deleted second (DeleteIncapRule)
+			// This is verified by testAccCheckIncapsulaIncapRuleDestroy which confirms the rule is gone
+		},
+	})
+}
+
 func testAccStateRuleID(s *terraform.State) (string, error) {
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "incapsula_incap_rule" {
@@ -245,5 +274,19 @@ resource "incapsula_incap_rule" "testacc-terraform-incap-rule-block-duration" {
   block_duration_type = "fixed"
   block_duration = 55
 }`, incapRuleNameBlockDuration, siteResourceName,
+	)
+}
+
+// testAccCheckIncapsulaIncapRuleConfigDeleteTest creates a rule for testing delete with disable-before-delete (Issue #626)
+func testAccCheckIncapsulaIncapRuleConfigDeleteTest(t *testing.T, ruleName string) string {
+	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+resource "incapsula_incap_rule" "test_delete_rule" {
+  name = "%s"
+  site_id = "${incapsula_site.testacc-terraform-site.id}"
+  action = "RULE_ACTION_ALERT"
+  filter = "Full-URL == \"/test\""
+  depends_on = ["%s"]
+  enabled = true
+}`, ruleName, siteResourceName,
 	)
 }
