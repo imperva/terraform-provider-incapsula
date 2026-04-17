@@ -535,52 +535,72 @@ func TestClientDeleteIncapRuleValidRule(t *testing.T) {
 }
 
 // TestClientUpdateIncapRuleDisableBeforeDelete validates the fix for issue #626.
-// This test verifies that UpdateIncapRule can disable a rule with minimal fields
-// (name, action, enabled=false) before deletion, as required by the Imperva API.
+// This test verifies the complete disable → delete sequence required by the Imperva API.
 func TestClientUpdateIncapRuleDisableBeforeDelete(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := "42"
 	ruleID := 290109
 
-	// Step 1: Create rule with disabled state
-	rule := IncapRule{
-		Name:    "myrule",
-		Action:  "RULE_ACTION_ALERT",
-		Filter:  "Full-URL == \"/someurl\"",
-		Enabled: false,
-	}
-
 	endpoint := fmt.Sprintf("/sites/%s/rules/%d", siteID, ruleID)
-	callCount := 0
+	callSequence := []string{}
 
-	// Mock server validates the disable request and returns disabled rule
+	// Mock server handles both disable (PUT) and delete (DELETE) requests
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		callCount++
-		rw.WriteHeader(200)
 		if req.URL.String() != endpoint {
-			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+			t.Errorf("Should have hit %s endpoint. Got: %s", endpoint, req.URL.String())
 		}
-		// Step 2: Return the rule with enabled=false to confirm disabling worked
-		rw.Write([]byte(`{"filter":"Full-URL == \"/someurl\"","rule_id":290109,"name":"myrule","action":"RULE_ACTION_ALERT","enabled":false}`))
+
+		if req.Method == "PUT" {
+			// Disable step: UpdateIncapRule
+			callSequence = append(callSequence, "PUT")
+			rw.WriteHeader(200)
+			rw.Write([]byte(`{"filter":"Full-URL == \"/someurl\"","rule_id":290109,"name":"myrule","action":"RULE_ACTION_ALERT","enabled":false}`))
+		} else if req.Method == "DELETE" {
+			// Delete step: DeleteIncapRule
+			callSequence = append(callSequence, "DELETE")
+			rw.WriteHeader(200)
+			rw.Write([]byte(`{"res":0,"res_message":"OK"}`))
+		}
 	}))
 	defer server.Close()
 
 	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
 
-	// Step 3: Call UpdateIncapRule to disable the rule
-	updateIncapRuleResponse, err := client.UpdateIncapRule(siteID, ruleID, &rule)
+	// Step 1: Disable the rule
+	disableRule := &IncapRule{
+		Name:    "myrule",
+		Action:  "RULE_ACTION_ALERT",
+		Filter:  "Full-URL == \"/someurl\"",
+		Enabled: false,
+	}
+
+	updateResp, err := client.UpdateIncapRule(siteID, ruleID, disableRule)
 	if err != nil {
 		t.Errorf("Should not have received an error when disabling rule: %s", err)
 	}
-	if updateIncapRuleResponse == nil {
-		t.Errorf("Should not have received a nil updateIncapRuleResponse instance")
+	if updateResp == nil {
+		t.Errorf("Should not have received a nil updateResp instance")
 	}
-	if updateIncapRuleResponse.Enabled != false {
-		t.Errorf("Should have received disabled rule (enabled=false), got enabled=%v", updateIncapRuleResponse.Enabled)
+	if updateResp.Enabled != false {
+		t.Errorf("Should have received disabled rule (enabled=false), got enabled=%v", updateResp.Enabled)
 	}
-	if callCount != 1 {
-		t.Errorf("Should have made exactly 1 API call, made %d", callCount)
+
+	// Step 2: Delete the disabled rule
+	err = client.DeleteIncapRule(siteID, ruleID)
+	if err != nil {
+		t.Errorf("Should not have received an error when deleting rule: %s", err)
+	}
+
+	// Verify sequence: disable must come before delete
+	if len(callSequence) != 2 {
+		t.Errorf("Should have made exactly 2 API calls, made %d", len(callSequence))
+	}
+	if len(callSequence) >= 1 && callSequence[0] != "PUT" {
+		t.Errorf("First call should be PUT (disable), got %s", callSequence[0])
+	}
+	if len(callSequence) >= 2 && callSequence[1] != "DELETE" {
+		t.Errorf("Second call should be DELETE, got %s", callSequence[1])
 	}
 }
