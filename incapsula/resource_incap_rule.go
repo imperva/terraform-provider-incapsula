@@ -411,9 +411,15 @@ func resourceIncapRuleDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// Step 1: Disable the rule first (required by API before deletion)
+	filter := ""
+	if f, ok := d.GetOk("filter"); ok {
+		filter = f.(string)
+	}
+
 	disableRule := &IncapRule{
 		Name:    d.Get("name").(string),
 		Action:  d.Get("action").(string),
+		Filter:  filter,
 		Enabled: false,
 	}
 

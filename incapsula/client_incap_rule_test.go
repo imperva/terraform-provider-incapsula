@@ -547,6 +547,7 @@ func TestClientUpdateIncapRuleDisableBeforeDelete(t *testing.T) {
 	rule := IncapRule{
 		Name:    "myrule",
 		Action:  "RULE_ACTION_ALERT",
+		Filter:  "Full-URL == \"/someurl\"",
 		Enabled: false,
 	}
 
