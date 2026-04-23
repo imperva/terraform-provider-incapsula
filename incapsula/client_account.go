@@ -12,8 +12,22 @@ import (
 // Endpoints (unexported consts)
 const endpointAccountAdd = "accounts/add"
 const endpointAccountStatus = "account"
+const endpointAccountVerify = "account/verify"
 const endpointAccountUpdate = "accounts/configure"
 const endpointAccountDelete = "accounts/delete"
+
+// AccountVerifyResponse contains minimal account information for credential verification
+type AccountVerifyResponse struct {
+	AccountType string      `json:"account_type"`
+	AccountID   int         `json:"account_id"`
+	ParentID    int         `json:"parent_id"`
+	AccountName string      `json:"account_name"`
+	Res         interface{} `json:"res"`
+	ResMessage  string      `json:"res_message"`
+	DebugInfo   struct {
+		IDInfo string `json:"id-info"`
+	} `json:"debug_info"`
+}
 
 // AccountAddResponse contains the relevant account information when adding an Incapsula Account
 type AccountAddResponse struct {
