@@ -11,14 +11,14 @@ import (
 // CloudOriginDomainResponse contains the response for a single cloud origin domain
 type CloudOriginDomainResponse struct {
 	Value struct {
-		OriginID             int    `json:"originId"`
-		Domain               string `json:"domain"`
-		Region               string `json:"region"`
-		Port                 int    `json:"port"`
-		ImpervaOriginDomain  string `json:"impervaOriginDomain"`
-		Status               string `json:"status"`
-		CreatedAt            string `json:"createdAt"`
-		UpdatedAt            string `json:"updatedAt"`
+		OriginID            int    `json:"originId"`
+		Domain              string `json:"domain"`
+		Region              string `json:"region"`
+		Port                int    `json:"port"`
+		ImpervaOriginDomain string `json:"impervaOriginDomain"`
+		Status              string `json:"status"`
+		CreatedAt           string `json:"createdAt"`
+		UpdatedAt           string `json:"updatedAt"`
 	} `json:"value"`
 	IsError bool `json:"isError"`
 }

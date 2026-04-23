@@ -244,10 +244,12 @@ func resourceSiteV3Read(ctx context.Context, d *schema.ResourceData, m interface
 		return diag.FromErr(err)
 	}
 
-	err = d.Set("cloud_type", siteV3Response.Data[0].CloudType)
-	if err != nil {
-		log.Printf("[ERROR] Could not read Incapsula cloud type after get v3 site of Account ID: %s, %s\n", accountID, err)
-		return diag.FromErr(err)
+	if siteV3Response.Data[0].CloudType != "" {
+		err = d.Set("cloud_type", siteV3Response.Data[0].CloudType)
+		if err != nil {
+			log.Printf("[ERROR] Could not read Incapsula cloud type after get v3 site of Account ID: %s, %s\n", accountID, err)
+			return diag.FromErr(err)
+		}
 	}
 
 	d.SetId(strconv.Itoa(siteV3Response.Data[0].Id))

@@ -10,10 +10,10 @@ import (
 
 func TestClientCloudOriginDomainCreate(t *testing.T) {
 	tests := map[string]struct {
-		statusCode      int
-		responseBody    string
-		expectedErr     bool
-		expectedErrMsg  string
+		statusCode     int
+		responseBody   string
+		expectedErr    bool
+		expectedErrMsg string
 	}{
 		"BadConnection": {
 			statusCode:     0,
@@ -107,10 +107,10 @@ func TestClientCloudOriginDomainCreate(t *testing.T) {
 
 func TestClientCloudOriginDomainGet(t *testing.T) {
 	tests := map[string]struct {
-		statusCode      int
-		responseBody    string
-		expectedErr     bool
-		expectedErrMsg  string
+		statusCode     int
+		responseBody   string
+		expectedErr    bool
+		expectedErrMsg string
 	}{
 		"BadConnection": {
 			statusCode:     0,
@@ -199,10 +199,10 @@ func TestClientCloudOriginDomainGet(t *testing.T) {
 
 func TestClientCloudOriginDomainUpdate(t *testing.T) {
 	tests := map[string]struct {
-		statusCode      int
-		responseBody    string
-		expectedErr     bool
-		expectedErrMsg  string
+		statusCode     int
+		responseBody   string
+		expectedErr    bool
+		expectedErrMsg string
 	}{
 		"BadConnection": {
 			statusCode:     0,
@@ -297,10 +297,10 @@ func TestClientCloudOriginDomainUpdate(t *testing.T) {
 
 func TestClientCloudOriginDomainDelete(t *testing.T) {
 	tests := map[string]struct {
-		statusCode      int
-		responseBody    string
-		expectedErr     bool
-		expectedErrMsg  string
+		statusCode     int
+		responseBody   string
+		expectedErr    bool
+		expectedErrMsg string
 	}{
 		"BadConnection": {
 			statusCode:     0,
