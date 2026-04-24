@@ -37,7 +37,7 @@ type CloudOriginDomainUpdateRequest struct {
 }
 
 // CreateCloudOriginDomain creates a new cloud origin domain
-func (c *Client) CreateCloudOriginDomain(siteID, accountID int, domain, region string, port int) (*CloudOriginDomainResponse, error) {
+func (c *Client) CreateCloudOriginDomain(siteID int, domain, region string, port int) (*CloudOriginDomainResponse, error) {
 	log.Printf("[INFO] Creating Incapsula cloud origin domain: %s for site: %d\n", domain, siteID)
 
 	payload := CloudOriginDomainCreateRequest{
@@ -87,7 +87,7 @@ func (c *Client) CreateCloudOriginDomain(siteID, accountID int, domain, region s
 }
 
 // GetCloudOriginDomain retrieves a cloud origin domain by ID
-func (c *Client) GetCloudOriginDomain(siteID, accountID, originID int) (*CloudOriginDomainResponse, error) {
+func (c *Client) GetCloudOriginDomain(siteID, originID int) (*CloudOriginDomainResponse, error) {
 	log.Printf("[INFO] Getting Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet,
@@ -126,7 +126,7 @@ func (c *Client) GetCloudOriginDomain(siteID, accountID, originID int) (*CloudOr
 }
 
 // UpdateCloudOriginDomain updates an existing cloud origin domain
-func (c *Client) UpdateCloudOriginDomain(siteID, accountID, originID int, region string, port int) (*CloudOriginDomainResponse, error) {
+func (c *Client) UpdateCloudOriginDomain(siteID, originID int, region string, port int) (*CloudOriginDomainResponse, error) {
 	log.Printf("[INFO] Updating Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
 
 	payload := CloudOriginDomainUpdateRequest{
@@ -175,7 +175,7 @@ func (c *Client) UpdateCloudOriginDomain(siteID, accountID, originID int, region
 }
 
 // DeleteCloudOriginDomain deletes a cloud origin domain
-func (c *Client) DeleteCloudOriginDomain(siteID, accountID, originID int) error {
+func (c *Client) DeleteCloudOriginDomain(siteID, originID int) error {
 	log.Printf("[INFO] Deleting Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete,
@@ -200,49 +200,4 @@ func (c *Client) DeleteCloudOriginDomain(siteID, accountID, originID int) error 
 	}
 
 	return nil
-}
-
-// MoveCloudOriginDomain moves a cloud origin domain to another site
-func (c *Client) MoveCloudOriginDomain(siteID, originID, targetSiteID int) (*CloudOriginDomainResponse, error) {
-	log.Printf("[INFO] Moving Incapsula cloud origin domain: %d from site: %d to site: %d\n", originID, siteID, targetSiteID)
-
-	payload := map[string]int{"targetSiteId": targetSiteID}
-	payloadJSON, err := json.Marshal(payload)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to JSON marshal cloud origin domain move request: %s", err)
-	}
-
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost,
-		fmt.Sprintf("%s/sites/%d/cloud-origins/%d/move", c.config.BaseURLRev3, siteID, originID),
-		payloadJSON,
-		UpdateCloudOriginDomain)
-
-	if err != nil {
-		return nil, fmt.Errorf("Error from Incapsula service while moving cloud origin domain %d: %s", originID, err)
-	}
-
-	// Read the body
-	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
-
-	// Dump JSON
-	log.Printf("[DEBUG] Incapsula move cloud origin domain JSON response: %s\n", string(responseBody))
-
-	// Check the response code
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Error status code %d from Incapsula service when moving cloud origin domain %d: %s", resp.StatusCode, originID, string(responseBody))
-	}
-
-	// Parse the JSON
-	var response CloudOriginDomainResponse
-	err = json.Unmarshal(responseBody, &response)
-	if err != nil {
-		return nil, fmt.Errorf("Error parsing cloud origin domain JSON response: %s\nresponse: %s", err, string(responseBody))
-	}
-
-	if response.IsError {
-		return nil, fmt.Errorf("Error from Incapsula service when moving cloud origin domain %d: %s", originID, string(responseBody))
-	}
-
-	return &response, nil
 }
