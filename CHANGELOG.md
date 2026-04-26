@@ -1,3 +1,9 @@
+## 3.38.1 (Apr 26, 2026)
+
+BUT FIXES:
+- Incap Rule deletion - disable before delete (issue #626) ([#639](https://github.com/imperva/terraform-provider-incapsula/pull/639))
+
+
 ## 3.38.0 (Feb 25, 2026)
 
 FEATURES:
