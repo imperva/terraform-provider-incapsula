@@ -131,29 +131,27 @@ func testAccCheckCloudOriginDomainExists(name string) resource.TestCheckFunc {
 			return fmt.Errorf("Cloud origin domain ID is not set")
 		}
 
-		// Parse the composite ID
-		if !strings.Contains(rs.Primary.ID, "/") {
-			return fmt.Errorf("Invalid cloud origin domain ID format: %s", rs.Primary.ID)
-		}
-
+		// Parse the composite ID: account_id/site_id/origin_id
 		parts := strings.Split(rs.Primary.ID, "/")
-		if len(parts) != 2 {
+		if len(parts) != 3 {
 			return fmt.Errorf("Invalid cloud origin domain ID format: %s", rs.Primary.ID)
 		}
 
-		siteID, err := strconv.Atoi(parts[0])
+		accountID := parts[0]
+
+		siteID, err := strconv.Atoi(parts[1])
 		if err != nil {
-			return fmt.Errorf("Invalid site ID in resource ID: %s", parts[0])
+			return fmt.Errorf("Invalid site ID in resource ID: %s", parts[1])
 		}
 
-		originID, err := strconv.Atoi(parts[1])
+		originID, err := strconv.Atoi(parts[2])
 		if err != nil {
-			return fmt.Errorf("Invalid origin ID in resource ID: %s", parts[1])
+			return fmt.Errorf("Invalid origin ID in resource ID: %s", parts[2])
 		}
 
 		client := testAccProvider.Meta().(*Client)
 
-		response, err := client.GetCloudOriginDomain(siteID, originID, "")
+		response, err := client.GetCloudOriginDomain(siteID, originID, accountID)
 		if err != nil {
 			return fmt.Errorf("Error getting cloud origin domain: %s", err)
 		}
@@ -178,28 +176,25 @@ func testAccCheckCloudOriginDomainDestroy(s *terraform.State) error {
 			continue
 		}
 
-		// Parse the composite ID
-		if !strings.Contains(rs.Primary.ID, "/") {
-			continue
-		}
-
+		// Parse the composite ID: account_id/site_id/origin_id
 		parts := strings.Split(rs.Primary.ID, "/")
-		if len(parts) != 2 {
+		if len(parts) != 3 {
 			continue
 		}
 
-		siteID, err := strconv.Atoi(parts[0])
+		accountID := parts[0]
+
+		siteID, err := strconv.Atoi(parts[1])
 		if err != nil {
 			continue
 		}
 
-		originID, err := strconv.Atoi(parts[1])
+		originID, err := strconv.Atoi(parts[2])
 		if err != nil {
 			continue
 		}
 
-		// Try to get the cloud origin domain
-		response, err := client.GetCloudOriginDomain(siteID, originID, "")
+		response, err := client.GetCloudOriginDomain(siteID, originID, accountID)
 		if err == nil && response != nil {
 			return fmt.Errorf("Cloud origin domain still exists: %s", rs.Primary.ID)
 		}

@@ -41,19 +41,16 @@ func resourceCloudOriginDomain() *schema.Resource {
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					domain := val.(string)
 
-					// Check if domain is an IP address (not allowed)
 					if net.ParseIP(domain) != nil {
 						errs = append(errs, fmt.Errorf("%q must be a fully qualified domain name (FQDN), not an IP address, got: %s", key, domain))
 						return
 					}
 
-					// Check domain length
 					if len(domain) > 253 {
 						errs = append(errs, fmt.Errorf("%q must be maximum 253 characters, got: %d characters", key, len(domain)))
 						return
 					}
 
-					// Basic FQDN validation: must contain at least one dot
 					if !strings.Contains(domain, ".") {
 						errs = append(errs, fmt.Errorf("%q must be a fully qualified domain name (FQDN) with at least one dot, got: %s", key, domain))
 						return
@@ -99,6 +96,30 @@ func resourceCloudOriginDomain() *schema.Resource {
 	}
 }
 
+func parseCloudOriginID(id string) (accountID string, siteID int, originID int, err error) {
+	parts := strings.Split(id, "/")
+	if len(parts) != 3 {
+		err = fmt.Errorf("invalid cloud origin domain resource ID format %q: expected 'account_id/site_id/origin_id'", id)
+		return
+	}
+
+	accountID = parts[0]
+
+	siteID, err = strconv.Atoi(parts[1])
+	if err != nil {
+		err = fmt.Errorf("invalid site ID in resource ID: %s", parts[1])
+		return
+	}
+
+	originID, err = strconv.Atoi(parts[2])
+	if err != nil {
+		err = fmt.Errorf("invalid origin ID in resource ID: %s", parts[2])
+		return
+	}
+
+	return
+}
+
 func resourceCloudOriginDomainCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 
@@ -120,39 +141,20 @@ func resourceCloudOriginDomainCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	originID := response.Data[0].ID
-	syntheticID := fmt.Sprintf("%d/%d", siteID, originID)
-	d.SetId(syntheticID)
+	d.SetId(fmt.Sprintf("%s/%d/%d", accountID, siteID, originID))
 
 	log.Printf("[INFO] Created Incapsula cloud origin domain: %s with ID: %d for site: %d\n", domain, originID, siteID)
 
-	// Refresh state with full data from server
 	return resourceCloudOriginDomainRead(ctx, d, m)
 }
 
 func resourceCloudOriginDomainRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 
-	// Parse the composite ID
-	if !strings.Contains(d.Id(), "/") {
-		return diag.Errorf("[ERROR] Invalid cloud origin domain resource ID format: %s", d.Id())
-	}
-
-	parts := strings.Split(d.Id(), "/")
-	if len(parts) != 2 {
-		return diag.Errorf("[ERROR] Invalid cloud origin domain resource ID format: %s", d.Id())
-	}
-
-	siteID, err := strconv.Atoi(parts[0])
+	accountID, siteID, originID, err := parseCloudOriginID(d.Id())
 	if err != nil {
-		return diag.Errorf("[ERROR] Invalid site ID in resource ID: %s", parts[0])
+		return diag.FromErr(err)
 	}
-
-	originID, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return diag.Errorf("[ERROR] Invalid origin ID in resource ID: %s", parts[1])
-	}
-
-	accountID, _ := d.Get("account_id").(string)
 
 	log.Printf("[INFO] Reading Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
 
@@ -167,6 +169,7 @@ func resourceCloudOriginDomainRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	origin := response.Data[0]
+	d.Set("account_id", accountID)
 	d.Set("site_id", siteID)
 	d.Set("domain", origin.OriginDomain)
 	d.Set("region", origin.Region)
@@ -181,29 +184,11 @@ func resourceCloudOriginDomainRead(ctx context.Context, d *schema.ResourceData, 
 func resourceCloudOriginDomainUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 
-	// Parse the composite ID
-	if !strings.Contains(d.Id(), "/") {
-		return diag.Errorf("[ERROR] Invalid cloud origin domain resource ID format: %s", d.Id())
-	}
-
-	parts := strings.Split(d.Id(), "/")
-	if len(parts) != 2 {
-		return diag.Errorf("[ERROR] Invalid cloud origin domain resource ID format: %s", d.Id())
-	}
-
-	siteID, err := strconv.Atoi(parts[0])
+	accountID, siteID, originID, err := parseCloudOriginID(d.Id())
 	if err != nil {
-		return diag.Errorf("[ERROR] Invalid site ID in resource ID: %s", parts[0])
+		return diag.FromErr(err)
 	}
 
-	originID, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return diag.Errorf("[ERROR] Invalid origin ID in resource ID: %s", parts[1])
-	}
-
-	accountID, _ := d.Get("account_id").(string)
-
-	// Only region and port can be updated
 	if d.HasChange("region") || d.HasChange("port") {
 		region := d.Get("region").(string)
 		port := d.Get("port").(int)
@@ -218,34 +203,16 @@ func resourceCloudOriginDomainUpdate(ctx context.Context, d *schema.ResourceData
 		log.Printf("[INFO] Updated Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
 	}
 
-	// Refresh state with full data from server
 	return resourceCloudOriginDomainRead(ctx, d, m)
 }
 
 func resourceCloudOriginDomainDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 
-	// Parse the composite ID
-	if !strings.Contains(d.Id(), "/") {
-		return diag.Errorf("[ERROR] Invalid cloud origin domain resource ID format: %s", d.Id())
-	}
-
-	parts := strings.Split(d.Id(), "/")
-	if len(parts) != 2 {
-		return diag.Errorf("[ERROR] Invalid cloud origin domain resource ID format: %s", d.Id())
-	}
-
-	siteID, err := strconv.Atoi(parts[0])
+	accountID, siteID, originID, err := parseCloudOriginID(d.Id())
 	if err != nil {
-		return diag.Errorf("[ERROR] Invalid site ID in resource ID: %s", parts[0])
+		return diag.FromErr(err)
 	}
-
-	originID, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return diag.Errorf("[ERROR] Invalid origin ID in resource ID: %s", parts[1])
-	}
-
-	accountID, _ := d.Get("account_id").(string)
 
 	log.Printf("[INFO] Deleting Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
 
@@ -261,36 +228,22 @@ func resourceCloudOriginDomainDelete(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceCloudOriginDomainImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	// Supports two import formats:
-	//   account_id/site_id/origin_id
-	//   site_id/origin_id
 	importID := d.Id()
 	if importID == "" {
-		return nil, fmt.Errorf("expected import ID in format 'account_id/site_id/origin_id' or 'site_id/origin_id'")
+		return nil, fmt.Errorf("expected import ID in format 'account_id/site_id/origin_id'")
 	}
 
 	parts := strings.Split(importID, "/")
+	if len(parts) != 3 {
+		return nil, fmt.Errorf("invalid import ID format %q: expected 'account_id/site_id/origin_id'", importID)
+	}
 
-	var siteID, originID string
-	switch len(parts) {
-	case 3:
-		accountID := strings.TrimSpace(parts[0])
-		siteID = strings.TrimSpace(parts[1])
-		originID = strings.TrimSpace(parts[2])
-		if accountID == "" || siteID == "" || originID == "" {
-			return nil, fmt.Errorf("invalid import ID format %q: expected 'account_id/site_id/origin_id'", importID)
-		}
-		if err := d.Set("account_id", accountID); err != nil {
-			return nil, err
-		}
-	case 2:
-		siteID = strings.TrimSpace(parts[0])
-		originID = strings.TrimSpace(parts[1])
-		if siteID == "" || originID == "" {
-			return nil, fmt.Errorf("invalid import ID format %q: expected 'site_id/origin_id'", importID)
-		}
-	default:
-		return nil, fmt.Errorf("invalid import ID format %q: expected 'account_id/site_id/origin_id' or 'site_id/origin_id'", importID)
+	accountID := strings.TrimSpace(parts[0])
+	siteID := strings.TrimSpace(parts[1])
+	originID := strings.TrimSpace(parts[2])
+
+	if accountID == "" || siteID == "" || originID == "" {
+		return nil, fmt.Errorf("invalid import ID format %q: expected 'account_id/site_id/origin_id'", importID)
 	}
 
 	if _, err := strconv.Atoi(siteID); err != nil {
@@ -300,7 +253,8 @@ func resourceCloudOriginDomainImport(ctx context.Context, d *schema.ResourceData
 		return nil, fmt.Errorf("invalid origin_id %q: must be numeric", originID)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", siteID, originID))
+	d.SetId(fmt.Sprintf("%s/%s/%s", accountID, siteID, originID))
+	d.Set("account_id", accountID)
 
 	return []*schema.ResourceData{d}, nil
 }
