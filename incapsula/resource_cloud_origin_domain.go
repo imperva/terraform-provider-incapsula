@@ -11,13 +11,6 @@ import (
 	"strings"
 )
 
-var supportedCloudOriginRegions = []string{
-	"us-east-1", "us-east-2", "us-west-1", "us-west-2",
-	"eu-west-1", "eu-west-2", "eu-west-3", "eu-central-1", "eu-north-1",
-	"ap-northeast-1", "ap-northeast-2", "ap-southeast-1", "ap-southeast-2",
-	"ap-south-1", "sa-east-1",
-}
-
 func resourceCloudOriginDomain() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceCloudOriginDomainCreate,
@@ -70,23 +63,9 @@ func resourceCloudOriginDomain() *schema.Resource {
 				},
 			},
 			"region": {
-				Description: "AWS region where the cloud origin is located. Supported regions: us-east-1, us-east-2, us-west-1, us-west-2, eu-west-1, eu-west-2, eu-west-3, eu-central-1, eu-north-1, ap-northeast-1, ap-northeast-2, ap-southeast-1, ap-southeast-2, ap-south-1, sa-east-1",
+				Description: "The cloud region where the origin is located (e.g., us-east-1 for AWS, us-central1 for GCP).",
 				Type:        schema.TypeString,
 				Required:    true,
-				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-					region := val.(string)
-					found := false
-					for _, supported := range supportedCloudOriginRegions {
-						if region == supported {
-							found = true
-							break
-						}
-					}
-					if !found {
-						errs = append(errs, fmt.Errorf("%q must be one of %v, got: %s", key, supportedCloudOriginRegions, region))
-					}
-					return
-				},
 			},
 			"port": {
 				Description: "Port number for the origin. Valid range: 1-65535. Default: 443",
@@ -103,11 +82,6 @@ func resourceCloudOriginDomain() *schema.Resource {
 			},
 			"imperva_origin_domain": {
 				Description: "The Imperva-managed origin domain that is used to route traffic to the cloud origin.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"status": {
-				Description: "The status of the cloud origin domain (e.g., PENDING, ACTIVE).",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -129,19 +103,23 @@ func resourceCloudOriginDomainCreate(ctx context.Context, d *schema.ResourceData
 	client := m.(*Client)
 
 	siteID := d.Get("site_id").(int)
+	accountID, _ := d.Get("account_id").(string)
 	domain := d.Get("domain").(string)
 	region := d.Get("region").(string)
 	port := d.Get("port").(int)
 
 	log.Printf("[INFO] Creating Incapsula cloud origin domain: %s for site: %d\n", domain, siteID)
 
-	response, err := client.CreateCloudOriginDomain(siteID, domain, region, port)
+	response, err := client.CreateCloudOriginDomain(siteID, accountID, domain, region, port)
 	if err != nil {
 		return diag.Errorf("[ERROR] Could not create Incapsula cloud origin domain: %s for site: %d: %s\n", domain, siteID, err)
 	}
 
-	// Set the resource ID as site_id/origin_id
-	originID := response.Value.OriginID
+	if len(response.Data) == 0 {
+		return diag.Errorf("[ERROR] Empty response when creating cloud origin domain: %s for site: %d", domain, siteID)
+	}
+
+	originID := response.Data[0].ID
 	syntheticID := fmt.Sprintf("%d/%d", siteID, originID)
 	d.SetId(syntheticID)
 
@@ -174,22 +152,28 @@ func resourceCloudOriginDomainRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("[ERROR] Invalid origin ID in resource ID: %s", parts[1])
 	}
 
+	accountID, _ := d.Get("account_id").(string)
+
 	log.Printf("[INFO] Reading Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
 
-	response, err := client.GetCloudOriginDomain(siteID, originID)
+	response, err := client.GetCloudOriginDomain(siteID, originID, accountID)
 	if err != nil {
 		log.Printf("[ERROR] Could not read Incapsula cloud origin domain: %d for site: %d: %s\n", originID, siteID, err)
 		return diag.Errorf("[ERROR] Could not read Incapsula cloud origin domain: %d for site: %d: %s", originID, siteID, err)
 	}
 
+	if len(response.Data) == 0 {
+		return diag.Errorf("[ERROR] Empty response when reading cloud origin domain: %d for site: %d", originID, siteID)
+	}
+
+	origin := response.Data[0]
 	d.Set("site_id", siteID)
-	d.Set("domain", response.Value.Domain)
-	d.Set("region", response.Value.Region)
-	d.Set("port", response.Value.Port)
-	d.Set("imperva_origin_domain", response.Value.ImpervaOriginDomain)
-	d.Set("status", response.Value.Status)
-	d.Set("created_at", response.Value.CreatedAt)
-	d.Set("updated_at", response.Value.UpdatedAt)
+	d.Set("domain", origin.OriginDomain)
+	d.Set("region", origin.Region)
+	d.Set("port", origin.OriginConfig.Port)
+	d.Set("imperva_origin_domain", origin.ImpervaOriginDomain)
+	d.Set("created_at", origin.CreatedAt)
+	d.Set("updated_at", origin.UpdatedAt)
 
 	return nil
 }
@@ -217,6 +201,8 @@ func resourceCloudOriginDomainUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("[ERROR] Invalid origin ID in resource ID: %s", parts[1])
 	}
 
+	accountID, _ := d.Get("account_id").(string)
+
 	// Only region and port can be updated
 	if d.HasChange("region") || d.HasChange("port") {
 		region := d.Get("region").(string)
@@ -224,7 +210,7 @@ func resourceCloudOriginDomainUpdate(ctx context.Context, d *schema.ResourceData
 
 		log.Printf("[INFO] Updating Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
 
-		_, err := client.UpdateCloudOriginDomain(siteID, originID, region, port)
+		_, err := client.UpdateCloudOriginDomain(siteID, originID, accountID, region, port)
 		if err != nil {
 			return diag.Errorf("[ERROR] Could not update Incapsula cloud origin domain: %d for site: %d: %s\n", originID, siteID, err)
 		}
@@ -259,9 +245,11 @@ func resourceCloudOriginDomainDelete(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("[ERROR] Invalid origin ID in resource ID: %s", parts[1])
 	}
 
+	accountID, _ := d.Get("account_id").(string)
+
 	log.Printf("[INFO] Deleting Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
 
-	err = client.DeleteCloudOriginDomain(siteID, originID)
+	err = client.DeleteCloudOriginDomain(siteID, originID, accountID)
 	if err != nil {
 		return diag.Errorf("[ERROR] Could not delete Incapsula cloud origin domain: %d for site: %d: %s\n", originID, siteID, err)
 	}

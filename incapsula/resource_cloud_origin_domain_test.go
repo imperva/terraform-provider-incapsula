@@ -153,7 +153,7 @@ func testAccCheckCloudOriginDomainExists(name string) resource.TestCheckFunc {
 
 		client := testAccProvider.Meta().(*Client)
 
-		response, err := client.GetCloudOriginDomain(siteID, originID)
+		response, err := client.GetCloudOriginDomain(siteID, originID, "")
 		if err != nil {
 			return fmt.Errorf("Error getting cloud origin domain: %s", err)
 		}
@@ -199,7 +199,7 @@ func testAccCheckCloudOriginDomainDestroy(s *terraform.State) error {
 		}
 
 		// Try to get the cloud origin domain
-		response, err := client.GetCloudOriginDomain(siteID, originID)
+		response, err := client.GetCloudOriginDomain(siteID, originID, "")
 		if err == nil && response != nil {
 			return fmt.Errorf("Cloud origin domain still exists: %s", rs.Primary.ID)
 		}

@@ -8,6 +8,47 @@ import (
 	"testing"
 )
 
+var validCreateResponse = `{
+	"data": [{
+		"id": 12345,
+		"siteId": 1,
+		"originDomain": "api.example.com",
+		"region": "us-east-1",
+		"impervaOriginDomain": "api-example-com.c123.imperva.com",
+		"originConfig": {"port": 443},
+		"createdAt": "2024-01-01T00:00:00Z",
+		"updatedAt": "2024-01-01T00:00:00Z"
+	}]
+}`
+
+var validGetResponse = `{
+	"data": [{
+		"id": 12345,
+		"siteId": 1,
+		"originDomain": "api.example.com",
+		"region": "us-east-1",
+		"impervaOriginDomain": "api-example-com.c123.imperva.com",
+		"originConfig": {"port": 443},
+		"createdAt": "2024-01-01T00:00:00Z",
+		"updatedAt": "2024-01-02T00:00:00Z"
+	}]
+}`
+
+var validUpdateResponse = `{
+	"data": [{
+		"id": 12345,
+		"siteId": 1,
+		"originDomain": "api.example.com",
+		"region": "eu-west-1",
+		"impervaOriginDomain": "api-example-com.c123.imperva.com",
+		"originConfig": {"port": 8443},
+		"createdAt": "2024-01-01T00:00:00Z",
+		"updatedAt": "2024-01-03T00:00:00Z"
+	}]
+}`
+
+var errorResponse = `{"errors": [{"status": 400, "detail": "Bad request"}]}`
+
 func TestClientCloudOriginDomainCreate(t *testing.T) {
 	tests := map[string]struct {
 		statusCode     int
@@ -29,32 +70,19 @@ func TestClientCloudOriginDomainCreate(t *testing.T) {
 		},
 		"InvalidResponse": {
 			statusCode:     400,
-			responseBody:   `{"isError": true, "message": "Bad request"}`,
+			responseBody:   errorResponse,
 			expectedErr:    true,
 			expectedErrMsg: "Error status code 400",
 		},
 		"ValidResponse": {
-			statusCode: 201,
-			responseBody: `{
-				"value": {
-					"originId": 12345,
-					"domain": "api.example.com",
-					"region": "us-east-1",
-					"port": 443,
-					"impervaOriginDomain": "api-example-com.c123.imperva.com",
-					"status": "PENDING",
-					"createdAt": "2024-01-01T00:00:00Z",
-					"updatedAt": "2024-01-01T00:00:00Z"
-				},
-				"isError": false
-			}`,
-			expectedErr: false,
+			statusCode:   201,
+			responseBody: validCreateResponse,
+			expectedErr:  false,
 		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			// Skip test setup if it's a BadConnection case (won't use server)
 			var baseURL string
 			if test.statusCode != 0 {
 				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +92,6 @@ func TestClientCloudOriginDomainCreate(t *testing.T) {
 				defer server.Close()
 				baseURL = server.URL
 			} else {
-				// Use invalid URL for connection error
 				baseURL = "http://invalid.test:99999"
 			}
 
@@ -77,7 +104,7 @@ func TestClientCloudOriginDomainCreate(t *testing.T) {
 				httpClient: &http.Client{},
 			}
 
-			response, err := client.CreateCloudOriginDomain(1, "api.example.com", "us-east-1", 443)
+			response, err := client.CreateCloudOriginDomain(1, "", "api.example.com", "us-east-1", 443)
 
 			if test.expectedErr && err == nil {
 				t.Errorf("Expected error, got nil")
@@ -94,11 +121,14 @@ func TestClientCloudOriginDomainCreate(t *testing.T) {
 				t.Errorf("Expected response, got nil")
 			}
 			if !test.expectedErr && response != nil {
-				if response.Value.OriginID != 12345 {
-					t.Errorf("Expected OriginID 12345, got %d", response.Value.OriginID)
+				if len(response.Data) == 0 {
+					t.Fatal("Expected data in response, got empty")
 				}
-				if response.Value.Domain != "api.example.com" {
-					t.Errorf("Expected Domain api.example.com, got %s", response.Value.Domain)
+				if response.Data[0].ID != 12345 {
+					t.Errorf("Expected ID 12345, got %d", response.Data[0].ID)
+				}
+				if response.Data[0].OriginDomain != "api.example.com" {
+					t.Errorf("Expected OriginDomain api.example.com, got %s", response.Data[0].OriginDomain)
 				}
 			}
 		})
@@ -126,26 +156,14 @@ func TestClientCloudOriginDomainGet(t *testing.T) {
 		},
 		"InvalidResponse": {
 			statusCode:     404,
-			responseBody:   `{"isError": true, "message": "Not found"}`,
+			responseBody:   `{"errors": [{"status": 404, "detail": "Not found"}]}`,
 			expectedErr:    true,
 			expectedErrMsg: "Error status code 404",
 		},
 		"ValidResponse": {
-			statusCode: 200,
-			responseBody: `{
-				"value": {
-					"originId": 12345,
-					"domain": "api.example.com",
-					"region": "us-east-1",
-					"port": 443,
-					"impervaOriginDomain": "api-example-com.c123.imperva.com",
-					"status": "ACTIVE",
-					"createdAt": "2024-01-01T00:00:00Z",
-					"updatedAt": "2024-01-02T00:00:00Z"
-				},
-				"isError": false
-			}`,
-			expectedErr: false,
+			statusCode:   200,
+			responseBody: validGetResponse,
+			expectedErr:  false,
 		},
 	}
 
@@ -172,7 +190,7 @@ func TestClientCloudOriginDomainGet(t *testing.T) {
 				httpClient: &http.Client{},
 			}
 
-			response, err := client.GetCloudOriginDomain(1, 12345)
+			response, err := client.GetCloudOriginDomain(1, 12345, "")
 
 			if test.expectedErr && err == nil {
 				t.Errorf("Expected error, got nil")
@@ -189,8 +207,11 @@ func TestClientCloudOriginDomainGet(t *testing.T) {
 				t.Errorf("Expected response, got nil")
 			}
 			if !test.expectedErr && response != nil {
-				if response.Value.Status != "ACTIVE" {
-					t.Errorf("Expected Status ACTIVE, got %s", response.Value.Status)
+				if len(response.Data) == 0 {
+					t.Fatal("Expected data in response, got empty")
+				}
+				if response.Data[0].Region != "us-east-1" {
+					t.Errorf("Expected Region us-east-1, got %s", response.Data[0].Region)
 				}
 			}
 		})
@@ -218,26 +239,14 @@ func TestClientCloudOriginDomainUpdate(t *testing.T) {
 		},
 		"InvalidResponse": {
 			statusCode:     400,
-			responseBody:   `{"isError": true, "message": "Bad request"}`,
+			responseBody:   errorResponse,
 			expectedErr:    true,
 			expectedErrMsg: "Error status code 400",
 		},
 		"ValidResponse": {
-			statusCode: 200,
-			responseBody: `{
-				"value": {
-					"originId": 12345,
-					"domain": "api.example.com",
-					"region": "eu-west-1",
-					"port": 8443,
-					"impervaOriginDomain": "api-example-com.c123.imperva.com",
-					"status": "ACTIVE",
-					"createdAt": "2024-01-01T00:00:00Z",
-					"updatedAt": "2024-01-03T00:00:00Z"
-				},
-				"isError": false
-			}`,
-			expectedErr: false,
+			statusCode:   200,
+			responseBody: validUpdateResponse,
+			expectedErr:  false,
 		},
 	}
 
@@ -267,7 +276,7 @@ func TestClientCloudOriginDomainUpdate(t *testing.T) {
 				httpClient: &http.Client{},
 			}
 
-			response, err := client.UpdateCloudOriginDomain(1, 12345, "eu-west-1", 8443)
+			response, err := client.UpdateCloudOriginDomain(1, 12345, "", "eu-west-1", 8443)
 
 			if test.expectedErr && err == nil {
 				t.Errorf("Expected error, got nil")
@@ -284,11 +293,14 @@ func TestClientCloudOriginDomainUpdate(t *testing.T) {
 				t.Errorf("Expected response, got nil")
 			}
 			if !test.expectedErr && response != nil {
-				if response.Value.Region != "eu-west-1" {
-					t.Errorf("Expected Region eu-west-1, got %s", response.Value.Region)
+				if len(response.Data) == 0 {
+					t.Fatal("Expected data in response, got empty")
 				}
-				if response.Value.Port != 8443 {
-					t.Errorf("Expected Port 8443, got %d", response.Value.Port)
+				if response.Data[0].Region != "eu-west-1" {
+					t.Errorf("Expected Region eu-west-1, got %s", response.Data[0].Region)
+				}
+				if response.Data[0].OriginConfig.Port != 8443 {
+					t.Errorf("Expected Port 8443, got %d", response.Data[0].OriginConfig.Port)
 				}
 			}
 		})
@@ -310,7 +322,7 @@ func TestClientCloudOriginDomainDelete(t *testing.T) {
 		},
 		"InvalidResponse": {
 			statusCode:     404,
-			responseBody:   `{"isError": true, "message": "Not found"}`,
+			responseBody:   `{"errors": [{"status": 404, "detail": "Not found"}]}`,
 			expectedErr:    true,
 			expectedErrMsg: "Error status code 404",
 		},
@@ -347,7 +359,7 @@ func TestClientCloudOriginDomainDelete(t *testing.T) {
 				httpClient: &http.Client{},
 			}
 
-			err := client.DeleteCloudOriginDomain(1, 12345)
+			err := client.DeleteCloudOriginDomain(1, 12345, "")
 
 			if test.expectedErr && err == nil {
 				t.Errorf("Expected error, got nil")
@@ -365,16 +377,23 @@ func TestClientCloudOriginDomainDelete(t *testing.T) {
 }
 
 func TestCloudOriginDomainJSONMarshaling(t *testing.T) {
-	// Test that request structs marshal correctly
 	createReq := CloudOriginDomainCreateRequest{
-		Domain: "api.example.com",
-		Region: "us-east-1",
-		Port:   443,
+		OriginDomain: "api.example.com",
+		Region:       "us-east-1",
+		DomainConfig: &CloudOriginDomainConfig{Port: 443},
 	}
 
 	data, err := json.Marshal(createReq)
 	if err != nil {
 		t.Fatalf("Failed to marshal create request: %v", err)
+	}
+
+	jsonStr := string(data)
+	if !strings.Contains(jsonStr, `"originDomain"`) {
+		t.Errorf("Expected originDomain field, got %s", jsonStr)
+	}
+	if !strings.Contains(jsonStr, `"domainConfig"`) {
+		t.Errorf("Expected domainConfig field, got %s", jsonStr)
 	}
 
 	var unmarshaled CloudOriginDomainCreateRequest
@@ -383,13 +402,13 @@ func TestCloudOriginDomainJSONMarshaling(t *testing.T) {
 		t.Fatalf("Failed to unmarshal create request: %v", err)
 	}
 
-	if unmarshaled.Domain != "api.example.com" {
-		t.Errorf("Expected domain api.example.com, got %s", unmarshaled.Domain)
+	if unmarshaled.OriginDomain != "api.example.com" {
+		t.Errorf("Expected domain api.example.com, got %s", unmarshaled.OriginDomain)
 	}
 	if unmarshaled.Region != "us-east-1" {
 		t.Errorf("Expected region us-east-1, got %s", unmarshaled.Region)
 	}
-	if unmarshaled.Port != 443 {
-		t.Errorf("Expected port 443, got %d", unmarshaled.Port)
+	if unmarshaled.DomainConfig.Port != 443 {
+		t.Errorf("Expected port 443, got %d", unmarshaled.DomainConfig.Port)
 	}
 }
