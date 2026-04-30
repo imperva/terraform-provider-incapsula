@@ -1,3 +1,33 @@
+## 3.38.1 (Apr 26, 2026)
+
+BUT FIXES:
+- Incap Rule deletion - disable before delete (issue #626) ([#639](https://github.com/imperva/terraform-provider-incapsula/pull/639))
+
+
+## 3.38.0 (Feb 25, 2026)
+
+FEATURES:
+Resource Update: Support approved_ips on account_user resource
+
+
+## 3.37.1 (Jan 25, 2026)
+
+BUT FIXES:
+- Account_role: support caid for role delete  ([#622](https://github.com/imperva/terraform-provider-incapsula/pull/622))
+
+
+## 3.37.0 (Jan 18, 2026)
+
+FEATURES:
+* **New Resource:** `incapsula_api_client`
+
+IMPROVEMENTS:
+- add PQC flag to site ssl config resource([#613](https://github.com/imperva/terraform-provider-incapsula/pull/613))
+
+BUT FIXES:
+- V3 Site: Cant Create site under sub account  ([#619](https://github.com/imperva/terraform-provider-incapsula/pull/619))
+
+
 ## 3.36.0 (Jan 04, 2026)
 
 IMPROVEMENTS:

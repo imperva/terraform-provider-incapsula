@@ -186,13 +186,18 @@ func SkipIfAccountTypeIsResellerEndUser(t *testing.T) resource.ErrorCheckFunc {
 }
 
 func GenerateTestEmail(t *testing.T) string {
-	if v := os.Getenv("INCAPSULA_API_ID"); v == "" {
-		t.Fatal("INCAPSULA_API_ID must be set for acceptance tests")
+	apiID := os.Getenv("INCAPSULA_API_ID")
+	if apiID == "" {
+		if ShouldUseMockServer() {
+			apiID = "mock-api-id"
+		} else {
+			t.Fatal("INCAPSULA_API_ID must be set for acceptance tests")
+		}
 	}
 
 	s3 := rand.NewSource(time.Now().UnixNano())
 	r3 := rand.New(s3)
-	generatedDomain = "id" + os.Getenv("INCAPSULA_API_ID") + strconv.Itoa(r3.Intn(1000)) + testEmail
+	generatedDomain = "id" + apiID + strconv.Itoa(r3.Intn(1000)) + testEmail
 
 	return generatedDomain
 }

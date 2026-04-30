@@ -1,0 +1,60 @@
+name: Weekly Issue Triage
+
+on:
+  schedule:
+    # Runs at 08:00 UTC every Wednesday
+    - cron: '0 8 * * 3'
+  workflow_dispatch: # Allows you to manually trigger it for testing
+
+jobs:
+  triage-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Issue Report
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            
+            // Fetch all open issues (pagination logic may be needed for >100 issues)
+            const opts = github.rest.issues.listForRepo.endpoint.merge({
+              owner: owner,
+              repo: repo,
+              state: 'open',
+              per_page: 100
+            });
+            const issues = await github.paginate(opts);
+            
+            let noLabels = [];
+            let withLabels = [];
+            
+            for (const issue of issues) {
+              // Skip pull requests, issues API returns both
+              if (issue.pull_request) continue;
+              
+              const summary = `- #${issue.number} ${issue.title} (${issue.html_url})`;
+              
+              if (issue.labels.length === 0) {
+                noLabels.push(summary);
+              } else {
+                const labelNames = issue.labels.map(l => l.name).join(', ');
+                withLabels.push(`${summary} [Labels: ${labelNames}]`);
+              }
+            }
+            
+            const report = `
+            ###  Weekly Issue Triage Report 📋
+            
+            #### 1. Issues without a label (${noLabels.length})
+            ${noLabels.join('\n')}
+            
+            #### 2. Issues with a label (${withLabels.length})
+            ${withLabels.join('\n')}
+            `;
+            
+            console.log(report);
+            
+            // Option: Create a new Issue with this report, or just log it
+            // core.setOutput('report', report);

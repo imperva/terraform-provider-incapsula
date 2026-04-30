@@ -171,11 +171,11 @@ func TestClientGetAccountSSlSettingsBadConnection(t *testing.T) {
 }
 
 func TestClientDeleteAccountSSlSettingsBadConnection(t *testing.T) {
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "http://badness.incapsula.com"}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "http://invalid.invalid"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	diag := client.DeleteAccountSSLSettings("")
-	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "Timeout exceeded while awaiting") {
-		t.Errorf("Should have received an time out error")
+	if diag == nil || !diag.HasError() || !strings.Contains(diag[0].Detail, "error from Imperva service when deleting Account SSL certificate") {
+		t.Errorf("Should have received an error, got: %v", diag)
 	}
 }
 

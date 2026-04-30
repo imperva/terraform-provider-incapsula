@@ -35,6 +35,21 @@ resource "incapsula_account_user" "user_1" {
 
 ```
 
+### Usage with Approved IPs
+
+User creation with approved IP addresses for login restrictions.
+
+```hcl
+resource "incapsula_account_user" "user_with_ips" {
+  account_id = data.incapsula_account_data.account_data.current_account
+  email = "example@terraform.com"
+  first_name = "First"
+  last_name = "Last"
+  approved_ips = ["192.168.1.1", "10.0.0.5", "172.16.0.10"]
+}
+
+```
+
 ### Role References Usage
 
 Usage with role reference.
@@ -88,6 +103,7 @@ resource "incapsula_account_user" "user_3" {
     incapsula_account_role.role_2.id,
     data.incapsula_account_roles.roles.reader_role_id,
   ]
+  approved_ips = ["192.168.1.1", "10.0.0.0/24"]
 }
 ```
 
@@ -151,6 +167,8 @@ The following arguments are supported:
 * `last_name` - (Optional) The user's last name. This attribute cannot be updated.
 * `role_ids` - (Optional) List of role ids to be associated with the user. <p/>
   Default value is an empty list (user with no roles).
+* `approved_ips` - (Optional) List of approved IP addresses from which the user is allowed to access the Cloud Security Console via the UI or API. <p/>
+  Supports individual IPs, IP ranges, and CIDR notation. Default value is an empty list (no IP restrictions).
 
 
 ## Attributes Reference

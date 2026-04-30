@@ -20,7 +20,8 @@ func TestClientAddUserBadConnection(t *testing.T) {
 
 	roleIds := make([]interface{}, 1)
 	roleIds[0] = 0
-	UserAddResponse, err := client.AddAccountUser(0, email, "", "", roleIds)
+	approvedIps := make([]interface{}, 0)
+	UserAddResponse, err := client.AddAccountUser(0, email, "", "", roleIds, approvedIps)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -47,7 +48,8 @@ func TestClientAddUserBadJSON(t *testing.T) {
 	email := "example@example.com"
 	roleIds := make([]interface{}, 1)
 	roleIds[0] = 10
-	UserAddResponse, err := client.AddAccountUser(accountID, email, "f", "l", roleIds)
+	approvedIps := make([]interface{}, 0)
+	UserAddResponse, err := client.AddAccountUser(accountID, email, "f", "l", roleIds, approvedIps)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -156,7 +158,8 @@ func TestClientUpdateUserBadConnection(t *testing.T) {
 	email := "example@example.com"
 	roleIds := make([]interface{}, 1)
 	roleIds[0] = 10
-	updateUserResponse, err := client.UpdateAccountUser(accountID, email, roleIds)
+	approvedIps := make([]interface{}, 0)
+	updateUserResponse, err := client.UpdateAccountUser(accountID, email, roleIds, approvedIps)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -182,9 +185,10 @@ func TestClientUpdateUserBadJSON(t *testing.T) {
 
 	roleIds := make([]interface{}, 1)
 	roleIds[0] = 10
+	approvedIps := make([]interface{}, 0)
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	updateUserResponse, err := client.UpdateAccountUser(accountID, email, roleIds)
+	updateUserResponse, err := client.UpdateAccountUser(accountID, email, roleIds, approvedIps)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
