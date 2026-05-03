@@ -26,8 +26,8 @@ func TestClientVerifyBadConnection(t *testing.T) {
 
 func TestClientVerifyBadJSON(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointAccountVerify) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointAccountVerify, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s", endpointAccountStatus) {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointAccountStatus, req.URL.String())
 		}
 		rw.Write([]byte(`{`))
 	}))
@@ -46,8 +46,8 @@ func TestClientVerifyBadJSON(t *testing.T) {
 
 func TestClientVerifyInvalidAccount(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointAccountVerify) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointAccountVerify, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s", endpointAccountStatus) {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointAccountStatus, req.URL.String())
 		}
 		rw.Write([]byte(`{"res":1,"res_message":"fail"}`))
 	}))
@@ -66,10 +66,10 @@ func TestClientVerifyInvalidAccount(t *testing.T) {
 
 func TestClientVerifyValidAccount(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != fmt.Sprintf("/%s", endpointAccountVerify) {
-			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointAccountVerify, req.URL.String())
+		if req.URL.String() != fmt.Sprintf("/%s", endpointAccountStatus) {
+			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointAccountStatus, req.URL.String())
 		}
-		rw.Write([]byte(`{"account_type":"Reseller Customer","account_id":52219722,"parent_id":51632845,"account_name":"test account","res":0,"res_message":"OK","debug_info":{"id-info":"999999"}}`))
+		rw.Write([]byte(`{"res":0,"res_message":"OK"}`))
 	}))
 	defer server.Close()
 

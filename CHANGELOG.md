@@ -1,3 +1,9 @@
+## 3.38.2 (May 3, 2026)
+
+BUT FIXES:
+- Revert Incap Rule deletion - disable before delete, a new fix will be released soon
+
+
 ## 3.38.1 (Apr 26, 2026)
 
 BUT FIXES:

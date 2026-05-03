@@ -34,7 +34,7 @@ type Client struct {
 func NewClient(config *Config) *Client {
 	client := &http.Client{}
 
-	return &Client{config: config, httpClient: client, providerVersion: "3.38.1"}
+	return &Client{config: config, httpClient: client, providerVersion: "3.38.2"}
 }
 
 func (c *Client) CreateFormDataBody(bodyMap map[string]interface{}) ([]byte, string) {
@@ -66,11 +66,11 @@ func (c *Client) CreateFormDataBody(bodyMap map[string]interface{}) ([]byte, str
 	return body.Bytes(), writer.FormDataContentType()
 }
 
-// Verify the API credentials using the lightweight verify endpoint
+// Verify checks the API credentials
 func (c *Client) Verify() (*AccountStatusResponse, error) {
 	log.Println("[INFO] Checking API credentials against Incapsula API")
 
-	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountVerify)
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountStatus)
 	data := url.Values{}
 
 	resp, err := c.PostFormWithHeaders(reqURL, data, VerifyAccount)
@@ -85,38 +85,27 @@ func (c *Client) Verify() (*AccountStatusResponse, error) {
 	// Dump JSON
 	log.Printf("[DEBUG] Successful test of API credentials.")
 
-	// Parse the JSON using the lightweight verify response
-	var accountVerifyResponse AccountVerifyResponse
-	err = json.Unmarshal([]byte(responseBody), &accountVerifyResponse)
+	// Parse the JSON
+	var accountStatusResponse AccountStatusResponse
+	err = json.Unmarshal([]byte(responseBody), &accountStatusResponse)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing account JSON response: %s", err)
 	}
 
 	var resString string
 
-	if resNumber, ok := accountVerifyResponse.Res.(float64); ok {
+	if resNumber, ok := accountStatusResponse.Res.(float64); ok {
 		resString = fmt.Sprintf("%d", int(resNumber))
 	} else {
-		resString = accountVerifyResponse.Res.(string)
+		resString = accountStatusResponse.Res.(string)
 	}
 
 	// Look at the response status code from Incapsula
 	if resString != "0" {
-		return nil, fmt.Errorf("Error from Incapsula service when checking account: %s", string(responseBody))
+		return &accountStatusResponse, fmt.Errorf("Error from Incapsula service when checking account: %s", string(responseBody))
 	}
 
-	// Convert the lightweight verify response to AccountStatusResponse for backward compatibility
-	accountStatusResponse := &AccountStatusResponse{
-		AccountType: accountVerifyResponse.AccountType,
-		AccountID:   accountVerifyResponse.AccountID,
-		ParentID:    accountVerifyResponse.ParentID,
-		AccountName: accountVerifyResponse.AccountName,
-		Res:         accountVerifyResponse.Res,
-		ResMessage:  accountVerifyResponse.ResMessage,
-		DebugInfo:   accountVerifyResponse.DebugInfo,
-	}
-
-	return accountStatusResponse, nil
+	return &accountStatusResponse, nil
 }
 
 func (c *Client) PostFormWithHeaders(url string, data url.Values, operation string) (*http.Response, error) {
