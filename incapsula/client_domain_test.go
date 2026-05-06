@@ -98,7 +98,7 @@ func TestClientAddDomainForSiteInvalidCase(t *testing.T) {
 	endpoint := fmt.Sprintf("/site-domain-manager/v2/sites/%s/domains", siteID)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.WriteHeader(200)
+		rw.WriteHeader(400)
 
 		if req.URL.String() != endpoint {
 			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
@@ -126,7 +126,7 @@ func TestClientAddDomainForSiteInvalidCase(t *testing.T) {
 
 	_, err := client.AddDomainToSite(siteID, "a.co")
 
-	if err.Error() != "add domain request failed (status 200): The provided domain is not valid." {
+	if err.Error() != "add domain request failed (status 400): The provided domain is not valid." {
 		t.Errorf("Should have received an error")
 	}
 }
