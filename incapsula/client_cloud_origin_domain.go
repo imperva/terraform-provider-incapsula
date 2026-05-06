@@ -48,14 +48,15 @@ func getCloudOriginUrl(baseURL string, siteID int, path string, accountID string
 	return url
 }
 
-func (c *Client) CreateCloudOriginDomain(siteID int, accountID string, domain, region string, port int) (*CloudOriginDomainResponse, error) {
+func (c *Client) CreateCloudOriginDomain(siteID int, accountID string, domain, region string, port int, tlsPolicy string) (*CloudOriginDomainResponse, error) {
 	log.Printf("[INFO] Creating Incapsula cloud origin domain: %s for site: %d\n", domain, siteID)
 
 	payload := CloudOriginDomainCreateRequest{
 		OriginDomain: domain,
 		Region:       region,
 		DomainConfig: &CloudOriginDomainConfig{
-			Port: port,
+			Port:            port,
+			OriginTlsPolicy: tlsPolicy,
 		},
 	}
 
@@ -129,13 +130,14 @@ func (c *Client) GetCloudOriginDomain(siteID, originID int, accountID string) (*
 	return &response, nil
 }
 
-func (c *Client) UpdateCloudOriginDomain(siteID, originID int, accountID string, region string, port int) (*CloudOriginDomainResponse, error) {
+func (c *Client) UpdateCloudOriginDomain(siteID, originID int, accountID string, region string, port int, tlsPolicy string) (*CloudOriginDomainResponse, error) {
 	log.Printf("[INFO] Updating Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
 
 	payload := CloudOriginDomainUpdateRequest{
 		Region: region,
 		DomainConfig: &CloudOriginDomainConfig{
-			Port: port,
+			Port:            port,
+			OriginTlsPolicy: tlsPolicy,
 		},
 	}
 
