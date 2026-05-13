@@ -84,12 +84,7 @@ func handleAddDomainRequest(c *Client, addDomainsDto AddSiteDetails, siteId stri
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		log.Printf("[ERROR] Incapsula create domain failed for site: %s \n", siteId)
-		return nil, fmt.Errorf("create request failed: %d", resp.StatusCode)
-	}
 	responseBody, err := ioutil.ReadAll(resp.Body)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %s", err)
 	}
@@ -102,8 +97,15 @@ func handleAddDomainRequest(c *Client, addDomainsDto AddSiteDetails, siteId stri
 	}
 
 	if siteDomainDetails.Errors != nil && len(siteDomainDetails.Errors) > 0 {
-		return nil, fmt.Errorf("add domain request failed: %s", siteDomainDetails.Errors[0].Detail)
+		log.Printf("[ERROR] Incapsula create domain failed for site: %s \n", siteId)
+		return nil, fmt.Errorf("add domain request failed (status %d): %s", resp.StatusCode, siteDomainDetails.Errors[0].Detail)
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("[ERROR] Incapsula create domain failed for site: %s \n", siteId)
+		return nil, fmt.Errorf("create request failed: %d", resp.StatusCode)
+	}
+
 	return &siteDomainDetails, nil
 }
 
