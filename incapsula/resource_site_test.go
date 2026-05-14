@@ -25,7 +25,7 @@ func GenerateTestDomain(t *testing.T) string {
 		t.Fatal("INCAPSULA_API_ID must be set for acceptance tests")
 	}
 	if v := os.Getenv("INCAPSULA_CUSTOM_TEST_DOMAIN"); v == "" && t != nil {
-		t.Fatal("INCAPSULA_CUSTOM_TEST_DOMAIN must be set for acceptance tests which require onboarding a domain")
+		t.Skipf("Skipping test: INCAPSULA_CUSTOM_TEST_DOMAIN must be set for acceptance tests which require onboarding a domain")
 	}
 	s3 := rand.NewSource(time.Now().UnixNano())
 	r3 := rand.New(s3)
