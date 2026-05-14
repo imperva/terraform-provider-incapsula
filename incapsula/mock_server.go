@@ -146,6 +146,8 @@ func (m *MockImpervaServer) router(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case path == "accounts/add" && r.Method == http.MethodPost:
 		m.handleAccountAdd(w, r)
+	case path == "account/verify" && r.Method == http.MethodPost:
+		m.handleAccountVerify(w, r)
 	case path == "account" && r.Method == http.MethodPost:
 		m.handleAccountStatus(w, r)
 	case path == "accounts/configure" && r.Method == http.MethodPost:
@@ -269,6 +271,27 @@ func (m *MockImpervaServer) handleAccountAdd(w http.ResponseWriter, r *http.Requ
 			"plan_id":      account.PlanID,
 			"user_name":    account.UserName,
 			"logins":       logins,
+		},
+	}
+	m.writeJSONResponse(w, response)
+}
+
+// handleAccountVerify handles POST /account/verify (lightweight credential verification)
+func (m *MockImpervaServer) handleAccountVerify(w http.ResponseWriter, r *http.Request) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	response := map[string]interface{}{
+		"account_type": "Reseller Customer",
+		"account_id":   1000,
+		"parent_id":    0,
+		"account_name": "test account",
+		"plan_id":      "ent100",
+		"plan_name":    "ENTERPRISE",
+		"res":          0,
+		"res_message":  "OK",
+		"debug_info": map[string]interface{}{
+			"id-info": "999999",
 		},
 	}
 	m.writeJSONResponse(w, response)
