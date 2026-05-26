@@ -207,6 +207,11 @@ const ReadAbpCondition = "read_abp_condition"
 const UpdateAbpCondition = "update_abp_condition"
 const DeleteAbpCondition = "delete_abp_condition"
 
+const CreateAbpPolicy = "create_abp_policy"
+const ReadAbpPolicy = "read_abp_policy"
+const UpdateAbpPolicy = "update_abp_policy"
+const DeleteAbpPolicy = "delete_abp_policy"
+
 const ReadAbpPreflightStatus = "read_abp_preflight_status"
 const CreateAbpPreflight = "create_abp_preflight"
 const PublishAbpPreflight = "publish_abp_preflight"
