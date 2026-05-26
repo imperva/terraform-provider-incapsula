@@ -207,6 +207,10 @@ const ReadAbpCondition = "read_abp_condition"
 const UpdateAbpCondition = "update_abp_condition"
 const DeleteAbpCondition = "delete_abp_condition"
 
+const ReadAbpPreflightStatus = "read_abp_preflight_status"
+const CreateAbpPreflight = "create_abp_preflight"
+const PublishAbpPreflight = "publish_abp_preflight"
+
 const RequestSiteCert = "request_site_cert"
 
 const AddV3Site = "add_v3_site"
