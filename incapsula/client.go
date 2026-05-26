@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"io"
 	"io/ioutil"
 	"log"
@@ -15,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 const contentTypeApplicationUrlEncoded = "application/x-www-form-urlencoded"
@@ -76,6 +77,10 @@ func (c *Client) Verify() (*AccountStatusResponse, error) {
 	resp, err := c.PostFormWithHeaders(reqURL, data, VerifyAccount)
 	if err != nil {
 		return nil, fmt.Errorf("Error checking account: %s", err)
+	}
+
+	if resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("error checking account, status: %s", resp.Status)
 	}
 
 	// Read the body
