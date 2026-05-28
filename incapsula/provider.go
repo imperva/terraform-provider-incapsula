@@ -154,6 +154,7 @@ func Provider() *schema.Provider {
 			"incapsula_waiting_room":                                           resourceWaitingRoom(),
 			"incapsula_abp_websites":                                           resourceAbpWebsites(),
 			"incapsula_abp_condition":                                          resourceAbpCondition(),
+			"incapsula_abp_proof_of_work_configuration":                        resourceAbpProofOfWorkConfiguration(),
 			"incapsula_delivery_rules_configuration":                           resourceDeliveryRulesConfiguration(),
 			"incapsula_simplified_redirect_rules_configuration":                resourceSimplifiedRedirectRulesConfiguration(),
 			"incapsula_site_cache_configuration":                               resourceSiteCacheConfiguration(),
