@@ -202,6 +202,11 @@ const ReadAbpWebsites = "read_abp_websites"
 const UpdateAbpWebsites = "update_abp_websites"
 const DeleteAbpWebsites = "delete_abp_websites"
 
+const CreateAbpCondition = "create_abp_condition"
+const ReadAbpCondition = "read_abp_condition"
+const UpdateAbpCondition = "update_abp_condition"
+const DeleteAbpCondition = "delete_abp_condition"
+
 const RequestSiteCert = "request_site_cert"
 
 const AddV3Site = "add_v3_site"
