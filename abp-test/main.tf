@@ -15,13 +15,20 @@ provider "incapsula" {
   base_url_api   = "http://localhost:8081"
 }
 
-locals {
-  account_id = "cd3ba503-f034-4912-8f89-a599c8cfbbc6"
+# To avoid conflicts:
+# - create file `vars.tfvars` containing
+# ```
+# account_id = "<your account id>"
+# ```
+# - specify it as `terraform apply -var-file=vars.tfvars`
+# (environment can also be used, choose your preferred approach)
+variable "account_id" {
+  type = string
 }
 
 module "abp" {
   source     = "./abp"
-  account_id = local.account_id
+  account_id = var.account_id
 }
 
 
@@ -30,7 +37,7 @@ data "incapsula_abp_pending_changes" "current" {
 }
 
 resource "incapsula_abp_preflight" "current" {
-  account_id   = local.account_id
+  account_id   = var.account_id
   pending_hash = data.incapsula_abp_pending_changes.current.hash
 }
 
