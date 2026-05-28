@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     incapsula = {
-      source = "terraform-providers/incapsula"
+      source = "imperva/incapsula"
     }
   }
 }
@@ -15,9 +15,25 @@ provider "incapsula" {
   base_url_api   = "http://localhost:8081"
 }
 
-resource "incapsula_abp_condition" "cond1" {
-  account_id  = "a9fa7bb9-a36e-40aa-ac81-fe320d634988"
-  name        = "terraform-0"
-  description = "Created through terraform twice"
-  code        = "(any true false)"
+locals {
+  account_id = "cd3ba503-f034-4912-8f89-a599c8cfbbc6"
+}
+
+module "abp" {
+  source     = "./abp"
+  account_id = local.account_id
+}
+
+
+data "incapsula_abp_pending_changes" "current" {
+  depends_on = [module.abp]
+}
+
+resource "incapsula_abp_preflight" "current" {
+  account_id   = local.account_id
+  pending_hash = data.incapsula_abp_pending_changes.current.hash
+}
+
+resource "incapsula_abp_publish" "publish" {
+  preflight_id = incapsula_abp_preflight.current.id
 }
