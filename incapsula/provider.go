@@ -98,6 +98,7 @@ func Provider() *schema.Provider {
 			"incapsula_account_permissions": dataSourceAccountPermissions(),
 			"incapsula_account_roles":       dataSourceAccountRoles(),
 			"incapsula_ssl_instructions":    dataSourceSSLInstructions(),
+			"incapsula_abp_pending_changes": dataSourceAbpPendingChanges(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -154,6 +155,9 @@ func Provider() *schema.Provider {
 			"incapsula_waiting_room":                                           resourceWaitingRoom(),
 			"incapsula_abp_websites":                                           resourceAbpWebsites(),
 			"incapsula_abp_condition":                                          resourceAbpCondition(),
+			"incapsula_abp_policy":                                             resourceAbpPolicy(),
+			"incapsula_abp_preflight":                                          resourceAbpPreflight(),
+			"incapsula_abp_publish":                                            resourceAbpPublish(),
 			"incapsula_delivery_rules_configuration":                           resourceDeliveryRulesConfiguration(),
 			"incapsula_simplified_redirect_rules_configuration":                resourceSimplifiedRedirectRulesConfiguration(),
 			"incapsula_site_cache_configuration":                               resourceSiteCacheConfiguration(),

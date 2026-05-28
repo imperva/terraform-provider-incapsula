@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"io"
 	"io/ioutil"
 	"log"
@@ -15,6 +14,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
 const contentTypeApplicationUrlEncoded = "application/x-www-form-urlencoded"
@@ -76,6 +78,10 @@ func (c *Client) Verify() (*AccountStatusResponse, error) {
 	resp, err := c.PostFormWithHeaders(reqURL, data, VerifyAccount)
 	if err != nil {
 		return nil, fmt.Errorf("Error checking account: %s", err)
+	}
+
+	if resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("error checking account, status: %s", resp.Status)
 	}
 
 	// Read the body
@@ -243,4 +249,21 @@ func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
 	}
 	//if not a "read" request  - don't do retries (retires for updates are risky and result could be non-deterministic)
 	return c.httpClient.Do(req)
+}
+
+// Report an error diagnostic sourced from an upstream HTTP invocation, error and responseBody optional
+// `error` can reasonably be optional in the case of a bad status code.
+// `responseBody` can reasonably be optional in the case of an error before receiving the response.
+func httpSourcedErrorDiagnostic(action string, err *error, responseBody []byte) diag.Diagnostic {
+	var errOutput string
+	if err != nil {
+		errOutput = (*err).Error()
+	} else {
+		errOutput = "[]"
+	}
+	return diag.Diagnostic{
+		Severity: diag.Error,
+		Summary:  fmt.Sprintf("Failure %s", action),
+		Detail:   fmt.Sprintf("Error from Incapsula service attempting action: %s, response: %s, error: %s", strings.ToLower(action), string(responseBody), errOutput),
+	}
 }
