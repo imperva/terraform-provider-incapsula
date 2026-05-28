@@ -36,9 +36,10 @@ is "proof_of_work".`,
 				ValidateFunc: validation.IsUUID,
 			},
 			"name": {
-				Description: "Human-readable name of the Proof Of Work Configuration.",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "Human-readable name of the Proof Of Work Configuration.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"difficulty": {
 				Description: "Number of credits a client gets for completing a proof-of-work " +
@@ -51,7 +52,7 @@ is "proof_of_work".`,
 			"algorithm": {
 				Description:  "Proof Of Work algorithm. One of: bbs, sha1.",
 				Type:         schema.TypeString,
-				Optional:     true,
+				Required:     true,
 				ValidateFunc: validation.StringInSlice([]string{"bbs", "sha1"}, false),
 			},
 			"created_at": {
@@ -98,7 +99,7 @@ func serializeAbpProofOfWorkConfiguration(data *schema.ResourceData, config *Abp
 	return nil
 }
 
-func resourceAbpProofOfWorkConfigurationCreate(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpProofOfWorkConfigurationCreate(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
 	accountId := data.Get("account_id").(string)
 
@@ -119,7 +120,7 @@ func resourceAbpProofOfWorkConfigurationCreate(ctx context.Context, data *schema
 	return nil
 }
 
-func resourceAbpProofOfWorkConfigurationRead(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpProofOfWorkConfigurationRead(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
 	id := data.Id()
 
@@ -140,7 +141,7 @@ func resourceAbpProofOfWorkConfigurationRead(ctx context.Context, data *schema.R
 	return nil
 }
 
-func resourceAbpProofOfWorkConfigurationUpdate(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpProofOfWorkConfigurationUpdate(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
 	id := data.Id()
 
@@ -160,7 +161,7 @@ func resourceAbpProofOfWorkConfigurationUpdate(ctx context.Context, data *schema
 	return nil
 }
 
-func resourceAbpProofOfWorkConfigurationDelete(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpProofOfWorkConfigurationDelete(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
 	id := data.Id()
 
@@ -172,7 +173,7 @@ func resourceAbpProofOfWorkConfigurationDelete(ctx context.Context, data *schema
 	return nil
 }
 
-func resourceAbpProofOfWorkConfigurationImport(ctx context.Context, data *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+func resourceAbpProofOfWorkConfigurationImport(ctx context.Context, data *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
 	id := strings.TrimSpace(data.Id())
 	if id == "" {
 		return nil, fmt.Errorf("expected import ID to be '<proof_of_work_configuration_id>'")
