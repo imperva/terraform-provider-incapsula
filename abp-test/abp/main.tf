@@ -124,7 +124,9 @@ resource "incapsula_abp_domain" "domain1" {
   cookie_mode = "none_secure"
   enable_mitigation = false
   enable_mobile_sdk_token = false
-  obfuscate_path = "spooky-path"
+  // Todo: backend auto-prefixes with `/` causing a perpetual change-detection if omitted on this field
+  // Other paths are validated enforcing path prefixing, we could do that in the tf-layer, backend, or not at all
+  obfuscate_path = "/spooky-path"
   interstitial_inprogress_iframe_src = "http://www.example.com/iframe-src"
   divert_host = "www.example.com"
   unmasked_headers = ["content-length", "content-type"]
