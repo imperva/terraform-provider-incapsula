@@ -57,6 +57,32 @@ resource "incapsula_abp_condition_list_entry" "poltest1_allow_cond1" {
   tags                     = ["terraform_managed"]
 }
 
+# A reusable condition list grouping individual conditions; can be referenced
+# from multiple policies via condition_list_entry.
+resource "incapsula_abp_condition_list" "shared_list" {
+  account_id  = var.account_id
+  name        = "terraform-shared-list"
+  description = "Reusable condition list managed by terraform"
+}
+
+# Add cond1 to the shared list.
+resource "incapsula_abp_condition_list_entry" "shared_list_cond1" {
+  account_id               = var.account_id
+  parent_condition_list_id = incapsula_abp_condition_list.shared_list.id
+  condition_id             = incapsula_abp_condition.cond1.id
+  state                    = "active"
+  tags                     = ["terraform_managed"]
+}
+
+# Attach the shared list to poltest2's first directive.
+resource "incapsula_abp_condition_list_entry" "poltest2_allow_shared_list" {
+  account_id               = var.account_id
+  parent_condition_list_id = incapsula_abp_policy.poltest2.directive[0].condition_id
+  condition_list_id        = incapsula_abp_condition_list.shared_list.id
+  state                    = "active"
+  tags                     = ["terraform_managed"]
+}
+
 #
 # Proof Of Work
 #
@@ -117,40 +143,41 @@ resource "incapsula_abp_site" "site1" {
 }
 
 resource "incapsula_abp_domain" "domain1" {
-  account_id  = var.account_id
-  site_id     = incapsula_abp_site.site1.id
-  cookiescope = "example.com"
-  log_region = "apac"
-  cookie_mode = "none_secure"
-  enable_mitigation = false
+  account_id              = var.account_id
+  site_id                 = incapsula_abp_site.site1.id
+  cookiescope             = "example.com"
+  log_region              = "apac"
+  cookie_mode             = "none_secure"
+  enable_mitigation       = false
   enable_mobile_sdk_token = false
   // Todo: backend auto-prefixes with `/` causing a perpetual change-detection if omitted on this field
   // Other paths are validated enforcing path prefixing, we could do that in the tf-layer, backend, or not at all
-  obfuscate_path = "/spooky-path"
+  obfuscate_path                     = "/spooky-path"
   interstitial_inprogress_iframe_src = "http://www.example.com/iframe-src"
-  divert_host = "www.example.com"
-  unmasked_headers = ["content-length", "content-type"]
-  proxy_flags = ["enable_referrer_fix", "inject_js_into_body"]
+  divert_host                        = "www.example.com"
+  unmasked_headers                   = ["content-length", "content-type"]
+  proxy_flags                        = ["enable_referrer_fix", "inject_js_into_body"]
 
-  no_js_injection_path {
-    path_prefix = "/no-js-here"
-  }
+  # Temporary commented out as it doesn't work locally due to MY dependency
+  # no_js_injection_path {
+  #   path_prefix = "/no-js-here"
+  # }
 
   captcha_settings {
     // Todo: Could unpack this into a `data`
     geetest {
-      geetest_captcha_id = "abcd"
+      geetest_captcha_id  = "abcd"
       geetest_private_key = "my key"
     }
   }
 
   analysis_ip_lookup_mode {
-        header_name = "X-Forwarded-For"
-        reverse_index = 0
+    header_name   = "X-Forwarded-For"
+    reverse_index = 0
   }
   challenge_ip_lookup_mode {
-        header_name = "Origin"
-        reverse_index = 0
+    header_name   = "Origin"
+    reverse_index = 0
   }
   criteria {
     exact = "terraform-domain-0.example.com"
@@ -161,12 +188,15 @@ resource "incapsula_abp_domain" "domain2" {
   account_id  = var.account_id
   site_id     = incapsula_abp_site.site1.id
   cookiescope = "example.com"
-  log_region = "usa"
+  log_region  = "usa"
   cookie_mode = "lax"
+
+  # Temporary commented out as it doesn't work locally due to MY dependency
   // Todo: reference a rule here
-  no_js_injection_path {
-    incap_rule = "URL == \"/admin\""
-  }
+  # no_js_injection_path {
+  #   incap_rule = "URL == \"/admin\""
+  # }
+
   captcha_settings {
     managed_geetest {
       difficulty = "hard"
@@ -181,7 +211,7 @@ resource "incapsula_abp_domain" "domain3" {
   account_id  = var.account_id
   site_id     = incapsula_abp_site.site1.id
   cookiescope = "example.com"
-  log_region = "eu"
+  log_region  = "eu"
   cookie_mode = "legacy"
   captcha_settings {
     managed_hcaptcha {
