@@ -100,6 +100,7 @@ func Provider() *schema.Provider {
 			"incapsula_ssl_instructions":                dataSourceSSLInstructions(),
 			"incapsula_abp_pending_changes":             dataSourceAbpPendingChanges(),
 			"incapsula_abp_proof_of_work_configuration": dataSourceAbpProofOfWorkConfiguration(),
+			"incapsula_abp_site_analysis_settings":      dataSourceAbpSiteAnalysisSettings(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -158,6 +159,7 @@ func Provider() *schema.Provider {
 			"incapsula_abp_condition":                                          resourceAbpCondition(),
 			"incapsula_abp_proof_of_work_configuration":                        resourceAbpProofOfWorkConfiguration(),
 			"incapsula_abp_policy":                                             resourceAbpPolicy(),
+			"incapsula_abp_site":                                               resourceAbpSite(),
 			"incapsula_abp_preflight":                                          resourceAbpPreflight(),
 			"incapsula_abp_publish":                                            resourceAbpPublish(),
 			"incapsula_delivery_rules_configuration":                           resourceDeliveryRulesConfiguration(),

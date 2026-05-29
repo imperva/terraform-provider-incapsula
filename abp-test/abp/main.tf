@@ -63,3 +63,46 @@ data "incapsula_abp_proof_of_work_configuration" "pow1_lookup" {
   account_id = var.account_id
   name       = incapsula_abp_proof_of_work_configuration.pow1.name
 }
+
+data "incapsula_abp_site_analysis_settings" "login" {
+  rate_limiting           = "per_site"
+  max_requests_per_minute = 100
+}
+
+data "incapsula_abp_site_analysis_settings" "static" {
+  rate_limiting = "none"
+}
+
+data "incapsula_abp_site_analysis_settings" "postback" {
+  rate_limiting                     = "custom_scope"
+  rate_limiting_custom_scope        = "my scope"
+  max_requests_per_minute           = 55
+  max_requests_per_session          = 555
+  max_session_length                = "1h"
+  use_site_rate_limiting_parameters = false
+}
+
+resource "incapsula_abp_site" "site1" {
+  account_id = var.account_id
+  name       = "terraform-site-0"
+
+  default_max_requests_per_minute  = 60
+  default_max_requests_per_session = 600
+  default_max_session_length       = "2h"
+
+  selector {
+    path_prefix       = "/login"
+    policy_id         = incapsula_abp_policy.poltest1.id
+    analysis_settings = data.incapsula_abp_site_analysis_settings.login.json
+  }
+
+  selector {
+    path_regex        = "\\.png$"
+    analysis_settings = data.incapsula_abp_site_analysis_settings.static.json
+  }
+
+  selector {
+    postback          = "web_interrogation"
+    analysis_settings = data.incapsula_abp_site_analysis_settings.postback.json
+  }
+}
