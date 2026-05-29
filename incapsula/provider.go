@@ -161,6 +161,7 @@ func Provider() *schema.Provider {
 			"incapsula_abp_proof_of_work_configuration":                        resourceAbpProofOfWorkConfiguration(),
 			"incapsula_abp_policy":                                             resourceAbpPolicy(),
 			"incapsula_abp_site":                                               resourceAbpSite(),
+			"incapsula_abp_domain":                                             resourceAbpDomain(),
 			"incapsula_abp_preflight":                                          resourceAbpPreflight(),
 			"incapsula_abp_publish":                                            resourceAbpPublish(),
 			"incapsula_delivery_rules_configuration":                           resourceDeliveryRulesConfiguration(),
