@@ -28,6 +28,33 @@ func (c *Client) abpProofOfWorkConfigurationUrl(id string) string {
 	return fmt.Sprintf("%s/v1/proof_of_work_configuration/%s", c.config.BaseURLAPI, id)
 }
 
+func (c *Client) ListAbpProofOfWorkConfigurations(accountId string) ([]AbpProofOfWorkConfiguration, error) {
+	log.Printf("[INFO] Listing %ss in ABP account %s", abpProofOfWorkConfigurationResourceName, accountId)
+
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, c.abpProofOfWorkConfigurationAccountUrl(accountId), nil, ListAbpProofOfWorkConfigurations)
+	if err != nil {
+		return nil, fmt.Errorf("error listing %ss in ABP account %s: %w", abpProofOfWorkConfigurationResourceName, accountId, err)
+	}
+	defer resp.Body.Close()
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body when listing %ss: %w", abpProofOfWorkConfigurationResourceName, err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error status code %d from Incapsula service when listing %ss in ABP account %s: %s", resp.StatusCode, abpProofOfWorkConfigurationResourceName, accountId, string(responseBody))
+	}
+
+	var listResp struct {
+		Items []AbpProofOfWorkConfiguration `json:"items"`
+	}
+	if err := json.Unmarshal(responseBody, &listResp); err != nil {
+		return nil, fmt.Errorf("error parsing %s list response: %w; body: %s", abpProofOfWorkConfigurationResourceName, err, string(responseBody))
+	}
+	return listResp.Items, nil
+}
+
 func (c *Client) CreateAbpProofOfWorkConfiguration(accountId string, config AbpProofOfWorkConfiguration) (*AbpProofOfWorkConfiguration, error) {
 	log.Printf("[INFO] Creating %s in ABP account %s", abpProofOfWorkConfigurationResourceName, accountId)
 

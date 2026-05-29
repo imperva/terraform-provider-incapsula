@@ -47,9 +47,19 @@ resource "incapsula_abp_condition" "cond1" {
   code        = "(any true false)"
 }
 
+#
+# Proof Of Work
+#
+
 resource "incapsula_abp_proof_of_work_configuration" "pow1" {
   account_id = var.account_id
   name       = "terraform-pow-0"
   difficulty = 42
   algorithm  = "bbs"
+}
+
+# TODO: explore how data sources impact publishing
+data "incapsula_abp_proof_of_work_configuration" "pow1_lookup" {
+  account_id = var.account_id
+  name       = incapsula_abp_proof_of_work_configuration.pow1.name
 }

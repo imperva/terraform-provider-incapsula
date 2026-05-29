@@ -211,6 +211,7 @@ const CreateAbpProofOfWorkConfiguration = "create_abp_proof_of_work_configuratio
 const ReadAbpProofOfWorkConfiguration = "read_abp_proof_of_work_configuration"
 const UpdateAbpProofOfWorkConfiguration = "update_abp_proof_of_work_configuration"
 const DeleteAbpProofOfWorkConfiguration = "delete_abp_proof_of_work_configuration"
+const ListAbpProofOfWorkConfigurations = "list_abp_proof_of_work_configurations"
 
 const CreateAbpPolicy = "create_abp_policy"
 const ReadAbpPolicy = "read_abp_policy"

@@ -91,14 +91,15 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"incapsula_role_abilities":      dataSourceRoleAbilities(),
-			"incapsula_data_center":         dataSourceDataCenter(),
-			"incapsula_account_data":        dataSourceAccount(),
-			"incapsula_client_apps_data":    dataSourceClientApps(),
-			"incapsula_account_permissions": dataSourceAccountPermissions(),
-			"incapsula_account_roles":       dataSourceAccountRoles(),
-			"incapsula_ssl_instructions":    dataSourceSSLInstructions(),
-			"incapsula_abp_pending_changes": dataSourceAbpPendingChanges(),
+			"incapsula_role_abilities":                  dataSourceRoleAbilities(),
+			"incapsula_data_center":                     dataSourceDataCenter(),
+			"incapsula_account_data":                    dataSourceAccount(),
+			"incapsula_client_apps_data":                dataSourceClientApps(),
+			"incapsula_account_permissions":             dataSourceAccountPermissions(),
+			"incapsula_account_roles":                   dataSourceAccountRoles(),
+			"incapsula_ssl_instructions":                dataSourceSSLInstructions(),
+			"incapsula_abp_pending_changes":             dataSourceAbpPendingChanges(),
+			"incapsula_abp_proof_of_work_configuration": dataSourceAbpProofOfWorkConfiguration(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
