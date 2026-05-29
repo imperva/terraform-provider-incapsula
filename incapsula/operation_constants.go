@@ -222,6 +222,11 @@ const ReadAbpPreflightStatus = "read_abp_preflight_status"
 const CreateAbpPreflight = "create_abp_preflight"
 const PublishAbpPreflight = "publish_abp_preflight"
 
+const CreateAbpSite = "create_abp_site"
+const ReadAbpSite = "read_abp_site"
+const UpdateAbpSite = "update_abp_site"
+const DeleteAbpSite = "delete_abp_site"
+
 const RequestSiteCert = "request_site_cert"
 
 const AddV3Site = "add_v3_site"
