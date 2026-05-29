@@ -98,14 +98,30 @@ func (c *Client) abpSiteUrl(siteId string) string {
 	return fmt.Sprintf("%s/v1/site/%s", c.config.BaseURLAPI, siteId)
 }
 
-// stripDefaultSelector removes the auto-generated catch-all selector that the
-// API appends at the lowest priority on every Create/Update. Without this the
-// resource would show perpetual drift since the user-managed selectors are a
-// subset of what the server returns.
-func stripDefaultSelector(site *AbpSite) {
-	if len(site.Selectors) > 0 {
-		site.Selectors = site.Selectors[:len(site.Selectors)-1]
+// stripExpectedDefaultSelector removes the trailing auto-generated catch-all
+// selector that the API appends at the lowest priority, but only when both:
+//
+//  1. the server returned exactly one more selector than `expected` — we know
+//     how many selectors we sent, and the API appends exactly one default; and
+//  2. the trailing selector has the default's shape: `criteria.path_regex ==
+//     ".*"`.
+//
+// If the count matches but the shape doesn't, that's genuine drift (e.g. a
+// user-added trailing selector the API surfaced) and we leave it visible so
+// the next plan can reconcile it.
+//
+// On Read after Import we have no prior count to compare against, so the
+// caller should pass `expected = -1` and accept that the auto-default will be
+// visible until the user reconciles.
+func stripExpectedDefaultSelector(site *AbpSite, expected int) {
+	if expected < 0 || len(site.Selectors) != expected+1 {
+		return
 	}
+	last := site.Selectors[len(site.Selectors)-1]
+	if last.Criteria.PathRegex == nil || *last.Criteria.PathRegex != ".*" {
+		return
+	}
+	site.Selectors = site.Selectors[:expected]
 }
 
 func (c *Client) CreateAbpSite(accountId string, site AbpSite) (*AbpSite, error) {
@@ -135,11 +151,14 @@ func (c *Client) CreateAbpSite(accountId string, site AbpSite) (*AbpSite, error)
 	if err := json.Unmarshal(responseBody, &created); err != nil {
 		return nil, fmt.Errorf("error parsing %s create response: %w; body: %s", abpSiteResourceName, err, string(responseBody))
 	}
-	stripDefaultSelector(&created)
+	stripExpectedDefaultSelector(&created, len(site.Selectors))
 	return &created, nil
 }
 
-func (c *Client) ReadAbpSite(siteId string) (*AbpSite, error) {
+// ReadAbpSite fetches a site. `expectedSelectors` is the count of user-managed
+// selectors currently in state; pass -1 when that's unknown (e.g. import) to
+// disable auto-default stripping.
+func (c *Client) ReadAbpSite(siteId string, expectedSelectors int) (*AbpSite, error) {
 	log.Printf("[INFO] Reading %s with id %s", abpSiteResourceName, siteId)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, c.abpSiteUrl(siteId), nil, ReadAbpSite)
@@ -165,7 +184,7 @@ func (c *Client) ReadAbpSite(siteId string) (*AbpSite, error) {
 	if err := json.Unmarshal(responseBody, &site); err != nil {
 		return nil, fmt.Errorf("error parsing %s read response: %w; body: %s", abpSiteResourceName, err, string(responseBody))
 	}
-	stripDefaultSelector(&site)
+	stripExpectedDefaultSelector(&site, expectedSelectors)
 	return &site, nil
 }
 
@@ -200,7 +219,7 @@ func (c *Client) UpdateAbpSite(siteId string, site AbpSite) (*AbpSite, error) {
 	if err := json.Unmarshal(responseBody, &updated); err != nil {
 		return nil, fmt.Errorf("error parsing %s update response: %w; body: %s", abpSiteResourceName, err, string(responseBody))
 	}
-	stripDefaultSelector(&updated)
+	stripExpectedDefaultSelector(&updated, len(site.Selectors))
 	return &updated, nil
 }
 
