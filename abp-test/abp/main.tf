@@ -47,6 +47,16 @@ resource "incapsula_abp_condition" "cond1" {
   code        = "(any true false)"
 }
 
+# Attach the literal condition above to the auto-generated condition list of
+# poltest1's first directive.
+resource "incapsula_abp_condition_list_entry" "poltest1_allow_cond1" {
+  account_id               = var.account_id
+  parent_condition_list_id = incapsula_abp_policy.poltest1.directive[0].condition_id
+  condition_id             = incapsula_abp_condition.cond1.id
+  state                    = "active"
+  tags                     = ["terraform_managed"]
+}
+
 #
 # Proof Of Work
 #
@@ -58,7 +68,6 @@ resource "incapsula_abp_proof_of_work_configuration" "pow1" {
   algorithm  = "bbs"
 }
 
-# TODO: explore how data sources impact publishing
 data "incapsula_abp_proof_of_work_configuration" "pow1_lookup" {
   account_id = var.account_id
   name       = incapsula_abp_proof_of_work_configuration.pow1.name

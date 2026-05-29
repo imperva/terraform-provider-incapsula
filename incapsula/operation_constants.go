@@ -207,6 +207,11 @@ const ReadAbpCondition = "read_abp_condition"
 const UpdateAbpCondition = "update_abp_condition"
 const DeleteAbpCondition = "delete_abp_condition"
 
+const CreateAbpConditionReference = "create_abp_condition_reference"
+const ReadAbpConditionReference = "read_abp_condition_reference"
+const UpdateAbpConditionReference = "update_abp_condition_reference"
+const DeleteAbpConditionReference = "delete_abp_condition_reference"
+
 const CreateAbpProofOfWorkConfiguration = "create_abp_proof_of_work_configuration"
 const ReadAbpProofOfWorkConfiguration = "read_abp_proof_of_work_configuration"
 const UpdateAbpProofOfWorkConfiguration = "update_abp_proof_of_work_configuration"
