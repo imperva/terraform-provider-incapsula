@@ -291,7 +291,8 @@ func resourceAbpSiteRead(ctx context.Context, data *schema.ResourceData, m any) 
 	client := m.(*Client)
 	id := data.Id()
 
-	site, err := client.ReadAbpSite(id)
+	expected := len(data.Get("selector").([]any))
+	site, err := client.ReadAbpSite(id, expected)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -352,7 +353,7 @@ func resourceAbpSiteImport(ctx context.Context, data *schema.ResourceData, m any
 	}
 
 	client := m.(*Client)
-	site, err := client.ReadAbpSite(id)
+	site, err := client.ReadAbpSite(id, -1)
 	if err != nil {
 		return nil, err
 	}

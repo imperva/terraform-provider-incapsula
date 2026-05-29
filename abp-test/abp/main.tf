@@ -115,3 +115,80 @@ resource "incapsula_abp_site" "site1" {
     analysis_settings = data.incapsula_abp_site_analysis_settings.postback.json
   }
 }
+
+resource "incapsula_abp_domain" "domain1" {
+  account_id  = var.account_id
+  site_id     = incapsula_abp_site.site1.id
+  cookiescope = "example.com"
+  log_region = "apac"
+  cookie_mode = "none_secure"
+  enable_mitigation = false
+  enable_mobile_sdk_token = false
+  // Todo: backend auto-prefixes with `/` causing a perpetual change-detection if omitted on this field
+  // Other paths are validated enforcing path prefixing, we could do that in the tf-layer, backend, or not at all
+  obfuscate_path = "/spooky-path"
+  interstitial_inprogress_iframe_src = "http://www.example.com/iframe-src"
+  divert_host = "www.example.com"
+  unmasked_headers = ["content-length", "content-type"]
+  proxy_flags = ["enable_referrer_fix", "inject_js_into_body"]
+
+  no_js_injection_path {
+    path_prefix = "/no-js-here"
+  }
+
+  captcha_settings {
+    // Todo: Could unpack this into a `data`
+    geetest {
+      geetest_captcha_id = "abcd"
+      geetest_private_key = "my key"
+    }
+  }
+
+  analysis_ip_lookup_mode {
+        header_name = "X-Forwarded-For"
+        reverse_index = 0
+  }
+  challenge_ip_lookup_mode {
+        header_name = "Origin"
+        reverse_index = 0
+  }
+  criteria {
+    exact = "terraform-domain-0.example.com"
+  }
+}
+
+resource "incapsula_abp_domain" "domain2" {
+  account_id  = var.account_id
+  site_id     = incapsula_abp_site.site1.id
+  cookiescope = "example.com"
+  log_region = "usa"
+  cookie_mode = "lax"
+  // Todo: reference a rule here
+  no_js_injection_path {
+    incap_rule = "URL == \"/admin\""
+  }
+  captcha_settings {
+    managed_geetest {
+      difficulty = "hard"
+    }
+  }
+  criteria {
+    prefix = "terraform-domain-1"
+  }
+}
+
+resource "incapsula_abp_domain" "domain3" {
+  account_id  = var.account_id
+  site_id     = incapsula_abp_site.site1.id
+  cookiescope = "example.com"
+  log_region = "eu"
+  cookie_mode = "legacy"
+  captcha_settings {
+    managed_hcaptcha {
+      difficulty = "auto"
+    }
+  }
+  criteria {
+    suffix = "sub3.example.com"
+  }
+}

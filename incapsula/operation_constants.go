@@ -232,6 +232,11 @@ const ReadAbpSite = "read_abp_site"
 const UpdateAbpSite = "update_abp_site"
 const DeleteAbpSite = "delete_abp_site"
 
+const CreateAbpDomain = "create_abp_domain"
+const ReadAbpDomain = "read_abp_domain"
+const UpdateAbpDomain = "update_abp_domain"
+const DeleteAbpDomain = "delete_abp_domain"
+
 const RequestSiteCert = "request_site_cert"
 
 const AddV3Site = "add_v3_site"
