@@ -142,6 +142,21 @@ resource "incapsula_abp_site" "site1" {
   }
 }
 
+resource "incapsula_abp_site" "site2" {
+  account_id = var.account_id
+  name       = "terraform-site-2"
+
+  default_max_requests_per_minute  = 30
+  default_max_requests_per_session = 300
+  default_max_session_length       = "1h"
+
+  selector {
+    path_prefix       = "/login"
+    policy_id         = incapsula_abp_policy.poltest3.id
+    analysis_settings = data.incapsula_abp_site_analysis_settings.login.json
+  }
+}
+
 resource "incapsula_abp_domain" "domain1" {
   account_id              = var.account_id
   site_id                 = incapsula_abp_site.site1.id
@@ -233,3 +248,12 @@ resource "incapsula_abp_site_domain_priority" "prio" {
   site_id = incapsula_abp_site.site1.id
   domain_ids = [incapsula_abp_domain.domain2.id, incapsula_abp_domain.domain1.id, incapsula_abp_domain.domain3.id]
 }
+
+/*resource "incapsula_abp_account_site_priority" "accprio" {
+  account_id = var.account_id
+  site_ids = [
+    incapsula_abp_site.site2.id,
+    incapsula_abp_site.site1.id,
+    // .. fill out complete list
+  ]
+}*/
