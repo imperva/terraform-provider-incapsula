@@ -165,6 +165,7 @@ func Provider() *schema.Provider {
 			"incapsula_abp_domain":                                             resourceAbpDomain(),
 			"incapsula_abp_domain_encryption_key":                              resourceAbpDomainEncryptionKey(),
 			"incapsula_abp_site_domain_priority":                               resourceAbpSiteDomainPriority(),
+			"incapsula_abp_account_site_priority":                              resourceAbpAccountSitePriority(),
 			"incapsula_abp_preflight":                                          resourceAbpPreflight(),
 			"incapsula_abp_publish":                                            resourceAbpPublish(),
 			"incapsula_delivery_rules_configuration":                           resourceDeliveryRulesConfiguration(),

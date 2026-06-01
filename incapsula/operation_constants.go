@@ -230,6 +230,9 @@ const DeleteAbpSite = "delete_abp_site"
 const ReadAbpSiteDomainPriority = "read_abp_site_domain_priority"
 const UpdateAbpSiteDomainPriority = "update_abp_site_domain_priority"
 
+const ReadAbpAccountSitePriority = "read_abp_account_site_priority"
+const UpdateAbpAccountSitePriority = "update_abp_account_site_priority"
+
 const CreateAbpDomain = "create_abp_domain"
 const ReadAbpDomain = "read_abp_domain"
 const UpdateAbpDomain = "update_abp_domain"
