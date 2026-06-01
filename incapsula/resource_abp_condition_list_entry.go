@@ -12,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+const abpConditionListEntryResourceName = "ABP Condition List Entry"
+
 var abpConditionListEntryTagRegexp = regexp.MustCompile(`^[_a-z][_a-z0-9]*$`)
 
 const (
@@ -106,7 +108,7 @@ which is owned by its own resource.`,
 	}
 }
 
-func extractAbpConditionListEntry(data *schema.ResourceData) AbpConditionReference {
+func extractAbpConditionListEntry(data *schema.ResourceData) AbpCondition {
 	reference := data.Get("condition_id").(string)
 	if reference == "" {
 		reference = data.Get("condition_list_id").(string)
@@ -118,7 +120,8 @@ func extractAbpConditionListEntry(data *schema.ResourceData) AbpConditionReferen
 		tags = append(tags, t.(string))
 	}
 
-	return AbpConditionReference{
+	return AbpCondition{
+		Kind:      AbpConditionKindReference,
 		Reference: reference,
 		Parent:    data.Get("parent_condition_list_id").(string),
 		Tags:      tags,
@@ -126,10 +129,14 @@ func extractAbpConditionListEntry(data *schema.ResourceData) AbpConditionReferen
 	}
 }
 
-// serializeAbpConditionListEntry writes the entry to state. The kind argument
-// determines whether the referenced condition is exposed as `condition_id` (a
-// literal) or `condition_list_id` (a list); the unselected field is cleared.
-func serializeAbpConditionListEntry(data *schema.ResourceData, ref *AbpConditionReference, kind AbpConditionKind) error {
+// serializeAbpConditionListEntry writes the entry to state. The
+// referencedKind argument determines whether the referenced condition is
+// exposed as `condition_id` (a literal) or `condition_list_id` (a list);
+// the unselected field is cleared.
+func serializeAbpConditionListEntry(data *schema.ResourceData, ref *AbpCondition, referencedKind AbpConditionKind) error {
+	if ref.Kind != AbpConditionKindReference {
+		return fmt.Errorf("%s %s is not a reference variant (it is a %s)", abpConditionListEntryResourceName, ref.Id, ref.Kind)
+	}
 	if ref.AccountId == "" {
 		return fmt.Errorf("Managed condition list entries are not supported: account_id of entry %s is empty", ref.Id)
 	}
@@ -140,7 +147,7 @@ func serializeAbpConditionListEntry(data *schema.ResourceData, ref *AbpCondition
 		return err
 	}
 
-	switch kind {
+	switch referencedKind {
 	case AbpConditionKindLiteral:
 		if err := data.Set("condition_id", ref.Reference); err != nil {
 			return err
@@ -156,7 +163,7 @@ func serializeAbpConditionListEntry(data *schema.ResourceData, ref *AbpCondition
 			return err
 		}
 	default:
-		return fmt.Errorf("referenced condition %s has unexpected kind %q; expected literal or list", ref.Reference, kind)
+		return fmt.Errorf("referenced condition %s has unexpected kind %q; expected literal or list", ref.Reference, referencedKind)
 	}
 
 	tags := make([]any, 0, len(ref.Tags))
@@ -204,15 +211,15 @@ func validateReferencedConditionKind(client *Client, data *schema.ResourceData) 
 		return "", diag.Errorf("exactly one of condition_id or condition_list_id must be set")
 	}
 
-	kind, err := client.ReadAbpConditionKind(referenced)
+	condition, err := client.ReadAbpCondition(referenced)
 	if err != nil {
 		return "", diag.FromErr(err)
 	}
-	if kind == nil {
+	if condition == nil {
 		return "", diag.Errorf("%s %q does not exist", field, referenced)
 	}
-	if *kind != expected {
-		return "", diag.Errorf("%s %q must reference a %s condition, but it is a %s", field, referenced, expected, *kind)
+	if condition.Kind != expected {
+		return "", diag.Errorf("%s %q must reference a %s condition, but it is a %s", field, referenced, expected, condition.Kind)
 	}
 	return expected, nil
 }
@@ -226,12 +233,12 @@ func resourceAbpConditionListEntryCreate(ctx context.Context, data *schema.Resou
 		return diags
 	}
 
-	created, err := client.CreateAbpConditionReference(accountId, extractAbpConditionListEntry(data))
+	created, err := client.CreateAbpCondition(accountId, extractAbpConditionListEntry(data))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	if created.Id == "" {
-		return diag.Errorf("ABP Condition List Entry create response did not contain an id")
+		return diag.Errorf("%s create response did not contain an id", abpConditionListEntryResourceName)
 	}
 
 	data.SetId(created.Id)
@@ -239,7 +246,7 @@ func resourceAbpConditionListEntryCreate(ctx context.Context, data *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[INFO] Created ABP Condition List Entry %s in account %s", created.Id, accountId)
+	log.Printf("[INFO] Created %s %s in account %s", abpConditionListEntryResourceName, created.Id, accountId)
 	return nil
 }
 
@@ -247,25 +254,25 @@ func resourceAbpConditionListEntryRead(ctx context.Context, data *schema.Resourc
 	client := m.(*Client)
 	id := data.Id()
 
-	ref, err := client.ReadAbpConditionReference(id)
+	ref, err := client.ReadAbpCondition(id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	if ref == nil {
-		log.Printf("[INFO] ABP Condition List Entry %s not found, removing from state", id)
+		log.Printf("[INFO] %s %s not found, removing from state", abpConditionListEntryResourceName, id)
 		data.SetId("")
 		return nil
 	}
 
-	kind, err := client.ReadAbpConditionKind(ref.Reference)
+	referenced, err := client.ReadAbpCondition(ref.Reference)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if kind == nil {
+	if referenced == nil {
 		return diag.Errorf("referenced condition %s no longer exists", ref.Reference)
 	}
 
-	if err := serializeAbpConditionListEntry(data, ref, *kind); err != nil {
+	if err := serializeAbpConditionListEntry(data, ref, referenced.Kind); err != nil {
 		return diag.FromErr(err)
 	}
 	return nil
@@ -282,7 +289,7 @@ func resourceAbpConditionListEntryUpdate(ctx context.Context, data *schema.Resou
 		return diags
 	}
 
-	updated, err := client.UpdateAbpConditionReference(id, extractAbpConditionListEntry(data))
+	updated, err := client.UpdateAbpCondition(id, extractAbpConditionListEntry(data))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -301,7 +308,7 @@ func resourceAbpConditionListEntryDelete(ctx context.Context, data *schema.Resou
 	client := m.(*Client)
 	id := data.Id()
 
-	if err := client.DeleteAbpConditionReference(id); err != nil {
+	if err := client.DeleteAbpCondition(id); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -316,27 +323,30 @@ func resourceAbpConditionListEntryImport(ctx context.Context, data *schema.Resou
 	}
 
 	client := m.(*Client)
-	ref, err := client.ReadAbpConditionReference(id)
+	ref, err := client.ReadAbpCondition(id)
 	if err != nil {
 		return nil, err
 	}
 	if ref == nil {
-		return nil, fmt.Errorf("ABP Condition List Entry %s not found", id)
+		return nil, fmt.Errorf("%s %s not found", abpConditionListEntryResourceName, id)
+	}
+	if ref.Kind != AbpConditionKindReference {
+		return nil, fmt.Errorf("ABP Condition %s is not a reference variant (it is a %s)", id, ref.Kind)
 	}
 	if ref.AccountId == "" {
-		return nil, fmt.Errorf("ABP Condition List Entry %s is a managed entry and cannot be imported; only account-owned entries are supported", id)
+		return nil, fmt.Errorf("%s %s is a managed entry and cannot be imported; only account-owned entries are supported", abpConditionListEntryResourceName, id)
 	}
 
-	kind, err := client.ReadAbpConditionKind(ref.Reference)
+	referenced, err := client.ReadAbpCondition(ref.Reference)
 	if err != nil {
 		return nil, err
 	}
-	if kind == nil {
+	if referenced == nil {
 		return nil, fmt.Errorf("referenced condition %s no longer exists", ref.Reference)
 	}
 
 	data.SetId(id)
-	if err := serializeAbpConditionListEntry(data, ref, *kind); err != nil {
+	if err := serializeAbpConditionListEntry(data, ref, referenced.Kind); err != nil {
 		return nil, err
 	}
 

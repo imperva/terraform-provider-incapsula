@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+const abpConditionListResourceName = "ABP Condition List"
+
 func resourceAbpConditionList() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceAbpConditionListCreate,
@@ -60,14 +62,18 @@ from policies and from other condition lists.`,
 	}
 }
 
-func extractAbpConditionList(data *schema.ResourceData) AbpConditionList {
-	return AbpConditionList{
+func extractAbpConditionList(data *schema.ResourceData) AbpCondition {
+	return AbpCondition{
+		Kind:        AbpConditionKindList,
 		Name:        data.Get("name").(string),
 		Description: data.Get("description").(string),
 	}
 }
 
-func serializeAbpConditionList(data *schema.ResourceData, list *AbpConditionList) error {
+func serializeAbpConditionList(data *schema.ResourceData, list *AbpCondition) error {
+	if list.Kind != AbpConditionKindList {
+		return fmt.Errorf("%s %s is not a list variant (it is a %s)", abpConditionListResourceName, list.Id, list.Kind)
+	}
 	if list.AccountId == "" {
 		return fmt.Errorf("Managed condition lists are not supported: account_id of condition list %s is empty", list.Id)
 	}
@@ -93,12 +99,12 @@ func resourceAbpConditionListCreate(ctx context.Context, data *schema.ResourceDa
 	client := m.(*Client)
 	accountId := data.Get("account_id").(string)
 
-	created, err := client.CreateAbpConditionList(accountId, extractAbpConditionList(data))
+	created, err := client.CreateAbpCondition(accountId, extractAbpConditionList(data))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	if created.Id == "" {
-		return diag.Errorf("ABP Condition List create response did not contain an id")
+		return diag.Errorf("%s create response did not contain an id", abpConditionListResourceName)
 	}
 
 	data.SetId(created.Id)
@@ -106,7 +112,7 @@ func resourceAbpConditionListCreate(ctx context.Context, data *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	log.Printf("[INFO] Created ABP Condition List %s in account %s", created.Id, accountId)
+	log.Printf("[INFO] Created %s %s in account %s", abpConditionListResourceName, created.Id, accountId)
 	return nil
 }
 
@@ -114,13 +120,13 @@ func resourceAbpConditionListRead(ctx context.Context, data *schema.ResourceData
 	client := m.(*Client)
 	id := data.Id()
 
-	list, err := client.ReadAbpConditionList(id)
+	list, err := client.ReadAbpCondition(id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	if list == nil {
-		log.Printf("[INFO] ABP Condition List %s not found, removing from state", id)
+		log.Printf("[INFO] %s %s not found, removing from state", abpConditionListResourceName, id)
 		data.SetId("")
 		return nil
 	}
@@ -135,7 +141,7 @@ func resourceAbpConditionListUpdate(ctx context.Context, data *schema.ResourceDa
 	client := m.(*Client)
 	id := data.Id()
 
-	updated, err := client.UpdateAbpConditionList(id, extractAbpConditionList(data))
+	updated, err := client.UpdateAbpCondition(id, extractAbpConditionList(data))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -155,7 +161,7 @@ func resourceAbpConditionListDelete(ctx context.Context, data *schema.ResourceDa
 	client := m.(*Client)
 	id := data.Id()
 
-	if err := client.DeleteAbpConditionList(id); err != nil {
+	if err := client.DeleteAbpCondition(id); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -170,15 +176,18 @@ func resourceAbpConditionListImport(ctx context.Context, data *schema.ResourceDa
 	}
 
 	client := m.(*Client)
-	list, err := client.ReadAbpConditionList(id)
+	list, err := client.ReadAbpCondition(id)
 	if err != nil {
 		return nil, err
 	}
 	if list == nil {
-		return nil, fmt.Errorf("ABP Condition List %s not found", id)
+		return nil, fmt.Errorf("%s %s not found", abpConditionListResourceName, id)
+	}
+	if list.Kind != AbpConditionKindList {
+		return nil, fmt.Errorf("ABP Condition %s is not a list variant (it is a %s)", id, list.Kind)
 	}
 	if list.AccountId == "" {
-		return nil, fmt.Errorf("ABP Condition List %s is a managed condition list and cannot be imported; only account-owned condition lists are supported", id)
+		return nil, fmt.Errorf("%s %s is a managed condition list and cannot be imported; only account-owned condition lists are supported", abpConditionListResourceName, id)
 	}
 
 	data.SetId(id)

@@ -84,15 +84,18 @@ to copy "code_normalized" to "code" after running "terraform import".`,
 }
 
 func extractAbpCondition(data *schema.ResourceData) AbpCondition {
-	condition := AbpCondition{
+	return AbpCondition{
+		Kind:        AbpConditionKindLiteral,
 		Name:        data.Get("name").(string),
 		Description: data.Get("description").(string),
 		Code:        data.Get("code").(string),
 	}
-	return condition
 }
 
 func serializeAbpCondition(data *schema.ResourceData, condition *AbpCondition) error {
+	if condition.Kind != AbpConditionKindLiteral {
+		return fmt.Errorf("ABP Condition %s is not a literal variant (it is a %s)", condition.Id, condition.Kind)
+	}
 	if err := data.Set("name", condition.Name); err != nil {
 		return err
 	}

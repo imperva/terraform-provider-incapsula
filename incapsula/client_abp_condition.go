@@ -10,15 +10,136 @@ import (
 
 const abpConditionResourceName = "ABP Condition"
 
+// AbpConditionKind classifies the three variants of ConditionV1.
+type AbpConditionKind string
+
+const (
+	AbpConditionKindLiteral   AbpConditionKind = "literal"
+	AbpConditionKindReference AbpConditionKind = "reference"
+	AbpConditionKindList      AbpConditionKind = "list"
+)
+
+// AbpCondition is the Go view of ConditionV1, a tagged union with three
+// variants:
+//
+//   - literal:   carries Name, Description, Code
+//   - reference: carries Reference, Parent, Tags, State
+//   - list:      carries Name, Description (acts as a container for
+//     references via Parent on other AbpConditions)
+//
+// The variant is selected by Kind. Marshaling emits only the fields
+// relevant to the active variant to satisfy the API's oneOf schema.
+// Unmarshaling derives Kind from which discriminator fields are present
+// in the JSON (not from their values), since managed literals may carry
+// an empty `code`.
 type AbpCondition struct {
-	Id           string `json:"id,omitempty"`
-	AccountId    string `json:"account_id,omitempty"`
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	Code         string `json:"code"`
-	LastChangeBy string `json:"last_change_by,omitempty"`
-	CreatedAt    string `json:"created_at,omitempty"`
-	ModifiedAt   string `json:"modified_at,omitempty"`
+	Kind AbpConditionKind
+
+	Id        string
+	AccountId string
+
+	Name         string
+	Description  string
+	Code         string
+	LastChangeBy string
+
+	Reference string
+	Parent    string
+	Tags      []string
+	State     string
+
+	CreatedAt  string
+	ModifiedAt string
+}
+
+// abpConditionWire is the on-the-wire shape of every variant. Pointer
+// strings let UnmarshalJSON distinguish "field absent" from "field
+// present and empty", which is how the variant is identified.
+type abpConditionWire struct {
+	Id           string   `json:"id,omitempty"`
+	AccountId    string   `json:"account_id,omitempty"`
+	Name         *string  `json:"name,omitempty"`
+	Description  *string  `json:"description,omitempty"`
+	Code         *string  `json:"code,omitempty"`
+	LastChangeBy string   `json:"last_change_by,omitempty"`
+	Reference    *string  `json:"reference,omitempty"`
+	Parent       string   `json:"parent,omitempty"`
+	Tags         []string `json:"tags,omitempty"`
+	State        string   `json:"state,omitempty"`
+	CreatedAt    string   `json:"created_at,omitempty"`
+	ModifiedAt   string   `json:"modified_at,omitempty"`
+}
+
+func (c *AbpCondition) UnmarshalJSON(data []byte) error {
+	var w abpConditionWire
+	if err := json.Unmarshal(data, &w); err != nil {
+		return err
+	}
+
+	c.Id = w.Id
+	c.AccountId = w.AccountId
+	c.LastChangeBy = w.LastChangeBy
+	c.Parent = w.Parent
+	c.Tags = w.Tags
+	c.State = w.State
+	c.CreatedAt = w.CreatedAt
+	c.ModifiedAt = w.ModifiedAt
+
+	if w.Name != nil {
+		c.Name = *w.Name
+	}
+	if w.Description != nil {
+		c.Description = *w.Description
+	}
+	if w.Code != nil {
+		c.Code = *w.Code
+	}
+	if w.Reference != nil {
+		c.Reference = *w.Reference
+	}
+
+	switch {
+	case w.Reference != nil:
+		c.Kind = AbpConditionKindReference
+	case w.Code != nil:
+		c.Kind = AbpConditionKindLiteral
+	default:
+		c.Kind = AbpConditionKindList
+	}
+	return nil
+}
+
+// MarshalJSON emits only the fields that belong to the active variant so
+// the request body matches one of the CreateConditionV1/UpdateConditionV1
+// oneOf branches. The reference variant always emits a (possibly empty)
+// tags array as required by UpdateConditionV1.
+func (c AbpCondition) MarshalJSON() ([]byte, error) {
+	switch c.Kind {
+	case AbpConditionKindLiteral:
+		return json.Marshal(struct {
+			Name        string `json:"name"`
+			Description string `json:"description"`
+			Code        string `json:"code"`
+		}{c.Name, c.Description, c.Code})
+	case AbpConditionKindReference:
+		tags := c.Tags
+		if tags == nil {
+			tags = []string{}
+		}
+		return json.Marshal(struct {
+			Reference string   `json:"reference"`
+			Parent    string   `json:"parent"`
+			Tags      []string `json:"tags"`
+			State     string   `json:"state"`
+		}{c.Reference, c.Parent, tags, c.State})
+	case AbpConditionKindList:
+		return json.Marshal(struct {
+			Name        string `json:"name"`
+			Description string `json:"description"`
+		}{c.Name, c.Description})
+	default:
+		return nil, fmt.Errorf("unknown ABP Condition kind %q", c.Kind)
+	}
 }
 
 func (c *Client) abpConditionAccountUrl(accountId string) string {
@@ -59,6 +180,9 @@ func (c *Client) CreateAbpCondition(accountId string, condition AbpCondition) (*
 	return &created, nil
 }
 
+// ReadAbpCondition fetches a condition by id. Returns (nil, nil) if the
+// condition does not exist. Callers should check the returned Kind to
+// confirm the variant matches their resource.
 func (c *Client) ReadAbpCondition(conditionId string) (*AbpCondition, error) {
 	log.Printf("[INFO] Reading %s with id %s", abpConditionResourceName, conditionId)
 
