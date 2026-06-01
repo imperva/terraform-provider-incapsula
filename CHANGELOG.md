@@ -1,3 +1,10 @@
+## 3.38.3 (June 1, 2026)
+
+BUT FIXES:
+- Show Error properly when creation of a site with WC as primary domain fails #644) ([#646](https://github.com/imperva/terraform-provider-incapsula/pull/644))
+- Verify the API credentials using the lightweight verify endpoint issue #646) ([#646](https://github.com/imperva/terraform-provider-incapsula/pull/646))
+
+
 ## 3.38.2 (May 3, 2026)
 
 BUT FIXES:
