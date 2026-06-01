@@ -227,3 +227,9 @@ resource "incapsula_abp_domain_encryption_key" "dummy-key" {
   domain_id = incapsula_abp_domain.domain3.id
   key = "U2VjcmV0IGtleSB1c2luZyBzdGF0ZS1vZi10aGUtYXJ0IGJhc2U2NCBlbmNyeXB0aW9u"
 }
+
+
+resource "incapsula_abp_site_domain_priority" "prio" {
+  site_id = incapsula_abp_site.site1.id
+  domain_ids = [incapsula_abp_domain.domain2.id, incapsula_abp_domain.domain1.id, incapsula_abp_domain.domain3.id]
+}
