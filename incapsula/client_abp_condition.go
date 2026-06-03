@@ -150,6 +150,36 @@ func (c *Client) abpConditionUrl(conditionId string) string {
 	return fmt.Sprintf("%s/v1/condition/%s", c.config.BaseURLAPI, conditionId)
 }
 
+// ListAbpConditions returns every Condition visible from the given Account,
+// including managed (Imperva-owned) Conditions which carry an empty
+// AccountId.
+func (c *Client) ListAbpConditions(accountId string) ([]AbpCondition, error) {
+	log.Printf("[INFO] Listing %ss in ABP account %s", abpConditionResourceName, accountId)
+
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, c.abpConditionAccountUrl(accountId), nil, ListAbpConditions)
+	if err != nil {
+		return nil, fmt.Errorf("error listing %ss in ABP account %s: %w", abpConditionResourceName, accountId, err)
+	}
+	defer resp.Body.Close()
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body when listing %ss: %w", abpConditionResourceName, err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error status code %d from Incapsula service when listing %ss in ABP account %s: %s", resp.StatusCode, abpConditionResourceName, accountId, string(responseBody))
+	}
+
+	var listResp struct {
+		Items []AbpCondition `json:"items"`
+	}
+	if err := json.Unmarshal(responseBody, &listResp); err != nil {
+		return nil, fmt.Errorf("error parsing %s list response: %w; body: %s", abpConditionResourceName, err, string(responseBody))
+	}
+	return listResp.Items, nil
+}
+
 func (c *Client) CreateAbpCondition(accountId string, condition AbpCondition) (*AbpCondition, error) {
 	log.Printf("[INFO] Creating %s in ABP account %s", abpConditionResourceName, accountId)
 

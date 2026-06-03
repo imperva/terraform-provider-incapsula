@@ -99,6 +99,24 @@ data "incapsula_abp_proof_of_work_configuration" "pow1_lookup" {
   name       = incapsula_abp_proof_of_work_configuration.pow1.name
 }
 
+data "incapsula_abp_condition" "cond1_lookup" {
+  account_id = var.account_id
+  name       = incapsula_abp_condition.cond1.name
+}
+
+output "cond1_lookup" {
+  value = data.incapsula_abp_condition.cond1_lookup
+}
+
+data "incapsula_abp_condition_list" "shared_list_lookup" {
+  account_id = var.account_id
+  name       = incapsula_abp_condition_list.shared_list.name
+}
+
+output "shared_list_lookup" {
+  value = data.incapsula_abp_condition_list.shared_list_lookup
+}
+
 data "incapsula_abp_site_analysis_settings" "login" {
   rate_limiting           = "per_site"
   max_requests_per_minute = 100

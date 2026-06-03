@@ -101,6 +101,8 @@ func Provider() *schema.Provider {
 			"incapsula_abp_pending_changes":             dataSourceAbpPendingChanges(),
 			"incapsula_abp_proof_of_work_configuration": dataSourceAbpProofOfWorkConfiguration(),
 			"incapsula_abp_site_analysis_settings":      dataSourceAbpSiteAnalysisSettings(),
+			"incapsula_abp_condition":                   dataSourceAbpCondition(),
+			"incapsula_abp_condition_list":              dataSourceAbpConditionList(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{

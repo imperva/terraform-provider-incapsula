@@ -206,6 +206,7 @@ const CreateAbpCondition = "create_abp_condition"
 const ReadAbpCondition = "read_abp_condition"
 const UpdateAbpCondition = "update_abp_condition"
 const DeleteAbpCondition = "delete_abp_condition"
+const ListAbpConditions = "list_abp_conditions"
 
 const CreateAbpProofOfWorkConfiguration = "create_abp_proof_of_work_configuration"
 const ReadAbpProofOfWorkConfiguration = "read_abp_proof_of_work_configuration"
