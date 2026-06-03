@@ -18,7 +18,10 @@ func encryptRsa(rsaPem []byte, plaintext []byte, encLabel string) (string, error
 	}
 	key, err := x509.ParsePKIXPublicKey(block.Bytes)
 	var rsaKey = key.(*rsa.PublicKey)
-
+	var bits = rsaKey.Size() * 8
+	if bits < 3072 {
+		return "", fmt.Errorf("RSA key size must be at least 3072 bits, got %d bits", bits)
+	}
 	if err != nil {
 		return "", fmt.Errorf("error parsing RSA public key: %w", err)
 	}
