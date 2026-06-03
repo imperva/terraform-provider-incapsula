@@ -16,31 +16,35 @@ provider "incapsula" {
 }
 
 # To avoid conflicts:
-# - create file `vars.tfvars` containing
+# - create file `vars.auto.tfvars` containing
 # ```
 # account_id = "<your account id>"
 # ```
-# - specify it as `terraform apply -var-file=vars.tfvars`
-# (environment can also be used, choose your preferred approach)
+#
+# It will be automatically loaded during `terraform apply`
 variable "account_id" {
   type = string
 }
 
+# All configuration put in a separate module so it can be referenced as
+# a dependency for the publishing part. When any resource in the module
+# changes its state publishing will be triggered
 module "abp" {
   source     = "./abp"
   account_id = var.account_id
 }
 
-
 data "incapsula_abp_pending_changes" "current" {
   depends_on = [module.abp]
 }
 
+# Create a preflight (a snapshot of the configuration)
 resource "incapsula_abp_preflight" "current" {
   account_id   = var.account_id
   pending_hash = data.incapsula_abp_pending_changes.current.hash
 }
 
+# Publish the specific preflight (make the corresponding configuration active)
 resource "incapsula_abp_publish" "publish" {
   preflight_id = incapsula_abp_preflight.current.id
 }

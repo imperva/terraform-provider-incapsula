@@ -10,81 +10,65 @@ variable "account_id" {
   type = string
 }
 
-resource "incapsula_abp_policy" "poltest1" {
+#
+# Create a condition with custom MOI
+#
+
+resource "incapsula_abp_condition" "specific_visitor" {
   account_id  = var.account_id
-  name        = "policy pt 1"
-  description = "My cool policy"
-
-  directive {
-    action = "allow"
-  }
+  name        = "Specific visitor"
+  description = "Match specific UA coming from selected IPs"
+  code        = "(all headers.user_agent? (matches headers.user_agent re\"Mozilla\") (in visitor_ip 1.2.3.4 2.3.4.5))"
 }
 
-resource "incapsula_abp_policy" "poltest2" {
-  account_id  = var.account_id
-  name        = "policy pt 2"
-  description = "My cool policy change desc"
-
-  directive {
-    action = "allow"
-  }
-}
-
-resource "incapsula_abp_policy" "poltest3" {
-  account_id  = var.account_id
-  name        = "cool name"
-  description = "policy 3.2"
-
-  directive {
-    action = "allow"
-  }
-}
-
-resource "incapsula_abp_condition" "cond1" {
-  account_id  = var.account_id
-  name        = "terraform-0"
-  description = "Created through terraform twice"
-  code        = "(any true false)"
-}
-
-# Attach the literal condition above to the auto-generated condition list of
-# poltest1's first directive.
-resource "incapsula_abp_condition_list_entry" "poltest1_allow_cond1" {
-  account_id               = var.account_id
-  parent_condition_list_id = incapsula_abp_policy.poltest1.directive[0].condition_id
-  condition_id             = incapsula_abp_condition.cond1.id
-  state                    = "active"
-  tags                     = ["terraform_managed"]
-}
-
-# A reusable condition list grouping individual conditions; can be referenced
-# from multiple policies via condition_list_entry.
-resource "incapsula_abp_condition_list" "shared_list" {
-  account_id  = var.account_id
-  name        = "terraform-shared-list"
-  description = "Reusable condition list managed by terraform"
-}
-
-# Add cond1 to the shared list.
-resource "incapsula_abp_condition_list_entry" "shared_list_cond1" {
-  account_id               = var.account_id
-  parent_condition_list_id = incapsula_abp_condition_list.shared_list.id
-  condition_id             = incapsula_abp_condition.cond1.id
-  state                    = "active"
-  tags                     = ["terraform_managed"]
-}
-
-# Attach the shared list to poltest2's first directive.
-resource "incapsula_abp_condition_list_entry" "poltest2_allow_shared_list" {
-  account_id               = var.account_id
-  parent_condition_list_id = incapsula_abp_policy.poltest2.directive[0].condition_id
-  condition_list_id        = incapsula_abp_condition_list.shared_list.id
-  state                    = "active"
-  tags                     = ["terraform_managed"]
+# Demonstrate condition lookup
+data "incapsula_abp_condition" "specific_visitor_lookup" {
+  account_id = var.account_id
+  name       = incapsula_abp_condition.specific_visitor.name
 }
 
 #
-# Proof Of Work
+# Lookup a managed condition to subsequently insert into a policy
+#
+
+data "incapsula_abp_condition" "managed_monitoring_tools" {
+  account_id = var.account_id
+  name       = "Monitoring Tools"
+  managed    = true
+}
+
+#
+# Create a condition list and populate it with a condition
+#
+
+resource "incapsula_abp_condition_list" "sample_condition_list" {
+  account_id  = var.account_id
+  name        = "Sample condition list"
+  description = "Reusable condition list"
+}
+
+resource "incapsula_abp_condition_list_entry" "sample_condition_list_specific_visitor" {
+  account_id               = var.account_id
+  parent_condition_list_id = incapsula_abp_condition_list.sample_condition_list.id
+  condition_id             = incapsula_abp_condition.specific_visitor.id
+  state                    = "active"
+  tags                     = ["terraform_managed"]
+}
+
+# Demonstrate condition list lookup
+data "incapsula_abp_condition_list" "sample_condition_list_lookup" {
+  account_id = var.account_id
+  name       = incapsula_abp_condition_list.sample_condition_list.name
+}
+
+#
+# Create a policy with standard directives and populate it with conditions
+#
+
+# TODO
+
+#
+# Create a policy with custom directives and populate it with conditions
 #
 
 resource "incapsula_abp_proof_of_work_configuration" "pow1" {
@@ -94,28 +78,52 @@ resource "incapsula_abp_proof_of_work_configuration" "pow1" {
   algorithm  = "bbs"
 }
 
+# Demonstrate proof_of_work lookup
 data "incapsula_abp_proof_of_work_configuration" "pow1_lookup" {
   account_id = var.account_id
   name       = incapsula_abp_proof_of_work_configuration.pow1.name
 }
 
-data "incapsula_abp_condition" "cond1_lookup" {
+resource "incapsula_abp_policy" "policy2" {
+  account_id  = var.account_id
+  name        = "Policy with custom directives"
+  description = "Demonstrate how to create policy with custom directives from Terraform"
+
+  directive {
+    action = "allow"
+  }
+
+  directive {
+    action = "block"
+  }
+
+  directive {
+    action = "proof_of_work"
+    # TODO: proof_of_work should attach the configuration
+    # TODO: skip conditions for proof_of_work
+  }
+}
+
+resource "incapsula_abp_condition_list_entry" "policy2_allow_monitoring_tools" {
   account_id = var.account_id
-  name       = incapsula_abp_condition.cond1.name
+  # TODO: index by action?
+  parent_condition_list_id = incapsula_abp_policy.policy2.directive[0].condition_id
+  condition_id             = data.incapsula_abp_condition.managed_monitoring_tools.id
+  state                    = "active"
+  tags                     = ["terraform_managed"]
 }
 
-output "cond1_lookup" {
-  value = data.incapsula_abp_condition.cond1_lookup
+resource "incapsula_abp_condition_list_entry" "policy2_block_sample_condition_list" {
+  account_id               = var.account_id
+  parent_condition_list_id = incapsula_abp_policy.policy2.directive[1].condition_id
+  condition_list_id        = incapsula_abp_condition_list.sample_condition_list.id
+  state                    = "monitor"
+  tags                     = ["terraform_managed"]
 }
 
-data "incapsula_abp_condition_list" "shared_list_lookup" {
-  account_id = var.account_id
-  name       = incapsula_abp_condition_list.shared_list.name
-}
-
-output "shared_list_lookup" {
-  value = data.incapsula_abp_condition_list.shared_list_lookup
-}
+#
+# Create a site and attach a policy to it
+#
 
 data "incapsula_abp_site_analysis_settings" "login" {
   rate_limiting           = "per_site"
@@ -135,9 +143,9 @@ data "incapsula_abp_site_analysis_settings" "postback" {
   use_site_rate_limiting_parameters = false
 }
 
-resource "incapsula_abp_site" "site1" {
+resource "incapsula_abp_site" "sample_site" {
   account_id = var.account_id
-  name       = "terraform-site-0"
+  name       = "Sample site"
 
   default_max_requests_per_minute  = 60
   default_max_requests_per_session = 600
@@ -145,7 +153,7 @@ resource "incapsula_abp_site" "site1" {
 
   selector {
     path_prefix       = "/login"
-    policy_id         = incapsula_abp_policy.poltest1.id
+    policy_id         = incapsula_abp_policy.policy2.id
     analysis_settings = data.incapsula_abp_site_analysis_settings.login.json
   }
 
@@ -160,25 +168,13 @@ resource "incapsula_abp_site" "site1" {
   }
 }
 
-resource "incapsula_abp_site" "site2" {
-  account_id = var.account_id
-  name       = "terraform-site-2"
-
-  default_max_requests_per_minute  = 30
-  default_max_requests_per_session = 300
-  default_max_session_length       = "1h"
-
-  selector {
-    path_prefix       = "/login"
-    policy_id         = incapsula_abp_policy.poltest3.id
-    analysis_settings = data.incapsula_abp_site_analysis_settings.login.json
-  }
-}
-
-resource "incapsula_abp_domain" "domain1" {
+#
+# Create domains in the previously created site
+#
+resource "incapsula_abp_domain" "test_com" {
   account_id              = var.account_id
-  site_id                 = incapsula_abp_site.site1.id
-  cookiescope             = "example.com"
+  site_id                 = incapsula_abp_site.sample_site.id
+  cookiescope             = "test.com"
   log_region              = "apac"
   cookie_mode             = "none_secure"
   enable_mitigation       = false
@@ -213,13 +209,13 @@ resource "incapsula_abp_domain" "domain1" {
     reverse_index = 0
   }
   criteria {
-    exact = "terraform-domain-0.example.com"
+    exact = "test.com"
   }
 }
 
-resource "incapsula_abp_domain" "domain2" {
+resource "incapsula_abp_domain" "example_com" {
   account_id  = var.account_id
-  site_id     = incapsula_abp_site.site1.id
+  site_id     = incapsula_abp_site.sample_site.id
   cookiescope = "example.com"
   log_region  = "usa"
   cookie_mode = "lax"
@@ -236,14 +232,14 @@ resource "incapsula_abp_domain" "domain2" {
     }
   }
   criteria {
-    prefix = "terraform-domain-1"
+    prefix = "example.com"
   }
 }
 
-resource "incapsula_abp_domain" "domain3" {
+resource "incapsula_abp_domain" "dummy_com" {
   account_id  = var.account_id
-  site_id     = incapsula_abp_site.site1.id
-  cookiescope = "example.com"
+  site_id     = incapsula_abp_site.sample_site.id
+  cookiescope = "dummy.com"
   log_region  = "eu"
   cookie_mode = "legacy"
   captcha_settings {
@@ -252,19 +248,46 @@ resource "incapsula_abp_domain" "domain3" {
     }
   }
   criteria {
-    suffix = "sub3.example.com"
+    suffix = "dummy.com"
   }
 }
 
-resource "incapsula_abp_domain_encryption_key" "dummy-key" {
-  domain_id = incapsula_abp_domain.domain3.id
-  key = "U2VjcmV0IGtleSB1c2luZyBzdGF0ZS1vZi10aGUtYXJ0IGJhc2U2NCBlbmNyeXB0aW9u"
+#
+# Define domain priority order
+#
+
+resource "incapsula_abp_site_domain_priority" "sample_site" {
+  site_id    = incapsula_abp_site.sample_site.id
+  domain_ids = [incapsula_abp_domain.example_com.id, incapsula_abp_domain.test_com.id, incapsula_abp_domain.dummy_com.id]
 }
 
+#
+# Create encryption key for a domain
+#
 
-resource "incapsula_abp_site_domain_priority" "prio" {
-  site_id = incapsula_abp_site.site1.id
-  domain_ids = [incapsula_abp_domain.domain2.id, incapsula_abp_domain.domain1.id, incapsula_abp_domain.domain3.id]
+resource "incapsula_abp_domain_encryption_key" "test_com" {
+  domain_id = incapsula_abp_domain.test_com.id
+  key       = "U2VjcmV0IGtleSB1c2luZyBzdGF0ZS1vZi10aGUtYXJ0IGJhc2U2NCBlbmNyeXB0aW9u"
+}
+
+#------------------------------------------------------------------------------
+#
+# Others
+#
+
+resource "incapsula_abp_site" "site2" {
+  account_id = var.account_id
+  name       = "terraform-site-2"
+
+  default_max_requests_per_minute  = 30
+  default_max_requests_per_session = 300
+  default_max_session_length       = "1h"
+
+  selector {
+    path_prefix       = "/login"
+    policy_id         = incapsula_abp_policy.policy2.id
+    analysis_settings = data.incapsula_abp_site_analysis_settings.login.json
+  }
 }
 
 /*resource "incapsula_abp_account_site_priority" "accprio" {
