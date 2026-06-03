@@ -48,3 +48,7 @@ resource "incapsula_abp_preflight" "current" {
 resource "incapsula_abp_publish" "publish" {
   preflight_id = incapsula_abp_preflight.current.id
 }
+
+output "encrypted_secret" {
+  value = module.abp.my_credential_encrypted_secret
+}

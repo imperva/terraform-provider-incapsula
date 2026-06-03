@@ -243,6 +243,10 @@ const CreateAbpDomainEncryptionKey = "create_abp_domain_encryption_key"
 const ListAbpDomainEncryptionKeys = "list_abp_domain_encryption_keys"
 const DeleteAbpDomainEncryptionKey = "delete_abp_domain_encryption_key"
 
+const CreateAbpCredential = "create_abp_credential"
+const ReadAbpCredential = "read_abp_credential"
+const DeleteAbpCredential = "delete_abp_credential"
+
 const RequestSiteCert = "request_site_cert"
 
 const AddV3Site = "add_v3_site"

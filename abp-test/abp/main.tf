@@ -298,3 +298,29 @@ resource "incapsula_abp_site" "site2" {
     // .. fill out complete list
   ]
 }*/
+
+resource "incapsula_abp_credential" "my_credential" {
+  account_id = var.account_id
+  // RSA key to use for encryption, pem encoded
+  // decrypt using ex:`terraform output -raw encrypted_secret | base64 -d | openssl pkeyutl -decrypt -inkey <your-private-key-file> -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -pkeyopt rsa_oaep_label:$(echo -n 'abp_credential' | xxd -p)
+  rsa_key = <<EOF
+-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA2p9NrmAlOC6ZbXVuKoj4
+b4PQhTsPng2VGItWnDzy2VsgsRNz0K1PuPUbRo4ZgbZ5Z5UXi9QEKnf376QjdMGl
+NoQRBiBgQAX/fz87ax8bGoDRtHtLgS984M84hIjyhhpZhzwuctnyJ2NnCaiwQIEn
+WoH5+hWsxF/YUpP/6DzdvGdJEpDKq0itQl5D4ZpfVbiB/KfU4GOGGXa0bFYZjbT3
+xow7+zA4wA29Z+ShKU8fqaTMjwIt8iGF2G7KzYzF1SwTiAgW2qEzNvQP2loFOI6h
+yuHpNlEqsQ7r0ov+f3UxSJixcum7H3KEY5BaUdc/i76pgKqVYwi107XKGSBpQFsa
+74dCiIy8jQfGNr1usO46swaL7G7WYxKJmOAj32YDF1SaR571N8wEpvV0dU811emR
+z2E+I3EIa4FLTLCFKb9SJTGc9kEWA+gndGCInmzzLZSmRCTd5a5GpKn2fBuhSyCP
+CfUfcBSpL/iJ4xg3gtx5hgAgELtDYDh8Tv3vDw6AS6/c3hYs4MkAZpbQ8v531emy
+gJeOSyLZdk/+ldkl3NcOX0xOqn9JjWKicvTTwpJyO4Gk97lff6GQpxFFDNzs81at
+XyQKDg65HAse9wY2TGg8cc/vefRCXpZHoiGv+RlHaF+QpaxwAp2w47fHht39V0VX
+ypuTiiPzdbQtr50+N65XJCUCAwEAAQ==
+-----END PUBLIC KEY-----
+EOF
+}
+
+output "my_credential_encrypted_secret" {
+  value = incapsula_abp_credential.my_credential.encrypted_secret
+}
