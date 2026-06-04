@@ -27,6 +27,13 @@ data "incapsula_abp_condition" "specific_visitor_lookup" {
   name       = incapsula_abp_condition.specific_visitor.name
 }
 
+resource "incapsula_abp_condition" "okhttp" {
+  account_id  = var.account_id
+  name        = "OkHttp"
+  description = "Matches requests initiated by okhttp"
+  code        = "(all headers.user_agent? (matches headers.user_agent \"okhttp/4.12.0\"))"
+
+}
 #
 # Lookup a managed condition to subsequently insert into a policy
 #
@@ -50,7 +57,7 @@ resource "incapsula_abp_condition_list" "sample_condition_list" {
 resource "incapsula_abp_condition_list_entry" "sample_condition_list_specific_visitor" {
   account_id               = var.account_id
   parent_condition_list_id = incapsula_abp_condition_list.sample_condition_list.id
-  condition_id             = incapsula_abp_condition.specific_visitor.id
+  condition_id             = incapsula_abp_condition.okhttp.id
   state                    = "active"
   tags                     = ["terraform_managed"]
 }
@@ -98,9 +105,8 @@ resource "incapsula_abp_policy" "policy2" {
   }
 
   directive {
-    action = "proof_of_work"
-    # TODO: proof_of_work should attach the configuration
-    # TODO: skip conditions for proof_of_work
+    action                         = "proof_of_work"
+    proof_of_work_configuration_id = incapsula_abp_proof_of_work_configuration.pow1.id
   }
 }
 
@@ -113,7 +119,16 @@ data "incapsula_abp_policy" "policy2" {
 resource "incapsula_abp_condition_list_entry" "policy2_allow_monitoring_tools" {
   account_id = var.account_id
   # TODO: index by action?
-  parent_condition_list_id = incapsula_abp_policy.policy2.directive[0].condition_id
+  parent_condition_list_id = incapsula_abp_policy.policy2.directive[0].condition_list_id
+  condition_id             = data.incapsula_abp_condition.managed_monitoring_tools.id
+  state                    = "active"
+  tags                     = ["terraform_managed"]
+}
+
+# Skip the proof_of_work directive for the managed monitoring tools condition
+resource "incapsula_abp_condition_list_entry" "policy2_pow_skip_monitoring_tools" {
+  account_id               = var.account_id
+  parent_condition_list_id = incapsula_abp_policy.policy2.directive[2].skip_condition_list_id
   condition_id             = data.incapsula_abp_condition.managed_monitoring_tools.id
   state                    = "active"
   tags                     = ["terraform_managed"]
@@ -121,7 +136,7 @@ resource "incapsula_abp_condition_list_entry" "policy2_allow_monitoring_tools" {
 
 resource "incapsula_abp_condition_list_entry" "policy2_block_sample_condition_list" {
   account_id               = var.account_id
-  parent_condition_list_id = incapsula_abp_policy.policy2.directive[1].condition_id
+  parent_condition_list_id = incapsula_abp_policy.policy2.directive[1].condition_list_id
   condition_list_id        = incapsula_abp_condition_list.sample_condition_list.id
   state                    = "monitor"
   tags                     = ["terraform_managed"]
