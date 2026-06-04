@@ -62,8 +62,8 @@ func resourceAbpPolicy() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 						},
-						"condition_id": {
-							Description: "Optional condition this directive applies to. If omitted, the backend generates one.",
+						"condition_list_id": {
+							Description: "Condition list containing conditions for this directive.",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
@@ -88,7 +88,7 @@ func extractDirectives(data *schema.ResourceData) []AbpDirective {
 	for i, item := range raw {
 		m := item.(map[string]interface{})
 		d := AbpDirective{Action: m["action"].(string)}
-		if cid, ok := m["condition_id"].(string); ok && cid != "" {
+		if cid, ok := m["condition_list_id"].(string); ok && cid != "" {
 			d.ConditionId = &cid
 		}
 		directives[i] = d
@@ -101,7 +101,7 @@ func flattenDirectives(directives []AbpDirective) []interface{} {
 	for i, d := range directives {
 		m := map[string]interface{}{"action": d.Action}
 		if d.ConditionId != nil {
-			m["condition_id"] = *d.ConditionId
+			m["condition_list_id"] = *d.ConditionId
 		}
 		out[i] = m
 	}

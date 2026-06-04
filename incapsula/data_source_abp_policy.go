@@ -44,8 +44,8 @@ func dataSourceAbpPolicy() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
-						"condition_id": {
-							Description: "Condition this directive applies to.",
+						"condition_list_id": {
+							Description: "Condition list containing conditions for this directive.",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},

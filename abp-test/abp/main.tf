@@ -113,7 +113,7 @@ data "incapsula_abp_policy" "policy2" {
 resource "incapsula_abp_condition_list_entry" "policy2_allow_monitoring_tools" {
   account_id = var.account_id
   # TODO: index by action?
-  parent_condition_list_id = incapsula_abp_policy.policy2.directive[0].condition_id
+  parent_condition_list_id = incapsula_abp_policy.policy2.directive[0].condition_list_id
   condition_id             = data.incapsula_abp_condition.managed_monitoring_tools.id
   state                    = "active"
   tags                     = ["terraform_managed"]
@@ -121,7 +121,7 @@ resource "incapsula_abp_condition_list_entry" "policy2_allow_monitoring_tools" {
 
 resource "incapsula_abp_condition_list_entry" "policy2_block_sample_condition_list" {
   account_id               = var.account_id
-  parent_condition_list_id = incapsula_abp_policy.policy2.directive[1].condition_id
+  parent_condition_list_id = incapsula_abp_policy.policy2.directive[1].condition_list_id
   condition_list_id        = incapsula_abp_condition_list.sample_condition_list.id
   state                    = "monitor"
   tags                     = ["terraform_managed"]
