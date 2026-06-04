@@ -17,8 +17,10 @@ type AbpPolicy struct {
 }
 
 type AbpDirective struct {
-	Action      string  `json:"action"`
-	ConditionId *string `json:"condition_id,omitempty"`
+	Action                     string  `json:"action"`
+	ConditionId                *string `json:"condition_id,omitempty"`
+	SkipConditionId            *string `json:"skip_condition_id,omitempty"`
+	ProofOfWorkConfigurationId *string `json:"proof_of_work_configuration_id,omitempty"`
 }
 
 func resourceAbpPolicy() *schema.Resource {
@@ -67,6 +69,16 @@ func resourceAbpPolicy() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
+						"skip_condition_list_id": {
+							Description: "Condition list whose matches skip this directive. Only meaningful when `action` is `proof_of_work`.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"proof_of_work_configuration_id": {
+							Description: "ID of the proof-of-work configuration to apply. Only valid when `action` is `proof_of_work`.",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
 					},
 				},
 			},
@@ -91,6 +103,9 @@ func extractDirectives(data *schema.ResourceData) []AbpDirective {
 		if cid, ok := m["condition_list_id"].(string); ok && cid != "" {
 			d.ConditionId = &cid
 		}
+		if powId, ok := m["proof_of_work_configuration_id"].(string); ok && powId != "" {
+			d.ProofOfWorkConfigurationId = &powId
+		}
 		directives[i] = d
 	}
 	return directives
@@ -102,6 +117,12 @@ func flattenDirectives(directives []AbpDirective) []interface{} {
 		m := map[string]interface{}{"action": d.Action}
 		if d.ConditionId != nil {
 			m["condition_list_id"] = *d.ConditionId
+		}
+		if d.SkipConditionId != nil {
+			m["skip_condition_list_id"] = *d.SkipConditionId
+		}
+		if d.ProofOfWorkConfigurationId != nil {
+			m["proof_of_work_configuration_id"] = *d.ProofOfWorkConfigurationId
 		}
 		out[i] = m
 	}

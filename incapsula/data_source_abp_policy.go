@@ -49,6 +49,16 @@ func dataSourceAbpPolicy() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
+						"skip_condition_list_id": {
+							Description: "Condition list whose matches skip this directive. Only set when `action` is `proof_of_work`.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"proof_of_work_configuration_id": {
+							Description: "ID of the proof-of-work configuration applied. Only set when `action` is `proof_of_work`.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
 					},
 				},
 			},

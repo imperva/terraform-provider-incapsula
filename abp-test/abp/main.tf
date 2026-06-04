@@ -98,9 +98,8 @@ resource "incapsula_abp_policy" "policy2" {
   }
 
   directive {
-    action = "proof_of_work"
-    # TODO: proof_of_work should attach the configuration
-    # TODO: skip conditions for proof_of_work
+    action                         = "proof_of_work"
+    proof_of_work_configuration_id = incapsula_abp_proof_of_work_configuration.pow1.id
   }
 }
 
@@ -114,6 +113,15 @@ resource "incapsula_abp_condition_list_entry" "policy2_allow_monitoring_tools" {
   account_id = var.account_id
   # TODO: index by action?
   parent_condition_list_id = incapsula_abp_policy.policy2.directive[0].condition_list_id
+  condition_id             = data.incapsula_abp_condition.managed_monitoring_tools.id
+  state                    = "active"
+  tags                     = ["terraform_managed"]
+}
+
+# Skip the proof_of_work directive for the managed monitoring tools condition
+resource "incapsula_abp_condition_list_entry" "policy2_pow_skip_monitoring_tools" {
+  account_id               = var.account_id
+  parent_condition_list_id = incapsula_abp_policy.policy2.directive[2].skip_condition_list_id
   condition_id             = data.incapsula_abp_condition.managed_monitoring_tools.id
   state                    = "active"
   tags                     = ["terraform_managed"]
