@@ -182,6 +182,37 @@ func TestCSPSiteDomainPreApprovedUpdateResponse(t *testing.T) {
 	}
 }
 
+// TestCSPSiteDomainPreApprovedUpdateResponse_wildcardReferenceId verifies that
+// the client captures the server-assigned referenceId from the POST response.
+// Real Imperva returns base64url("*.domain") when subdomains=true.
+func TestCSPSiteDomainPreApprovedUpdateResponse_wildcardReferenceId(t *testing.T) {
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := 42
+	accountID := 55
+	wildcardRef := "Ki5leGFtcGxlLmNvbQ" // base64url("*.example.com")
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(201)
+		rw.Write([]byte(`{"domain":"example.com","subdomains":true,"referenceId":"` + wildcardRef + `"}`))
+	}))
+	defer server.Close()
+
+	config := &Config{APIID: apiID, APIKey: apiKey, BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+	result, err := client.updateCSPPreApprovedDomain(accountID, siteID, &CSPPreApprovedDomain{
+		Domain:     "example.com",
+		Subdomains: true,
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	if result.ReferenceID != wildcardRef {
+		t.Errorf("ReferenceID = %q, want %q", result.ReferenceID, wildcardRef)
+	}
+}
+
 func TestCSPSiteDomainNotesResponse(t *testing.T) {
 	apiID := "foo"
 	apiKey := "bar"

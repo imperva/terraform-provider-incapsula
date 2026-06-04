@@ -1,6 +1,7 @@
 package incapsula
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -313,9 +314,8 @@ func TestMockServerCSPDomainLifecycle(t *testing.T) {
 
 	siteID := 12345
 	domain := "example.com"
-	domainRef := "ZXhhbXBsZS5jb20" // base64 URL-safe encoding of "example.com"
+	wildcardRef := "Ki5leGFtcGxlLmNvbQ" // base64url("*.example.com")
 
-	// Test add domain
 	domainJSON := `{"domain":"example.com","subdomains":true}`
 	resp, err := http.Post(
 		fmt.Sprintf("%s/csp-api/v1/sites/%d/preapprovedlist", mock.URL(), siteID),
@@ -342,9 +342,11 @@ func TestMockServerCSPDomainLifecycle(t *testing.T) {
 	if !createResp["subdomains"].(bool) {
 		t.Errorf("Expected subdomains=true")
 	}
+	if createResp["referenceId"].(string) != wildcardRef {
+		t.Errorf("Expected referenceId=%q (wildcard), got %q", wildcardRef, createResp["referenceId"])
+	}
 
-	// Test get domain
-	resp, err = http.Get(fmt.Sprintf("%s/csp-api/v1/sites/%d/preapprovedlist/%s", mock.URL(), siteID, domainRef))
+	resp, err = http.Get(fmt.Sprintf("%s/csp-api/v1/sites/%d/preapprovedlist/%s", mock.URL(), siteID, wildcardRef))
 	if err != nil {
 		t.Fatalf("Failed to get domain: %v", err)
 	}
@@ -370,8 +372,7 @@ func TestMockServerCSPDomainLifecycle(t *testing.T) {
 		t.Errorf("Expected 1 domain, got %d", len(listResp))
 	}
 
-	// Test delete domain
-	req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/csp-api/v1/sites/%d/preapprovedlist/%s", mock.URL(), siteID, domainRef), nil)
+	req, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/csp-api/v1/sites/%d/preapprovedlist/%s", mock.URL(), siteID, wildcardRef), nil)
 	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
 		t.Fatalf("Failed to delete domain: %v", err)
@@ -382,9 +383,94 @@ func TestMockServerCSPDomainLifecycle(t *testing.T) {
 		t.Errorf("Expected status 204, got %d", resp.StatusCode)
 	}
 
-	// Verify domain is deleted
 	if mock.GetCSPDomain(siteID, domain) != nil {
 		t.Errorf("Domain should have been deleted")
+	}
+}
+
+// TestMockServerCSPDomainReferenceIdNormalization verifies the mock matches real Imperva behaviour:
+// subdomains=true  → referenceId encodes "*.domain"
+// subdomains=false → referenceId encodes "domain"
+func TestMockServerCSPDomainReferenceIdNormalization(t *testing.T) {
+	mock := NewMockImpervaServer()
+	defer mock.Close()
+
+	siteID := 99999
+
+	cases := []struct {
+		domain     string
+		subdomains bool
+		wantRef    string
+	}{
+		{"example.com", true, "Ki5leGFtcGxlLmNvbQ"},   // base64url("*.example.com")
+		{"example.com", false, "ZXhhbXBsZS5jb20"},      // base64url("example.com")
+		{"googlesyndication.com", true, "Ki5nb29nbGVzeW5kaWNhdGlvbi5jb20"},  // base64url("*.googlesyndication.com")
+		{"googlesyndication.com", false, "Z29vZ2xlc3luZGljYXRpb24uY29t"},    // base64url("googlesyndication.com")
+	}
+
+	for _, tc := range cases {
+		body, _ := json.Marshal(map[string]interface{}{
+			"domain":     tc.domain,
+			"subdomains": tc.subdomains,
+		})
+		resp, err := http.Post(
+			fmt.Sprintf("%s/csp-api/v1/sites/%d/preapprovedlist", mock.URL(), siteID),
+			"application/json",
+			strings.NewReader(string(body)),
+		)
+		if err != nil {
+			t.Fatalf("POST domain=%s subdomains=%v: %v", tc.domain, tc.subdomains, err)
+		}
+		var result map[string]interface{}
+		json.NewDecoder(resp.Body).Decode(&result)
+		resp.Body.Close()
+
+		gotRef, _ := result["referenceId"].(string)
+		if gotRef != tc.wantRef {
+			t.Errorf("domain=%s subdomains=%v: referenceId=%q, want %q", tc.domain, tc.subdomains, gotRef, tc.wantRef)
+		}
+
+		// GET by the returned referenceId must succeed
+		getResp, _ := http.Get(fmt.Sprintf("%s/csp-api/v1/sites/%d/preapprovedlist/%s", mock.URL(), siteID, gotRef))
+		if getResp.StatusCode != http.StatusOK {
+			t.Errorf("domain=%s subdomains=%v: GET by correct ref=%q: status %d, want 200", tc.domain, tc.subdomains, gotRef, getResp.StatusCode)
+		}
+		getResp.Body.Close()
+
+		// GET by the wrong ref format must 404 (mirrors real Imperva behaviour)
+		var wrongRef string
+		if tc.subdomains {
+			wrongRef = base64.RawURLEncoding.EncodeToString([]byte(tc.domain)) // bare ref
+		} else {
+			wrongRef = base64.RawURLEncoding.EncodeToString([]byte("*." + tc.domain)) // wildcard ref
+		}
+		wrongGetResp, _ := http.Get(fmt.Sprintf("%s/csp-api/v1/sites/%d/preapprovedlist/%s", mock.URL(), siteID, wrongRef))
+		if wrongGetResp.StatusCode != http.StatusNotFound {
+			t.Errorf("domain=%s subdomains=%v: GET by wrong ref=%q: status %d, want 404", tc.domain, tc.subdomains, wrongRef, wrongGetResp.StatusCode)
+		}
+		wrongGetResp.Body.Close()
+
+		wrongDelReq, _ := http.NewRequest(http.MethodDelete,
+			fmt.Sprintf("%s/csp-api/v1/sites/%d/preapprovedlist/%s", mock.URL(), siteID, wrongRef), nil)
+		wrongDelResp, _ := http.DefaultClient.Do(wrongDelReq)
+		if wrongDelResp.StatusCode != http.StatusNoContent {
+			t.Errorf("domain=%s: DELETE by wrong ref: status %d, want 204", tc.domain, wrongDelResp.StatusCode)
+		}
+		wrongDelResp.Body.Close()
+		if mock.GetCSPDomain(siteID, tc.domain) == nil {
+			t.Errorf("domain=%s: entry should still exist after DELETE by wrong ref", tc.domain)
+		}
+
+		delReq, _ := http.NewRequest(http.MethodDelete,
+			fmt.Sprintf("%s/csp-api/v1/sites/%d/preapprovedlist/%s", mock.URL(), siteID, gotRef), nil)
+		delResp, _ := http.DefaultClient.Do(delReq)
+		if delResp.StatusCode != http.StatusNoContent {
+			t.Errorf("domain=%s: DELETE by correct ref: status %d, want 204", tc.domain, delResp.StatusCode)
+		}
+		delResp.Body.Close()
+		if mock.GetCSPDomain(siteID, tc.domain) != nil {
+			t.Errorf("domain=%s: entry should be gone after DELETE by correct ref", tc.domain)
+		}
 	}
 }
 
