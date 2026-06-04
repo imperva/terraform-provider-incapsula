@@ -104,6 +104,12 @@ resource "incapsula_abp_policy" "policy2" {
   }
 }
 
+# Demonstrate policy lookup
+data "incapsula_abp_policy" "policy2" {
+  account_id = var.account_id
+  name       = incapsula_abp_policy.policy2.name
+}
+
 resource "incapsula_abp_condition_list_entry" "policy2_allow_monitoring_tools" {
   account_id = var.account_id
   # TODO: index by action?

@@ -18,6 +18,35 @@ func (c *Client) AbpPolicyCreateUrl(accountId string) string {
 	return fmt.Sprintf("%s/v1/account/%s/policy", c.config.BaseURLAPI, accountId)
 }
 
+const abpPolicyResourceName = "ABP Policy"
+
+func (c *Client) ListAbpPolicies(accountId string) ([]AbpPolicy, error) {
+	log.Printf("[INFO] Listing %s in ABP account %s", abpPolicyResourceName, accountId)
+
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, c.AbpPolicyCreateUrl(accountId), nil, ListAbpPolicies)
+	if err != nil {
+		return nil, fmt.Errorf("error listing %ss in ABP account %s: %w", abpPolicyResourceName, accountId, err)
+	}
+	defer resp.Body.Close()
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body when listing %ss: %w", abpPolicyResourceName, err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error status code %d from Incapsula service when listing %ss in ABP account %s: %s", resp.StatusCode, abpPolicyResourceName, accountId, string(responseBody))
+	}
+
+	var listResp struct {
+		Items []AbpPolicy `json:"items"`
+	}
+	if err := json.Unmarshal(responseBody, &listResp); err != nil {
+		return nil, fmt.Errorf("error parsing %s list response: %w; body: %s", abpPolicyResourceName, err, string(responseBody))
+	}
+	return listResp.Items, nil
+}
+
 const createAbpPolicyAction = "creating abp policy"
 
 func (c *Client) CreateAbpPolicy(accountId string, policy AbpPolicy) (*AbpPolicy, diag.Diagnostics) {
