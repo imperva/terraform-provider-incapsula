@@ -20,6 +20,10 @@ type AbpSite struct {
 	DefaultMaxSessionLength      *string       `json:"default_max_session_length,omitempty"`
 	CreatedAt                    string        `json:"created_at,omitempty"`
 	ModifiedAt                   string        `json:"modified_at,omitempty"`
+
+	// The default selector is split off the wire payload before unmarshalling
+	// completes and is re-attached on update preserving its id and policy.
+	DefaultSelector *AbpSelector `json:"-"`
 }
 
 type AbpSelector struct {
@@ -98,30 +102,28 @@ func (c *Client) abpSiteUrl(siteId string) string {
 	return fmt.Sprintf("%s/v1/site/%s", c.config.BaseURLAPI, siteId)
 }
 
-// stripExpectedDefaultSelector removes the trailing auto-generated catch-all
-// selector that the API appends at the lowest priority, but only when both:
+func isDefaultSelectorShape(s AbpSelector) bool {
+	return s.Criteria.PathPrefix != nil && *s.Criteria.PathPrefix == "/"
+}
+
+// splitDefaultSelector splits the default selector (if present) from others.
+// Whatever the user-managed selectors are, the backend will always append one
+// default at the bottom, so we trust the shape on the trailing entry and pop it
+// into `site.DefaultSelector`.
 //
-//  1. the server returned exactly one more selector than `expected` — we know
-//     how many selectors we sent, and the API appends exactly one default; and
-//  2. the trailing selector has the default's shape: `criteria.path_regex ==
-//     ".*"`.
-//
-// If the count matches but the shape doesn't, that's genuine drift (e.g. a
-// user-added trailing selector the API surfaced) and we leave it visible so
-// the next plan can reconcile it.
-//
-// On Read after Import we have no prior count to compare against, so the
-// caller should pass `expected = -1` and accept that the auto-default will be
-// visible until the user reconciles.
-func stripExpectedDefaultSelector(site *AbpSite, expected int) {
-	if expected < 0 || len(site.Selectors) != expected+1 {
+// If the trailing selector doesn't match the default shape, that's a site the
+// user has explicitly cleared the default off. In that case we leave `Selectors`
+// untouched and `DefaultSelector` nil; subsequent updates won't re-add a default.
+func splitDefaultSelector(site *AbpSite) {
+	n := len(site.Selectors)
+	if n == 0 {
 		return
 	}
-	last := site.Selectors[len(site.Selectors)-1]
-	if last.Criteria.PathRegex == nil || *last.Criteria.PathRegex != ".*" {
-		return
+	last := site.Selectors[n-1]
+	if isDefaultSelectorShape(last) {
+		site.DefaultSelector = &last
+		site.Selectors = site.Selectors[:n-1]
 	}
-	site.Selectors = site.Selectors[:expected]
 }
 
 func (c *Client) CreateAbpSite(accountId string, site AbpSite) (*AbpSite, error) {
@@ -151,14 +153,13 @@ func (c *Client) CreateAbpSite(accountId string, site AbpSite) (*AbpSite, error)
 	if err := json.Unmarshal(responseBody, &created); err != nil {
 		return nil, fmt.Errorf("error parsing %s create response: %w; body: %s", abpSiteResourceName, err, string(responseBody))
 	}
-	stripExpectedDefaultSelector(&created, len(site.Selectors))
+
+	splitDefaultSelector(&created)
+
 	return &created, nil
 }
 
-// ReadAbpSite fetches a site. `expectedSelectors` is the count of user-managed
-// selectors currently in state; pass -1 when that's unknown (e.g. import) to
-// disable auto-default stripping.
-func (c *Client) ReadAbpSite(siteId string, expectedSelectors int) (*AbpSite, error) {
+func (c *Client) ReadAbpSite(siteId string) (*AbpSite, error) {
 	log.Printf("[INFO] Reading %s with id %s", abpSiteResourceName, siteId)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, c.abpSiteUrl(siteId), nil, ReadAbpSite)
@@ -184,14 +185,23 @@ func (c *Client) ReadAbpSite(siteId string, expectedSelectors int) (*AbpSite, er
 	if err := json.Unmarshal(responseBody, &site); err != nil {
 		return nil, fmt.Errorf("error parsing %s read response: %w; body: %s", abpSiteResourceName, err, string(responseBody))
 	}
-	stripExpectedDefaultSelector(&site, expectedSelectors)
+
+	splitDefaultSelector(&site)
+
 	return &site, nil
 }
 
 func (c *Client) UpdateAbpSite(siteId string, site AbpSite) (*AbpSite, error) {
 	log.Printf("[INFO] Updating %s with id %s", abpSiteResourceName, siteId)
 
-	body, err := json.Marshal(site)
+	payload := site
+	if site.DefaultSelector != nil {
+		payload.Selectors = make([]AbpSelector, 0, len(site.Selectors)+1)
+		payload.Selectors = append(payload.Selectors, site.Selectors...)
+		payload.Selectors = append(payload.Selectors, *site.DefaultSelector)
+	}
+
+	body, err := json.Marshal(payload)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal %s: %w", abpSiteResourceName, err)
 	}
@@ -219,7 +229,9 @@ func (c *Client) UpdateAbpSite(siteId string, site AbpSite) (*AbpSite, error) {
 	if err := json.Unmarshal(responseBody, &updated); err != nil {
 		return nil, fmt.Errorf("error parsing %s update response: %w; body: %s", abpSiteResourceName, err, string(responseBody))
 	}
-	stripExpectedDefaultSelector(&updated, len(site.Selectors))
+
+	splitDefaultSelector(&updated)
+
 	return &updated, nil
 }
 

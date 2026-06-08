@@ -27,9 +27,10 @@ func resourceAbpSite() *schema.Resource {
 more Domains together and maps incoming requests to Policies via an ordered
 list of Selectors.
 
-NOTE: The API automatically appends a default catch-all selector at the
-lowest priority. The provider strips this from state on read so the resource
-remains stable; you only manage the user-defined selectors here.`,
+NOTE: The API automatically appends a default catch-all selector
+(` + "`path_prefix = \"/\"`" + `) at the lowest priority on create. You manage only
+the user-defined selectors in the ` + "`selector`" + ` list; the default is exposed
+read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -104,6 +105,35 @@ remains stable; you only manage the user-defined selectors here.`,
 					},
 				},
 			},
+			"default_selector": {
+				Description: "Catch-all selector matching all request paths after all other selectors. Added automatically by the backend",
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Description: "Server-assigned Selector ID.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"policy_id": {
+							Description: "Default Policy applied when no user-defined selector matches.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"path_prefix": {
+							Description: "Always `/`.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"analysis_settings": {
+							Description: "JSON-encoded analysis settings of the default selector.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+					},
+				},
+			},
 			"created_at": {
 				Description: "RFC3339 timestamp at which the Site was created.",
 				Type:        schema.TypeString,
@@ -133,6 +163,11 @@ func extractAbpSelector(raw map[string]any) (AbpSelector, error) {
 	sel := AbpSelector{
 		Criteria:         criteria,
 		AnalysisSettings: settings,
+	}
+	// Carry the server-assigned id when present (Update path) so backend
+	// preserves selector identity across the PUT. Empty on Create.
+	if id, ok := raw["id"].(string); ok && id != "" {
+		sel.Id = id
 	}
 	if pid, ok := raw["policy_id"].(string); ok && pid != "" {
 		sel.PolicyId = &pid
@@ -191,6 +226,16 @@ func extractAbpSite(data *schema.ResourceData) (AbpSite, error) {
 			return AbpSite{}, fmt.Errorf("selector[%d]: %w", i, err)
 		}
 		site.Selectors = append(site.Selectors, sel)
+	}
+
+	// Carry the auto-managed default forward into the Update payload so
+	// backend preserves its id and policy. On Create this list is empty.
+	if rawDefault, ok := data.Get("default_selector").([]any); ok && len(rawDefault) == 1 {
+		def, err := extractAbpSelector(rawDefault[0].(map[string]any))
+		if err != nil {
+			return AbpSite{}, fmt.Errorf("default_selector: %w", err)
+		}
+		site.DefaultSelector = &def
 	}
 	return site, nil
 }
@@ -252,6 +297,18 @@ func serializeAbpSite(data *schema.ResourceData, site *AbpSite) error {
 	if err := data.Set("selector", flat); err != nil {
 		return err
 	}
+
+	var flatDefault []any
+	if site.DefaultSelector != nil {
+		flatDefault, err = flattenAbpSelectors([]AbpSelector{*site.DefaultSelector})
+		if err != nil {
+			return err
+		}
+	}
+	if err := data.Set("default_selector", flatDefault); err != nil {
+		return err
+	}
+
 	if err := data.Set("created_at", site.CreatedAt); err != nil {
 		return err
 	}
@@ -291,8 +348,7 @@ func resourceAbpSiteRead(ctx context.Context, data *schema.ResourceData, m any) 
 	client := m.(*Client)
 	id := data.Id()
 
-	expected := len(data.Get("selector").([]any))
-	site, err := client.ReadAbpSite(id, expected)
+	site, err := client.ReadAbpSite(id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -353,7 +409,7 @@ func resourceAbpSiteImport(ctx context.Context, data *schema.ResourceData, m any
 	}
 
 	client := m.(*Client)
-	site, err := client.ReadAbpSite(id, -1)
+	site, err := client.ReadAbpSite(id)
 	if err != nil {
 		return nil, err
 	}
