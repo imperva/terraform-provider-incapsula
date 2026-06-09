@@ -54,7 +54,7 @@ resource "incapsula_abp_condition_list" "sample_condition_list" {
   description = "Reusable condition list"
 }
 
-resource "incapsula_abp_condition_list_entry" "sample_condition_list_specific_visitor" {
+resource "incapsula_abp_condition_list_entry" "sample_condition_list_okhttp" {
   account_id               = var.account_id
   parent_condition_list_id = incapsula_abp_condition_list.sample_condition_list.id
   condition_id             = incapsula_abp_condition.okhttp.id
@@ -190,6 +190,29 @@ resource "incapsula_abp_site" "sample_site" {
 }
 
 #
+# Add a condition to the default policy
+#
+
+# Lookup a default policy via default selector of the site. This is required
+# to get access to the policy directives
+# Note that default selector is indexed with `[0]` even if it is not techically a list,
+# since every site can have only one default selector. This is limitation of
+# Terraform Plugin SDK v2
+data "incapsula_abp_policy" "default_policy" {
+  id = incapsula_abp_site.sample_site.default_selector[0].policy_id
+}
+
+
+# Add `specific_visitor` to the allow directive of the default policy
+resource "incapsula_abp_condition_list_entry" "sample_site_default_allow_specific_visitor" {
+  account_id               = var.account_id
+  parent_condition_list_id = data.incapsula_abp_policy.default_policy.directive[0].condition_list_id
+  condition_id             = incapsula_abp_condition.specific_visitor.id
+  tags                     = ["specific_visitor"]
+  state                    = "monitor"
+}
+
+#
 # Create domains in the previously created site
 #
 resource "incapsula_abp_domain" "test_com" {
@@ -208,10 +231,9 @@ resource "incapsula_abp_domain" "test_com" {
   unmasked_headers                   = ["content-length", "content-type"]
   proxy_flags                        = ["enable_referrer_fix", "inject_js_into_body"]
 
-  # Temporary commented out as it doesn't work locally due to MY dependency
-  # no_js_injection_path {
-  #   path_prefix = "/no-js-here"
-  # }
+  no_js_injection_path {
+    path_prefix = "/no-js-here"
+  }
 
   captcha_settings {
     // Todo: Could unpack this into a `data`
@@ -241,8 +263,8 @@ resource "incapsula_abp_domain" "example_com" {
   log_region  = "usa"
   cookie_mode = "lax"
 
-  # Temporary commented out as it doesn't work locally due to MY dependency
   // Todo: reference a rule here
+  // Commented out due to no MY available locally
   # no_js_injection_path {
   #   incap_rule = "URL == \"/admin\""
   # }
