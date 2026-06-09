@@ -17,9 +17,24 @@ func dataSourceAbpDirective() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
-				Description:  "ID of the ABP Policy to search within.",
+				Description:  "ID of the ABP Policy to search within. Mutually exclusive with `account_global_policy`.",
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
+				ValidateFunc: validation.IsUUID,
+				ExactlyOneOf: []string{"policy_id", "account_global_policy"},
+			},
+			"account_global_policy": {
+				Description:  "If true, look up a directive within the account global policy. Requires `account_id` and is mutually exclusive with `policy_id`.",
+				Type:         schema.TypeBool,
+				Optional:     true,
+				Default:      false,
+				ExactlyOneOf: []string{"policy_id", "account_global_policy"},
+				RequiredWith: []string{"account_id"},
+			},
+			"account_id": {
+				Description:  "ABP account UUID. Required when `account_global_policy` is true.",
+				Type:         schema.TypeString,
+				Optional:     true,
 				ValidateFunc: validation.IsUUID,
 			},
 			"action": {
@@ -49,15 +64,33 @@ func dataSourceAbpDirective() *schema.Resource {
 
 func dataSourceAbpDirectiveRead(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
-	policyId := data.Get("policy_id").(string)
 	action := data.Get("action").(string)
 
-	policy, diags := client.ReadAbpPolicy(policyId)
-	if diags != nil && diags.HasError() {
-		return diags
-	}
-	if policy == nil {
-		return diag.Errorf("ABP Policy %s not found", policyId)
+	var policy *AbpPolicy
+	var diags diag.Diagnostics
+	var policyDescription, idPrefix string
+	if data.Get("account_global_policy").(bool) {
+		accountId := data.Get("account_id").(string)
+		policy, diags = client.ReadAbpAccountGlobalPolicy(accountId)
+		if diags != nil && diags.HasError() {
+			return diags
+		}
+		if policy == nil {
+			return diag.Errorf("ABP account global policy not found for account %s", accountId)
+		}
+		policyDescription = "ABP account global policy for account " + accountId
+		idPrefix = "global:" + accountId
+	} else {
+		policyId := data.Get("policy_id").(string)
+		policy, diags = client.ReadAbpPolicy(policyId)
+		if diags != nil && diags.HasError() {
+			return diags
+		}
+		if policy == nil {
+			return diag.Errorf("ABP Policy %s not found", policyId)
+		}
+		policyDescription = "ABP Policy " + policyId
+		idPrefix = policyId
 	}
 
 	var match *AbpDirective
@@ -66,15 +99,15 @@ func dataSourceAbpDirectiveRead(ctx context.Context, data *schema.ResourceData, 
 			continue
 		}
 		if match != nil {
-			return diag.Errorf("multiple directives with action %q found in ABP Policy %s", action, policyId)
+			return diag.Errorf("multiple directives with action %q found in %s", action, policyDescription)
 		}
 		match = &policy.Directives[i]
 	}
 	if match == nil {
-		return diag.Errorf("no directive with action %q found in ABP Policy %s", action, policyId)
+		return diag.Errorf("no directive with action %q found in %s", action, policyDescription)
 	}
 
-	data.SetId(policyId + ":" + action)
+	data.SetId(idPrefix + ":" + action)
 	if match.ConditionId != nil {
 		if err := data.Set("condition_list_id", *match.ConditionId); err != nil {
 			return diag.FromErr(err)

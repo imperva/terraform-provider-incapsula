@@ -219,6 +219,7 @@ const ReadAbpPolicy = "read_abp_policy"
 const UpdateAbpPolicy = "update_abp_policy"
 const DeleteAbpPolicy = "delete_abp_policy"
 const ListAbpPolicies = "list_abp_policies"
+const ReadAbpAccountGlobalPolicy = "read_abp_account_global_policy"
 
 const ReadAbpPreflightStatus = "read_abp_preflight_status"
 const CreateAbpPreflight = "create_abp_preflight"

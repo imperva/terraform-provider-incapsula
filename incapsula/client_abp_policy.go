@@ -189,6 +189,54 @@ func (c *Client) ReadAbpPolicy(policyId string) (*AbpPolicy, diag.Diagnostics) {
 	return &policy, diags
 }
 
+func (c *Client) AbpAccountGlobalPolicyUrl(accountId string) string {
+	return fmt.Sprintf("%s/v1/account/%s/global_policy", c.config.BaseURLAPI, accountId)
+}
+
+const readAbpAccountGlobalPolicyAction = "reading abp account global policy"
+
+// ReadAbpAccountGlobalPolicy fetches the account global policy. If the account does
+// not exist, returns (nil, nil) so callers can distinguish 404 from other errors.
+func (c *Client) ReadAbpAccountGlobalPolicy(accountId string) (*AbpPolicy, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	log.Printf("[INFO] Reading Abp Account Global Policy for Account %s\n", accountId)
+
+	reqURL := c.AbpAccountGlobalPolicyUrl(accountId)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadAbpAccountGlobalPolicy)
+	if err != nil {
+		diags = append(diags, httpSourcedErrorDiagnostic(readAbpAccountGlobalPolicyAction, &err, nil))
+		return nil, diags
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, nil
+	}
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		diags = append(diags, httpSourcedErrorDiagnostic(readAbpAccountGlobalPolicyAction, &err, responseBody))
+		return nil, diags
+	}
+
+	log.Printf("[DEBUG] Incapsula GET abp account global policy JSON response: %s\n", string(responseBody))
+
+	if resp.StatusCode != http.StatusOK {
+		diags = append(diags, httpSourcedErrorDiagnostic(readAbpAccountGlobalPolicyAction, nil, responseBody))
+		return nil, diags
+	}
+
+	var policy AbpPolicy
+	err = json.Unmarshal(responseBody, &policy)
+	if err != nil {
+		diags = append(diags, httpSourcedErrorDiagnostic(readAbpAccountGlobalPolicyAction, &err, responseBody))
+		return nil, diags
+	}
+
+	return &policy, diags
+}
+
 const deleteAbpPolicyAction = "deleting abp_policy"
 
 func (c *Client) DeleteAbpPolicy(policyId string) diag.Diagnostics {

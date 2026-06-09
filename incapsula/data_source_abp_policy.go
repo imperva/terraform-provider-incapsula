@@ -12,32 +12,40 @@ func dataSourceAbpPolicy() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceAbpPolicyRead,
 
-		Description: "Looks up an ABP Policy by name or id. Exactly one of `name` or `id` " +
-			"must be set. Names are case-sensitive and matched exactly; the lookup fails " +
-			"if more than one policy matches.",
+		Description: "Looks up an ABP Policy by name, id, or by selecting the account global " +
+			"policy. Exactly one of `name`, `id`, or `account_global` must be set. Names are " +
+			"case-sensitive and matched exactly; the lookup fails if more than one policy matches.",
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Description:  "ABP account UUID to search within. Required when looking up by `name`.",
+				Description:  "ABP account UUID to search within. Required when looking up by `name` or `account_global`.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.IsUUID,
-				RequiredWith: []string{"name"},
 			},
 			"name": {
-				Description:  "Name of the policy to look up. Mutually exclusive with `id`.",
+				Description:  "Name of the policy to look up. Mutually exclusive with `id` and `account_global`.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
-				ExactlyOneOf: []string{"name", "id"},
+				ExactlyOneOf: []string{"name", "id", "account_global"},
+				RequiredWith: []string{"account_id"},
 			},
 			"id": {
-				Description:  "ID of the policy to look up. Mutually exclusive with `name`.",
+				Description:  "ID of the policy to look up. Mutually exclusive with `name` and `account_global`.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.IsUUID,
-				ExactlyOneOf: []string{"name", "id"},
+				ExactlyOneOf: []string{"name", "id", "account_global"},
+			},
+			"account_global": {
+				Description:  "If true, look up the account global policy. Requires `account_id` and is mutually exclusive with `name` and `id`.",
+				Type:         schema.TypeBool,
+				Optional:     true,
+				Default:      false,
+				ExactlyOneOf: []string{"name", "id", "account_global"},
+				RequiredWith: []string{"account_id"},
 			},
 			"description": {
 				Description: "Description of the policy.",
@@ -110,6 +118,18 @@ func dataSourceAbpPolicyRead(ctx context.Context, data *schema.ResourceData, m a
 }
 
 func lookupAbpPolicy(client *Client, data *schema.ResourceData) (*AbpPolicy, diag.Diagnostics) {
+	if data.Get("account_global").(bool) {
+		accountId := data.Get("account_id").(string)
+		policy, diags := client.ReadAbpAccountGlobalPolicy(accountId)
+		if diags.HasError() {
+			return nil, diags
+		}
+		if policy == nil {
+			return nil, diag.Errorf("no global ABP Policy found for account %s", accountId)
+		}
+		return policy, nil
+	}
+
 	if id, ok := data.GetOk("id"); ok {
 		policy, diags := client.ReadAbpPolicy(id.(string))
 		if diags.HasError() {
