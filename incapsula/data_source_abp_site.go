@@ -13,8 +13,8 @@ func dataSourceAbpSite() *schema.Resource {
 		ReadContext: dataSourceAbpSiteRead,
 
 		Description: "Looks up an existing ABP Site (a.k.a. Website Group) within an account " +
-			"by its `site_id`, its `name`, or both. At least one of `site_id` or `name` " +
-			"must be set; when both are given, a Site must match both. Use this to " +
+			"by its `site_id`, or (XOR) its `name`. Exactly one of `site_id` or `name` " +
+			"must be set. Use this to " +
 			"reference a Site that is not managed by this Terraform configuration, for " +
 			"example when building an `incapsula_abp_account_site_priority` list. The " +
 			"lookup fails if zero or more than one Site matches.",
@@ -27,7 +27,7 @@ func dataSourceAbpSite() *schema.Resource {
 				ValidateFunc: validation.IsUUID,
 			},
 			"site_id": {
-				Description:  "ID of the Site to look up. At least one of `site_id` or `name` is required.",
+				Description:  "ID of the Site to look up. One of (but not both) `site_id` or `name` is required.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
@@ -35,7 +35,7 @@ func dataSourceAbpSite() *schema.Resource {
 				AtLeastOneOf: []string{"site_id", "name"},
 			},
 			"name": {
-				Description:  "Name of the Site to look up. Matched exactly and case-sensitively. At least one of `site_id` or `name` is required.",
+				Description:  "Name of the Site to look up. Matched exactly and case-sensitively. One of (but not both) `site_id` or `name` is required.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,
@@ -143,6 +143,9 @@ func dataSourceAbpSiteRead(ctx context.Context, data *schema.ResourceData, m any
 	accountId := data.Get("account_id").(string)
 	siteId := data.Get("site_id").(string)
 	name := data.Get("name").(string)
+	if siteId != "" && name != "" {
+		return diag.Errorf("exactly one of site_id or name should be set, both were set")
+	}
 
 	sites, err := client.ListAbpSites(accountId)
 	if err != nil {
