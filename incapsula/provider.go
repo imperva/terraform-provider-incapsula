@@ -104,6 +104,7 @@ func Provider() *schema.Provider {
 			"incapsula_abp_condition":                   dataSourceAbpCondition(),
 			"incapsula_abp_condition_list":              dataSourceAbpConditionList(),
 			"incapsula_abp_policy":                      dataSourceAbpPolicy(),
+			"incapsula_abp_directive":                   dataSourceAbpDirective(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
