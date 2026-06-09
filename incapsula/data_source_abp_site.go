@@ -12,26 +12,34 @@ func dataSourceAbpSite() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceAbpSiteRead,
 
-		Description: "Looks up an existing ABP Site (a.k.a. Website Group) by its ID. Use this " +
-			"to reference a Site that is not managed by this Terraform configuration, " +
-			"for example when building an `incapsula_abp_account_site_priority` list.",
+		Description: "Looks up an existing ABP Site (a.k.a. Website Group) within an account " +
+			"by its `site_id`, its `name`, or both. At least one of `site_id` or `name` " +
+			"must be set; when both are given, a Site must match both. Use this to " +
+			"reference a Site that is not managed by this Terraform configuration, for " +
+			"example when building an `incapsula_abp_account_site_priority` list. The " +
+			"lookup fails if zero or more than one Site matches.",
 
 		Schema: map[string]*schema.Schema{
-			"site_id": {
-				Description:  "ID of the Site to look up.",
+			"account_id": {
+				Description:  "ABP account UUID to search within.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.IsUUID,
 			},
-			"account_id": {
-				Description: "ABP account UUID this Site belongs to.",
-				Type:        schema.TypeString,
-				Computed:    true,
+			"site_id": {
+				Description:  "ID of the Site to look up. At least one of `site_id` or `name` is required.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.IsUUID,
+				AtLeastOneOf: []string{"site_id", "name"},
 			},
 			"name": {
-				Description: "Human-readable name of the Site.",
-				Type:        schema.TypeString,
-				Computed:    true,
+				Description:  "Name of the Site to look up. Matched exactly and case-sensitively. At least one of `site_id` or `name` is required.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				AtLeastOneOf: []string{"site_id", "name"},
 			},
 			"default_max_requests_per_minute": {
 				Description: "Default maximum number of requests without a token per minute.",
@@ -132,18 +140,37 @@ func dataSourceAbpSite() *schema.Resource {
 
 func dataSourceAbpSiteRead(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
+	accountId := data.Get("account_id").(string)
 	siteId := data.Get("site_id").(string)
+	name := data.Get("name").(string)
 
-	site, err := client.ReadAbpSite(siteId)
+	sites, err := client.ListAbpSites(accountId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if site == nil {
-		return diag.Errorf("no ABP Site with id %q found", siteId)
+
+	var match *AbpSite
+	for i := range sites {
+		if siteId != "" && sites[i].Id != siteId {
+			continue
+		}
+		if name != "" && sites[i].Name != name {
+			continue
+		}
+		if match != nil {
+			return diag.Errorf("multiple ABP Sites match the given criteria in account %s; refine site_id/name", accountId)
+		}
+		match = &sites[i]
+	}
+	if match == nil {
+		return diag.Errorf("no ABP Site matching the given criteria found in account %s", accountId)
 	}
 
-	data.SetId(site.Id)
-	if err := serializeAbpSite(data, site); err != nil {
+	data.SetId(match.Id)
+	if err := data.Set("site_id", match.Id); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := serializeAbpSite(data, match); err != nil {
 		return diag.FromErr(err)
 	}
 	return nil
