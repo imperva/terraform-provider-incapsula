@@ -72,7 +72,21 @@ data "incapsula_abp_condition_list" "sample_condition_list_lookup" {
 # Create a policy with standard directives and populate it with conditions
 #
 
-# TODO
+resource "incapsula_abp_policy" "policy_with_standard_directives" {
+  account_id              = var.account_id
+  name                    = "Policy with standard directives"
+  description             = "Terraform-managed policy with standard directives"
+  use_standard_directives = true
+}
+
+# Now add conditions to the automatically created directives
+resource "incapsula_abp_condition_list_entry" "std_policy_allow_okhttp" {
+  account_id               = var.account_id
+  parent_condition_list_id = incapsula_abp_policy.policy_with_standard_directives.directive[0].condition_list_id
+  condition_id             = incapsula_abp_condition.okhttp.id
+  state                    = "active"
+  tags                     = ["terraform_managed"]
+}
 
 #
 # Create a policy with custom directives and populate it with conditions
@@ -117,8 +131,7 @@ data "incapsula_abp_policy" "policy2" {
 }
 
 resource "incapsula_abp_condition_list_entry" "policy2_allow_monitoring_tools" {
-  account_id = var.account_id
-  # TODO: index by action?
+  account_id               = var.account_id
   parent_condition_list_id = incapsula_abp_policy.policy2.directive[0].condition_list_id
   condition_id             = data.incapsula_abp_condition.managed_monitoring_tools.id
   state                    = "active"
@@ -333,14 +346,14 @@ resource "incapsula_abp_site" "site2" {
   }
 }
 
-/*resource "incapsula_abp_account_site_priority" "accprio" {
-  account_id = var.account_id
-  site_ids = [
-    incapsula_abp_site.site2.id,
-    incapsula_abp_site.site1.id,
-    // .. fill out complete list
-  ]
-}*/
+# TODO
+# resource "incapsula_abp_account_site_priority" "site_priority" {
+#   account_id = var.account_id
+#   site_ids = [
+#     incapsula_abp_site.sample_site.id,
+#     incapsula_abp_site.site2.id,
+#   ]
+# }
 
 resource "incapsula_abp_credential" "my_credential" {
   account_id = var.account_id

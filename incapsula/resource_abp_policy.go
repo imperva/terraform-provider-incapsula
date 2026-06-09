@@ -2,11 +2,32 @@ package incapsula
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
+
+// standardDirectiveActions mirrors the actions the ABP frontend creates
+// when a user picks "Standard Directives" in the create-policy modal.
+var standardDirectiveActions = []string{
+	"allow",
+	"block",
+	"captcha_cleared",
+	"captcha",
+	"identify",
+	"tarpit",
+	"delay",
+}
+
+func standardDirectives() []AbpDirective {
+	directives := make([]AbpDirective, len(standardDirectiveActions))
+	for i, action := range standardDirectiveActions {
+		directives[i] = AbpDirective{Action: action}
+	}
+	return directives
+}
 
 type AbpPolicy struct {
 	Id          string         `json:"id,omitempty"`
@@ -29,6 +50,16 @@ func resourceAbpPolicy() *schema.Resource {
 		ReadContext:   resourceAbpPolicyRead,
 		UpdateContext: resourceAbpPolicyUpdate,
 		DeleteContext: resourceAbpPolicyDelete,
+		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
+			if !d.Get("use_standard_directives").(bool) {
+				return nil
+			}
+			directiveCfg := d.GetRawConfig().GetAttr("directive")
+			if !directiveCfg.IsNull() && directiveCfg.LengthInt() > 0 {
+				return fmt.Errorf("`directive` blocks must not be set when `use_standard_directives` is true")
+			}
+			return nil
+		},
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				return []*schema.ResourceData{d}, nil
@@ -53,10 +84,17 @@ func resourceAbpPolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"use_standard_directives": {
+				Description: "If true, the policy is created with the standard set of directives (matching the ABP UI's \"Standard Directives\" choice). When set, custom `directive` blocks must not be specified.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 			"directive": {
-				Description: "Ordered list of directives evaluated top-down for this policy.",
+				Description: "Ordered list of directives evaluated top-down for this policy. Computed when `use_standard_directives` is true; otherwise required.",
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"action": {
@@ -134,10 +172,17 @@ func resourceAbpPolicyCreate(ctx context.Context, data *schema.ResourceData, m i
 
 	accountId := data.Get("account_id").(string)
 
+	var directives []AbpDirective
+	if data.Get("use_standard_directives").(bool) {
+		directives = standardDirectives()
+	} else {
+		directives = extractDirectives(data)
+	}
+
 	policy := AbpPolicy{
 		Name:        data.Get("name").(string),
 		Description: extractDescription(data),
-		Directives:  extractDirectives(data),
+		Directives:  directives,
 	}
 
 	created, diags := client.CreateAbpPolicy(accountId, policy)
@@ -202,10 +247,17 @@ func resourceAbpPolicyUpdate(ctx context.Context, data *schema.ResourceData, m i
 
 	policyId := data.Id()
 
+	var directives []AbpDirective
+	if data.Get("use_standard_directives").(bool) {
+		directives = standardDirectives()
+	} else {
+		directives = extractDirectives(data)
+	}
+
 	policy := AbpPolicy{
 		Name:        data.Get("name").(string),
 		Description: extractDescription(data),
-		Directives:  extractDirectives(data),
+		Directives:  directives,
 	}
 
 	updated, diags := client.UpdateAbpPolicy(policyId, policy)
