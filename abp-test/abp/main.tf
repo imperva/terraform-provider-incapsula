@@ -359,13 +359,26 @@ resource "incapsula_abp_site" "site2" {
 }
 
 # TODO
-# resource "incapsula_abp_account_site_priority" "site_priority" {
-#   account_id = var.account_id
-#   site_ids = [
-#     incapsula_abp_site.sample_site.id,
-#     incapsula_abp_site.site2.id,
-#   ]
-# }
+#resource "incapsula_abp_account_site_priority" "accprio" {
+#  account_id = var.account_id
+#  site_ids = [
+#    incapsula_abp_site.sample_site.id,
+#    incapsula_abp_site.site2.id,
+#    data.incapsula_abp_site.ext_site1.id,
+#    data.incapsula_abp_site.ext_site2.id,
+#    data.incapsula_abp_site.ext_site3.id,
+#    data.incapsula_abp_site.ext_site4.id,
+#    data.incapsula_abp_site.ext_site5.id,
+#    data.incapsula_abp_site.ext_site6.id,
+#    data.incapsula_abp_site.ext_site7.id,
+#    data.incapsula_abp_site.ext_site8.id,
+#    data.incapsula_abp_site.ext_site9.id,
+#    data.incapsula_abp_site.ext_site10.id,
+#    data.incapsula_abp_site.ext_site11.id,
+#    data.incapsula_abp_site.ext_site12.id,
+#    data.incapsula_abp_site.ext_site13.id,
+#  ]
+#}
 
 resource "incapsula_abp_credential" "my_credential" {
   account_id = var.account_id
