@@ -126,6 +126,37 @@ func splitDefaultSelector(site *AbpSite) {
 	}
 }
 
+func (c *Client) ListAbpSites(accountId string) ([]AbpSite, error) {
+	log.Printf("[INFO] Listing %ss in ABP account %s", abpSiteResourceName, accountId)
+
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, c.abpSiteAccountUrl(accountId), nil, ListAbpSites)
+	if err != nil {
+		return nil, fmt.Errorf("error listing %ss in ABP account %s: %w", abpSiteResourceName, accountId, err)
+	}
+	defer resp.Body.Close()
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body when listing %ss: %w", abpSiteResourceName, err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error status code %d from Incapsula service when listing %ss in ABP account %s: %s", resp.StatusCode, abpSiteResourceName, accountId, string(responseBody))
+	}
+
+	var listResp struct {
+		Items []AbpSite `json:"items"`
+	}
+	if err := json.Unmarshal(responseBody, &listResp); err != nil {
+		return nil, fmt.Errorf("error parsing %s list response: %w; body: %s", abpSiteResourceName, err, string(responseBody))
+	}
+
+	for i := range listResp.Items {
+		splitDefaultSelector(&listResp.Items[i])
+	}
+	return listResp.Items, nil
+}
+
 func (c *Client) CreateAbpSite(accountId string, site AbpSite) (*AbpSite, error) {
 	log.Printf("[INFO] Creating %s in ABP account %s", abpSiteResourceName, accountId)
 
