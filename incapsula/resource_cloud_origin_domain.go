@@ -65,17 +65,22 @@ func resourceCloudOriginDomain() *schema.Resource {
 				Required:    true,
 			},
 			"port": {
-				Description: "Port number for the origin. Valid range: 1-65535. Default: 443",
+				Description: "Port number for the origin. Must be 443 or in the range 1024-65535. Default: 443",
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     443,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					port := val.(int)
-					if port < 1 || port > 65535 {
-						errs = append(errs, fmt.Errorf("%q must be between 1 and 65535, got: %d", key, port))
+					if port != 443 && (port < 1024 || port > 65535) {
+						errs = append(errs, fmt.Errorf("%q must be 443 or between 1024 and 65535, got: %d", key, port))
 					}
 					return
 				},
+			},
+			"origin_tls_policy": {
+				Description: "Minimum TLS version for the origin connection. Supported values: SSLv3, TLS_1_0, TLS_1_1, TLS_1_2.",
+				Type:        schema.TypeString,
+				Required:    true,
 			},
 			"imperva_origin_domain": {
 				Description: "The Imperva-managed origin domain that is used to route traffic to the cloud origin.",
@@ -128,10 +133,11 @@ func resourceCloudOriginDomainCreate(ctx context.Context, d *schema.ResourceData
 	domain := d.Get("domain").(string)
 	region := d.Get("region").(string)
 	port := d.Get("port").(int)
+	tlsPolicy := d.Get("origin_tls_policy").(string)
 
 	log.Printf("[INFO] Creating Incapsula cloud origin domain: %s for site: %d\n", domain, siteID)
 
-	response, err := client.CreateCloudOriginDomain(siteID, accountID, domain, region, port)
+	response, err := client.CreateCloudOriginDomain(siteID, accountID, domain, region, port, tlsPolicy)
 	if err != nil {
 		return diag.Errorf("[ERROR] Could not create Incapsula cloud origin domain: %s for site: %d: %s\n", domain, siteID, err)
 	}
@@ -174,6 +180,7 @@ func resourceCloudOriginDomainRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("domain", origin.OriginDomain)
 	d.Set("region", origin.Region)
 	d.Set("port", origin.OriginConfig.Port)
+	d.Set("origin_tls_policy", origin.OriginConfig.OriginTlsPolicy)
 	d.Set("imperva_origin_domain", origin.ImpervaOriginDomain)
 	d.Set("created_at", origin.CreatedAt)
 	d.Set("updated_at", origin.UpdatedAt)
@@ -189,13 +196,14 @@ func resourceCloudOriginDomainUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("region") || d.HasChange("port") {
+	if d.HasChange("region") || d.HasChange("port") || d.HasChange("origin_tls_policy") {
 		region := d.Get("region").(string)
 		port := d.Get("port").(int)
+		tlsPolicy := d.Get("origin_tls_policy").(string)
 
 		log.Printf("[INFO] Updating Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
 
-		_, err := client.UpdateCloudOriginDomain(siteID, originID, accountID, region, port)
+		_, err := client.UpdateCloudOriginDomain(siteID, originID, accountID, region, port, tlsPolicy)
 		if err != nil {
 			return diag.Errorf("[ERROR] Could not update Incapsula cloud origin domain: %d for site: %d: %s\n", originID, siteID, err)
 		}

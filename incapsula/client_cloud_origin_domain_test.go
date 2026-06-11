@@ -104,7 +104,7 @@ func TestClientCloudOriginDomainCreate(t *testing.T) {
 				httpClient: &http.Client{},
 			}
 
-			response, err := client.CreateCloudOriginDomain(1, "", "api.example.com", "us-east-1", 443)
+			response, err := client.CreateCloudOriginDomain(1, "", "api.example.com", "us-east-1", 443, "TLS_1_2")
 
 			if test.expectedErr && err == nil {
 				t.Errorf("Expected error, got nil")
@@ -276,7 +276,7 @@ func TestClientCloudOriginDomainUpdate(t *testing.T) {
 				httpClient: &http.Client{},
 			}
 
-			response, err := client.UpdateCloudOriginDomain(1, 12345, "", "eu-west-1", 8443)
+			response, err := client.UpdateCloudOriginDomain(1, 12345, "", "eu-west-1", 8443, "TLS_1_1")
 
 			if test.expectedErr && err == nil {
 				t.Errorf("Expected error, got nil")
