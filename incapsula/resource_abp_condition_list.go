@@ -44,9 +44,11 @@ from policies and from other condition lists.`,
 				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 			"description": {
-				Description: "Description of the condition list.",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description: "Description of the condition list. Optional: when omitted, the backend " +
+					"stores an empty/derived value which is reflected in state.",
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
 			},
 			"created_at": {
 				Description: "RFC3339 timestamp at which the Condition List was created.",

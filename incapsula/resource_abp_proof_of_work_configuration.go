@@ -50,9 +50,12 @@ is "proof_of_work".`,
 				ValidateFunc: validation.IntAtLeast(1),
 			},
 			"algorithm": {
-				Description:  "Proof Of Work algorithm. One of: bbs, sha1.",
+				Description: "Proof Of Work algorithm. One of: bbs, sha1. Optional: when " +
+					"omitted, the backend selects a default and that value is reflected " +
+					"in state.",
 				Type:         schema.TypeString,
-				Required:     true,
+				Optional:     true,
+				Computed:     true,
 				ValidateFunc: validation.StringInSlice([]string{"bbs", "sha1"}, false),
 			},
 			"created_at": {
