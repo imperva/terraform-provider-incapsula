@@ -43,6 +43,8 @@ func resourceAbpWebsites() *schema.Resource {
 		UpdateContext: resourceAbpWebsitesUpdate,
 		DeleteContext: resourceAbpWebsitesDelete,
 
+		DeprecationMessage: "This resource is deprecated. It will be removed in a future version. Please use resource incapsula_abp_site instead.",
+
 		Importer: &schema.ResourceImporter{
 			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 				accountIdStr := d.Id()
