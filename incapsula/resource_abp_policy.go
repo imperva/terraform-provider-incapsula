@@ -4,10 +4,15 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
+
+// abpDirectiveActionRegexp matches a valid directive action: snake_case only.
+var abpDirectiveActionRegexp = regexp.MustCompile(`^[_a-z][_a-z0-9]*$`)
 
 // standardDirectiveActions mirrors the actions the ABP frontend creates
 // when a user picks "Standard Directives" in the create-policy modal.
@@ -66,7 +71,14 @@ func resourceAbpPolicy() *schema.Resource {
 			},
 		},
 
-		Description: "Incapsula ABP policy resource\n",
+		Description: `Provides an ABP Policy resource. A Policy is an ordered collection of
+directives, each pairing an action with the conditions that trigger it, applied
+to traffic that a Site's selector maps to this Policy.
+
+Set ` + "`use_standard_directives`" + ` to create the Policy with the standard set of
+directives (matching the ABP UI's "Standard Directives" choice), or provide
+explicit ` + "`directive`" + ` blocks. Each directive exposes a ` + "`condition_list_id`" + ` to
+which conditions are attached via ` + "`incapsula_abp_condition_list_entry`" + `.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -75,9 +87,10 @@ func resourceAbpPolicy() *schema.Resource {
 				Required:    true,
 			},
 			"name": {
-				Description: "Policy name",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "Policy name. 1..100 characters.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 			"description": {
 				Description: "Optional policy description.",
@@ -91,16 +104,23 @@ func resourceAbpPolicy() *schema.Resource {
 				Default:     false,
 			},
 			"directive": {
-				Description: "Ordered list of directives evaluated top-down for this policy. Computed when `use_standard_directives` is true; otherwise required.",
+				Description: "Ordered list of directives evaluated top-down for this policy. A policy must have at least one directive. Computed when `use_standard_directives` is true; otherwise required.",
 				Type:        schema.TypeList,
 				Optional:    true,
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"action": {
-							Description: "Action to take when this directive matches.",
+							Description: "Action to take when this directive matches. Must be snake_case, 1..100 characters.",
 							Type:        schema.TypeString,
 							Required:    true,
+							ValidateFunc: validation.All(
+								validation.StringLenBetween(1, 100),
+								validation.StringMatch(
+									abpDirectiveActionRegexp,
+									"action must be snake_case matching ^[_a-z][_a-z0-9]*$",
+								),
+							),
 						},
 						"condition_list_id": {
 							Description: "Condition list containing conditions for this directive.",

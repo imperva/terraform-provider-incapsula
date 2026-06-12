@@ -14,7 +14,14 @@ func resourceAbpPreflight() *schema.Resource {
 		ReadContext:   resourceAbpPreflightRead,
 		DeleteContext: resourceAbpPreflightDelete,
 
-		Description: "Creates a new ABP preflight\n",
+		Description: `Creates a new ABP preflight. A preflight is a snapshot of the entire
+account configuration and is required in order to publish that configuration to
+the Analysis Host (see ` + "`incapsula_abp_publish`" + `).
+
+A preflight may become invalid and be deleted by the server if the account
+configuration or external dependent state changes, or if too much time has
+passed since it was created. Publishing an older preflight can act as a
+rollback as long as it is still consistent with any external state.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {

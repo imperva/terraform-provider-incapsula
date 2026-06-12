@@ -37,7 +37,13 @@ func resourceAbpConditionListEntry() *schema.Resource {
 attaches a literal condition (` + "`condition_id`" + `) or a nested condition list
 (` + "`condition_list_id`" + `) to a parent condition list, with tags and an active
 state. The lifecycle of the entry is independent of the referenced condition,
-which is owned by its own resource.`,
+which is owned by its own resource.
+
+This is also how conditions are added to a policy: a directive exposes a
+` + "`condition_list_id`" + ` (and, for ` + "`proof_of_work`" + ` directives, a
+` + "`skip_condition_list_id`" + `), which can be used as the ` + "`parent_condition_list_id`" + `
+of an entry to attach a condition to that directive. These IDs are available on
+the ` + "`incapsula_abp_policy`" + ` resource and the ` + "`incapsula_abp_directive`" + ` data source.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {

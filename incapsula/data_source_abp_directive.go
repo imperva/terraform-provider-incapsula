@@ -16,6 +16,14 @@ func dataSourceAbpDirective() *schema.Resource {
 			"The lookup fails if more than one directive in the policy has the given action.",
 
 		Schema: map[string]*schema.Schema{
+			"id": {
+				Description: "Artificial identifier for this data source. Directives have no " +
+					"stable ID in the API, so this is synthesized from the policy and action " +
+					"(`<policy_id>:<action>`, or `global:<account_id>:<action>` for the account " +
+					"global policy) and is not a real API identifier.",
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"policy_id": {
 				Description:  "ID of the ABP Policy to search within. Mutually exclusive with `account_global_policy`.",
 				Type:         schema.TypeString,
