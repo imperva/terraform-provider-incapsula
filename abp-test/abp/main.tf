@@ -227,18 +227,24 @@ resource "incapsula_abp_site" "sample_site" {
   default_max_session_length       = "2h"
 
   selector {
-    path_prefix       = "/login"
+    kind {
+      path_prefix       = "/login"
+    }
     policy_id         = incapsula_abp_policy.policy2.id
     analysis_settings = data.incapsula_abp_site_analysis_settings.login.json
   }
 
   selector {
-    path_regex        = "\\.png$"
+    kind {
+      path_regex        = "\\.png$"
+    }
     analysis_settings = data.incapsula_abp_site_analysis_settings.static.json
   }
 
   selector {
-    postback          = "web_interrogation"
+    kind {
+      postback          = "web_interrogation"
+    }
     analysis_settings = data.incapsula_abp_site_analysis_settings.postback.json
   }
 }
@@ -381,7 +387,9 @@ resource "incapsula_abp_site" "site2" {
   default_max_session_length       = "1h"
 
   selector {
-    path_prefix       = "/login"
+    kind {
+      path_prefix       = "/login"
+    }
     policy_id         = incapsula_abp_policy.policy2.id
     analysis_settings = data.incapsula_abp_site_analysis_settings.login.json
   }
