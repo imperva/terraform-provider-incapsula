@@ -46,9 +46,10 @@ to copy "code_normalized" to "code" after running "terraform import".`,
 				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 			"description": {
-				Description: "Description of the condition.",
+				Description: "Description of the policy. Set to empty string if omitted",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
 			},
 			"code": {
 				Description: "MOI expression evaluated against the request. The server stores a " +
@@ -133,7 +134,7 @@ func serializeAbpCondition(data *schema.ResourceData, condition *AbpCondition) e
 	return nil
 }
 
-func resourceAbpConditionCreate(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpConditionCreate(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
 	accountId := data.Get("account_id").(string)
 
@@ -154,7 +155,7 @@ func resourceAbpConditionCreate(ctx context.Context, data *schema.ResourceData, 
 	return nil
 }
 
-func resourceAbpConditionRead(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpConditionRead(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
 	id := data.Id()
 
@@ -183,7 +184,7 @@ func resourceAbpConditionRead(ctx context.Context, data *schema.ResourceData, m 
 	return nil
 }
 
-func resourceAbpConditionUpdate(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpConditionUpdate(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
 	id := data.Id()
 
@@ -204,7 +205,7 @@ func resourceAbpConditionUpdate(ctx context.Context, data *schema.ResourceData, 
 	return nil
 }
 
-func resourceAbpConditionDelete(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpConditionDelete(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
 	id := data.Id()
 
@@ -216,7 +217,7 @@ func resourceAbpConditionDelete(ctx context.Context, data *schema.ResourceData, 
 	return nil
 }
 
-func resourceAbpConditionImport(ctx context.Context, data *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+func resourceAbpConditionImport(ctx context.Context, data *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
 	id := strings.TrimSpace(data.Id())
 	if id == "" {
 		return nil, fmt.Errorf("expected import ID to be '<condition_id>'")

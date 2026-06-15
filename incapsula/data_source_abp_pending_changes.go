@@ -23,7 +23,7 @@ func dataSourceAbpPendingChanges() *schema.Resource {
 	}
 }
 
-func dataSourceAbpPendingChangesRead(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceAbpPendingChangesRead(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	data.SetId("incapsula_abp_pending_changes")
 	err := data.Set("hash", "incapsula_abp_pending_changes")
 	if err != nil {

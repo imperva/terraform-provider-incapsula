@@ -108,7 +108,7 @@ func dataSourceAbpPolicyRead(ctx context.Context, data *schema.ResourceData, m a
 			return diag.FromErr(err)
 		}
 	}
-	if err := data.Set("directive", flattenDirectives(match.Directives)); err != nil {
+	if err := data.Set("directive", flattenAbpDirectives(match.Directives)); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := data.Set("modified_at", match.ModifiedAt); err != nil {
@@ -120,9 +120,9 @@ func dataSourceAbpPolicyRead(ctx context.Context, data *schema.ResourceData, m a
 func lookupAbpPolicy(client *Client, data *schema.ResourceData) (*AbpPolicy, diag.Diagnostics) {
 	if data.Get("account_global").(bool) {
 		accountId := data.Get("account_id").(string)
-		policy, diags := client.ReadAbpAccountGlobalPolicy(accountId)
-		if diags.HasError() {
-			return nil, diags
+		policy, err := client.ReadAbpAccountGlobalPolicy(accountId)
+		if err != nil {
+			return nil, diag.FromErr(err)
 		}
 		if policy == nil {
 			return nil, diag.Errorf("no global ABP Policy found for account %s", accountId)
@@ -131,9 +131,9 @@ func lookupAbpPolicy(client *Client, data *schema.ResourceData) (*AbpPolicy, dia
 	}
 
 	if id, ok := data.GetOk("id"); ok {
-		policy, diags := client.ReadAbpPolicy(id.(string))
-		if diags.HasError() {
-			return nil, diags
+		policy, err := client.ReadAbpPolicy(id.(string))
+		if err != nil {
+			return nil, diag.FromErr(err)
 		}
 		if policy == nil {
 			return nil, diag.Errorf("no ABP Policy with id %q found", id.(string))

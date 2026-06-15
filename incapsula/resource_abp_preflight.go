@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func resourceAbpPreflight() *schema.Resource {
@@ -25,10 +26,11 @@ rollback as long as it is still consistent with any external state.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Description: "The account this preflight belongs to.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Description:  "ABP account UUID this preflight belongs to.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.IsUUID,
 			},
 			"pending_hash": {
 				Description: "Any string to facilitate change detection, using the hash from `data.incapsula_abp_pending_changes` causes a replacement of this resource (and thereby a new preflight)\n",
@@ -40,7 +42,7 @@ rollback as long as it is still consistent with any external state.`,
 	}
 }
 
-func resourceAbpPreflightCreate(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpPreflightCreate(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
 	accountId := data.Get("account_id").(string)
 
@@ -54,11 +56,11 @@ func resourceAbpPreflightCreate(ctx context.Context, data *schema.ResourceData, 
 	return diags
 }
 
-func resourceAbpPreflightRead(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpPreflightRead(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	return nil
 }
 
-func resourceAbpPreflightDelete(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpPreflightDelete(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	// Preflights don't need to be deleted, forgetting it is fine
 	data.SetId("")
 	return nil

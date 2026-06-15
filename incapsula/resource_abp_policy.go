@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -55,7 +56,7 @@ func resourceAbpPolicy() *schema.Resource {
 		ReadContext:   resourceAbpPolicyRead,
 		UpdateContext: resourceAbpPolicyUpdate,
 		DeleteContext: resourceAbpPolicyDelete,
-		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
+		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, m any) error {
 			if !d.Get("use_standard_directives").(bool) {
 				return nil
 			}
@@ -66,9 +67,7 @@ func resourceAbpPolicy() *schema.Resource {
 			return nil
 		},
 		Importer: &schema.ResourceImporter{
-			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				return []*schema.ResourceData{d}, nil
-			},
+			StateContext: resourceAbpPolicyImport,
 		},
 
 		Description: `Provides an ABP Policy resource. A Policy is an ordered collection of
@@ -82,9 +81,11 @@ which conditions are attached via ` + "`incapsula_abp_condition_list_entry`" + `
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Description: "The account this policy belongs to.",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "ABP account UUID this Policy belongs to.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.IsUUID,
 			},
 			"name": {
 				Description:  "Policy name. 1..100 characters.",
@@ -93,9 +94,10 @@ which conditions are attached via ` + "`incapsula_abp_condition_list_entry`" + `
 				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 			"description": {
-				Description: "Optional policy description.",
+				Description: "Description of the policy. Set to empty string if omitted",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 			},
 			"use_standard_directives": {
 				Description: "If true, the policy is created with the standard set of directives (matching the ABP UI's \"Standard Directives\" choice). When set, custom `directive` blocks must not be specified.",
@@ -144,7 +146,7 @@ which conditions are attached via ` + "`incapsula_abp_condition_list_entry`" + `
 	}
 }
 
-func extractDescription(data *schema.ResourceData) *string {
+func extractAbpPolicyDescription(data *schema.ResourceData) *string {
 	if v, ok := data.GetOk("description"); ok {
 		s := v.(string)
 		return &s
@@ -152,11 +154,25 @@ func extractDescription(data *schema.ResourceData) *string {
 	return nil
 }
 
-func extractDirectives(data *schema.ResourceData) []AbpDirective {
-	raw := data.Get("directive").([]interface{})
+func extractAbpPolicy(data *schema.ResourceData) AbpPolicy {
+	var directives []AbpDirective
+	if data.Get("use_standard_directives").(bool) {
+		directives = standardDirectives()
+	} else {
+		directives = extractAbpDirectives(data)
+	}
+	return AbpPolicy{
+		Name:        data.Get("name").(string),
+		Description: extractAbpPolicyDescription(data),
+		Directives:  directives,
+	}
+}
+
+func extractAbpDirectives(data *schema.ResourceData) []AbpDirective {
+	raw := data.Get("directive").([]any)
 	directives := make([]AbpDirective, len(raw))
 	for i, item := range raw {
-		m := item.(map[string]interface{})
+		m := item.(map[string]any)
 		d := AbpDirective{Action: m["action"].(string)}
 		if cid, ok := m["condition_list_id"].(string); ok && cid != "" {
 			d.ConditionId = &cid
@@ -169,10 +185,10 @@ func extractDirectives(data *schema.ResourceData) []AbpDirective {
 	return directives
 }
 
-func flattenDirectives(directives []AbpDirective) []interface{} {
-	out := make([]interface{}, len(directives))
+func flattenAbpDirectives(directives []AbpDirective) []any {
+	out := make([]any, len(directives))
 	for i, d := range directives {
-		m := map[string]interface{}{"action": d.Action}
+		m := map[string]any{"action": d.Action}
 		if d.ConditionId != nil {
 			m["condition_list_id"] = *d.ConditionId
 		}
@@ -187,124 +203,119 @@ func flattenDirectives(directives []AbpDirective) []interface{} {
 	return out
 }
 
-func resourceAbpPolicyCreate(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Client)
+// serializeAbpPolicy writes the server's view of a policy back into state.
+// Unlike other ABP resources, the policy API does not return account_id, so
+// that field is left as configured (and cannot be populated on import).
+func serializeAbpPolicy(data *schema.ResourceData, policy *AbpPolicy) error {
+	if err := data.Set("name", policy.Name); err != nil {
+		return err
+	}
+	if policy.Description != nil {
+		if err := data.Set("description", *policy.Description); err != nil {
+			return err
+		}
+	} else {
+		if err := data.Set("description", ""); err != nil {
+			return err
+		}
+	}
+	if err := data.Set("directive", flattenAbpDirectives(policy.Directives)); err != nil {
+		return err
+	}
+	return nil
+}
 
+func resourceAbpPolicyCreate(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
+	client := m.(*Client)
 	accountId := data.Get("account_id").(string)
 
-	var directives []AbpDirective
-	if data.Get("use_standard_directives").(bool) {
-		directives = standardDirectives()
-	} else {
-		directives = extractDirectives(data)
+	created, err := client.CreateAbpPolicy(accountId, extractAbpPolicy(data))
+	if err != nil {
+		return diag.FromErr(err)
 	}
-
-	policy := AbpPolicy{
-		Name:        data.Get("name").(string),
-		Description: extractDescription(data),
-		Directives:  directives,
-	}
-
-	created, diags := client.CreateAbpPolicy(accountId, policy)
-	if diags != nil && diags.HasError() {
-		log.Printf("[ERROR] Failed to create ABP policy for Account ID %s", accountId)
-		return diags
+	if created.Id == "" {
+		return diag.Errorf("ABP Policy create response did not contain an id")
 	}
 
 	data.SetId(created.Id)
-
-	err := data.Set("directive", flattenDirectives(created.Directives))
-	if err != nil {
+	if err := serializeAbpPolicy(data, created); err != nil {
 		return diag.FromErr(err)
 	}
 
-	return diags
+	log.Printf("[INFO] Created ABP Policy %s in account %s", created.Id, accountId)
+	return nil
 }
 
-func resourceAbpPolicyRead(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpPolicyRead(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
+	id := data.Id()
 
-	policyId := data.Id()
-
-	policy, diags := client.ReadAbpPolicy(policyId)
-	if diags != nil && diags.HasError() {
-		log.Printf("[ERROR] Failed to read ABP policy ID %s", policyId)
-		return diags
+	policy, err := client.ReadAbpPolicy(id)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	if policy == nil {
-		log.Printf("[INFO] ABP policy ID %s no longer exists upstream, clearing state", policyId)
+		log.Printf("[INFO] ABP Policy %s not found, removing from state", id)
 		data.SetId("")
-		return diags
+		return nil
 	}
 
-	err := data.Set("name", policy.Name)
-	if err != nil {
+	if err := serializeAbpPolicy(data, policy); err != nil {
 		return diag.FromErr(err)
 	}
-	if policy.Description != nil {
-		err = data.Set("description", *policy.Description)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	} else {
-		err = data.Set("description", "")
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	err = data.Set("directive", flattenDirectives(policy.Directives))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return diags
+	return nil
 }
 
-func resourceAbpPolicyUpdate(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpPolicyUpdate(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
+	id := data.Id()
 
-	policyId := data.Id()
-
-	var directives []AbpDirective
-	if data.Get("use_standard_directives").(bool) {
-		directives = standardDirectives()
-	} else {
-		directives = extractDirectives(data)
-	}
-
-	policy := AbpPolicy{
-		Name:        data.Get("name").(string),
-		Description: extractDescription(data),
-		Directives:  directives,
-	}
-
-	updated, diags := client.UpdateAbpPolicy(policyId, policy)
-	if diags != nil && diags.HasError() {
-		log.Printf("[ERROR] Failed to update ABP policy ID %s", policyId)
-		return diags
-	}
-
-	err := data.Set("directive", flattenDirectives(updated.Directives))
+	updated, err := client.UpdateAbpPolicy(id, extractAbpPolicy(data))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return diags
+	if updated == nil {
+		data.SetId("")
+		return nil
+	}
+
+	if err := serializeAbpPolicy(data, updated); err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
 }
 
-func resourceAbpPolicyDelete(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpPolicyDelete(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
+	id := data.Id()
 
-	policyId := data.Id()
-
-	diags := client.DeleteAbpPolicy(policyId)
-	if diags != nil && diags.HasError() {
-		log.Printf("[ERROR] Failed to delete ABP policy ID %s", policyId)
-		return diags
+	if err := client.DeleteAbpPolicy(id); err != nil {
+		return diag.FromErr(err)
 	}
 
 	data.SetId("")
-	return diags
+	return nil
+}
+
+func resourceAbpPolicyImport(ctx context.Context, data *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
+	id := strings.TrimSpace(data.Id())
+	if id == "" {
+		return nil, fmt.Errorf("expected import ID to be '<policy_id>'")
+	}
+
+	client := m.(*Client)
+	policy, err := client.ReadAbpPolicy(id)
+	if err != nil {
+		return nil, err
+	}
+	if policy == nil {
+		return nil, fmt.Errorf("ABP Policy %s not found", id)
+	}
+
+	data.SetId(id)
+	// The policy API does not return account_id; the user must set it in
+	// configuration after import.
+	return []*schema.ResourceData{data}, nil
 }
