@@ -97,7 +97,7 @@ func serializeAbpConditionList(data *schema.ResourceData, list *AbpCondition) er
 	return nil
 }
 
-func resourceAbpConditionListCreate(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpConditionListCreate(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
 	accountId := data.Get("account_id").(string)
 
@@ -118,7 +118,7 @@ func resourceAbpConditionListCreate(ctx context.Context, data *schema.ResourceDa
 	return nil
 }
 
-func resourceAbpConditionListRead(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpConditionListRead(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
 	id := data.Id()
 
@@ -139,7 +139,7 @@ func resourceAbpConditionListRead(ctx context.Context, data *schema.ResourceData
 	return nil
 }
 
-func resourceAbpConditionListUpdate(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpConditionListUpdate(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
 	id := data.Id()
 
@@ -159,7 +159,7 @@ func resourceAbpConditionListUpdate(ctx context.Context, data *schema.ResourceDa
 	return nil
 }
 
-func resourceAbpConditionListDelete(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpConditionListDelete(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
 	id := data.Id()
 
@@ -171,7 +171,7 @@ func resourceAbpConditionListDelete(ctx context.Context, data *schema.ResourceDa
 	return nil
 }
 
-func resourceAbpConditionListImport(ctx context.Context, data *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+func resourceAbpConditionListImport(ctx context.Context, data *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
 	id := strings.TrimSpace(data.Id())
 	if id == "" {
 		return nil, fmt.Errorf("expected import ID to be '<condition_list_id>'")

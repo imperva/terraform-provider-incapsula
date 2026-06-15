@@ -75,13 +75,13 @@ func dataSourceAbpDirectiveRead(ctx context.Context, data *schema.ResourceData, 
 	action := data.Get("action").(string)
 
 	var policy *AbpPolicy
-	var diags diag.Diagnostics
+	var err error
 	var policyDescription, idPrefix string
 	if data.Get("account_global_policy").(bool) {
 		accountId := data.Get("account_id").(string)
-		policy, diags = client.ReadAbpAccountGlobalPolicy(accountId)
-		if diags != nil && diags.HasError() {
-			return diags
+		policy, err = client.ReadAbpAccountGlobalPolicy(accountId)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 		if policy == nil {
 			return diag.Errorf("ABP account global policy not found for account %s", accountId)
@@ -90,9 +90,9 @@ func dataSourceAbpDirectiveRead(ctx context.Context, data *schema.ResourceData, 
 		idPrefix = "global:" + accountId
 	} else {
 		policyId := data.Get("policy_id").(string)
-		policy, diags = client.ReadAbpPolicy(policyId)
-		if diags != nil && diags.HasError() {
-			return diags
+		policy, err = client.ReadAbpPolicy(policyId)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 		if policy == nil {
 			return diag.Errorf("ABP Policy %s not found", policyId)

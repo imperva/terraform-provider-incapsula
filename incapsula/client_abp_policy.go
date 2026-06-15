@@ -6,8 +6,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
 func (c *Client) AbpPolicyUrl(policyId string) string {
@@ -47,119 +45,50 @@ func (c *Client) ListAbpPolicies(accountId string) ([]AbpPolicy, error) {
 	return listResp.Items, nil
 }
 
-const createAbpPolicyAction = "creating abp policy"
+func (c *Client) CreateAbpPolicy(accountId string, policy AbpPolicy) (*AbpPolicy, error) {
+	log.Printf("[INFO] Creating %s in ABP account %s", abpPolicyResourceName, accountId)
 
-func (c *Client) CreateAbpPolicy(accountId string, policy AbpPolicy) (*AbpPolicy, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	log.Printf("[INFO] Creating Abp Policy for Account ID %s\n", accountId)
-
-	policyJson, err := json.Marshal(policy)
+	body, err := json.Marshal(policy)
 	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  fmt.Sprintf("Failure generating abp_policy create request"),
-			Detail:   fmt.Sprintf("Failed to JSON marshal abp_policy: %s", err.Error()),
-		})
-		return nil, diags
+		return nil, fmt.Errorf("failed to marshal %s: %w", abpPolicyResourceName, err)
 	}
 
-	log.Printf("[DEBUG] abp_policy payload: %s\n", string(policyJson))
-
-	reqURL := c.AbpPolicyCreateUrl(accountId)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, policyJson, CreateAbpPolicy)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, c.AbpPolicyCreateUrl(accountId), body, CreateAbpPolicy)
 	if err != nil {
-		diags = append(diags, httpSourcedErrorDiagnostic(createAbpPolicyAction, &err, nil))
-		return nil, diags
+		return nil, fmt.Errorf("error creating %s in ABP account %s: %w", abpPolicyResourceName, accountId, err)
 	}
-
 	defer resp.Body.Close()
+
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		diags = append(diags, httpSourcedErrorDiagnostic(createAbpPolicyAction, &err, responseBody))
-		return nil, diags
+		return nil, fmt.Errorf("error reading response body when creating %s: %w", abpPolicyResourceName, err)
 	}
-
-	log.Printf("[DEBUG] Incapsula Create abp_policy JSON response: %s\n", string(responseBody))
 
 	if resp.StatusCode != http.StatusCreated {
-		diags = append(diags, httpSourcedErrorDiagnostic(createAbpPolicyAction, nil, responseBody))
-		return nil, diags
+		return nil, fmt.Errorf("error status code %d from Incapsula service when creating %s in ABP account %s: %s", resp.StatusCode, abpPolicyResourceName, accountId, string(responseBody))
 	}
 
-	var newPolicy AbpPolicy
-	err = json.Unmarshal(responseBody, &newPolicy)
-	if err != nil {
-		diags = append(diags, httpSourcedErrorDiagnostic(createAbpPolicyAction, &err, responseBody))
-		return nil, diags
+	var created AbpPolicy
+	if err := json.Unmarshal(responseBody, &created); err != nil {
+		return nil, fmt.Errorf("error parsing %s create response: %w; body: %s", abpPolicyResourceName, err, string(responseBody))
 	}
-
-	return &newPolicy, diags
+	return &created, nil
 }
 
-const updateAbpPolicyAction = "updating abp_policy"
+// UpdateAbpPolicy updates a policy by id. Returns (nil, nil) if the policy
+// no longer exists upstream so callers can clear local state.
+func (c *Client) UpdateAbpPolicy(policyId string, policy AbpPolicy) (*AbpPolicy, error) {
+	log.Printf("[INFO] Updating %s with id %s", abpPolicyResourceName, policyId)
 
-func (c *Client) UpdateAbpPolicy(policyId string, policy AbpPolicy) (*AbpPolicy, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	log.Printf("[INFO] Updating Abp Policy ID %s\n", policyId)
-
-	policyJson, err := json.Marshal(policy)
+	body, err := json.Marshal(policy)
 	if err != nil {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  fmt.Sprintf("Failure generating abp_policy update request"),
-			Detail:   fmt.Sprintf("Failed to JSON marshal AbpPolicy: %s", err.Error()),
-		})
-		return nil, diags
+		return nil, fmt.Errorf("failed to marshal %s: %w", abpPolicyResourceName, err)
 	}
 
-	log.Printf("[DEBUG] abp_policy_update payload: %s\n", string(policyJson))
-
-	reqURL := c.AbpPolicyUrl(policyId)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, policyJson, UpdateAbpPolicy)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, c.AbpPolicyUrl(policyId), body, UpdateAbpPolicy)
 	if err != nil {
-		diags = append(diags, httpSourcedErrorDiagnostic(updateAbpPolicyAction, &err, nil))
-		return nil, diags
+		return nil, fmt.Errorf("error updating %s %s: %w", abpPolicyResourceName, policyId, err)
 	}
-
-	defer resp.Body.Close()
-	responseBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		diags = append(diags, httpSourcedErrorDiagnostic(updateAbpPolicyAction, &err, responseBody))
-		return nil, diags
-	}
-
-	log.Printf("[DEBUG] Incapsula Update abp_policy JSON response: %s\n", string(responseBody))
-
-	if resp.StatusCode != http.StatusOK {
-		diags = append(diags, httpSourcedErrorDiagnostic(updateAbpPolicyAction, &err, responseBody))
-		return nil, diags
-	}
-
-	var updated AbpPolicy
-	err = json.Unmarshal(responseBody, &updated)
-	if err != nil {
-		diags = append(diags, httpSourcedErrorDiagnostic(updateAbpPolicyAction, &err, responseBody))
-		return nil, diags
-	}
-
-	return &updated, diags
-}
-
-const readAbpPolicyAction = "reading abp_policy"
-
-// ReadAbpPolicy fetches a policy by id. If the policy does not exist, returns (nil, nil)
-// so callers can distinguish 404 from transport/parse errors and clear local state.
-func (c *Client) ReadAbpPolicy(policyId string) (*AbpPolicy, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	log.Printf("[INFO] Reading Abp Policy ID %s\n", policyId)
-
-	reqURL := c.AbpPolicyUrl(policyId)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadAbpPolicy)
-	if err != nil {
-		diags = append(diags, httpSourcedErrorDiagnostic(readAbpPolicyAction, &err, nil))
-		return nil, diags
-	}
-
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotFound {
@@ -168,46 +97,64 @@ func (c *Client) ReadAbpPolicy(policyId string) (*AbpPolicy, diag.Diagnostics) {
 
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		diags = append(diags, httpSourcedErrorDiagnostic(readAbpPolicyAction, &err, responseBody))
-		return nil, diags
+		return nil, fmt.Errorf("error reading response body when updating %s: %w", abpPolicyResourceName, err)
 	}
 
-	log.Printf("[DEBUG] Incapsula GET abp_policy JSON response: %s\n", string(responseBody))
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error status code %d from Incapsula service when updating %s %s: %s", resp.StatusCode, abpPolicyResourceName, policyId, string(responseBody))
+	}
+
+	var updated AbpPolicy
+	if err := json.Unmarshal(responseBody, &updated); err != nil {
+		return nil, fmt.Errorf("error parsing %s update response: %w; body: %s", abpPolicyResourceName, err, string(responseBody))
+	}
+	return &updated, nil
+}
+
+// ReadAbpPolicy fetches a policy by id. If the policy does not exist, returns (nil, nil)
+// so callers can distinguish 404 from transport/parse errors and clear local state.
+func (c *Client) ReadAbpPolicy(policyId string) (*AbpPolicy, error) {
+	log.Printf("[INFO] Reading %s with id %s", abpPolicyResourceName, policyId)
+
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, c.AbpPolicyUrl(policyId), nil, ReadAbpPolicy)
+	if err != nil {
+		return nil, fmt.Errorf("error reading %s %s: %w", abpPolicyResourceName, policyId, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, nil
+	}
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body when reading %s: %w", abpPolicyResourceName, err)
+	}
 
 	if resp.StatusCode != http.StatusOK {
-		diags = append(diags, httpSourcedErrorDiagnostic(readAbpPolicyAction, nil, responseBody))
-		return nil, diags
+		return nil, fmt.Errorf("error status code %d when reading %s %s: %s", resp.StatusCode, abpPolicyResourceName, policyId, string(responseBody))
 	}
 
 	var policy AbpPolicy
-	err = json.Unmarshal(responseBody, &policy)
-	if err != nil {
-		diags = append(diags, httpSourcedErrorDiagnostic(readAbpPolicyAction, &err, responseBody))
-		return nil, diags
+	if err := json.Unmarshal(responseBody, &policy); err != nil {
+		return nil, fmt.Errorf("error parsing %s read response: %w; body: %s", abpPolicyResourceName, err, string(responseBody))
 	}
-
-	return &policy, diags
+	return &policy, nil
 }
 
 func (c *Client) AbpAccountGlobalPolicyUrl(accountId string) string {
 	return fmt.Sprintf("%s/v1/account/%s/global_policy", c.config.BaseURLAPI, accountId)
 }
 
-const readAbpAccountGlobalPolicyAction = "reading abp account global policy"
-
 // ReadAbpAccountGlobalPolicy fetches the account global policy. If the account does
 // not exist, returns (nil, nil) so callers can distinguish 404 from other errors.
-func (c *Client) ReadAbpAccountGlobalPolicy(accountId string) (*AbpPolicy, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	log.Printf("[INFO] Reading Abp Account Global Policy for Account %s\n", accountId)
+func (c *Client) ReadAbpAccountGlobalPolicy(accountId string) (*AbpPolicy, error) {
+	log.Printf("[INFO] Reading %s global policy for account %s", abpPolicyResourceName, accountId)
 
-	reqURL := c.AbpAccountGlobalPolicyUrl(accountId)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadAbpAccountGlobalPolicy)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, c.AbpAccountGlobalPolicyUrl(accountId), nil, ReadAbpAccountGlobalPolicy)
 	if err != nil {
-		diags = append(diags, httpSourcedErrorDiagnostic(readAbpAccountGlobalPolicyAction, &err, nil))
-		return nil, diags
+		return nil, fmt.Errorf("error reading %s global policy for account %s: %w", abpPolicyResourceName, accountId, err)
 	}
-
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusNotFound {
@@ -216,58 +163,36 @@ func (c *Client) ReadAbpAccountGlobalPolicy(accountId string) (*AbpPolicy, diag.
 
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		diags = append(diags, httpSourcedErrorDiagnostic(readAbpAccountGlobalPolicyAction, &err, responseBody))
-		return nil, diags
+		return nil, fmt.Errorf("error reading response body when reading %s global policy: %w", abpPolicyResourceName, err)
 	}
 
-	log.Printf("[DEBUG] Incapsula GET abp account global policy JSON response: %s\n", string(responseBody))
-
 	if resp.StatusCode != http.StatusOK {
-		diags = append(diags, httpSourcedErrorDiagnostic(readAbpAccountGlobalPolicyAction, nil, responseBody))
-		return nil, diags
+		return nil, fmt.Errorf("error status code %d when reading %s global policy for account %s: %s", resp.StatusCode, abpPolicyResourceName, accountId, string(responseBody))
 	}
 
 	var policy AbpPolicy
-	err = json.Unmarshal(responseBody, &policy)
-	if err != nil {
-		diags = append(diags, httpSourcedErrorDiagnostic(readAbpAccountGlobalPolicyAction, &err, responseBody))
-		return nil, diags
+	if err := json.Unmarshal(responseBody, &policy); err != nil {
+		return nil, fmt.Errorf("error parsing %s global policy read response: %w; body: %s", abpPolicyResourceName, err, string(responseBody))
 	}
-
-	return &policy, diags
+	return &policy, nil
 }
 
-const deleteAbpPolicyAction = "deleting abp_policy"
+func (c *Client) DeleteAbpPolicy(policyId string) error {
+	log.Printf("[INFO] Deleting %s with id %s", abpPolicyResourceName, policyId)
 
-func (c *Client) DeleteAbpPolicy(policyId string) diag.Diagnostics {
-	var diags diag.Diagnostics
-	log.Printf("[INFO] Deleting Abp Policy ID %s\n", policyId)
-
-	reqURL := c.AbpPolicyUrl(policyId)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteAbpPolicy)
+	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, c.AbpPolicyUrl(policyId), nil, DeleteAbpPolicy)
 	if err != nil {
-		diags = append(diags, httpSourcedErrorDiagnostic(deleteAbpPolicyAction, &err, nil))
-		return diags
+		return fmt.Errorf("error deleting %s %s: %w", abpPolicyResourceName, policyId, err)
 	}
-
 	defer resp.Body.Close()
+
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		diags = append(diags, httpSourcedErrorDiagnostic(deleteAbpPolicyAction, &err, responseBody))
-		return diags
+		return fmt.Errorf("error reading response body when deleting %s: %w", abpPolicyResourceName, err)
 	}
 
-	log.Printf("[DEBUG] Incapsula DELETE abp_policy response: %s\n", string(responseBody))
-
-	if resp.StatusCode == http.StatusNotFound {
-		log.Printf("[INFO] ABP policy ID %s already gone upstream", policyId)
-		return diags
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusNotFound {
+		return fmt.Errorf("error status code %d from Incapsula service when deleting %s %s: %s", resp.StatusCode, abpPolicyResourceName, policyId, string(responseBody))
 	}
-
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-		diags = append(diags, httpSourcedErrorDiagnostic(deleteAbpPolicyAction, nil, responseBody))
-		return diags
-	}
-
-	return diags
+	return nil
 }

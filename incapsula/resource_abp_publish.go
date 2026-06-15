@@ -28,7 +28,7 @@ func resourceAbpPublish() *schema.Resource {
 	}
 }
 
-func resourceAbpPublishCreate(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpPublishCreate(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
 	preflightId := data.Get("preflight_id").(string)
 
@@ -56,11 +56,11 @@ func resourceAbpPublishCreate(ctx context.Context, data *schema.ResourceData, m 
 	return diags
 }
 
-func resourceAbpPublishRead(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpPublishRead(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	return nil
 }
 
-func resourceAbpPublishDelete(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAbpPublishDelete(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	data.SetId("")
 	return nil
 }
