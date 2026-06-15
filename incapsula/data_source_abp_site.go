@@ -72,20 +72,29 @@ func dataSourceAbpSite() *schema.Resource {
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
-						"path_prefix": {
-							Description: "Match requests whose path begins with this prefix.",
-							Type:        schema.TypeString,
+						"kind": {
+							Description: "Match criteria for this Selector. Will be one of `path_prefix`, `path_regex`, `postback`",
+							Type:        schema.TypeList,
 							Computed:    true,
-						},
-						"path_regex": {
-							Description: "Match requests whose path matches this regular expression.",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"postback": {
-							Description: "Match a specific Postback request type.",
-							Type:        schema.TypeString,
-							Computed:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"path_prefix": {
+										Description: "Matches requests whose path begins with this prefix. Mutually exclusive with `path_regex` and `postback`.",
+										Type:        schema.TypeString,
+										Computed:    true,
+									},
+									"path_regex": {
+										Description: "Matches requests whose path matches this regular expression. Mutually exclusive with `path_prefix` and `postback`.",
+										Type:        schema.TypeString,
+										Computed:    true,
+									},
+									"postback": {
+										Description: "Matches a specific Postback request type. One of: web_interrogation, ios_interrogation, web_automation, android_interrogation. Mutually exclusive with `path_prefix` and `path_regex`.",
+										Type:        schema.TypeString,
+										Computed:    true,
+									},
+								},
+							},
 						},
 						"analysis_settings": {
 							Description: "JSON-encoded analysis settings for this selector.",

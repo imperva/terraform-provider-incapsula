@@ -83,21 +83,34 @@ read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 							Optional:     true,
 							ValidateFunc: validation.IsUUID,
 						},
-						"path_prefix": {
-							Description: "Match requests whose path begins with this prefix. Mutually exclusive with `path_regex` and `postback`.",
-							Type:        schema.TypeString,
-							Optional:    true,
-						},
-						"path_regex": {
-							Description: "Match requests whose path matches this regular expression. Mutually exclusive with `path_prefix` and `postback`.",
-							Type:        schema.TypeString,
-							Optional:    true,
-						},
-						"postback": {
-							Description:  "Match a specific Postback request type. One of: web_interrogation, ios_interrogation, web_automation, android_interrogation. Mutually exclusive with `path_prefix` and `path_regex`.",
-							Type:         schema.TypeString,
-							Optional:     true,
-							ValidateFunc: validation.StringInSlice([]string{"web_interrogation", "ios_interrogation", "web_automation", "android_interrogation"}, false),
+						"kind": {
+							Description: "Match criteria for this Selector. Exactly one of `path_prefix`, `path_regex`, `postback` must be set.",
+							Type:        schema.TypeList,
+							Required:    true,
+							MaxItems:    1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"path_prefix": {
+										Description: "Match requests whose path begins with this prefix. Mutually exclusive with `path_regex` and `postback`.",
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+									},
+									"path_regex": {
+										Description: "Match requests whose path matches this regular expression. Mutually exclusive with `path_prefix` and `postback`.",
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
+									},
+									"postback": {
+										Description:  "Match a specific Postback request type. One of: web_interrogation, ios_interrogation, web_automation, android_interrogation. Mutually exclusive with `path_prefix` and `path_regex`.",
+										Type:         schema.TypeString,
+										Optional:     true,
+										Computed:     true,
+										ValidateFunc: validation.StringInSlice([]string{"web_interrogation", "ios_interrogation", "web_automation", "android_interrogation"}, false),
+									},
+								},
+							},
 						},
 						"analysis_settings": {
 							Description:  "JSON-encoded analysis settings for this selector, typically produced by an `incapsula_abp_site_analysis_settings` data source.",
@@ -151,8 +164,19 @@ read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 	}
 }
 
-func extractAbpSelector(raw map[string]any) (AbpSelector, error) {
-	criteria, err := extractAbpSelectorCriteria(raw)
+// extractAbpSelector builds a selector from its config map. User-managed
+// selectors carry their criteria in a nested `kind` block (nestedKind=true);
+// the server-managed default selector keeps them flat (nestedKind=false).
+func extractAbpSelector(raw map[string]any, nestedKind bool) (AbpSelector, error) {
+	criteriaRaw := raw
+	if nestedKind {
+		kind, ok := raw["kind"].([]any)
+		if !ok || len(kind) != 1 {
+			return AbpSelector{}, fmt.Errorf("selector requires exactly one kind block")
+		}
+		criteriaRaw = kind[0].(map[string]any)
+	}
+	criteria, err := extractAbpSelectorCriteria(criteriaRaw)
 	if err != nil {
 		return AbpSelector{}, err
 	}
@@ -224,7 +248,7 @@ func extractAbpSite(data *schema.ResourceData) (AbpSite, error) {
 	rawSelectors := data.Get("selector").([]any)
 	site.Selectors = make([]AbpSelector, 0, len(rawSelectors))
 	for i, item := range rawSelectors {
-		sel, err := extractAbpSelector(item.(map[string]any))
+		sel, err := extractAbpSelector(item.(map[string]any), true)
 		if err != nil {
 			return AbpSite{}, fmt.Errorf("selector[%d]: %w", i, err)
 		}
@@ -234,7 +258,7 @@ func extractAbpSite(data *schema.ResourceData) (AbpSite, error) {
 	// Carry the auto-managed default forward into the Update payload so
 	// backend preserves its id and policy. On Create this list is empty.
 	if rawDefault, ok := data.Get("default_selector").([]any); ok && len(rawDefault) == 1 {
-		def, err := extractAbpSelector(rawDefault[0].(map[string]any))
+		def, err := extractAbpSelector(rawDefault[0].(map[string]any), false)
 		if err != nil {
 			return AbpSite{}, fmt.Errorf("default_selector: %w", err)
 		}
@@ -243,7 +267,7 @@ func extractAbpSite(data *schema.ResourceData) (AbpSite, error) {
 	return site, nil
 }
 
-func flattenAbpSelectors(selectors []AbpSelector) ([]any, error) {
+func flattenAbpSelectors(selectors []AbpSelector, nestedKind bool) ([]any, error) {
 	out := make([]any, len(selectors))
 	for i, s := range selectors {
 		encoded, err := json.Marshal(s.AnalysisSettings)
@@ -257,14 +281,23 @@ func flattenAbpSelectors(selectors []AbpSelector) ([]any, error) {
 		if s.PolicyId != nil {
 			m["policy_id"] = *s.PolicyId
 		}
+
+		criteria := map[string]any{}
 		if s.Criteria.PathPrefix != nil {
-			m["path_prefix"] = *s.Criteria.PathPrefix
+			criteria["path_prefix"] = *s.Criteria.PathPrefix
 		}
 		if s.Criteria.PathRegex != nil {
-			m["path_regex"] = *s.Criteria.PathRegex
+			criteria["path_regex"] = *s.Criteria.PathRegex
 		}
 		if s.Criteria.Postback != nil {
-			m["postback"] = *s.Criteria.Postback
+			criteria["postback"] = *s.Criteria.Postback
+		}
+		if nestedKind {
+			m["kind"] = []any{criteria}
+		} else {
+			for k, v := range criteria {
+				m[k] = v
+			}
 		}
 		out[i] = m
 	}
@@ -293,7 +326,7 @@ func serializeAbpSite(data *schema.ResourceData, site *AbpSite) error {
 			return err
 		}
 	}
-	flat, err := flattenAbpSelectors(site.Selectors)
+	flat, err := flattenAbpSelectors(site.Selectors, true)
 	if err != nil {
 		return err
 	}
@@ -303,7 +336,7 @@ func serializeAbpSite(data *schema.ResourceData, site *AbpSite) error {
 
 	var flatDefault []any
 	if site.DefaultSelector != nil {
-		flatDefault, err = flattenAbpSelectors([]AbpSelector{*site.DefaultSelector})
+		flatDefault, err = flattenAbpSelectors([]AbpSelector{*site.DefaultSelector}, false)
 		if err != nil {
 			return err
 		}
