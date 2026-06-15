@@ -69,6 +69,13 @@ func resourceCSPSiteDomain() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
+				// Imperva normalizes subdomain entries to the wildcard ("*.domain") form server-side.
+				// State imported before this normalization may hold "*.domain" while configs use the
+				// bare "domain". Treat the two as equivalent so existing resources don't show a spurious
+				// forced replacement (see issue #653).
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return strings.TrimPrefix(old, "*.") == strings.TrimPrefix(new, "*.")
+				},
 			},
 			//Optional
 			"include_subdomains": {
