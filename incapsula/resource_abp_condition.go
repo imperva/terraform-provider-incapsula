@@ -48,8 +48,7 @@ to copy "code_normalized" to "code" after running "terraform import".`,
 			"description": {
 				Description: "Description of the policy. Set to empty string if omitted",
 				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 			},
 			"code": {
 				Description: "MOI expression evaluated against the request. The server stores a " +
