@@ -177,6 +177,9 @@ func extractAbpDirectives(data *schema.ResourceData) []AbpDirective {
 		if cid, ok := m["condition_list_id"].(string); ok && cid != "" {
 			d.ConditionId = &cid
 		}
+		if skipCid, ok := m["skip_condition_list_id"].(string); ok && skipCid != "" {
+			d.SkipConditionId = &skipCid
+		}
 		if powId, ok := m["proof_of_work_configuration_id"].(string); ok && powId != "" {
 			d.ProofOfWorkConfigurationId = &powId
 		}
