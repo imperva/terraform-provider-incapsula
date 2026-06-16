@@ -55,7 +55,7 @@ func (c *Client) GetAbpPreflightStatus(preflightId string) (*AbpPreflightStatus,
 	log.Printf("[DEBUG] abp %s JSON response: %s\n", getPreflightStatusAction, string(responseBody))
 
 	if resp.StatusCode != http.StatusOK {
-		diags = append(diags, httpSourcedErrorDiagnostic(getPreflightStatusAction, &err, responseBody))
+		diags = append(diags, httpSourcedErrorDiagnostic(getPreflightStatusAction, nil, responseBody))
 		return nil, diags
 	}
 

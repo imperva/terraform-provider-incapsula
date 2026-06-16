@@ -96,8 +96,7 @@ which conditions are attached via ` + "`incapsula_abp_condition_list_entry`" + `
 			"description": {
 				Description: "Description of the policy. Set to empty string if omitted",
 				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 			},
 			"use_standard_directives": {
 				Description: "If true, the policy is created with the standard set of directives (matching the ABP UI's \"Standard Directives\" choice). When set, custom `directive` blocks must not be specified.",
@@ -146,14 +145,6 @@ which conditions are attached via ` + "`incapsula_abp_condition_list_entry`" + `
 	}
 }
 
-func extractAbpPolicyDescription(data *schema.ResourceData) *string {
-	if v, ok := data.GetOk("description"); ok {
-		s := v.(string)
-		return &s
-	}
-	return nil
-}
-
 func extractAbpPolicy(data *schema.ResourceData) AbpPolicy {
 	var directives []AbpDirective
 	if data.Get("use_standard_directives").(bool) {
@@ -161,9 +152,10 @@ func extractAbpPolicy(data *schema.ResourceData) AbpPolicy {
 	} else {
 		directives = extractAbpDirectives(data)
 	}
+	description := data.Get("description").(string)
 	return AbpPolicy{
 		Name:        data.Get("name").(string),
-		Description: extractAbpPolicyDescription(data),
+		Description: &description,
 		Directives:  directives,
 	}
 }
@@ -176,6 +168,9 @@ func extractAbpDirectives(data *schema.ResourceData) []AbpDirective {
 		d := AbpDirective{Action: m["action"].(string)}
 		if cid, ok := m["condition_list_id"].(string); ok && cid != "" {
 			d.ConditionId = &cid
+		}
+		if skipCid, ok := m["skip_condition_list_id"].(string); ok && skipCid != "" {
+			d.SkipConditionId = &skipCid
 		}
 		if powId, ok := m["proof_of_work_configuration_id"].(string); ok && powId != "" {
 			d.ProofOfWorkConfigurationId = &powId
@@ -211,7 +206,7 @@ func serializeAbpPolicy(data *schema.ResourceData, policy *AbpPolicy) error {
 		return err
 	}
 	if policy.Description != nil {
-		if err := data.Set("description", *policy.Description); err != nil {
+		if err := data.Set("description", policy.Description); err != nil {
 			return err
 		}
 	} else {

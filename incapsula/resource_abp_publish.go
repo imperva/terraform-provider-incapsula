@@ -41,7 +41,7 @@ func resourceAbpPublishCreate(ctx context.Context, data *schema.ResourceData, m 
 		return append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "ABP preflight is not publishable",
-			Detail:   fmt.Sprintf("Preflight %s s older than the latest published preflight: not allowed for publishing", preflightId),
+			Detail:   fmt.Sprintf("Preflight %s is older than the latest published preflight: not allowed for publishing", preflightId),
 		})
 	}
 
