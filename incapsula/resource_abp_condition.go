@@ -64,6 +64,30 @@ to copy "code_normalized" to "code" after running "terraform import".`,
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"template": {
+				Description: "Editor template the server uses to validate `code`. Open enumeration; " +
+					"new values may be added, so the provider does not restrict the set.\n\n" +
+					"Currently available values:\n" +
+					"  - `custom` (default)\n" +
+					"  - `ai_tool`\n" +
+					"  - `ip_set`\n" +
+					"  - `header`\n" +
+					"  - `tag`\n" +
+					"  - `flag`\n" +
+					"  - `challenge`\n" +
+					"  - `captcha_cleared`\n" +
+					"  - `proof_of_work_succeeded`\n" +
+					"  - `rate_limiting`\n" +
+					"  - `compound_rate_limiting`\n" +
+					"  - `identify_eventually`\n\n" +
+					"Omitting `template` is the same as setting `custom`.\n\n" +
+					"**WARNING:** for any value other than `custom`, the server requires `code` to " +
+					"match that template's expected structure. Mismatched `code` makes condition " +
+					"create/update fail.",
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
 			"last_change_by": {
 				Description: "Identifier of the user who last changed this condition.",
 				Type:        schema.TypeString,
@@ -89,6 +113,7 @@ func extractAbpCondition(data *schema.ResourceData) AbpCondition {
 		Name:        data.Get("name").(string),
 		Description: data.Get("description").(string),
 		Code:        data.Get("code").(string),
+		Template:    data.Get("template").(string),
 	}
 }
 
@@ -107,6 +132,12 @@ func serializeAbpCondition(data *schema.ResourceData, condition *AbpCondition) e
 	// Intentionally do not overwrite "code": the server stores a normalized form
 	// that would otherwise show as perpetual drift. Expose it via "code_normalized".
 	if err := data.Set("code_normalized", condition.Code); err != nil {
+		return err
+	}
+
+	// The server defaults an unset template to "custom" and echoes it back; the
+	// field is Computed so this resolves the empty-vs-"custom" diff for the user.
+	if err := data.Set("template", condition.Template); err != nil {
 		return err
 	}
 

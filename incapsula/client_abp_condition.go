@@ -41,6 +41,7 @@ type AbpCondition struct {
 	Name         string
 	Description  string
 	Code         string
+	Template     string
 	LastChangeBy string
 
 	Reference string
@@ -61,6 +62,7 @@ type abpConditionWire struct {
 	Name         *string  `json:"name,omitempty"`
 	Description  *string  `json:"description,omitempty"`
 	Code         *string  `json:"code,omitempty"`
+	Template     *string  `json:"template,omitempty"`
 	LastChangeBy string   `json:"last_change_by,omitempty"`
 	Reference    *string  `json:"reference,omitempty"`
 	Parent       string   `json:"parent,omitempty"`
@@ -94,6 +96,9 @@ func (c *AbpCondition) UnmarshalJSON(data []byte) error {
 	if w.Code != nil {
 		c.Code = *w.Code
 	}
+	if w.Template != nil {
+		c.Template = *w.Template
+	}
 	if w.Reference != nil {
 		c.Reference = *w.Reference
 	}
@@ -120,7 +125,8 @@ func (c AbpCondition) MarshalJSON() ([]byte, error) {
 			Name        string `json:"name"`
 			Description string `json:"description"`
 			Code        string `json:"code"`
-		}{c.Name, c.Description, c.Code})
+			Template    string `json:"template,omitempty"`
+		}{c.Name, c.Description, c.Code, c.Template})
 	case AbpConditionKindReference:
 		tags := c.Tags
 		if tags == nil {
