@@ -227,7 +227,7 @@ func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
 	if req.Method == http.MethodGet || (req.Method == http.MethodPost && strings.HasPrefix(strings.ToLower(operation), "read")) {
 		var responseOnRequest *http.Response
 		var errorOnRequest error
-		resource.Retry(durationOfRetriesInSeconds*time.Second, func() *resource.RetryError {
+		retryErr := resource.Retry(durationOfRetriesInSeconds*time.Second, func() *resource.RetryError {
 			responseOnRequest, errorOnRequest = c.httpClient.Do(req)
 			if errorOnRequest != nil {
 				log.Printf("[ERROR] Error from Incapsula service when reading resource")
@@ -239,6 +239,14 @@ func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
 			}
 			return nil
 		})
+		// resource.Retry returns an error when retries are exhausted or the
+		// deadline is exceeded. Surface it so callers never receive a nil
+		// response together with a nil error (which leads to a nil pointer
+		// dereference, e.g. in GetPerformanceSettings on resp.Body.Close()).
+		if retryErr != nil && errorOnRequest == nil {
+			log.Printf("[ERROR] Retries exhausted reading resource: %s", retryErr)
+			errorOnRequest = retryErr
+		}
 		return responseOnRequest, errorOnRequest
 	}
 	//if not a "read" request  - don't do retries (retires for updates are risky and result could be non-deterministic)
