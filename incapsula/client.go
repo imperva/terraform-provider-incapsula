@@ -20,7 +20,9 @@ import (
 const contentTypeApplicationUrlEncoded = "application/x-www-form-urlencoded"
 const contentTypeApplicationJson = "application/json"
 
-const durationOfRetriesInSeconds = 30
+// durationOfRetriesInSeconds bounds how long "read" requests are retried on
+// transient (502) failures. It is a var (not a const) so tests can shorten it.
+var durationOfRetriesInSeconds = 30
 
 // Client represents an internal client that brokers calls to the Incapsula API
 type Client struct {
@@ -227,7 +229,7 @@ func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
 	if req.Method == http.MethodGet || (req.Method == http.MethodPost && strings.HasPrefix(strings.ToLower(operation), "read")) {
 		var responseOnRequest *http.Response
 		var errorOnRequest error
-		retryErr := resource.Retry(durationOfRetriesInSeconds*time.Second, func() *resource.RetryError {
+		retryErr := resource.Retry(time.Duration(durationOfRetriesInSeconds)*time.Second, func() *resource.RetryError {
 			responseOnRequest, errorOnRequest = c.httpClient.Do(req)
 			if errorOnRequest != nil {
 				log.Printf("[ERROR] Error from Incapsula service when reading resource")
