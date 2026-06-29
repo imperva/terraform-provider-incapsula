@@ -20,7 +20,9 @@ import (
 const contentTypeApplicationUrlEncoded = "application/x-www-form-urlencoded"
 const contentTypeApplicationJson = "application/json"
 
-const durationOfRetriesInSeconds = 30
+// durationOfRetriesInSeconds bounds how long "read" requests are retried on
+// transient (502) failures. It is a var (not a const) so tests can shorten it.
+var durationOfRetriesInSeconds = 30
 
 // Client represents an internal client that brokers calls to the Incapsula API
 type Client struct {
@@ -227,7 +229,7 @@ func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
 	if req.Method == http.MethodGet || (req.Method == http.MethodPost && strings.HasPrefix(strings.ToLower(operation), "read")) {
 		var responseOnRequest *http.Response
 		var errorOnRequest error
-		resource.Retry(durationOfRetriesInSeconds*time.Second, func() *resource.RetryError {
+		retryErr := resource.Retry(time.Duration(durationOfRetriesInSeconds)*time.Second, func() *resource.RetryError {
 			responseOnRequest, errorOnRequest = c.httpClient.Do(req)
 			if errorOnRequest != nil {
 				log.Printf("[ERROR] Error from Incapsula service when reading resource")
@@ -239,6 +241,14 @@ func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
 			}
 			return nil
 		})
+		// resource.Retry returns an error when retries are exhausted or the
+		// deadline is exceeded. Surface it so callers never receive a nil
+		// response together with a nil error (which leads to a nil pointer
+		// dereference, e.g. in GetPerformanceSettings on resp.Body.Close()).
+		if retryErr != nil && errorOnRequest == nil {
+			log.Printf("[ERROR] Retries exhausted reading resource: %s", retryErr)
+			errorOnRequest = retryErr
+		}
 		return responseOnRequest, errorOnRequest
 	}
 	//if not a "read" request  - don't do retries (retires for updates are risky and result could be non-deterministic)
