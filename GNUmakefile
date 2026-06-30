@@ -110,5 +110,12 @@ ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
 endif
 	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider-test PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
 
-.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test server check-mock-server
+# Generate docs for ABP resources/data sources only (via tfplugindocs) and
+# place them into the legacy website/ layout. See scripts/gen-abp-docs.sh.
+# Requires: go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
+# Use FORCE=1 to overwrite existing legacy docs.
+abp-docs:
+	@FORCE=$(FORCE) ./scripts/gen-abp-docs.sh
+
+.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test abp-docs server check-mock-server
 

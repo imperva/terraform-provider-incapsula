@@ -32,6 +32,11 @@ type Config struct {
 	// API V2
 	// Same as revision 2 but with a different subdomain
 	BaseURLAPI string
+
+	/// Temporary addition: don't validate client credentials when running terraform locally
+	// on lens.
+	// TODO: remove
+	ValidateClientCredentials bool
 }
 
 var missingAPIIDMessage = "API Identifier (api_id) must be provided"
@@ -79,10 +84,12 @@ func (c *Config) Client() (interface{}, error) {
 	client := NewClient(c)
 
 	// Verify client credentials
-	accountStatusResponse, err := client.Verify()
-	client.accountStatus = accountStatusResponse
-	if err != nil {
-		return nil, err
+	if c.ValidateClientCredentials {
+		accountStatusResponse, err := client.Verify()
+		client.accountStatus = accountStatusResponse
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return client, nil
