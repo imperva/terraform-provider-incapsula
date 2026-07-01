@@ -402,10 +402,10 @@ func TestMockServerCSPDomainReferenceIdNormalization(t *testing.T) {
 		subdomains bool
 		wantRef    string
 	}{
-		{"example.com", true, "Ki5leGFtcGxlLmNvbQ"},   // base64url("*.example.com")
-		{"example.com", false, "ZXhhbXBsZS5jb20"},      // base64url("example.com")
-		{"googlesyndication.com", true, "Ki5nb29nbGVzeW5kaWNhdGlvbi5jb20"},  // base64url("*.googlesyndication.com")
-		{"googlesyndication.com", false, "Z29vZ2xlc3luZGljYXRpb24uY29t"},    // base64url("googlesyndication.com")
+		{"example.com", true, "Ki5leGFtcGxlLmNvbQ"},                        // base64url("*.example.com")
+		{"example.com", false, "ZXhhbXBsZS5jb20"},                          // base64url("example.com")
+		{"googlesyndication.com", true, "Ki5nb29nbGVzeW5kaWNhdGlvbi5jb20"}, // base64url("*.googlesyndication.com")
+		{"googlesyndication.com", false, "Z29vZ2xlc3luZGljYXRpb24uY29t"},   // base64url("googlesyndication.com")
 	}
 
 	for _, tc := range cases {
