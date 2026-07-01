@@ -42,7 +42,8 @@ func resourceCSPSiteDomain() *schema.Resource {
 
 				d.Set("account_id", accountID)
 				d.Set("site_id", siteID)
-				d.Set("domain", string(domain))
+				// Strip wildcard prefix so domain always holds the bare value
+				d.Set("domain", strings.TrimPrefix(string(domain), "*."))
 				log.Printf("[DEBUG] Import CSP Domain %s for site ID %d", domain, siteID)
 				return []*schema.ResourceData{d}, nil
 			},
@@ -68,6 +69,13 @@ func resourceCSPSiteDomain() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
+				// Imperva normalizes subdomain entries to the wildcard ("*.domain") form server-side.
+				// State imported before this normalization may hold "*.domain" while configs use the
+				// bare "domain". Treat the two as equivalent so existing resources don't show a spurious
+				// forced replacement (see issue #653).
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return strings.TrimPrefix(old, "*.") == strings.TrimPrefix(new, "*.")
+				},
 			},
 			//Optional
 			"include_subdomains": {
@@ -95,12 +103,24 @@ func resourceCSPSiteDomain() *schema.Resource {
 	}
 }
 
+// domainRefFromState extracts the referenceId component from the state ID (accountID/siteID/referenceId).
+// Falls back to computing base64url(domain) if the state ID is not yet set or malformed.
+func domainRefFromState(d *schema.ResourceData) string {
+	if stateID := d.Id(); stateID != "" {
+		parts := strings.Split(stateID, "/")
+		if len(parts) == 3 {
+			return parts[2]
+		}
+	}
+	return base64.RawURLEncoding.EncodeToString([]byte(d.Get("domain").(string)))
+}
+
 func resourceCSPSiteDomainRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	accountID := d.Get("account_id").(int)
 	siteID := d.Get("site_id").(int)
 	domain := d.Get("domain").(string)
-	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
+	domainRef := domainRefFromState(d)
 
 	log.Printf("[DEBUG] Reading CSP domain for site ID: %d , domain reference: %s , domain: %s", siteID, domainRef, domain)
 
@@ -120,7 +140,7 @@ func resourceCSPSiteDomainRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// First check if it's a pre-approved domain, and update resource according to that
-	preApprovedDomain, err := client.getCSPPreApprovedDomain(accountID, siteID, domain)
+	preApprovedDomain, err := client.getCSPPreApprovedDomainByRef(accountID, siteID, domainRef)
 	if err != nil {
 		log.Printf("[ERROR] Could not get CSP pre-approved domain : %s - %s\n", d.Id(), err)
 	} else {
@@ -167,11 +187,10 @@ func resourceCSPSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[DEBUG] Updating CSP domain %s site ID %d status=\"%s\"\n", domain, siteID, status)
 
 	if strings.Compare(status, cspDomainStatusAllowed) == 0 {
-		// If the domain is allowed just put it in the pre-approved list
 		dom := CSPPreApprovedDomain{
 			Domain:      domain,
 			Subdomains:  d.Get("include_subdomains").(bool),
-			ReferenceID: base64.RawURLEncoding.EncodeToString([]byte(domain)),
+			ReferenceID: domRef,
 		}
 		log.Printf("[DEBUG] Updating CSP domain for site ID: %d , domain: %v\n", siteID, dom)
 		updatedDom, err := client.updateCSPPreApprovedDomain(accountID, siteID, &dom)
@@ -180,8 +199,12 @@ func resourceCSPSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {
 			return err
 		}
 		log.Printf("[DEBUG] Updating CSP domain %v for site ID: %d , got response: %v.", dom, siteID, updatedDom)
+		// Use the referenceId Imperva assigned — it may differ from what we sent
+		// (some domains are normalized to a wildcard referenceId server-side)
+		if updatedDom.ReferenceID != "" {
+			domRef = updatedDom.ReferenceID
+		}
 	} else if strings.Compare(status, cspDomainStatusBlocked) == 0 {
-		// Otherwise update the status directly to blocked
 		st := CSPDomainStatus{
 			Blocked:  new(bool),
 			Reviewed: new(bool),
@@ -196,7 +219,6 @@ func resourceCSPSiteDomainUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
-	// Remove all existing notes and add them freshly
 	client.deleteCSPDomainNotes(accountID, siteID, domain)
 	for _, note := range notes.List() {
 		client.addCSPDomainNote(accountID, siteID, domain, note.(string))
@@ -218,7 +240,7 @@ func resourceCSPSiteDomainDelete(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[DEBUG] Deleting CSP domain %s from site ID %d\n", domain, siteID)
 
 	if strings.Compare(status, cspDomainStatusAllowed) == 0 {
-		err := client.deleteCSPPreApprovedDomains(accountID, siteID, base64.RawURLEncoding.EncodeToString([]byte(domain)))
+		err := client.deleteCSPPreApprovedDomains(accountID, siteID, domainRefFromState(d))
 		if err != nil {
 			log.Printf("[ERROR] Could not delete CSP pre-approved domain %s for site ID %d: %s\n", domain, siteID, err)
 			return err
