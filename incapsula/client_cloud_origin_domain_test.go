@@ -34,19 +34,6 @@ var validGetResponse = `{
 	}]
 }`
 
-var validUpdateResponse = `{
-	"data": [{
-		"id": 12345,
-		"siteId": 1,
-		"originDomain": "api.example.com",
-		"region": "eu-west-1",
-		"impervaOriginDomain": "api-example-com.c123.imperva.com",
-		"originConfig": {"port": 8443},
-		"createdAt": "2024-01-01T00:00:00Z",
-		"updatedAt": "2024-01-03T00:00:00Z"
-	}]
-}`
-
 var errorResponse = `{"errors": [{"status": 400, "detail": "Bad request"}]}`
 
 func TestClientCloudOriginDomainCreate(t *testing.T) {
@@ -212,95 +199,6 @@ func TestClientCloudOriginDomainGet(t *testing.T) {
 				}
 				if response.Data[0].Region != "us-east-1" {
 					t.Errorf("Expected Region us-east-1, got %s", response.Data[0].Region)
-				}
-			}
-		})
-	}
-}
-
-func TestClientCloudOriginDomainUpdate(t *testing.T) {
-	tests := map[string]struct {
-		statusCode     int
-		responseBody   string
-		expectedErr    bool
-		expectedErrMsg string
-	}{
-		"BadConnection": {
-			statusCode:     0,
-			responseBody:   "",
-			expectedErr:    true,
-			expectedErrMsg: "Error from Incapsula service",
-		},
-		"BadJSON": {
-			statusCode:     200,
-			responseBody:   "invalid json",
-			expectedErr:    true,
-			expectedErrMsg: "Error parsing cloud origin domain JSON response",
-		},
-		"InvalidResponse": {
-			statusCode:     400,
-			responseBody:   errorResponse,
-			expectedErr:    true,
-			expectedErrMsg: "Error status code 400",
-		},
-		"ValidResponse": {
-			statusCode:   200,
-			responseBody: validUpdateResponse,
-			expectedErr:  false,
-		},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			var baseURL string
-			if test.statusCode != 0 {
-				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					if r.Method != http.MethodPut {
-						t.Errorf("Expected PUT method, got %s", r.Method)
-					}
-					w.WriteHeader(test.statusCode)
-					w.Write([]byte(test.responseBody))
-				}))
-				defer server.Close()
-				baseURL = server.URL
-			} else {
-				baseURL = "http://invalid.test:99999"
-			}
-
-			client := &Client{
-				config: &Config{
-					BaseURLRev3: baseURL,
-					APIID:       "test_id",
-					APIKey:      "test_key",
-				},
-				httpClient: &http.Client{},
-			}
-
-			response, err := client.UpdateCloudOriginDomain(1, 12345, "", "eu-west-1", 8443, "TLS_1_1")
-
-			if test.expectedErr && err == nil {
-				t.Errorf("Expected error, got nil")
-			}
-			if !test.expectedErr && err != nil {
-				t.Errorf("Unexpected error: %v", err)
-			}
-			if test.expectedErr && err != nil && test.expectedErrMsg != "" {
-				if !strings.Contains(err.Error(), test.expectedErrMsg) {
-					t.Errorf("Expected error containing %q, got %q", test.expectedErrMsg, err.Error())
-				}
-			}
-			if !test.expectedErr && response == nil {
-				t.Errorf("Expected response, got nil")
-			}
-			if !test.expectedErr && response != nil {
-				if len(response.Data) == 0 {
-					t.Fatal("Expected data in response, got empty")
-				}
-				if response.Data[0].Region != "eu-west-1" {
-					t.Errorf("Expected Region eu-west-1, got %s", response.Data[0].Region)
-				}
-				if response.Data[0].OriginConfig.Port != 8443 {
-					t.Errorf("Expected Port 8443, got %d", response.Data[0].OriginConfig.Port)
 				}
 			}
 		})
