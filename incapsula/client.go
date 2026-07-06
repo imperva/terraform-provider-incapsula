@@ -20,42 +20,25 @@ import (
 const contentTypeApplicationUrlEncoded = "application/x-www-form-urlencoded"
 const contentTypeApplicationJson = "application/json"
 
+// Retry defaults for transient API failures (502, 503, 504, 429, HTML error pages).
+// These are vars (not consts) so tests can override them for fast execution.
+var maxRetries = 4
+var retryWaitMinSeconds = 1
+var retryWaitMaxSeconds = 30
+
 // Client represents an internal client that brokers calls to the Incapsula API
 type Client struct {
 	config          *Config
 	httpClient      *http.Client
 	providerVersion string
 	accountStatus   *AccountStatusResponse
-	maxRetries      int
-	retryWaitMin    time.Duration
-	retryWaitMax    time.Duration
 }
 
 // NewClient creates a new client with the provided configuration
 func NewClient(config *Config) *Client {
 	client := &http.Client{}
 
-	maxRetries := config.MaxRetries
-	if maxRetries <= 0 {
-		maxRetries = 4
-	}
-	retryWaitMin := config.RetryWaitMinSeconds
-	if retryWaitMin <= 0 {
-		retryWaitMin = 1
-	}
-	retryWaitMax := config.RetryWaitMaxSeconds
-	if retryWaitMax <= 0 {
-		retryWaitMax = 30
-	}
-
-	return &Client{
-		config:          config,
-		httpClient:      client,
-		providerVersion: "3.38.3",
-		maxRetries:      maxRetries,
-		retryWaitMin:    time.Duration(retryWaitMin) * time.Second,
-		retryWaitMax:    time.Duration(retryWaitMax) * time.Second,
-	}
+	return &Client{config: config, httpClient: client, providerVersion: "3.38.3"}
 }
 
 func (c *Client) CreateFormDataBody(bodyMap map[string]interface{}) ([]byte, string) {
@@ -247,18 +230,22 @@ func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
 	var resp *http.Response
 	var err error
 
-	for attempt := 0; attempt <= c.maxRetries; attempt++ {
+	for attempt := 0; attempt <= maxRetries; attempt++ {
 		if attempt > 0 {
 			if req.GetBody != nil {
 				req.Body, _ = req.GetBody()
 			}
-			delay := c.retryWaitMin * (1 << (attempt - 1))
-			if delay > c.retryWaitMax {
-				delay = c.retryWaitMax
+			delay := time.Duration(retryWaitMinSeconds) * time.Second * (1 << (attempt - 1))
+			maxDelay := time.Duration(retryWaitMaxSeconds) * time.Second
+			if delay > maxDelay {
+				delay = maxDelay
 			}
-			jitter := time.Duration(rand.Int63n(int64(delay) / 4))
+			var jitter time.Duration
+			if delay > 0 {
+				jitter = time.Duration(rand.Int63n(int64(delay) / 4))
+			}
 			log.Printf("[WARN] Transient error (status %d), retry %d/%d for %s %s (backoff %s)",
-				resp.StatusCode, attempt, c.maxRetries, req.Method, req.URL.Path, delay+jitter)
+				resp.StatusCode, attempt, maxRetries, req.Method, req.URL.Path, delay+jitter)
 			time.Sleep(delay + jitter)
 		}
 
@@ -275,7 +262,7 @@ func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
 		resp.Body.Close()
 	}
 
-	return nil, fmt.Errorf("request to %s %s failed after %d retries: last status %d", req.Method, req.URL.Path, c.maxRetries, resp.StatusCode)
+	return nil, fmt.Errorf("request to %s %s failed after %d retries: last status %d", req.Method, req.URL.Path, maxRetries, resp.StatusCode)
 }
 
 func (c *Client) isRetryableResponse(req *http.Request, resp *http.Response) bool {

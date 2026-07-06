@@ -87,15 +87,27 @@ func TestClientVerifyValidAccount(t *testing.T) {
 // executeRequest retry Tests (UM-13362, UM-13376)
 // //////////////////////////////////////////////////////////////
 
+// withShortRetries overrides package-level retry vars for fast tests and returns a restore function.
+func withShortRetries() func() {
+	origMax := maxRetries
+	origMin := retryWaitMinSeconds
+	origMaxWait := retryWaitMaxSeconds
+	maxRetries = 3
+	retryWaitMinSeconds = 0
+	retryWaitMaxSeconds = 0
+	return func() {
+		maxRetries = origMax
+		retryWaitMinSeconds = origMin
+		retryWaitMaxSeconds = origMaxWait
+	}
+}
+
 // newTestClient creates a Client with minimal retry settings for fast tests.
 func newTestClient(serverURL string) *Client {
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: serverURL, MaxRetries: 3, RetryWaitMinSeconds: 1, RetryWaitMaxSeconds: 2}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: serverURL}
 	return &Client{
-		config:       config,
-		httpClient:   &http.Client{},
-		maxRetries:   3,
-		retryWaitMin: 100 * time.Millisecond,
-		retryWaitMax: 200 * time.Millisecond,
+		config:     config,
+		httpClient: &http.Client{},
 	}
 }
 
@@ -103,6 +115,9 @@ func newTestClient(serverURL string) *Client {
 // request keeps getting 502 until retries are exhausted, executeRequest returns
 // a non-nil error (matching the old behavior so callers' `if err != nil` guard works).
 func TestExecuteRequestRetriesExhaustedReturnsError(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	var calls int32
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		atomic.AddInt32(&calls, 1)
@@ -133,6 +148,9 @@ func TestExecuteRequestRetriesExhaustedReturnsError(t *testing.T) {
 // TestExecuteRequestRetriesThenSucceeds verifies the retry path still recovers:
 // a 502 followed by a 200 should return the successful response and no error.
 func TestExecuteRequestRetriesThenSucceeds(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	var calls int32
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if atomic.AddInt32(&calls, 1) == 1 {
@@ -172,12 +190,15 @@ func TestExecuteRequestRetriesThenSucceeds(t *testing.T) {
 // crash scenario end-to-end: persistent 502s during a terraform import refresh
 // must produce a clean error from GetPerformanceSettings, not a panic.
 func TestGetPerformanceSettingsNoPanicOnPersistent502(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(http.StatusBadGateway)
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL, MaxRetries: 2, RetryWaitMinSeconds: 1, RetryWaitMaxSeconds: 1}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL, BaseURLRev2: server.URL, BaseURLAPI: server.URL}
 	client := NewClient(config)
 	client.httpClient = &http.Client{}
 
@@ -195,6 +216,9 @@ func TestGetPerformanceSettingsNoPanicOnPersistent502(t *testing.T) {
 // //////////////////////////////////////////////////////////////
 
 func TestRetryOn503ReadOperation(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	var calls int32
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if atomic.AddInt32(&calls, 1) <= 2 {
@@ -224,6 +248,9 @@ func TestRetryOn503ReadOperation(t *testing.T) {
 }
 
 func TestRetryOn504ReadOperation(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	var calls int32
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if atomic.AddInt32(&calls, 1) == 1 {
@@ -253,6 +280,9 @@ func TestRetryOn504ReadOperation(t *testing.T) {
 }
 
 func TestRetryOn429(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	var calls int32
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if atomic.AddInt32(&calls, 1) == 1 {
@@ -282,6 +312,9 @@ func TestRetryOn429(t *testing.T) {
 }
 
 func TestRetryOnHTMLResponse(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	var calls int32
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if atomic.AddInt32(&calls, 1) == 1 {
@@ -314,6 +347,9 @@ func TestRetryOnHTMLResponse(t *testing.T) {
 }
 
 func TestRetryWriteOnHTMLGatewayError(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	var calls int32
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if atomic.AddInt32(&calls, 1) == 1 {
@@ -346,6 +382,9 @@ func TestRetryWriteOnHTMLGatewayError(t *testing.T) {
 }
 
 func TestNoRetryWriteOn502WithJSON(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	var calls int32
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		atomic.AddInt32(&calls, 1)
@@ -373,6 +412,9 @@ func TestNoRetryWriteOn502WithJSON(t *testing.T) {
 }
 
 func TestNoRetryOn400(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	var calls int32
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		atomic.AddInt32(&calls, 1)
@@ -400,6 +442,9 @@ func TestNoRetryOn400(t *testing.T) {
 }
 
 func TestRetryWithRequestBodyIntact(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	var calls int32
 	var lastBody string
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -430,6 +475,9 @@ func TestRetryWithRequestBodyIntact(t *testing.T) {
 }
 
 func TestVerifyRetriesOnTransientHTMLResponse(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	var calls int32
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if atomic.AddInt32(&calls, 1) == 1 {
@@ -444,10 +492,8 @@ func TestVerifyRetriesOnTransientHTMLResponse(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL, MaxRetries: 3, RetryWaitMinSeconds: 1, RetryWaitMaxSeconds: 1}
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL}
 	client := NewClient(config)
-	client.retryWaitMin = 100 * time.Millisecond
-	client.retryWaitMax = 200 * time.Millisecond
 
 	result, err := client.Verify()
 	if err != nil {
@@ -465,6 +511,9 @@ func TestVerifyRetriesOnTransientHTMLResponse(t *testing.T) {
 }
 
 func TestNormalJSONResponseBodyNotCorrupted(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	expectedBody := `{"site_id":123,"domain":"example.com","res":0,"res_message":"OK"}`
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.Header().Set("Content-Type", "application/json")
