@@ -32,17 +32,29 @@ func init() {
 		"base_url_rev_3": "The base URL (revision 3) for API operations. Used for provider development.",
 
 		"base_url_api": "The base URL (same as v2 but with different subdomain) for API operations. Used for provider development.",
+
+		"max_retries": "Maximum number of retries for transient API failures (502, 503, 504, 429, HTML error pages). " +
+			"Can be set via INCAPSULA_MAX_RETRIES environment variable.",
+
+		"retry_wait_min_seconds": "Minimum wait time in seconds before the first retry (exponential backoff base). " +
+			"Can be set via INCAPSULA_RETRY_WAIT_MIN environment variable.",
+
+		"retry_wait_max_seconds": "Maximum wait time in seconds between retries (backoff cap). " +
+			"Can be set via INCAPSULA_RETRY_WAIT_MAX environment variable.",
 	}
 }
 
 func providerConfigure(d *schema.ResourceData, terraformVersion string) (interface{}, error) {
 	config := Config{
-		APIID:       d.Get("api_id").(string),
-		APIKey:      d.Get("api_key").(string),
-		BaseURL:     d.Get("base_url").(string),
-		BaseURLRev2: d.Get("base_url_rev_2").(string),
-		BaseURLRev3: d.Get("base_url_rev_3").(string),
-		BaseURLAPI:  d.Get("base_url_api").(string),
+		APIID:               d.Get("api_id").(string),
+		APIKey:              d.Get("api_key").(string),
+		BaseURL:             d.Get("base_url").(string),
+		BaseURLRev2:         d.Get("base_url_rev_2").(string),
+		BaseURLRev3:         d.Get("base_url_rev_3").(string),
+		BaseURLAPI:          d.Get("base_url_api").(string),
+		MaxRetries:          d.Get("max_retries").(int),
+		RetryWaitMinSeconds: d.Get("retry_wait_min_seconds").(int),
+		RetryWaitMaxSeconds: d.Get("retry_wait_max_seconds").(int),
 	}
 
 	return config.Client()
@@ -87,6 +99,24 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("INCAPSULA_BASE_URL_API", baseURLAPI),
 				Description: descriptions["base_url_api"],
+			},
+			"max_retries": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("INCAPSULA_MAX_RETRIES", 4),
+				Description: descriptions["max_retries"],
+			},
+			"retry_wait_min_seconds": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("INCAPSULA_RETRY_WAIT_MIN", 1),
+				Description: descriptions["retry_wait_min_seconds"],
+			},
+			"retry_wait_max_seconds": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("INCAPSULA_RETRY_WAIT_MAX", 30),
+				Description: descriptions["retry_wait_max_seconds"],
 			},
 		},
 

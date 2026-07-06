@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"io"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -20,23 +20,42 @@ import (
 const contentTypeApplicationUrlEncoded = "application/x-www-form-urlencoded"
 const contentTypeApplicationJson = "application/json"
 
-// durationOfRetriesInSeconds bounds how long "read" requests are retried on
-// transient (502) failures. It is a var (not a const) so tests can shorten it.
-var durationOfRetriesInSeconds = 30
-
 // Client represents an internal client that brokers calls to the Incapsula API
 type Client struct {
 	config          *Config
 	httpClient      *http.Client
 	providerVersion string
 	accountStatus   *AccountStatusResponse
+	maxRetries      int
+	retryWaitMin    time.Duration
+	retryWaitMax    time.Duration
 }
 
 // NewClient creates a new client with the provided configuration
 func NewClient(config *Config) *Client {
 	client := &http.Client{}
 
-	return &Client{config: config, httpClient: client, providerVersion: "3.38.3"}
+	maxRetries := config.MaxRetries
+	if maxRetries <= 0 {
+		maxRetries = 4
+	}
+	retryWaitMin := config.RetryWaitMinSeconds
+	if retryWaitMin <= 0 {
+		retryWaitMin = 1
+	}
+	retryWaitMax := config.RetryWaitMaxSeconds
+	if retryWaitMax <= 0 {
+		retryWaitMax = 30
+	}
+
+	return &Client{
+		config:          config,
+		httpClient:      client,
+		providerVersion: "3.38.3",
+		maxRetries:      maxRetries,
+		retryWaitMin:    time.Duration(retryWaitMin) * time.Second,
+		retryWaitMax:    time.Duration(retryWaitMax) * time.Second,
+	}
 }
 
 func (c *Client) CreateFormDataBody(bodyMap map[string]interface{}) ([]byte, string) {
@@ -124,7 +143,8 @@ func (c *Client) Verify() (*AccountStatusResponse, error) {
 }
 
 func (c *Client) PostFormWithHeaders(url string, data url.Values, operation string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(data.Encode()))
+	encoded := []byte(data.Encode())
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(encoded))
 	if err != nil {
 		return nil, fmt.Errorf("Error preparing request: %s", err)
 	}
@@ -224,33 +244,77 @@ func SetHeaders(c *Client, req *http.Request, contentType string, operation stri
 }
 
 func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
-	//if "read" action then we want to allow retries in case of timeout from incapsula service
-	operation := req.Header.Get("x-tf-operation")
-	if req.Method == http.MethodGet || (req.Method == http.MethodPost && strings.HasPrefix(strings.ToLower(operation), "read")) {
-		var responseOnRequest *http.Response
-		var errorOnRequest error
-		retryErr := resource.Retry(time.Duration(durationOfRetriesInSeconds)*time.Second, func() *resource.RetryError {
-			responseOnRequest, errorOnRequest = c.httpClient.Do(req)
-			if errorOnRequest != nil {
-				log.Printf("[ERROR] Error from Incapsula service when reading resource")
-				return resource.NonRetryableError(errorOnRequest)
+	var resp *http.Response
+	var err error
+
+	for attempt := 0; attempt <= c.maxRetries; attempt++ {
+		if attempt > 0 {
+			if req.GetBody != nil {
+				req.Body, _ = req.GetBody()
 			}
-			if responseOnRequest.StatusCode == 502 {
-				log.Printf("[WARN] Error from Incapsula service when reading resource, performing retry")
-				return resource.RetryableError(fmt.Errorf("error code 502 from incapsula service when reading resource, performing retry"))
+			delay := c.retryWaitMin * (1 << (attempt - 1))
+			if delay > c.retryWaitMax {
+				delay = c.retryWaitMax
 			}
-			return nil
-		})
-		// resource.Retry returns an error when retries are exhausted or the
-		// deadline is exceeded. Surface it so callers never receive a nil
-		// response together with a nil error (which leads to a nil pointer
-		// dereference, e.g. in GetPerformanceSettings on resp.Body.Close()).
-		if retryErr != nil && errorOnRequest == nil {
-			log.Printf("[ERROR] Retries exhausted reading resource: %s", retryErr)
-			errorOnRequest = retryErr
+			jitter := time.Duration(rand.Int63n(int64(delay) / 4))
+			log.Printf("[WARN] Transient error (status %d), retry %d/%d for %s %s (backoff %s)",
+				resp.StatusCode, attempt, c.maxRetries, req.Method, req.URL.Path, delay+jitter)
+			time.Sleep(delay + jitter)
 		}
-		return responseOnRequest, errorOnRequest
+
+		resp, err = c.httpClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		if !c.isRetryableResponse(req, resp) {
+			return resp, nil
+		}
+
+		io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
 	}
-	//if not a "read" request  - don't do retries (retires for updates are risky and result could be non-deterministic)
-	return c.httpClient.Do(req)
+
+	return nil, fmt.Errorf("request to %s %s failed after %d retries: last status %d", req.Method, req.URL.Path, c.maxRetries, resp.StatusCode)
+}
+
+func (c *Client) isRetryableResponse(req *http.Request, resp *http.Response) bool {
+	if resp.StatusCode == 429 {
+		return true
+	}
+
+	isRead := req.Method == http.MethodGet ||
+		strings.HasPrefix(strings.ToLower(req.Header.Get("x-tf-operation")), "read")
+
+	switch resp.StatusCode {
+	case 502, 503, 504:
+		if isRead {
+			return true
+		}
+		return c.responseBodyIsHTML(resp)
+	case 200:
+		if c.responseBodyIsHTML(resp) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (c *Client) responseBodyIsHTML(resp *http.Response) bool {
+	ct := resp.Header.Get("Content-Type")
+	if strings.Contains(ct, "text/html") {
+		return true
+	}
+	if strings.Contains(ct, "application/json") {
+		return false
+	}
+
+	peek := make([]byte, 1)
+	n, err := resp.Body.Read(peek)
+	if err != nil || n == 0 {
+		return false
+	}
+	resp.Body = io.NopCloser(io.MultiReader(bytes.NewReader(peek[:n]), resp.Body))
+	return peek[0] == '<'
 }

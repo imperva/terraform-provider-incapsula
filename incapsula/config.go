@@ -32,6 +32,11 @@ type Config struct {
 	// API V2
 	// Same as revision 2 but with a different subdomain
 	BaseURLAPI string
+
+	// Retry configuration for transient API failures
+	MaxRetries          int
+	RetryWaitMinSeconds int
+	RetryWaitMaxSeconds int
 }
 
 var missingAPIIDMessage = "API Identifier (api_id) must be provided"
