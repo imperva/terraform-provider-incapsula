@@ -84,7 +84,7 @@ func TestClientVerifyValidAccount(t *testing.T) {
 }
 
 // //////////////////////////////////////////////////////////////
-// executeRequest retry Tests (UM-13362, UM-13376)
+// executeRequest retry Tests
 // //////////////////////////////////////////////////////////////
 
 // withShortRetries overrides package-level retry vars for fast tests and returns a restore function.
@@ -212,7 +212,7 @@ func TestGetPerformanceSettingsNoPanicOnPersistent502(t *testing.T) {
 }
 
 // //////////////////////////////////////////////////////////////
-// UM-13376: Retry on transient failures (HTML, 503, 504, 429)
+// Retry on transient failures (HTML, 503, 504, 429)
 // //////////////////////////////////////////////////////////////
 
 func TestRetryOn503ReadOperation(t *testing.T) {
