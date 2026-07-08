@@ -273,16 +273,15 @@ func (c *Client) isRetryableResponse(req *http.Request, resp *http.Response) boo
 	isRead := req.Method == http.MethodGet ||
 		strings.HasPrefix(strings.ToLower(req.Header.Get("x-tf-operation")), "read")
 
-	switch resp.StatusCode {
-	case 502, 503, 504:
+	if resp.StatusCode >= 500 {
 		if isRead {
 			return true
 		}
 		return c.responseBodyIsHTML(resp)
-	case 200:
-		if c.responseBodyIsHTML(resp) {
-			return true
-		}
+	}
+
+	if resp.StatusCode == 200 && c.responseBodyIsHTML(resp) {
+		return true
 	}
 
 	return false
