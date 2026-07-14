@@ -478,6 +478,55 @@ func TestRetryWithRequestBodyIntact(t *testing.T) {
 	}
 }
 
+func TestRetryOnTransientNetworkError(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
+	var calls int32
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if atomic.AddInt32(&calls, 1) == 1 {
+			conn, _, _ := rw.(http.Hijacker).Hijack()
+			conn.Close()
+			return
+		}
+		rw.WriteHeader(http.StatusOK)
+		rw.Write([]byte(`{"ok":true}`))
+	}))
+	defer server.Close()
+
+	client := newTestClient(server.URL)
+	req, _ := PrepareJsonRequest(http.MethodGet, server.URL, nil)
+	SetHeaders(client, req, contentTypeApplicationJson, ReadSite, nil)
+
+	resp, err := client.executeRequest(req)
+	if err != nil {
+		t.Fatalf("Expected retry to recover from network error, got: %s", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Expected 200 after retry, got %d", resp.StatusCode)
+	}
+	if atomic.LoadInt32(&calls) != 2 {
+		t.Errorf("Expected 2 calls (1 network error + 1 success), got %d", atomic.LoadInt32(&calls))
+	}
+}
+
+func TestRetryOnNetworkErrorExhaustedReturnsError(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "http://192.0.2.1:1", BaseURLRev2: "http://192.0.2.1:1", BaseURLAPI: "http://192.0.2.1:1"}
+	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 50}}
+
+	req, _ := PrepareJsonRequest(http.MethodGet, "http://192.0.2.1:1/test", nil)
+	SetHeaders(client, req, contentTypeApplicationJson, ReadSite, nil)
+
+	_, err := client.executeRequest(req)
+	if err == nil {
+		t.Fatal("Expected error after all retries exhausted on network failure")
+	}
+}
+
 func TestVerifyRetriesOnTransientHTMLResponse(t *testing.T) {
 	restore := withShortRetries()
 	defer restore()
