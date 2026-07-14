@@ -111,10 +111,10 @@ func newTestClient(serverURL string) *Client {
 	}
 }
 
-// TestExecuteRequestRetriesExhaustedReturnsError verifies that when a "read"
+// TestExecuteRequestRetriesExhaustedReturnsResponse verifies that when a "read"
 // request keeps getting 502 until retries are exhausted, executeRequest returns
-// a non-nil error (matching the old behavior so callers' `if err != nil` guard works).
-func TestExecuteRequestRetriesExhaustedReturnsError(t *testing.T) {
+// the last response (resp, nil) so callers can handle the status code themselves.
+func TestExecuteRequestRetriesExhaustedReturnsResponse(t *testing.T) {
 	restore := withShortRetries()
 	defer restore()
 
@@ -134,11 +134,15 @@ func TestExecuteRequestRetriesExhaustedReturnsError(t *testing.T) {
 	SetHeaders(client, req, contentTypeApplicationJson, ReadSitePerformance, nil)
 
 	resp, err := client.executeRequest(req)
-	if err == nil {
-		t.Errorf("Should have received an error after retries were exhausted on 502")
+	if err != nil {
+		t.Errorf("Should not have received an error (response is returned to caller), got: %s", err)
 	}
-	if resp != nil {
-		defer resp.Body.Close()
+	if resp == nil {
+		t.Fatal("Expected non-nil response after retries exhausted")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusBadGateway {
+		t.Errorf("Expected status 502 in last response, got %d", resp.StatusCode)
 	}
 	if atomic.LoadInt32(&calls) != 4 { // 1 initial + 3 retries
 		t.Errorf("Expected 4 total calls (1 + 3 retries), got %d", atomic.LoadInt32(&calls))

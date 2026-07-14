@@ -258,6 +258,12 @@ func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
 			return resp, nil
 		}
 
+		if attempt == maxRetries {
+			log.Printf("[WARN] Retries exhausted (status %d) for %s %s, returning last response",
+				resp.StatusCode, req.Method, req.URL.Path)
+			return resp, nil
+		}
+
 		io.Copy(io.Discard, resp.Body)
 		resp.Body.Close()
 	}
