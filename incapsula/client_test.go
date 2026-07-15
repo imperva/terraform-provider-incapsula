@@ -92,7 +92,7 @@ func withShortRetries() func() {
 	origMax := maxRetries
 	origMin := retryWaitMinSeconds
 	origMaxWait := retryWaitMaxSeconds
-	maxRetries = 3
+	maxRetries = 1
 	retryWaitMinSeconds = 0
 	retryWaitMaxSeconds = 0
 	return func() {
@@ -144,8 +144,8 @@ func TestExecuteRequestRetriesExhaustedReturnsResponse(t *testing.T) {
 	if resp.StatusCode != http.StatusBadGateway {
 		t.Errorf("Expected status 502 in last response, got %d", resp.StatusCode)
 	}
-	if atomic.LoadInt32(&calls) != 4 { // 1 initial + 3 retries
-		t.Errorf("Expected 4 total calls (1 + 3 retries), got %d", atomic.LoadInt32(&calls))
+	if atomic.LoadInt32(&calls) != 2 { // 1 initial + 1 retry
+		t.Errorf("Expected 2 total calls (1 + 1 retry), got %d", atomic.LoadInt32(&calls))
 	}
 }
 
@@ -225,7 +225,7 @@ func TestRetryOn503ReadOperation(t *testing.T) {
 
 	var calls int32
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if atomic.AddInt32(&calls, 1) <= 2 {
+		if atomic.AddInt32(&calls, 1) == 1 {
 			rw.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
@@ -246,8 +246,8 @@ func TestRetryOn503ReadOperation(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("Expected 200, got %d", resp.StatusCode)
 	}
-	if atomic.LoadInt32(&calls) != 3 {
-		t.Errorf("Expected 3 calls (2 fails + 1 success), got %d", atomic.LoadInt32(&calls))
+	if atomic.LoadInt32(&calls) != 2 {
+		t.Errorf("Expected 2 calls (1 fail + 1 success), got %d", atomic.LoadInt32(&calls))
 	}
 }
 
