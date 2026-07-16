@@ -142,6 +142,9 @@ func TestClientGetAccountSSlSettingsErrorsInBody(t *testing.T) {
 }
 
 func TestClientGetAccountSSlSettingsErrorFromMY(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != fmt.Sprintf("%s", accountSSLSettingsUrl) {
 			t.Errorf("Should have hit /%s endpoint. Got: %s", accountSSLSettingsUrl, req.URL.String())

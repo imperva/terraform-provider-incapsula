@@ -92,7 +92,7 @@ func withShortRetries() func() {
 	origMax := maxRetries
 	origMin := retryWaitMinSeconds
 	origMaxWait := retryWaitMaxSeconds
-	maxRetries = 3
+	maxRetries = 1
 	retryWaitMinSeconds = 0
 	retryWaitMaxSeconds = 0
 	return func() {
@@ -111,10 +111,10 @@ func newTestClient(serverURL string) *Client {
 	}
 }
 
-// TestExecuteRequestRetriesExhaustedReturnsError verifies that when a "read"
+// TestExecuteRequestRetriesExhaustedReturnsResponse verifies that when a "read"
 // request keeps getting 502 until retries are exhausted, executeRequest returns
-// a non-nil error (matching the old behavior so callers' `if err != nil` guard works).
-func TestExecuteRequestRetriesExhaustedReturnsError(t *testing.T) {
+// the last response (resp, nil) so callers can handle the status code themselves.
+func TestExecuteRequestRetriesExhaustedReturnsResponse(t *testing.T) {
 	restore := withShortRetries()
 	defer restore()
 
@@ -134,14 +134,18 @@ func TestExecuteRequestRetriesExhaustedReturnsError(t *testing.T) {
 	SetHeaders(client, req, contentTypeApplicationJson, ReadSitePerformance, nil)
 
 	resp, err := client.executeRequest(req)
-	if err == nil {
-		t.Errorf("Should have received an error after retries were exhausted on 502")
+	if err != nil {
+		t.Errorf("Should not have received an error (response is returned to caller), got: %s", err)
 	}
-	if resp != nil {
-		defer resp.Body.Close()
+	if resp == nil {
+		t.Fatal("Expected non-nil response after retries exhausted")
 	}
-	if atomic.LoadInt32(&calls) != 4 { // 1 initial + 3 retries
-		t.Errorf("Expected 4 total calls (1 + 3 retries), got %d", atomic.LoadInt32(&calls))
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusBadGateway {
+		t.Errorf("Expected status 502 in last response, got %d", resp.StatusCode)
+	}
+	if atomic.LoadInt32(&calls) != 2 { // 1 initial + 1 retry
+		t.Errorf("Expected 2 total calls (1 + 1 retry), got %d", atomic.LoadInt32(&calls))
 	}
 }
 
@@ -221,7 +225,7 @@ func TestRetryOn503ReadOperation(t *testing.T) {
 
 	var calls int32
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if atomic.AddInt32(&calls, 1) <= 2 {
+		if atomic.AddInt32(&calls, 1) == 1 {
 			rw.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
@@ -242,8 +246,8 @@ func TestRetryOn503ReadOperation(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("Expected 200, got %d", resp.StatusCode)
 	}
-	if atomic.LoadInt32(&calls) != 3 {
-		t.Errorf("Expected 3 calls (2 fails + 1 success), got %d", atomic.LoadInt32(&calls))
+	if atomic.LoadInt32(&calls) != 2 {
+		t.Errorf("Expected 2 calls (1 fail + 1 success), got %d", atomic.LoadInt32(&calls))
 	}
 }
 
@@ -471,6 +475,55 @@ func TestRetryWithRequestBodyIntact(t *testing.T) {
 	defer resp.Body.Close()
 	if lastBody != string(payload) {
 		t.Errorf("Request body was not preserved on retry.\nExpected: %s\nGot: %s", string(payload), lastBody)
+	}
+}
+
+func TestRetryOnTransientNetworkError(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
+	var calls int32
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if atomic.AddInt32(&calls, 1) == 1 {
+			conn, _, _ := rw.(http.Hijacker).Hijack()
+			conn.Close()
+			return
+		}
+		rw.WriteHeader(http.StatusOK)
+		rw.Write([]byte(`{"ok":true}`))
+	}))
+	defer server.Close()
+
+	client := newTestClient(server.URL)
+	req, _ := PrepareJsonRequest(http.MethodGet, server.URL, nil)
+	SetHeaders(client, req, contentTypeApplicationJson, ReadSite, nil)
+
+	resp, err := client.executeRequest(req)
+	if err != nil {
+		t.Fatalf("Expected retry to recover from network error, got: %s", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("Expected 200 after retry, got %d", resp.StatusCode)
+	}
+	if atomic.LoadInt32(&calls) != 2 {
+		t.Errorf("Expected 2 calls (1 network error + 1 success), got %d", atomic.LoadInt32(&calls))
+	}
+}
+
+func TestRetryOnNetworkErrorExhaustedReturnsError(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "http://192.0.2.1:1", BaseURLRev2: "http://192.0.2.1:1", BaseURLAPI: "http://192.0.2.1:1"}
+	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 50}}
+
+	req, _ := PrepareJsonRequest(http.MethodGet, "http://192.0.2.1:1/test", nil)
+	SetHeaders(client, req, contentTypeApplicationJson, ReadSite, nil)
+
+	_, err := client.executeRequest(req)
+	if err == nil {
+		t.Fatal("Expected error after all retries exhausted on network failure")
 	}
 }
 

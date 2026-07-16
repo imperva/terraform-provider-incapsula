@@ -41,6 +41,9 @@ func TestCspSiteConfigBadConnection(t *testing.T) {
 }
 
 func TestCSPSiteConfigErrorResponse(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	apiID := "foo"
 	apiKey := "bar"
 	accountID := 55

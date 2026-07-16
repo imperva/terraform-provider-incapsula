@@ -297,6 +297,9 @@ func TestUpdatReadSiteMonitoringBadJSON(t *testing.T) {
 }
 
 func TestReadSiteMonitoringInvalidConfig(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42

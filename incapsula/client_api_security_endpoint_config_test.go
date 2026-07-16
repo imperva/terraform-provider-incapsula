@@ -64,6 +64,9 @@ func TestGetApiSecurityEndpointConfigBadJSON(t *testing.T) {
 }
 
 func TestGetApiSecurityEndpointConfigInvalidApiConfig(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	apiID := "foo"
 	apiKey := "bar"
 	apiConfigID := int64(100)

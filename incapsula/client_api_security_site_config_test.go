@@ -230,6 +230,9 @@ func TestClientReadApiSecuritySiteConfigBadJSON(t *testing.T) {
 }
 
 func TestClientReadApiSecuritySiteConfigInvalidSiteConfig(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := int64(42)

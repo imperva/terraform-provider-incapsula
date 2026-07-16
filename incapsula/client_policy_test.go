@@ -61,6 +61,9 @@ func TestGetAllPoliciesForAccountBadJSON(t *testing.T) {
 }
 
 func TestGetAllPoliciesForAccountInvalidApiConfig(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	apiID := "foo"
 	apiKey := "bar"
 	accountId := "92"

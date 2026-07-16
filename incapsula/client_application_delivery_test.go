@@ -325,6 +325,9 @@ func TestReadApplicationDeliveryBadJSON(t *testing.T) {
 }
 
 func TestReadApplicationDeliveryInvalidConfig(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42

@@ -3,17 +3,20 @@ package incapsula
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"math/rand"
 	"mime/multipart"
+	"net"
 	"net/http"
 	"net/url"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -244,17 +247,31 @@ func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
 			if delay > 0 {
 				jitter = time.Duration(rand.Int63n(int64(delay) / 4))
 			}
-			log.Printf("[WARN] Transient error (status %d), retry %d/%d for %s %s (backoff %s)",
-				resp.StatusCode, attempt, maxRetries, req.Method, req.URL.Path, delay+jitter)
+			if err != nil {
+				log.Printf("[WARN] Transient network error, retry %d/%d for %s %s (backoff %s): %v",
+					attempt, maxRetries, req.Method, req.URL.Path, delay+jitter, err)
+			} else {
+				log.Printf("[WARN] Transient error (status %d), retry %d/%d for %s %s (backoff %s)",
+					resp.StatusCode, attempt, maxRetries, req.Method, req.URL.Path, delay+jitter)
+			}
 			time.Sleep(delay + jitter)
 		}
 
 		resp, err = c.httpClient.Do(req)
 		if err != nil {
+			if isTransientNetError(err) && attempt < maxRetries {
+				continue
+			}
 			return nil, err
 		}
 
 		if !c.isRetryableResponse(req, resp) {
+			return resp, nil
+		}
+
+		if attempt == maxRetries {
+			log.Printf("[WARN] Retries exhausted (status %d) for %s %s, returning last response",
+				resp.StatusCode, req.Method, req.URL.Path)
 			return resp, nil
 		}
 
@@ -284,6 +301,17 @@ func (c *Client) isRetryableResponse(req *http.Request, resp *http.Response) boo
 		return true
 	}
 
+	return false
+}
+
+func isTransientNetError(err error) bool {
+	if errors.Is(err, io.EOF) || errors.Is(err, syscall.ECONNRESET) || errors.Is(err, syscall.ECONNREFUSED) {
+		return true
+	}
+	var netErr net.Error
+	if errors.As(err, &netErr) && netErr.Timeout() {
+		return true
+	}
 	return false
 }
 

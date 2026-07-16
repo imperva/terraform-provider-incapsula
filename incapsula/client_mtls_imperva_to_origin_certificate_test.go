@@ -63,6 +63,9 @@ func TestGetMTLSCertificateBadJSON(t *testing.T) {
 }
 
 func TestGetMTLSCertificateInvalidApiConfig(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	apiID := "foo"
 	apiKey := "bar"
 	certificateID := "42"
