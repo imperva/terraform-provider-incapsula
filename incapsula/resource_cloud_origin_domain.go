@@ -15,10 +15,24 @@ func resourceCloudOriginDomain() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceCloudOriginDomainCreate,
 		ReadContext:   resourceCloudOriginDomainRead,
-		UpdateContext: resourceCloudOriginDomainUpdate,
 		DeleteContext: resourceCloudOriginDomainDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceCloudOriginDomainImport,
+		},
+		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
+			if d.Id() == "" {
+				return nil
+			}
+			for _, f := range []string{"region", "port", "origin_tls_policy"} {
+				if d.HasChange(f) {
+					return fmt.Errorf(
+						"%q cannot be modified after creation. To change it, run "+
+							"`terraform destroy` against this resource and re-create it "+
+							"(traffic routed through the imperva_origin_domain will be interrupted).",
+						f)
+				}
+			}
+			return nil
 		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -60,15 +74,17 @@ func resourceCloudOriginDomain() *schema.Resource {
 				},
 			},
 			"region": {
-				Description: "The cloud region where the origin is located (e.g., us-east-1 for AWS, us-central1 for GCP).",
+				Description: "The cloud region where the origin is located (e.g., us-east-1 for AWS). Immutable after creation.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"port": {
-				Description: "Port number for the origin. Must be 443 or in the range 1024-65535. Default: 443",
+				Description: "Port number for the origin. Must be 443 or in the range 1024-65535. Default: 443. Immutable after creation.",
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     443,
+				ForceNew:    true,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					port := val.(int)
 					if port != 443 && (port < 1024 || port > 65535) {
@@ -78,9 +94,10 @@ func resourceCloudOriginDomain() *schema.Resource {
 				},
 			},
 			"origin_tls_policy": {
-				Description: "Minimum TLS version for the origin connection. Supported values: SSLv3, TLS_1_0, TLS_1_1, TLS_1_2.",
+				Description: "Minimum TLS version for the origin connection. Supported values: SSLv3, TLS_1_0, TLS_1_1, TLS_1_2. Immutable after creation.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"imperva_origin_domain": {
 				Description: "The Imperva-managed origin domain that is used to route traffic to the cloud origin.",
@@ -186,32 +203,6 @@ func resourceCloudOriginDomainRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("updated_at", origin.UpdatedAt)
 
 	return nil
-}
-
-func resourceCloudOriginDomainUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Client)
-
-	accountID, siteID, originID, err := parseCloudOriginID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if d.HasChange("region") || d.HasChange("port") || d.HasChange("origin_tls_policy") {
-		region := d.Get("region").(string)
-		port := d.Get("port").(int)
-		tlsPolicy := d.Get("origin_tls_policy").(string)
-
-		log.Printf("[INFO] Updating Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
-
-		_, err := client.UpdateCloudOriginDomain(siteID, originID, accountID, region, port, tlsPolicy)
-		if err != nil {
-			return diag.Errorf("[ERROR] Could not update Incapsula cloud origin domain: %d for site: %d: %s\n", originID, siteID, err)
-		}
-
-		log.Printf("[INFO] Updated Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
-	}
-
-	return resourceCloudOriginDomainRead(ctx, d, m)
 }
 
 func resourceCloudOriginDomainDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

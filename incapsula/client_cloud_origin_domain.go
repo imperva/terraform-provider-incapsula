@@ -35,11 +35,6 @@ type CloudOriginDomainCreateRequest struct {
 	DomainConfig *CloudOriginDomainConfig `json:"domainConfig,omitempty"`
 }
 
-type CloudOriginDomainUpdateRequest struct {
-	Region       string                   `json:"region,omitempty"`
-	DomainConfig *CloudOriginDomainConfig `json:"domainConfig,omitempty"`
-}
-
 func getCloudOriginUrl(baseURL string, siteID int, path string, accountID string) string {
 	url := fmt.Sprintf("%s/sites/%d/cloud-origins%s", baseURL, siteID, path)
 	if accountID != "" {
@@ -125,53 +120,6 @@ func (c *Client) GetCloudOriginDomain(siteID, originID int, accountID string) (*
 
 	if len(response.Errors) > 0 {
 		return nil, fmt.Errorf("Error from Incapsula service when reading cloud origin domain %d for site %d: %s", originID, siteID, response.Errors[0].Detail)
-	}
-
-	return &response, nil
-}
-
-func (c *Client) UpdateCloudOriginDomain(siteID, originID int, accountID string, region string, port int, tlsPolicy string) (*CloudOriginDomainResponse, error) {
-	log.Printf("[INFO] Updating Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
-
-	payload := CloudOriginDomainUpdateRequest{
-		Region: region,
-		DomainConfig: &CloudOriginDomainConfig{
-			Port:            port,
-			OriginTlsPolicy: tlsPolicy,
-		},
-	}
-
-	payloadJSON, err := json.Marshal(payload)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to JSON marshal cloud origin domain update: %s", err)
-	}
-
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut,
-		getCloudOriginUrl(c.config.BaseURLRev3, siteID, fmt.Sprintf("/%d", originID), accountID),
-		payloadJSON,
-		UpdateCloudOriginDomain)
-
-	if err != nil {
-		return nil, fmt.Errorf("Error from Incapsula service while updating cloud origin domain %d for site %d: %s", originID, siteID, err)
-	}
-
-	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
-
-	log.Printf("[DEBUG] Incapsula update cloud origin domain JSON response: %s\n", string(responseBody))
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Error status code %d from Incapsula service when updating cloud origin domain %d for site %d: %s", resp.StatusCode, originID, siteID, string(responseBody))
-	}
-
-	var response CloudOriginDomainResponse
-	err = json.Unmarshal(responseBody, &response)
-	if err != nil {
-		return nil, fmt.Errorf("Error parsing cloud origin domain JSON response: %s\nresponse: %s", err, string(responseBody))
-	}
-
-	if len(response.Errors) > 0 {
-		return nil, fmt.Errorf("Error from Incapsula service when updating cloud origin domain %d for site %d: %s", originID, siteID, response.Errors[0].Detail)
 	}
 
 	return &response, nil
