@@ -197,6 +197,54 @@ const ReadAbpWebsites = "read_abp_websites"
 const UpdateAbpWebsites = "update_abp_websites"
 const DeleteAbpWebsites = "delete_abp_websites"
 
+const CreateAbpCondition = "create_abp_condition"
+const ReadAbpCondition = "read_abp_condition"
+const UpdateAbpCondition = "update_abp_condition"
+const DeleteAbpCondition = "delete_abp_condition"
+const ListAbpConditions = "list_abp_conditions"
+
+const CreateAbpProofOfWorkConfiguration = "create_abp_proof_of_work_configuration"
+const ReadAbpProofOfWorkConfiguration = "read_abp_proof_of_work_configuration"
+const UpdateAbpProofOfWorkConfiguration = "update_abp_proof_of_work_configuration"
+const DeleteAbpProofOfWorkConfiguration = "delete_abp_proof_of_work_configuration"
+const ListAbpProofOfWorkConfigurations = "list_abp_proof_of_work_configurations"
+
+const CreateAbpPolicy = "create_abp_policy"
+const ReadAbpPolicy = "read_abp_policy"
+const UpdateAbpPolicy = "update_abp_policy"
+const DeleteAbpPolicy = "delete_abp_policy"
+const ListAbpPolicies = "list_abp_policies"
+const ReadAbpAccountGlobalPolicy = "read_abp_account_global_policy"
+
+const ReadAbpPreflightStatus = "read_abp_preflight_status"
+const CreateAbpPreflight = "create_abp_preflight"
+const PublishAbpPreflight = "publish_abp_preflight"
+
+const CreateAbpSite = "create_abp_site"
+const ListAbpSites = "list_abp_sites"
+const ReadAbpSite = "read_abp_site"
+const UpdateAbpSite = "update_abp_site"
+const DeleteAbpSite = "delete_abp_site"
+
+const ReadAbpSiteDomainPriority = "read_abp_site_domain_priority"
+const UpdateAbpSiteDomainPriority = "update_abp_site_domain_priority"
+
+const ReadAbpAccountSitePriority = "read_abp_account_site_priority"
+const UpdateAbpAccountSitePriority = "update_abp_account_site_priority"
+
+const CreateAbpDomain = "create_abp_domain"
+const ReadAbpDomain = "read_abp_domain"
+const UpdateAbpDomain = "update_abp_domain"
+const DeleteAbpDomain = "delete_abp_domain"
+
+const CreateAbpDomainEncryptionKey = "create_abp_domain_encryption_key"
+const ListAbpDomainEncryptionKeys = "list_abp_domain_encryption_keys"
+const DeleteAbpDomainEncryptionKey = "delete_abp_domain_encryption_key"
+
+const CreateAbpCredential = "create_abp_credential"
+const ReadAbpCredential = "read_abp_credential"
+const DeleteAbpCredential = "delete_abp_credential"
+
 const RequestSiteCert = "request_site_cert"
 
 const AddV3Site = "add_v3_site"
