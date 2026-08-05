@@ -27,6 +27,7 @@ func TestAccIncapsulaCloudOriginDomainBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "domain", domain),
 					resource.TestCheckResourceAttr(resourceName, "region", "us-east-1"),
 					resource.TestCheckResourceAttr(resourceName, "port", "443"),
+					resource.TestCheckResourceAttr(resourceName, "origin_ssl_protocol", "TLS_1_2"),
 					resource.TestCheckResourceAttrSet(resourceName, "imperva_origin_domain"),
 					resource.TestCheckResourceAttrSet(resourceName, "status"),
 					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
@@ -180,10 +181,11 @@ resource "incapsula_site" "test" {
 }
 
 resource "incapsula_cloud_origin_domain" "test" {
-  site_id = incapsula_site.test.id
-  domain  = "%s"
-  region  = "us-east-1"
-  port    = 443
+  site_id             = incapsula_site.test.id
+  domain              = "%s"
+  region              = "us-east-1"
+  port                = 443
+  origin_ssl_protocol = "TLS_1_2"
 }
 `, testName+".com", domain)
 }
