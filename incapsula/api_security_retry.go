@@ -33,11 +33,11 @@ func retryOnRateLimit(fn func() (*http.Response, error), initialDelay time.Durat
 func (c *Client) DoApiSecurityJsonRequest(method, url string, data []byte, operation string) (*http.Response, error) {
 	return retryOnRateLimit(func() (*http.Response, error) {
 		return c.DoJsonRequestWithHeaders(method, url, data, operation)
-	}, 10*time.Second)
+	}, 5*time.Second)
 }
 
 func (c *Client) DoApiSecurityFormDataRequest(method, url string, data []byte, contentType, operation string) (*http.Response, error) {
 	return retryOnRateLimit(func() (*http.Response, error) {
 		return c.DoFormDataRequestWithHeaders(method, url, data, contentType, operation)
-	}, 10*time.Second)
+	}, 5*time.Second)
 }
