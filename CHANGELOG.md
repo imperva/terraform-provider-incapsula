@@ -1,3 +1,7 @@
+## 3.40.0 (Aug 5, 2026)
+IMPROVEMENTS:
+- Added HTTP 429 rate-limit retry with exponential backoff for API Security resources
+
 ## 3.39.0 (Jul 22, 2026)
 
 FEATURES:
@@ -5,10 +9,6 @@ FEATURES:
 
 BUT FIXES:
 - fix: Add retry with exponential backoff for transient API failures ([#663](https://github.com/imperva/terraform-provider-incapsula/pull/663))
-
-IMPROVEMENTS:
-- Added HTTP 429 rate-limit retry with exponential backoff for API Security resources
-
 
 ## 3.38.3 (Jun 1, 2026)
 
