@@ -3,12 +3,13 @@ package incapsula
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"net"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceCloudOriginDomain() *schema.Resource {
@@ -23,7 +24,7 @@ func resourceCloudOriginDomain() *schema.Resource {
 			if d.Id() == "" {
 				return nil
 			}
-			for _, f := range []string{"region", "port", "origin_tls_policy"} {
+			for _, f := range []string{"region", "port", "origin_ssl_protocol"} {
 				if d.HasChange(f) {
 					return fmt.Errorf(
 						"%q cannot be modified after creation. To change it, run "+
@@ -93,8 +94,8 @@ func resourceCloudOriginDomain() *schema.Resource {
 					return
 				},
 			},
-			"origin_tls_policy": {
-				Description: "Minimum TLS version for the origin connection. Supported values: SSLv3, TLS_1_0, TLS_1_1, TLS_1_2. Immutable after creation.",
+			"origin_ssl_protocol": {
+				Description: "Minimum SSL protocol for the origin connection. Supported values: SSLv3, TLS_1_0, TLS_1_1, TLS_1_2. Immutable after creation.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -150,11 +151,11 @@ func resourceCloudOriginDomainCreate(ctx context.Context, d *schema.ResourceData
 	domain := d.Get("domain").(string)
 	region := d.Get("region").(string)
 	port := d.Get("port").(int)
-	tlsPolicy := d.Get("origin_tls_policy").(string)
+	sslProtocol := d.Get("origin_ssl_protocol").(string)
 
 	log.Printf("[INFO] Creating Incapsula cloud origin domain: %s for site: %d\n", domain, siteID)
 
-	response, err := client.CreateCloudOriginDomain(siteID, accountID, domain, region, port, tlsPolicy)
+	response, err := client.CreateCloudOriginDomain(siteID, accountID, domain, region, port, sslProtocol)
 	if err != nil {
 		return diag.Errorf("[ERROR] Could not create Incapsula cloud origin domain: %s for site: %d: %s\n", domain, siteID, err)
 	}
@@ -197,7 +198,7 @@ func resourceCloudOriginDomainRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("domain", origin.OriginDomain)
 	d.Set("region", origin.Region)
 	d.Set("port", origin.OriginConfig.Port)
-	d.Set("origin_tls_policy", origin.OriginConfig.OriginTlsPolicy)
+	d.Set("origin_ssl_protocol", origin.OriginConfig.OriginSslProtocol)
 	d.Set("imperva_origin_domain", origin.ImpervaOriginDomain)
 	d.Set("created_at", origin.CreatedAt)
 	d.Set("updated_at", origin.UpdatedAt)

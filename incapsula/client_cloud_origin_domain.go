@@ -9,8 +9,8 @@ import (
 )
 
 type CloudOriginDomainConfig struct {
-	Port            int    `json:"port,omitempty"`
-	OriginTlsPolicy string `json:"originTlsPolicy,omitempty"`
+	Port              int    `json:"port,omitempty"`
+	OriginSslProtocol string `json:"originSslProtocol,omitempty"`
 }
 
 type CloudOriginDomainData struct {
@@ -43,15 +43,15 @@ func getCloudOriginUrl(baseURL string, siteID int, path string, accountID string
 	return url
 }
 
-func (c *Client) CreateCloudOriginDomain(siteID int, accountID string, domain, region string, port int, tlsPolicy string) (*CloudOriginDomainResponse, error) {
+func (c *Client) CreateCloudOriginDomain(siteID int, accountID string, domain, region string, port int, sslProtocol string) (*CloudOriginDomainResponse, error) {
 	log.Printf("[INFO] Creating Incapsula cloud origin domain: %s for site: %d\n", domain, siteID)
 
 	payload := CloudOriginDomainCreateRequest{
 		OriginDomain: domain,
 		Region:       region,
 		DomainConfig: &CloudOriginDomainConfig{
-			Port:            port,
-			OriginTlsPolicy: tlsPolicy,
+			Port:              port,
+			OriginSslProtocol: sslProtocol,
 		},
 	}
 
