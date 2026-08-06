@@ -136,7 +136,7 @@ func (c *Client) CreateApiSecurityApiConfig(siteId int64, apiConfigPayload *ApiS
 
 	reqURL := fmt.Sprintf("%s%s%d", c.config.BaseURLAPI, apiConfigUrl, siteId)
 	contentType := writer.FormDataContentType()
-	resp, err := c.DoFormDataRequestWithHeaders(http.MethodPost, reqURL, body.Bytes(), contentType, CreateApiSecApiConfig)
+	resp, err := c.DoApiSecurityFormDataRequest(http.MethodPost, reqURL, body.Bytes(), contentType, CreateApiSecApiConfig)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error adding API Security API Config for site %d: %s", siteId, err)
 	}
@@ -187,7 +187,7 @@ func (c *Client) UpdateApiSecurityApiConfig(siteId int64, apiId string, apiConfi
 
 	reqURL := fmt.Sprintf("%s%s%d/%s", c.config.BaseURLAPI, apiConfigUrl, siteId, apiId)
 
-	resp, err := c.DoFormDataRequestWithHeaders(http.MethodPost, reqURL, body, contentType, CreateMtlsClientToImpervaCertifiate)
+	resp, err := c.DoApiSecurityFormDataRequest(http.MethodPost, reqURL, body, contentType, CreateMtlsClientToImpervaCertifiate)
 
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Error updating API Security API Config for site id %d, API id %s :%s", siteId, apiId, err)
@@ -280,7 +280,7 @@ func (c *Client) DeleteApiSecurityApiConfig(siteID int64, apiID string) error {
 
 	// Delete request to Incapsula
 	reqURL := fmt.Sprintf("%s%s%d/%s", c.config.BaseURLAPI, apiConfigUrl, siteID, apiID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete, reqURL, nil, DeleteApiSecApiConfig)
+	resp, err := c.DoApiSecurityJsonRequest(http.MethodDelete, reqURL, nil, DeleteApiSecApiConfig)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Error from Incapsula service when deleting API Secirity API Config with Site ID %d, API ID %s, : %s", siteID, apiID, err)
 	}

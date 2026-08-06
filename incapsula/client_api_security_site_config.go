@@ -78,7 +78,7 @@ func (c *Client) UpdateApiSecuritySiteConfig(siteId int64, siteConfigPayload *Ap
 		return nil, fmt.Errorf("Failed to JSON marshal api security site config: %s", err)
 	}
 
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost,
+	resp, err := c.DoApiSecurityJsonRequest(http.MethodPost,
 		fmt.Sprintf("%s"+siteConfigUrl+"%d", c.config.BaseURLAPI, siteId),
 		siteConfigJSON,
 		UpdateApiSecSiteConfig)
