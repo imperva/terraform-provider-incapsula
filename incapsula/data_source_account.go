@@ -37,7 +37,7 @@ func dataSourceAccountRead(ctx context.Context, d *schema.ResourceData, m interf
 	}
 	d.SetId(strconv.Itoa(accountStatusResponse.AccountID))
 	d.Set("current_account", strconv.Itoa(accountStatusResponse.AccountID))
-	d.Set("plan_name", accountStatusResponse.Account.PlanName)
+	d.Set("plan_name", accountStatusResponse.PlanName)
 
 	return nil
 }

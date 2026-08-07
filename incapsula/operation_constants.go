@@ -30,11 +30,6 @@ const CreateSubAccount = "create_sub_account"
 const ReadSubAccount = "read_sub_account"
 const DeleteSubAccount = "delete_sub_account"
 
-const CreateWAFLogSetup = "create_waf_log_setup"
-const DeleteWAFLogSetup = "delete_waf_log_setup"
-const ActivateWAFLogSetup = "activate_waf_log_setup"
-const UpdateStatusWAFLogSetup = "update_status_waf_log_setup"
-
 const ReadAccountDataStorageRegion = "read_account_data_storage_region"
 const UpdateAccountDataStorageRegion = "update_account_data_storage_region"
 
@@ -221,5 +216,4 @@ const DeleteApiClient = "delete_api_client"
 
 const CreateCloudOriginDomain = "create_cloud_origin_domain"
 const ReadCloudOriginDomain = "read_cloud_origin_domain"
-const UpdateCloudOriginDomain = "update_cloud_origin_domain"
 const DeleteCloudOriginDomain = "delete_cloud_origin_domain"

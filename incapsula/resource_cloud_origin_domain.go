@@ -3,22 +3,37 @@ package incapsula
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
 	"net"
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func resourceCloudOriginDomain() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceCloudOriginDomainCreate,
 		ReadContext:   resourceCloudOriginDomainRead,
-		UpdateContext: resourceCloudOriginDomainUpdate,
 		DeleteContext: resourceCloudOriginDomainDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceCloudOriginDomainImport,
+		},
+		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
+			if d.Id() == "" {
+				return nil
+			}
+			for _, f := range []string{"region", "port", "origin_ssl_protocol"} {
+				if d.HasChange(f) {
+					return fmt.Errorf(
+						"%q cannot be modified after creation. To change it, run "+
+							"`terraform destroy` against this resource and re-create it "+
+							"(traffic routed through the imperva_origin_domain will be interrupted).",
+						f)
+				}
+			}
+			return nil
 		},
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -60,22 +75,30 @@ func resourceCloudOriginDomain() *schema.Resource {
 				},
 			},
 			"region": {
-				Description: "The cloud region where the origin is located (e.g., us-east-1 for AWS, us-central1 for GCP).",
+				Description: "The cloud region where the origin is located (e.g., us-east-1 for AWS). Immutable after creation.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"port": {
-				Description: "Port number for the origin. Valid range: 1-65535. Default: 443",
+				Description: "Port number for the origin. Must be 443 or in the range 1024-65535. Default: 443. Immutable after creation.",
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Default:     443,
+				ForceNew:    true,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					port := val.(int)
-					if port < 1 || port > 65535 {
-						errs = append(errs, fmt.Errorf("%q must be between 1 and 65535, got: %d", key, port))
+					if port != 443 && (port < 1024 || port > 65535) {
+						errs = append(errs, fmt.Errorf("%q must be 443 or between 1024 and 65535, got: %d", key, port))
 					}
 					return
 				},
+			},
+			"origin_ssl_protocol": {
+				Description: "Minimum SSL protocol for the origin connection. Supported values: SSLv3, TLS_1_0, TLS_1_1, TLS_1_2. Immutable after creation.",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
 			},
 			"imperva_origin_domain": {
 				Description: "The Imperva-managed origin domain that is used to route traffic to the cloud origin.",
@@ -128,10 +151,11 @@ func resourceCloudOriginDomainCreate(ctx context.Context, d *schema.ResourceData
 	domain := d.Get("domain").(string)
 	region := d.Get("region").(string)
 	port := d.Get("port").(int)
+	sslProtocol := d.Get("origin_ssl_protocol").(string)
 
 	log.Printf("[INFO] Creating Incapsula cloud origin domain: %s for site: %d\n", domain, siteID)
 
-	response, err := client.CreateCloudOriginDomain(siteID, accountID, domain, region, port)
+	response, err := client.CreateCloudOriginDomain(siteID, accountID, domain, region, port, sslProtocol)
 	if err != nil {
 		return diag.Errorf("[ERROR] Could not create Incapsula cloud origin domain: %s for site: %d: %s\n", domain, siteID, err)
 	}
@@ -174,36 +198,12 @@ func resourceCloudOriginDomainRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("domain", origin.OriginDomain)
 	d.Set("region", origin.Region)
 	d.Set("port", origin.OriginConfig.Port)
+	d.Set("origin_ssl_protocol", origin.OriginConfig.OriginSslProtocol)
 	d.Set("imperva_origin_domain", origin.ImpervaOriginDomain)
 	d.Set("created_at", origin.CreatedAt)
 	d.Set("updated_at", origin.UpdatedAt)
 
 	return nil
-}
-
-func resourceCloudOriginDomainUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*Client)
-
-	accountID, siteID, originID, err := parseCloudOriginID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if d.HasChange("region") || d.HasChange("port") {
-		region := d.Get("region").(string)
-		port := d.Get("port").(int)
-
-		log.Printf("[INFO] Updating Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
-
-		_, err := client.UpdateCloudOriginDomain(siteID, originID, accountID, region, port)
-		if err != nil {
-			return diag.Errorf("[ERROR] Could not update Incapsula cloud origin domain: %d for site: %d: %s\n", originID, siteID, err)
-		}
-
-		log.Printf("[INFO] Updated Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
-	}
-
-	return resourceCloudOriginDomainRead(ctx, d, m)
 }
 
 func resourceCloudOriginDomainDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

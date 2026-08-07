@@ -63,6 +63,9 @@ func TestClientGetSiteMtlsClientToImpervaCertificateAssociationBadJSON(t *testin
 }
 
 func TestClientGetSiteMtlsClientToImpervaCertificateAssociationInvalidConfig(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	apiID := "foo"
 	apiKey := "bar"
 	siteID := 42

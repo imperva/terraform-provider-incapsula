@@ -146,6 +146,8 @@ func (m *MockImpervaServer) router(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case path == "accounts/add" && r.Method == http.MethodPost:
 		m.handleAccountAdd(w, r)
+	case path == "account/verify" && r.Method == http.MethodPost:
+		m.handleAccountVerify(w, r)
 	case path == "account" && r.Method == http.MethodPost:
 		m.handleAccountStatus(w, r)
 	case path == "accounts/configure" && r.Method == http.MethodPost:
@@ -269,6 +271,27 @@ func (m *MockImpervaServer) handleAccountAdd(w http.ResponseWriter, r *http.Requ
 			"plan_id":      account.PlanID,
 			"user_name":    account.UserName,
 			"logins":       logins,
+		},
+	}
+	m.writeJSONResponse(w, response)
+}
+
+// handleAccountVerify handles POST /account/verify (lightweight credential verification)
+func (m *MockImpervaServer) handleAccountVerify(w http.ResponseWriter, r *http.Request) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	response := map[string]interface{}{
+		"account_type": "Reseller Customer",
+		"account_id":   1000,
+		"parent_id":    0,
+		"account_name": "test account",
+		"plan_id":      "ent100",
+		"plan_name":    "ENTERPRISE",
+		"res":          0,
+		"res_message":  "OK",
+		"debug_info": map[string]interface{}{
+			"id-info": "999999",
 		},
 	}
 	m.writeJSONResponse(w, response)
@@ -695,12 +718,13 @@ func (m *MockImpervaServer) handleCSPGetDomain(w http.ResponseWriter, siteID int
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
-	domain := m.decodeDomainRef(domainRef)
-	if domain == "" {
+	decoded := m.decodeDomainRef(domainRef)
+	if decoded == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		m.writeErrorResponse(w, 400, "Invalid domain reference")
 		return
 	}
+	bareDomain := strings.TrimPrefix(decoded, "*.")
 
 	siteDomains, exists := m.cspDomains[siteID]
 	if !exists {
@@ -709,8 +733,8 @@ func (m *MockImpervaServer) handleCSPGetDomain(w http.ResponseWriter, siteID int
 		return
 	}
 
-	cspDomain, exists := siteDomains[domain]
-	if !exists {
+	cspDomain, exists := siteDomains[bareDomain]
+	if !exists || cspDomain.ReferenceID != domainRef {
 		w.WriteHeader(http.StatusNotFound)
 		m.writeErrorResponse(w, 404, "Domain not found")
 		return
@@ -754,7 +778,11 @@ func (m *MockImpervaServer) handleCSPAddDomain(w http.ResponseWriter, r *http.Re
 		m.cspDomains[siteID] = make(map[string]*MockCSPDomain)
 	}
 
-	refID := base64.RawURLEncoding.EncodeToString([]byte(domainReq.Domain))
+	domainForRef := domainReq.Domain
+	if domainReq.Subdomains {
+		domainForRef = "*." + domainReq.Domain
+	}
+	refID := base64.RawURLEncoding.EncodeToString([]byte(domainForRef))
 	cspDomain := &MockCSPDomain{
 		Domain:                   domainReq.Domain,
 		Subdomains:               domainReq.Subdomains,
@@ -780,27 +808,16 @@ func (m *MockImpervaServer) handleCSPDeleteDomain(w http.ResponseWriter, siteID 
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	domain := m.decodeDomainRef(domainRef)
-	if domain == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		m.writeErrorResponse(w, 400, "Invalid domain reference")
-		return
+	// Always 204 (idempotent); only removes the entry when the ref matches exactly.
+	decoded := m.decodeDomainRef(domainRef)
+	if decoded != "" {
+		bareDomain := strings.TrimPrefix(decoded, "*.")
+		if siteDomains, ok := m.cspDomains[siteID]; ok {
+			if entry, ok := siteDomains[bareDomain]; ok && entry.ReferenceID == domainRef {
+				delete(siteDomains, bareDomain)
+			}
+		}
 	}
-
-	siteDomains, exists := m.cspDomains[siteID]
-	if !exists {
-		w.WriteHeader(http.StatusNotFound)
-		m.writeErrorResponse(w, 404, "Site not found")
-		return
-	}
-
-	if _, exists := siteDomains[domain]; !exists {
-		w.WriteHeader(http.StatusNotFound)
-		m.writeErrorResponse(w, 404, "Domain not found")
-		return
-	}
-
-	delete(siteDomains, domain)
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -1135,7 +1152,11 @@ func (m *MockImpervaServer) AddCSPDomain(siteID int, domain *MockCSPDomain) {
 		m.cspDomains[siteID] = make(map[string]*MockCSPDomain)
 	}
 	if domain.ReferenceID == "" {
-		domain.ReferenceID = base64.RawURLEncoding.EncodeToString([]byte(domain.Domain))
+		domainForRef := domain.Domain
+		if domain.Subdomains {
+			domainForRef = "*." + domain.Domain
+		}
+		domain.ReferenceID = base64.RawURLEncoding.EncodeToString([]byte(domainForRef))
 	}
 	m.cspDomains[siteID][domain.Domain] = domain
 }

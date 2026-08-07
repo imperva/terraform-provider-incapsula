@@ -74,6 +74,9 @@ func TestClientGetDomainsForSiteValidCase(t *testing.T) {
 }
 
 func TestClientGetDomainsForSiteBadJsonResponse(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	log.Print("======================== BEGIN TEST ========================")
 	log.Print("[DEBUG] Running test client_site_domain_configuration_test.TestClientGetDomainsForSiteBadJsonResponse")
 	apiID := "foo"

@@ -53,6 +53,9 @@ func TestATOSiteAllowlistConfigBadConnection(t *testing.T) {
 }
 
 func TestATOSiteAllowlistConfigErrorResponse(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	apiId := "foo"
 	apiKey := "bar"
 	accountId := 55

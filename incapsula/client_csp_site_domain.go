@@ -218,10 +218,9 @@ func (c *Client) deleteCSPDomainNotes(accountID, siteID int, domain string) erro
 	return nil
 }
 
-func (c *Client) getCSPPreApprovedDomain(accountID, siteID int, domain string) (*CSPPreApprovedDomain, error) {
-	log.Printf("[INFO] Getting CSP pre-approved domain %s from site ID: %d\n", domain, siteID)
+func (c *Client) getCSPPreApprovedDomainByRef(accountID, siteID int, domainRef string) (*CSPPreApprovedDomain, error) {
+	log.Printf("[INFO] Getting CSP pre-approved domain by ref %s from site ID: %d\n", domainRef, siteID)
 
-	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
 	var resp *http.Response
 	var err error
 	if accountID != 0 {
@@ -239,28 +238,29 @@ func (c *Client) getCSPPreApprovedDomain(accountID, siteID int, domain string) (
 		return nil, fmt.Errorf("Error from CSP API for when getting pre-approved domains list for site ID %d: %s\n", siteID, err)
 	}
 
-	// Read the body
 	defer resp.Body.Close()
 	responseBody, err := ioutil.ReadAll(resp.Body)
 
-	// Dump JSON
 	log.Printf("[DEBUG] CSP API Get Pre-Approved Domain Data JSON response: %s\n", string(responseBody))
 
-	// Check the response code
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("Error status code %d from CSP API when getting pre-approved domain %s for site %d: %s\n",
-			resp.StatusCode, domain, siteID, string(responseBody))
+		return nil, fmt.Errorf("Error status code %d from CSP API when getting pre-approved domain ref %s for site %d: %s\n",
+			resp.StatusCode, domainRef, siteID, string(responseBody))
 	}
 
-	// Parse the JSON
 	var preApprovedDomain CSPPreApprovedDomain
 	err = json.Unmarshal([]byte(responseBody), &preApprovedDomain)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing JSON response for pre-approved domain %s for site ID %d: %s\nresponse: %s\n",
-			domain, siteID, err, string(responseBody))
+		return nil, fmt.Errorf("Error parsing JSON response for pre-approved domain ref %s for site ID %d: %s\nresponse: %s\n",
+			domainRef, siteID, err, string(responseBody))
 	}
 
 	return &preApprovedDomain, nil
+}
+
+func (c *Client) getCSPPreApprovedDomain(accountID, siteID int, domain string) (*CSPPreApprovedDomain, error) {
+	domainRef := base64.RawURLEncoding.EncodeToString([]byte(domain))
+	return c.getCSPPreApprovedDomainByRef(accountID, siteID, domainRef)
 }
 
 func (c *Client) updateCSPPreApprovedDomain(accountID, siteID int, dom *CSPPreApprovedDomain) (*CSPPreApprovedDomain, error) {

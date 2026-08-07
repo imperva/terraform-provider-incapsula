@@ -3,24 +3,31 @@ package incapsula
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"io"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"mime/multipart"
+	"net"
 	"net/http"
 	"net/url"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 )
 
 const contentTypeApplicationUrlEncoded = "application/x-www-form-urlencoded"
 const contentTypeApplicationJson = "application/json"
 
-const durationOfRetriesInSeconds = 30
+// Retry defaults for transient API failures (502, 503, 504, 429, HTML error pages).
+// These are vars (not consts) so tests can override them for fast execution.
+var maxRetries = 4
+var retryWaitMinSeconds = 1
+var retryWaitMaxSeconds = 30
 
 // Client represents an internal client that brokers calls to the Incapsula API
 type Client struct {
@@ -34,7 +41,7 @@ type Client struct {
 func NewClient(config *Config) *Client {
 	client := &http.Client{}
 
-	return &Client{config: config, httpClient: client, providerVersion: "3.38.2"}
+	return &Client{config: config, httpClient: client, providerVersion: "3.39.0"}
 }
 
 func (c *Client) CreateFormDataBody(bodyMap map[string]interface{}) ([]byte, string) {
@@ -66,11 +73,11 @@ func (c *Client) CreateFormDataBody(bodyMap map[string]interface{}) ([]byte, str
 	return body.Bytes(), writer.FormDataContentType()
 }
 
-// Verify checks the API credentials
+// Verify the API credentials using the lightweight verify endpoint
 func (c *Client) Verify() (*AccountStatusResponse, error) {
 	log.Println("[INFO] Checking API credentials against Incapsula API")
 
-	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountStatus)
+	reqURL := fmt.Sprintf("%s/%s", c.config.BaseURL, endpointAccountVerify)
 	data := url.Values{}
 
 	resp, err := c.PostFormWithHeaders(reqURL, data, VerifyAccount)
@@ -85,31 +92,45 @@ func (c *Client) Verify() (*AccountStatusResponse, error) {
 	// Dump JSON
 	log.Printf("[DEBUG] Successful test of API credentials.")
 
-	// Parse the JSON
-	var accountStatusResponse AccountStatusResponse
-	err = json.Unmarshal([]byte(responseBody), &accountStatusResponse)
+	// Parse the JSON using the lightweight verify response
+	var accountVerifyResponse AccountVerifyResponse
+	err = json.Unmarshal([]byte(responseBody), &accountVerifyResponse)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing account JSON response: %s", err)
 	}
 
 	var resString string
 
-	if resNumber, ok := accountStatusResponse.Res.(float64); ok {
+	if resNumber, ok := accountVerifyResponse.Res.(float64); ok {
 		resString = fmt.Sprintf("%d", int(resNumber))
 	} else {
-		resString = accountStatusResponse.Res.(string)
+		resString = accountVerifyResponse.Res.(string)
 	}
 
 	// Look at the response status code from Incapsula
 	if resString != "0" {
-		return &accountStatusResponse, fmt.Errorf("Error from Incapsula service when checking account: %s", string(responseBody))
+		return nil, fmt.Errorf("Error from Incapsula service when checking account: %s", string(responseBody))
 	}
 
-	return &accountStatusResponse, nil
+	// Convert the lightweight verify response to AccountStatusResponse for backward compatibility
+	accountStatusResponse := &AccountStatusResponse{
+		AccountType: accountVerifyResponse.AccountType,
+		AccountID:   accountVerifyResponse.AccountID,
+		ParentID:    accountVerifyResponse.ParentID,
+		AccountName: accountVerifyResponse.AccountName,
+		PlanID:      accountVerifyResponse.PlanID,
+		PlanName:    accountVerifyResponse.PlanName,
+		Res:         accountVerifyResponse.Res,
+		ResMessage:  accountVerifyResponse.ResMessage,
+		DebugInfo:   accountVerifyResponse.DebugInfo,
+	}
+
+	return accountStatusResponse, nil
 }
 
 func (c *Client) PostFormWithHeaders(url string, data url.Values, operation string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(data.Encode()))
+	encoded := []byte(data.Encode())
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(encoded))
 	if err != nil {
 		return nil, fmt.Errorf("Error preparing request: %s", err)
 	}
@@ -209,25 +230,105 @@ func SetHeaders(c *Client, req *http.Request, contentType string, operation stri
 }
 
 func (c *Client) executeRequest(req *http.Request) (*http.Response, error) {
-	//if "read" action then we want to allow retries in case of timeout from incapsula service
-	operation := req.Header.Get("x-tf-operation")
-	if req.Method == http.MethodGet || (req.Method == http.MethodPost && strings.HasPrefix(strings.ToLower(operation), "read")) {
-		var responseOnRequest *http.Response
-		var errorOnRequest error
-		resource.Retry(durationOfRetriesInSeconds*time.Second, func() *resource.RetryError {
-			responseOnRequest, errorOnRequest = c.httpClient.Do(req)
-			if errorOnRequest != nil {
-				log.Printf("[ERROR] Error from Incapsula service when reading resource")
-				return resource.NonRetryableError(errorOnRequest)
+	var resp *http.Response
+	var err error
+
+	for attempt := 0; attempt <= maxRetries; attempt++ {
+		if attempt > 0 {
+			if req.GetBody != nil {
+				req.Body, _ = req.GetBody()
 			}
-			if responseOnRequest.StatusCode == 502 {
-				log.Printf("[WARN] Error from Incapsula service when reading resource, performing retry")
-				return resource.RetryableError(fmt.Errorf("error code 502 from incapsula service when reading resource, performing retry"))
+			delay := time.Duration(retryWaitMinSeconds) * time.Second * (1 << (attempt - 1))
+			maxDelay := time.Duration(retryWaitMaxSeconds) * time.Second
+			if delay > maxDelay {
+				delay = maxDelay
 			}
-			return nil
-		})
-		return responseOnRequest, errorOnRequest
+			var jitter time.Duration
+			if delay > 0 {
+				jitter = time.Duration(rand.Int63n(int64(delay) / 4))
+			}
+			if err != nil {
+				log.Printf("[WARN] Transient network error, retry %d/%d for %s %s (backoff %s): %v",
+					attempt, maxRetries, req.Method, req.URL.Path, delay+jitter, err)
+			} else {
+				log.Printf("[WARN] Transient error (status %d), retry %d/%d for %s %s (backoff %s)",
+					resp.StatusCode, attempt, maxRetries, req.Method, req.URL.Path, delay+jitter)
+			}
+			time.Sleep(delay + jitter)
+		}
+
+		resp, err = c.httpClient.Do(req)
+		if err != nil {
+			if isTransientNetError(err) && attempt < maxRetries {
+				continue
+			}
+			return nil, err
+		}
+
+		if !c.isRetryableResponse(req, resp) {
+			return resp, nil
+		}
+
+		if attempt == maxRetries {
+			log.Printf("[WARN] Retries exhausted (status %d) for %s %s, returning last response",
+				resp.StatusCode, req.Method, req.URL.Path)
+			return resp, nil
+		}
+
+		io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
 	}
-	//if not a "read" request  - don't do retries (retires for updates are risky and result could be non-deterministic)
-	return c.httpClient.Do(req)
+
+	return nil, fmt.Errorf("request to %s %s failed after %d retries: last status %d", req.Method, req.URL.Path, maxRetries, resp.StatusCode)
+}
+
+func (c *Client) isRetryableResponse(req *http.Request, resp *http.Response) bool {
+	if resp.StatusCode == 429 {
+		return true
+	}
+
+	isRead := req.Method == http.MethodGet ||
+		strings.HasPrefix(strings.ToLower(req.Header.Get("x-tf-operation")), "read")
+
+	if resp.StatusCode >= 500 {
+		if isRead {
+			return true
+		}
+		return c.responseBodyIsHTML(resp)
+	}
+
+	if resp.StatusCode == 200 && c.responseBodyIsHTML(resp) {
+		return true
+	}
+
+	return false
+}
+
+func isTransientNetError(err error) bool {
+	if errors.Is(err, io.EOF) || errors.Is(err, syscall.ECONNRESET) || errors.Is(err, syscall.ECONNREFUSED) {
+		return true
+	}
+	var netErr net.Error
+	if errors.As(err, &netErr) && netErr.Timeout() {
+		return true
+	}
+	return false
+}
+
+func (c *Client) responseBodyIsHTML(resp *http.Response) bool {
+	ct := resp.Header.Get("Content-Type")
+	if strings.Contains(ct, "text/html") {
+		return true
+	}
+	if strings.Contains(ct, "application/json") {
+		return false
+	}
+
+	peek := make([]byte, 1)
+	n, err := resp.Body.Read(peek)
+	if err != nil || n == 0 {
+		return false
+	}
+	resp.Body = io.NopCloser(io.MultiReader(bytes.NewReader(peek[:n]), resp.Body))
+	return peek[0] == '<'
 }

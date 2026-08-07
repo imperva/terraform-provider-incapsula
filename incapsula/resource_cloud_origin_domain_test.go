@@ -27,40 +27,11 @@ func TestAccIncapsulaCloudOriginDomainBasic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "domain", domain),
 					resource.TestCheckResourceAttr(resourceName, "region", "us-east-1"),
 					resource.TestCheckResourceAttr(resourceName, "port", "443"),
+					resource.TestCheckResourceAttr(resourceName, "origin_ssl_protocol", "TLS_1_2"),
 					resource.TestCheckResourceAttrSet(resourceName, "imperva_origin_domain"),
 					resource.TestCheckResourceAttrSet(resourceName, "status"),
 					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
 					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccIncapsulaCloudOriginDomainUpdate(t *testing.T) {
-	testName := "tf-test-cloud-origin-update"
-	domain := fmt.Sprintf("%s.example.com", testName)
-	resourceName := "incapsula_cloud_origin_domain.test"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckCloudOriginDomainDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccCheckCloudOriginDomainConfigBasic(testName, domain),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudOriginDomainExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "region", "us-east-1"),
-					resource.TestCheckResourceAttr(resourceName, "port", "443"),
-				),
-			},
-			{
-				Config: testAccCheckCloudOriginDomainConfigUpdate(testName, domain),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckCloudOriginDomainExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "region", "eu-west-1"),
-					resource.TestCheckResourceAttr(resourceName, "port", "8443"),
 				),
 			},
 		},
@@ -210,25 +181,11 @@ resource "incapsula_site" "test" {
 }
 
 resource "incapsula_cloud_origin_domain" "test" {
-  site_id = incapsula_site.test.id
-  domain  = "%s"
-  region  = "us-east-1"
-  port    = 443
-}
-`, testName+".com", domain)
-}
-
-func testAccCheckCloudOriginDomainConfigUpdate(testName, domain string) string {
-	return fmt.Sprintf(`
-resource "incapsula_site" "test" {
-  domain = "%s"
-}
-
-resource "incapsula_cloud_origin_domain" "test" {
-  site_id = incapsula_site.test.id
-  domain  = "%s"
-  region  = "eu-west-1"
-  port    = 8443
+  site_id             = incapsula_site.test.id
+  domain              = "%s"
+  region              = "us-east-1"
+  port                = 443
+  origin_ssl_protocol = "TLS_1_2"
 }
 `, testName+".com", domain)
 }

@@ -86,8 +86,8 @@ func TestMissingBaseURLAPI(t *testing.T) {
 
 func TestInvalidCredentials(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != "/account" {
-			t.Errorf("Should have have hit /account endpoint. Got: %s", req.URL.String())
+		if req.URL.String() != "/account/verify" {
+			t.Errorf("Should have have hit /account/verify endpoint. Got: %s", req.URL.String())
 		}
 		rw.Write([]byte(`{"res":1,"res_message":"fail"}`))
 	}))
@@ -105,10 +105,10 @@ func TestInvalidCredentials(t *testing.T) {
 
 func TestValidCredentials(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		if req.URL.String() != "/account" {
-			t.Errorf("Should have have hit /account endpoint. Got: %s", req.URL.String())
+		if req.URL.String() != "/account/verify" {
+			t.Errorf("Should have have hit /account/verify endpoint. Got: %s", req.URL.String())
 		}
-		rw.Write([]byte(`{"res":0,"res_message":"OK"}`))
+		rw.Write([]byte(`{"account_type":"Account","account_id":1,"parent_id":0,"account_name":"test","plan_id":"ent100","plan_name":"ENTERPRISE","res":0,"res_message":"OK","debug_info":{"id-info":""}}`))
 	}))
 	defer server.Close()
 

@@ -157,3 +157,32 @@ func testAccCheckCSPDomainBasic(t *testing.T) string {
 		cspDomainResourceName, cspDomainName, cspSiteConfigResource, cspSiteConfigResource, cspSiteConfigResource,
 	)
 }
+
+// TestCSPDomainDiffSuppress_wildcardEqualsBare verifies that the domain field treats the
+// wildcard ("*.domain") and bare ("domain") forms as equivalent, so resources imported
+// before the server-side wildcard normalization do not show a spurious forced replacement
+// (see issue #653). A genuine domain change must still trigger a diff.
+func TestCSPDomainDiffSuppress_wildcardEqualsBare(t *testing.T) {
+	f := resourceCSPSiteDomain().Schema["domain"].DiffSuppressFunc
+	if f == nil {
+		t.Fatal("expected DiffSuppressFunc on the domain field")
+	}
+
+	cases := []struct {
+		old      string
+		new      string
+		suppress bool
+	}{
+		{"*.googlesyndication.com", "googlesyndication.com", true}, // stale wildcard state vs bare config
+		{"googlesyndication.com", "googlesyndication.com", true},   // identical bare values
+		{"*.a.com", "*.a.com", true},                               // identical wildcard values
+		{"googlesyndication.com", "example.com", false},            // genuinely different -> keep ForceNew
+		{"*.a.com", "b.com", false},                                // genuinely different -> keep ForceNew
+	}
+
+	for _, c := range cases {
+		if got := f("domain", c.old, c.new, nil); got != c.suppress {
+			t.Errorf("DiffSuppressFunc(old=%q, new=%q) = %v, want %v", c.old, c.new, got, c.suppress)
+		}
+	}
+}

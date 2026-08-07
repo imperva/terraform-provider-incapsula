@@ -141,6 +141,9 @@ func TestClientGetSiteCertificateRequestStatusErrorsInBody(t *testing.T) {
 }
 
 func TestClientGetSiteCertificateRequestStatusError500(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.URL.String() != fmt.Sprintf("%s%d%s", endpointSiteCertV3BasePath, 123, endpointSiteCertV3Suffix) {
 			t.Errorf("Should have hit /%s%d%s endpoint. Got: %s", endpointSiteCertV3BasePath, 123, endpointSiteCertV3Suffix, req.URL.String())
