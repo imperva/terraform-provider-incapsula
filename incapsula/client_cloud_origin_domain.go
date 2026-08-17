@@ -8,6 +8,8 @@ import (
 	"net/http"
 )
 
+const endpointCloudOriginAP = "/anywhere-provisioner/v3"
+
 type CloudOriginDomainConfig struct {
 	Port              int    `json:"port,omitempty"`
 	OriginSslProtocol string `json:"originSslProtocol,omitempty"`
@@ -61,7 +63,7 @@ func (c *Client) CreateCloudOriginDomain(siteID int, accountID string, domain, r
 	}
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost,
-		getCloudOriginUrl(c.config.BaseURLRev3, siteID, "", accountID),
+		getCloudOriginUrl(c.config.BaseURLAPI+endpointCloudOriginAP, siteID, "", accountID),
 		payloadJSON,
 		CreateCloudOriginDomain)
 
@@ -95,7 +97,7 @@ func (c *Client) GetCloudOriginDomain(siteID, originID int, accountID string) (*
 	log.Printf("[INFO] Getting Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet,
-		getCloudOriginUrl(c.config.BaseURLRev3, siteID, fmt.Sprintf("/%d", originID), accountID),
+		getCloudOriginUrl(c.config.BaseURLAPI+endpointCloudOriginAP, siteID, fmt.Sprintf("/%d", originID), accountID),
 		nil,
 		ReadCloudOriginDomain)
 
@@ -129,7 +131,7 @@ func (c *Client) DeleteCloudOriginDomain(siteID, originID int, accountID string)
 	log.Printf("[INFO] Deleting Incapsula cloud origin domain: %d for site: %d\n", originID, siteID)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodDelete,
-		getCloudOriginUrl(c.config.BaseURLRev3, siteID, fmt.Sprintf("/%d", originID), accountID),
+		getCloudOriginUrl(c.config.BaseURLAPI+endpointCloudOriginAP, siteID, fmt.Sprintf("/%d", originID), accountID),
 		nil,
 		DeleteCloudOriginDomain)
 

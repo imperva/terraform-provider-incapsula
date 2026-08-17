@@ -55,7 +55,7 @@ The following arguments are supported:
 * `account_id` - (Optional) Numeric identifier of the account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `site_id` - (Required) Numeric identifier of the site. The site type must be set to PUBLIC_CLOUD, with cloud_type = "AWS". Cannot be changed after the resource is created.
 * `domain` - (Required) The origin domain (FQDN). Must be a valid fully qualified domain name such as an AWS ALB or NLB hostname (e.g., `internal-alb-1234567890.us-east-1.elb.amazonaws.com`). Cannot be changed after the resource is created. Maximum 253 characters.
-* `region` - (Required) The AWS region where the origin is located. Supported values: `us-east-1`, `us-east-2`, `us-west-1`, `us-west-2`, `eu-west-1`, `eu-west-2`, `eu-west-3`, `eu-central-1`, `eu-north-1`, `ap-northeast-1`, `ap-northeast-2`, `ap-southeast-1`, `ap-southeast-2`, `ap-south-1`, `sa-east-1`.
+* `region` - (Required) The AWS region where the origin is located. Supported values: `us-east-1`, `us-west-2`, `eu-west-1`, `eu-west-2`, `il-central-1`.
 * `port` - (Optional) Port number the origin server listens on. Must be 443 or in the range 1024-65535. Default: `443`.
 * `origin_ssl_protocol` - (Required) Minimum SSL protocol for the connection to the origin. The selected protocol will be supported along with all higher versions. Supported values: `SSLv3`, `TLS_1_0`, `TLS_1_1`, `TLS_1_2`.
 

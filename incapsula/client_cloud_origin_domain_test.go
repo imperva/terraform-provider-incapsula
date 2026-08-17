@@ -84,9 +84,9 @@ func TestClientCloudOriginDomainCreate(t *testing.T) {
 
 			client := &Client{
 				config: &Config{
-					BaseURLRev3: baseURL,
-					APIID:       "test_id",
-					APIKey:      "test_key",
+					BaseURLAPI: baseURL,
+					APIID:      "test_id",
+					APIKey:     "test_key",
 				},
 				httpClient: &http.Client{},
 			}
@@ -170,9 +170,9 @@ func TestClientCloudOriginDomainGet(t *testing.T) {
 
 			client := &Client{
 				config: &Config{
-					BaseURLRev3: baseURL,
-					APIID:       "test_id",
-					APIKey:      "test_key",
+					BaseURLAPI: baseURL,
+					APIID:      "test_id",
+					APIKey:     "test_key",
 				},
 				httpClient: &http.Client{},
 			}
@@ -250,9 +250,9 @@ func TestClientCloudOriginDomainDelete(t *testing.T) {
 
 			client := &Client{
 				config: &Config{
-					BaseURLRev3: baseURL,
-					APIID:       "test_id",
-					APIKey:      "test_key",
+					BaseURLAPI: baseURL,
+					APIID:      "test_id",
+					APIKey:     "test_key",
 				},
 				httpClient: &http.Client{},
 			}
