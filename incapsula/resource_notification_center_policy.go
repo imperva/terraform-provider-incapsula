@@ -331,18 +331,30 @@ func resourceNotificationCenterPolicyRead(data *schema.ResourceData, i interface
 	data.Set("policy_type", notificationCenterPolicy.Data.PolicyType)
 	data.Set("apply_to_new_sub_accounts", notificationCenterPolicy.Data.SubAccountPolicyInfo.ApplyToNewSubAccounts)
 
-	subAccountList := make([]int, 0)
-	for _, subAccount := range notificationCenterPolicy.Data.SubAccountPolicyInfo.SubAccountList {
-		subAccountList = append(subAccountList, subAccount.SubAccountId)
-	}
+	applyToNewSubAccounts := notificationCenterPolicy.Data.SubAccountPolicyInfo.ApplyToNewSubAccounts
 
-	data.Set("sub_account_list", subAccountList)
+	if applyToNewSubAccounts != "TRUE" {
+		subAccountList := make([]int, 0)
+		for _, subAccount := range notificationCenterPolicy.Data.SubAccountPolicyInfo.SubAccountList {
+			subAccountList = append(subAccountList, subAccount.SubAccountId)
+		}
+		data.Set("sub_account_list", subAccountList)
+	} else {
+		log.Printf("[DEBUG] Skipping sub_account_list sync from API because apply_to_new_sub_accounts is TRUE - sub accounts are API-managed")
+	}
 	log.Printf("[INFO] Finished reading notificationCenterPolicy: %s\n", data.Id())
 
 	return nil
 }
 
 func handleAssetsRead(data *schema.ResourceData, notificationCenterPolicy *NotificationPolicy) {
+	applyToNewAssets := notificationCenterPolicy.Data.ApplyToNewAssets
+
+	if applyToNewAssets == "TRUE" {
+		log.Printf("[DEBUG] Skipping asset sync from API because apply_to_new_assets is TRUE - assets are API-managed")
+		return
+	}
+
 	var assets []interface{}
 	for _, assetFromServer := range notificationCenterPolicy.Data.AssetList {
 		asset := map[string]interface{}{}
