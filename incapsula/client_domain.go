@@ -6,18 +6,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"time"
 )
 
 const endpointDomain = "/site-domain-manager/v2/sites/"
-
-// addDomainMaxAttempts and addDomainRetryDelay govern the scoped retry
-// behavior in AddDomainToSite for transient 401 responses caused by an
-// authorization-scope propagation race shortly after site/cert-settings
-// creation (CWMS-7457). They are vars (not consts) so tests can override
-// them for fast execution.
-var addDomainMaxAttempts = 3
-var addDomainRetryDelay = 2 * time.Second
 
 type AddSiteDetails struct {
 	Domain     string `json:"domain"`
@@ -59,30 +50,7 @@ func (c *Client) AddDomainToSite(siteID string, domainName string) (*SiteDomainD
 
 	addDomainDto := AddSiteDetails{domainName, true}
 
-	var resp *SiteDomainDetails
-	var statusCode int
-	var err error
-
-	for attempt := 1; attempt <= addDomainMaxAttempts; attempt++ {
-		resp, statusCode, err = handleAddDomainRequest(c, addDomainDto, siteID)
-
-		if statusCode == http.StatusUnauthorized {
-
-			// Transient 401: the backend (site-domain-manager) occasionally
-			// rejects the add-domain call shortly after site/cert-settings
-			// creation while authorization scope is still propagating. Retry a
-			// bounded number of times with a short delay before giving up.
-			if attempt < addDomainMaxAttempts {
-				log.Printf("[WARN] Incapsula add domain received 401 (unauthorized) for site %s, attempt %d/%d - retrying after transient auth propagation delay\n", siteID, attempt, addDomainMaxAttempts)
-				time.Sleep(addDomainRetryDelay)
-				continue
-			}
-
-			return nil, fmt.Errorf("add domain request failed after %d attempts: 401 unauthorized (transient auth propagation delay - retry apply if this persists)", addDomainMaxAttempts)
-		}
-
-		break
-	}
+	resp, err := handleAddDomainRequest(c, addDomainDto, siteID)
 
 	if err != nil {
 		return nil, err
@@ -102,43 +70,43 @@ func (c *Client) DeleteDomain(siteID string, domainId string) error {
 	return nil
 }
 
-func handleAddDomainRequest(c *Client, addDomainsDto AddSiteDetails, siteId string) (*SiteDomainDetails, int, error) {
+func handleAddDomainRequest(c *Client, addDomainsDto AddSiteDetails, siteId string) (*SiteDomainDetails, error) {
 	reqURL := fmt.Sprintf("%s%s%s%s", c.config.BaseURLAPI, endpointDomain, siteId, "/domains")
 	body, err := json.Marshal(addDomainsDto)
 
 	if err != nil {
-		return nil, 0, fmt.Errorf("Failed to parse addDomainsDto: %s ", err)
+		return nil, fmt.Errorf("Failed to parse addDomainsDto: %s ", err)
 	}
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPost, reqURL, body, CreateDomain)
 	if err != nil {
-		return nil, 0, fmt.Errorf("[ERROR] Error from Incapsula service when creating domains for site %s: %s", siteId, err)
+		return nil, fmt.Errorf("[ERROR] Error from Incapsula service when creating domains for site %s: %s", siteId, err)
 	}
 	defer resp.Body.Close()
 
 	responseBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, resp.StatusCode, fmt.Errorf("failed to read response body: %s", err)
+		return nil, fmt.Errorf("failed to read response body: %s", err)
 	}
 	log.Printf("[DEBUG] Incapsula add domain response: %s\n", string(responseBody))
 
 	var siteDomainDetails SiteDomainDetails
 	err = json.Unmarshal(responseBody, &siteDomainDetails)
 	if err != nil {
-		return nil, resp.StatusCode, fmt.Errorf("[ERROR] Error parsing create domain response for siteId %s: %s\n response: %s", siteId, err, string(responseBody))
+		return nil, fmt.Errorf("[ERROR] Error parsing create domain response for siteId %s: %s\n response: %s", siteId, err, string(responseBody))
 	}
 
 	if siteDomainDetails.Errors != nil && len(siteDomainDetails.Errors) > 0 {
 		log.Printf("[ERROR] Incapsula create domain failed for site: %s \n", siteId)
-		return nil, resp.StatusCode, fmt.Errorf("add domain request failed (status %d): %s", resp.StatusCode, siteDomainDetails.Errors[0].Detail)
+		return nil, fmt.Errorf("add domain request failed (status %d): %s", resp.StatusCode, siteDomainDetails.Errors[0].Detail)
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		log.Printf("[ERROR] Incapsula create domain failed for site: %s \n", siteId)
-		return nil, resp.StatusCode, fmt.Errorf("create request failed: %d", resp.StatusCode)
+		return nil, fmt.Errorf("create request failed: %d", resp.StatusCode)
 	}
 
-	return &siteDomainDetails, resp.StatusCode, nil
+	return &siteDomainDetails, nil
 }
 
 func handleDeleteDomainRequest(c *Client, siteId string, domainId string) error {
