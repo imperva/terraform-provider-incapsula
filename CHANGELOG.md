@@ -1,3 +1,9 @@
+## 3.39.3 (Aug 19, 2026)
+
+BUT FIXES:
+- Fix cloud origin resource url ([#675](https://github.com/imperva/terraform-provider-incapsula/pull/675))
+
+
 ## 3.39.2 (Aug 13, 2026)
 
 BUT FIXES:
