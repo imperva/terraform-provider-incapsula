@@ -331,17 +331,12 @@ func resourceNotificationCenterPolicyRead(data *schema.ResourceData, i interface
 	data.Set("policy_type", notificationCenterPolicy.Data.PolicyType)
 	data.Set("apply_to_new_sub_accounts", notificationCenterPolicy.Data.SubAccountPolicyInfo.ApplyToNewSubAccounts)
 
-	applyToNewSubAccounts := notificationCenterPolicy.Data.SubAccountPolicyInfo.ApplyToNewSubAccounts
-
-	if applyToNewSubAccounts != "TRUE" {
-		subAccountList := make([]int, 0)
-		for _, subAccount := range notificationCenterPolicy.Data.SubAccountPolicyInfo.SubAccountList {
-			subAccountList = append(subAccountList, subAccount.SubAccountId)
-		}
-		data.Set("sub_account_list", subAccountList)
-	} else {
-		log.Printf("[DEBUG] Skipping sub_account_list sync from API because apply_to_new_sub_accounts is TRUE - sub accounts are API-managed")
+	subAccountList := make([]int, 0)
+	for _, subAccount := range notificationCenterPolicy.Data.SubAccountPolicyInfo.SubAccountList {
+		subAccountList = append(subAccountList, subAccount.SubAccountId)
 	}
+
+	data.Set("sub_account_list", subAccountList)
 	log.Printf("[INFO] Finished reading notificationCenterPolicy: %s\n", data.Id())
 
 	return nil
