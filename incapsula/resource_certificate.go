@@ -3,9 +3,8 @@ package incapsula
 import (
 	"crypto/sha1"
 	"encoding/hex"
-	"log"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"log"
 )
 
 func resourceCertificate() *schema.Resource {
