@@ -3,8 +3,9 @@ package incapsula
 import (
 	"crypto/sha1"
 	"encoding/hex"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"log"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var apiDetailsResource = schema.Resource{
@@ -114,7 +115,8 @@ func resourceCertificateHsmCreateAndUpdate(d *schema.ResourceData, m interface{}
 		return err
 	}
 
-	d.SetId("12345")
+	// There is no unique ID in the response and only one cert per site, so the site ID is used as the resource ID.
+	d.SetId(siteId)
 	log.Printf("[DEBUG] Done createing HSM custome certificate for site id %s, now reding the data", siteId)
 
 	return resourceCertificateRead(d, m)

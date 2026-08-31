@@ -1,14 +1,16 @@
 package incapsula
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"log"
 	"os"
 	"regexp"
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
@@ -117,13 +119,13 @@ func checkHsmCustomCertificateExists(fullResourceName string) resource.TestCheck
 			return fmt.Errorf("incapsula_custom_hsm_certificate resource not found : %s", fullResourceName)
 		}
 
+		siteIdStr := res.Primary.Attributes["site_id"]
 		hsmCustomCertificateIdStr := res.Primary.ID
-		if hsmCustomCertificateIdStr != "12345" {
-			return fmt.Errorf("incapsula_custom_hsm_certificate Id does not equal '12345', id string: %s ", hsmCustomCertificateIdStr)
+		if hsmCustomCertificateIdStr != siteIdStr {
+			return fmt.Errorf("incapsula_custom_hsm_certificate Id does not equal the site ID '%s', id string: %s ", siteIdStr, hsmCustomCertificateIdStr)
 		}
 
 		client := testAccProvider.Meta().(*Client)
-		siteIdStr := res.Primary.Attributes["site_id"]
 		accountId, _ := strconv.Atoi(siteIdStr)
 		log.Printf("[INFO] ****Test**** siteId: %d ", accountId)
 		listCertificatesResponse, err := client.ListCertificates(siteIdStr, ReadHSMCustomCertificate)
