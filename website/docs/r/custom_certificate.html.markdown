@@ -38,7 +38,7 @@ The following arguments are supported:
 
 The following attributes are exported:
 
-* `id` - At the moment, only one active certificate can be stored. This exported value is always set as `12345`. This will be augmented in future versions of the API.
+* `id` - Reference id of the certificate.
 
 ## Import
 
