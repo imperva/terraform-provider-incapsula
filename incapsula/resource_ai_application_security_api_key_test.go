@@ -19,6 +19,7 @@ const aiApplicationSecurityApiKeyResourceName = "incapsula_ai_application_securi
 // returned on create and is unrecoverable afterward, the test asserts it is non-empty
 // after create and is (intentionally) ignored on import (empty after import).
 func TestAccIncapsulaAiApplicationSecurityApiKeyBasic(t *testing.T) {
+	skipAiApplicationSecurityLiveAccTest(t)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

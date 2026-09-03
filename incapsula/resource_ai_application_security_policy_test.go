@@ -15,6 +15,7 @@ const aiApplicationSecurityPolicyResourceName = "incapsula_ai_application_securi
 // mock server: create -> read -> update (rename + toggle active + mutate guardrails via
 // PATCH) -> import (ImportStateVerify) -> destroy.
 func TestAccIncapsulaAiApplicationSecurityPolicyBasic(t *testing.T) {
+	skipAiApplicationSecurityLiveAccTest(t)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -105,6 +106,7 @@ func TestAiApplicationSecurityGuardrailHashIgnoresEmbeddedType(t *testing.T) {
 // spurious guardrail remove/add. The framework's automatic post-apply plan check fails if
 // that regresses.
 func TestAccIncapsulaAiApplicationSecurityPolicyConfigJSONIdempotent(t *testing.T) {
+	skipAiApplicationSecurityLiveAccTest(t)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -133,6 +135,7 @@ func TestAccIncapsulaAiApplicationSecurityPolicyConfigJSONIdempotent(t *testing.
 // normalized-config Set hash (aiApplicationSecurityGuardrailHash) or suppressor ever over-suppressed, a
 // real edit would be silently dropped and these post-apply checks would fail.
 func TestAccIncapsulaAiApplicationSecurityPolicyGuardrailMutation(t *testing.T) {
+	skipAiApplicationSecurityLiveAccTest(t)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -176,6 +179,7 @@ func TestAccIncapsulaAiApplicationSecurityPolicyGuardrailMutation(t *testing.T) 
 // flattenAiApplicationSecurityGuardrails round-trip as guardrails are added and removed (and the request/
 // response phase-split buckets grow and shrink) rather than only being mutated in place.
 func TestAccIncapsulaAiApplicationSecurityPolicyGuardrailSetSize(t *testing.T) {
+	skipAiApplicationSecurityLiveAccTest(t)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -214,6 +218,7 @@ func TestAccIncapsulaAiApplicationSecurityPolicyGuardrailSetSize(t *testing.T) {
 // config so the two remain distinct elements (guardrail.# == 2 rather than colliding to 1),
 // and (b) re-applying the deeply-nested, non-sorted config is a no-op.
 func TestAccIncapsulaAiApplicationSecurityPolicyGuardrailConfigDistinct(t *testing.T) {
+	skipAiApplicationSecurityLiveAccTest(t)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,

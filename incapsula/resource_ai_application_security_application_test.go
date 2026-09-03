@@ -44,6 +44,31 @@ func aiApplicationSecurityTestSiteID() int {
 	return 987654
 }
 
+// skipAiApplicationSecurityLiveAccTest skips an acceptance test that performs a real backend apply
+// when running against a live backend (not the mock server) without an explicit account. The
+// default account (1234) is only accepted by the mock server; a live backend rejects it with a 401
+// (errCode 1003), which fails the test spuriously instead of exercising anything. Set
+// INCAPSULA_AI_APPLICATION_SECURITY_ACCOUNT_ID to a real account the credentials can access to run
+// these live.
+func skipAiApplicationSecurityLiveAccTest(t *testing.T) {
+	if ShouldUseMockServer() {
+		return
+	}
+	if os.Getenv("INCAPSULA_AI_APPLICATION_SECURITY_ACCOUNT_ID") == "" {
+		t.Skip("Skipping AI Application Security acceptance test against a live backend: set INCAPSULA_AI_APPLICATION_SECURITY_ACCOUNT_ID to a real account the API credentials can access (default account 1234 is mock-only)")
+	}
+}
+
+// skipAiApplicationSecurityLiveEdgeAccTest additionally requires a real site for EDGE-type tests,
+// which validate that the configured site exists under the account. The default site (987654) is
+// only accepted by the mock server.
+func skipAiApplicationSecurityLiveEdgeAccTest(t *testing.T) {
+	skipAiApplicationSecurityLiveAccTest(t)
+	if !ShouldUseMockServer() && os.Getenv("INCAPSULA_AI_APPLICATION_SECURITY_SITE_ID") == "" {
+		t.Skip("Skipping AI Application Security EDGE acceptance test against a live backend: also set INCAPSULA_AI_APPLICATION_SECURITY_SITE_ID to a real site under the account")
+	}
+}
+
 // TestAccIncapsulaAiApplicationSecurityApplicationBasic exercises the full API-type resource
 // lifecycle against the mock server: create -> read -> update (name + region via
 // PATCH) -> import (ImportStateVerify) -> destroy.
@@ -81,6 +106,7 @@ func TestAiApplicationSecurityApplicationReadDefaultsContentTypeWhenEmpty(t *tes
 }
 
 func TestAccIncapsulaAiApplicationSecurityApplicationBasic(t *testing.T) {
+	skipAiApplicationSecurityLiveAccTest(t)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -123,6 +149,7 @@ func TestAccIncapsulaAiApplicationSecurityApplicationBasic(t *testing.T) {
 // attribute after import against live state, so it is the strongest guard against a
 // flatten mismatch in the nested blocks.
 func TestAccIncapsulaAiApplicationSecurityApplicationEdge(t *testing.T) {
+	skipAiApplicationSecurityLiveEdgeAccTest(t)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -168,6 +195,7 @@ func TestAccIncapsulaAiApplicationSecurityApplicationEdge(t *testing.T) {
 // empty response block (configuration.0.response.# must be 0) and, via ImportStateVerify,
 // against any expand/flatten asymmetry when one nested sub-block is absent.
 func TestAccIncapsulaAiApplicationSecurityApplicationEdgePartialConfig(t *testing.T) {
+	skipAiApplicationSecurityLiveEdgeAccTest(t)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
