@@ -207,8 +207,10 @@ func (m *MockImpervaServer) router(w http.ResponseWriter, r *http.Request) {
 	case path == "v3/api-keys" || (strings.Contains(path, "v3/applications/") && strings.Contains(path, "/api-keys")):
 		m.handleAiApplicationSecurityApiKeys(w, r, path)
 
-	// AI Application Security application endpoints (/v3/api/applications)
-	case path == "v3/api/applications" || strings.HasPrefix(path, "v3/api/applications/"):
+	// AI Application Security application endpoints (/v3/applications). Matched last: the policy
+	// and api-key cases above claim the /v3/applications/{id}/policies and .../api-keys sub-paths
+	// first, so this broader prefix only catches the bare application list/item paths.
+	case path == "v3/applications" || strings.HasPrefix(path, "v3/applications/"):
 		m.handleAiApplicationSecurityApplications(w, r, path)
 
 	default:
