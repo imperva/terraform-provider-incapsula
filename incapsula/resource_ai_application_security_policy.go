@@ -405,11 +405,42 @@ func normalizeAiApplicationSecurityGuardrailConfig(v interface{}) string {
 	if m, ok := parsed.(map[string]interface{}); ok {
 		delete(m, "type")
 	}
+	// The backend echoes optional config fields back as explicit nulls (e.g. "exceptions":
+	// null) even when the user never set them. Treat a null the same as an absent key so the
+	// refreshed guardrail hashes identically to the configured one (see stripNullJSONValues).
+	parsed = stripNullJSONValues(parsed)
 	canonical, err := json.Marshal(parsed)
 	if err != nil {
 		return s
 	}
 	return string(canonical)
+}
+
+// stripNullJSONValues recursively removes null-valued map entries from a decoded JSON value,
+// returning the (mutated) value. The AI firewall backend echoes optional guardrail-config fields
+// back as explicit nulls even when the user never set them; because guardrail is a TypeSet hashed
+// by its normalized config, keeping those nulls would make the refreshed element hash differently
+// than the configured one and produce a perpetual remove/add diff. Dropping nulls on the read side
+// makes a null and an absent key equivalent, matching how the user writes the config.
+func stripNullJSONValues(v interface{}) interface{} {
+	switch val := v.(type) {
+	case map[string]interface{}:
+		for k, inner := range val {
+			if inner == nil {
+				delete(val, k)
+				continue
+			}
+			val[k] = stripNullJSONValues(inner)
+		}
+		return val
+	case []interface{}:
+		for i, inner := range val {
+			val[i] = stripNullJSONValues(inner)
+		}
+		return val
+	default:
+		return v
+	}
 }
 
 func flattenAiApplicationSecurityGuardrail(g AiApplicationSecurityGuardrail, phaseFallback string) (map[string]interface{}, error) {
@@ -426,6 +457,9 @@ func flattenAiApplicationSecurityGuardrail(g AiApplicationSecurityGuardrail, pha
 		}
 		// The "type" discriminator is injected on write; strip it so state matches config.
 		delete(configMap, "type")
+		// Drop backend-echoed null fields so the stored config string matches the user's config
+		// and the guardrail hashes identically on the next plan (see stripNullJSONValues).
+		stripNullJSONValues(configMap)
 		configRaw, err := json.Marshal(configMap)
 		if err != nil {
 			return nil, fmt.Errorf("failed to encode guardrail config for type %s: %s", g.GuardrailType, err)

@@ -98,6 +98,55 @@ func TestAiApplicationSecurityGuardrailHashIgnoresEmbeddedType(t *testing.T) {
 	}
 }
 
+// TestAiApplicationSecurityGuardrailHashIgnoresBackendNulls is a unit-level regression test for the
+// perpetual remove/add diff caused by the backend echoing optional config fields back as explicit
+// nulls (e.g. "exceptions": null) that the user never set. Because guardrail is a TypeSet hashed by
+// its normalized config, the refreshed element must hash identically to the user-written one even
+// with those nulls present, and flatten must strip them so the stored config string matches too.
+func TestAiApplicationSecurityGuardrailHashIgnoresBackendNulls(t *testing.T) {
+	userWritten := map[string]interface{}{
+		"type":   "PROMPT_INJECTION",
+		"phase":  "PROMPT",
+		"mode":   "BLOCK",
+		"active": true,
+		"config": `{"threshold":0.8,"message":"blocked"}`,
+	}
+	backendEchoed := map[string]interface{}{
+		"type":   "PROMPT_INJECTION",
+		"phase":  "PROMPT",
+		"mode":   "BLOCK",
+		"active": true,
+		"config": `{"threshold":0.8,"message":"blocked","exceptions":null}`,
+	}
+
+	if h1, h2 := aiApplicationSecurityGuardrailHash(userWritten), aiApplicationSecurityGuardrailHash(backendEchoed); h1 != h2 {
+		t.Errorf("guardrail hash differs with backend-echoed null (%d) vs user-written (%d); must be equal to avoid a perpetual diff", h2, h1)
+	}
+
+	// The normalizer must drop null values (top-level and nested) directly.
+	if got := normalizeAiApplicationSecurityGuardrailConfig(`{"threshold":0.8,"exceptions":null}`); got != `{"threshold":0.8}` {
+		t.Errorf("normalize did not strip top-level null: got %q, want {\"threshold\":0.8}", got)
+	}
+	if got := normalizeAiApplicationSecurityGuardrailConfig(`{"globalConfig":{"enabled":true,"cap":null}}`); got != `{"globalConfig":{"enabled":true}}` {
+		t.Errorf("normalize did not strip nested null: got %q, want {\"globalConfig\":{\"enabled\":true}}", got)
+	}
+
+	// flatten must strip backend-echoed nulls so the stored state string matches the user's config.
+	flattened, err := flattenAiApplicationSecurityGuardrail(AiApplicationSecurityGuardrail{
+		GuardrailType:  "PROMPT_INJECTION",
+		GuardrailMode:  "BLOCK",
+		GuardrailPhase: "PROMPT",
+		Active:         true,
+		Config:         []byte(`{"type":"PROMPT_INJECTION","threshold":0.8,"message":"blocked","exceptions":null}`),
+	}, aiApplicationSecurityGuardrailPhasePrompt)
+	if err != nil {
+		t.Fatalf("flatten returned error: %s", err)
+	}
+	if got, want := flattened["config"].(string), `{"message":"blocked","threshold":0.8}`; got != want {
+		t.Errorf("flatten did not strip backend null: got %q, want %q", got, want)
+	}
+}
+
 // TestAccIncapsulaAiApplicationSecurityPolicyConfigJSONIdempotent guards against the TypeSet + JSON
 // config hashing trap: a guardrail config written with keys in non-sorted order must not
 // produce a perpetual diff. The backend (and flatten) round-trip config with sorted keys,
