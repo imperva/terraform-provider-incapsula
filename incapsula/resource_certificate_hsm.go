@@ -38,13 +38,6 @@ func resourceCustomCertificateHsm() *schema.Resource {
 		Read:   resourceCertificateRead,
 		Update: resourceCertificateHsmCreateAndUpdate,
 		Delete: resourceCertificateHsmDelete,
-		Importer: &schema.ResourceImporter{
-			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				d.SetId("12345")
-				d.Set("site_id", d.Get("site_id").(string))
-				return []*schema.ResourceData{d}, nil
-			},
-		},
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
 			"site_id": {
