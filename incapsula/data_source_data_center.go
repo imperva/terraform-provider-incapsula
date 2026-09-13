@@ -118,7 +118,7 @@ func dataSourceDataCenter() *schema.Resource {
 func dataSourceDataCenterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*Client)
 
-	responseDTO, err := client.GetDataCentersConfiguration(d.Get("site_id").(string))
+	responseDTO, err := client.GetDataCentersConfiguration(d.Get("site_id").(string), 0)
 	if err != nil {
 		return diag.Errorf("Error getting Data Centers configuration for site (%s): %s", d.Get("site_id"), err)
 	}

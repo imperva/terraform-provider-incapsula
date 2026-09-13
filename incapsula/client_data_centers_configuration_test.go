@@ -18,7 +18,7 @@ func TestClientPutDataCentersConfigurationBadConnection(t *testing.T) {
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
 	requestDTO := DataCentersConfigurationDTO{}
-	responseDTO, err := client.PutDataCentersConfiguration(siteID, requestDTO)
+	responseDTO, err := client.PutDataCentersConfiguration(siteID, 0, requestDTO)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -44,7 +44,7 @@ func TestClientPutDataCentersConfigurationBadJSON(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL + "/api/prov/v1"}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	requestDTO := DataCentersConfigurationDTO{}
-	responseDTO, err := client.PutDataCentersConfiguration(siteID, requestDTO)
+	responseDTO, err := client.PutDataCentersConfiguration(siteID, 0, requestDTO)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -70,7 +70,7 @@ func TestClientPutDataCenterInvalidDcConfiguration(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL + "/api/prov/v1"}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	requestDTO := DataCentersConfigurationDTO{}
-	responseDTO, err := client.PutDataCentersConfiguration(siteID, requestDTO)
+	responseDTO, err := client.PutDataCentersConfiguration(siteID, 0, requestDTO)
 	if err != nil {
 		t.Errorf("Should not receive an error. Got: %s", err.Error())
 	}
@@ -97,7 +97,7 @@ func TestClientPutDataCenterValidDcConfiguration(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL + "/api/prov/v1"}
 	client := &Client{config: config, httpClient: &http.Client{}}
 	requestDTO := DataCentersConfigurationDTO{}
-	responseDTO, err := client.PutDataCentersConfiguration(siteID, requestDTO)
+	responseDTO, err := client.PutDataCentersConfiguration(siteID, 0, requestDTO)
 	if err != nil {
 		t.Errorf("Should not have received an error. Got: %s", err.Error())
 	}
@@ -116,6 +116,30 @@ func TestClientPutDataCenterValidDcConfiguration(t *testing.T) {
 	}
 }
 
+func TestClientPutDataCentersConfigurationWithAccountId(t *testing.T) {
+	siteID := "42"
+	accountID := 777
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		expectedURL := fmt.Sprintf("/api/prov/v3/sites/%s/data-centers-configuration?caid=%d", siteID, accountID)
+		if req.URL.String() != expectedURL {
+			t.Errorf("Should have hit %s endpoint. Got: %s", expectedURL, req.URL.String())
+		}
+		rw.Write([]byte(`{"data":[{"dataCenterMode":"SINGLE_DC","dataCenters":[{"name":"New DC","servers":[{"address":"1.2.3.4"}]}]}]}`))
+	}))
+	defer server.Close()
+
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL + "/api/prov/v1"}
+	client := &Client{config: config, httpClient: &http.Client{}}
+	requestDTO := DataCentersConfigurationDTO{}
+	responseDTO, err := client.PutDataCentersConfiguration(siteID, accountID, requestDTO)
+	if err != nil {
+		t.Errorf("Should not have received an error. Got: %s", err.Error())
+	}
+	if responseDTO == nil {
+		t.Errorf("Should not have received a nil response DTO instance")
+	}
+}
+
 ////////////////////////////////////////////////////////////////
 // ListDataCenters Tests
 ////////////////////////////////////////////////////////////////
@@ -124,7 +148,7 @@ func TestClientGetDataCentersConfigurationBadConnection(t *testing.T) {
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: "badness.incapsula.com"}
 	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
 	siteID := "42"
-	responseDTO, err := client.GetDataCentersConfiguration(siteID)
+	responseDTO, err := client.GetDataCentersConfiguration(siteID, 0)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -150,7 +174,7 @@ func TestClientGetDataCentersConfigurationBadJSON(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL + "/api/prov/v1"}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	responseDTO, err := client.GetDataCentersConfiguration(siteID)
+	responseDTO, err := client.GetDataCentersConfiguration(siteID, 0)
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
@@ -175,7 +199,7 @@ func TestClientGetDataCentersConfigurationInvalidRequest(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL + "/api/prov/v1"}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	responseDTO, err := client.GetDataCentersConfiguration(siteID)
+	responseDTO, err := client.GetDataCentersConfiguration(siteID, 0)
 	if err != nil {
 		t.Errorf("Should not receive an error. Got: %s", err.Error())
 	}
@@ -185,6 +209,29 @@ func TestClientGetDataCentersConfigurationInvalidRequest(t *testing.T) {
 	}
 	if responseDTO.Errors[0].Status != "404" {
 		t.Errorf("Should have received a bad DC configuration error, got: %s", err)
+	}
+}
+
+func TestClientGetDataCentersConfigurationWithAccountId(t *testing.T) {
+	siteID := "42"
+	accountID := 777
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		expectedURL := fmt.Sprintf("/api/prov/v3/sites/%s/data-centers-configuration?caid=%d", siteID, accountID)
+		if req.URL.String() != expectedURL {
+			t.Errorf("Should have hit %s endpoint. Got: %s", expectedURL, req.URL.String())
+		}
+		rw.Write([]byte(`{"data":[{"dataCenterMode":"SINGLE_DC","dataCenters":[{"name":"New DC","servers":[{"address":"1.2.3.4"}]}]}]}`))
+	}))
+	defer server.Close()
+
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL + "/api/prov/v1"}
+	client := &Client{config: config, httpClient: &http.Client{}}
+	responseDTO, err := client.GetDataCentersConfiguration(siteID, accountID)
+	if err != nil {
+		t.Errorf("Should not have received an error. Got: %s", err.Error())
+	}
+	if responseDTO == nil {
+		t.Errorf("Should not have received a nil responseDTO instance")
 	}
 }
 
@@ -201,7 +248,7 @@ func TestClientGetDataCentersConfigurationValidRequest(t *testing.T) {
 
 	config := &Config{APIID: "foo", APIKey: "bar", BaseURL: server.URL + "/api/prov/v1"}
 	client := &Client{config: config, httpClient: &http.Client{}}
-	responseDTO, err := client.GetDataCentersConfiguration(siteID)
+	responseDTO, err := client.GetDataCentersConfiguration(siteID, 0)
 	if err != nil {
 		t.Errorf("Should not have received an error")
 	}
