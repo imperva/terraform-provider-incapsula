@@ -8,7 +8,9 @@ import (
 	"net/http"
 )
 
-const aiApplicationSecurityApplicationEndpoint = "/ai-application-security/v3/api/applications"
+// The application controller path dropped its /api/ segment (AIFW-1432): the base path moved
+// from /v3/api/applications to /v3/applications, matching the policy and api-key controllers.
+const aiApplicationSecurityApplicationEndpoint = "/ai-application-security/v3/applications"
 
 // AiApplicationSecurityImpervaApiBody wraps every AI Application Security write payload / response body
 // (backend ImpervaApiBody<T> envelope, AIFW-1321). Shared by the policy and api-key resources.
@@ -81,7 +83,7 @@ func aiApplicationSecurityWrapData(payload interface{}) ([]byte, error) {
 }
 
 // CreateAiApplicationSecurityApplication creates a new AI Application Security application.
-// POST /ai-application-security/v3/api/applications?caid={accountID}
+// POST /ai-application-security/v3/applications?caid={accountID}
 func (c *Client) CreateAiApplicationSecurityApplication(accountID int, req *AiApplicationSecurityApplicationRequest) (*AiApplicationSecurityApplicationDetails, error) {
 	reqURL := fmt.Sprintf("%s%s", c.config.BaseURLAPI, aiApplicationSecurityApplicationEndpoint)
 	params := GetRequestParamsWithCaid(accountID)
@@ -117,7 +119,7 @@ func (c *Client) CreateAiApplicationSecurityApplication(accountID int, req *AiAp
 }
 
 // GetAiApplicationSecurityApplication reads an AI Application Security application by ID.
-// GET /ai-application-security/v3/api/applications?caid={accountID}&applicationId={applicationID}
+// GET /ai-application-security/v3/applications?caid={accountID}&applicationId={applicationID}
 // Returns (nil, nil) if the application does not exist.
 func (c *Client) GetAiApplicationSecurityApplication(accountID int, applicationID string) (*AiApplicationSecurityApplicationDetails, error) {
 	reqURL := fmt.Sprintf("%s%s", c.config.BaseURLAPI, aiApplicationSecurityApplicationEndpoint)
@@ -158,7 +160,7 @@ func (c *Client) GetAiApplicationSecurityApplication(accountID int, applicationI
 }
 
 // UpdateAiApplicationSecurityApplication partially updates an AI Application Security application.
-// PATCH /ai-application-security/v3/api/applications/{applicationID}?caid={accountID}
+// PATCH /ai-application-security/v3/applications/{applicationID}?caid={accountID}
 func (c *Client) UpdateAiApplicationSecurityApplication(accountID int, applicationID string, req *AiApplicationSecurityApplicationRequest) (*AiApplicationSecurityApplicationDetails, error) {
 	reqURL := fmt.Sprintf("%s%s/%s", c.config.BaseURLAPI, aiApplicationSecurityApplicationEndpoint, applicationID)
 	params := GetRequestParamsWithCaid(accountID)
@@ -194,7 +196,7 @@ func (c *Client) UpdateAiApplicationSecurityApplication(accountID int, applicati
 }
 
 // DeleteAiApplicationSecurityApplication deletes an AI Application Security application.
-// DELETE /ai-application-security/v3/api/applications/{applicationID}?caid={accountID}
+// DELETE /ai-application-security/v3/applications/{applicationID}?caid={accountID}
 func (c *Client) DeleteAiApplicationSecurityApplication(accountID int, applicationID string) error {
 	reqURL := fmt.Sprintf("%s%s/%s", c.config.BaseURLAPI, aiApplicationSecurityApplicationEndpoint, applicationID)
 	params := GetRequestParamsWithCaid(accountID)

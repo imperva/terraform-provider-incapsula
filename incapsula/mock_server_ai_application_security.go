@@ -1,7 +1,7 @@
 // Mock Imperva API Server — AI Application Security application endpoints
 //
 // Implements the stateful CRUD behaviour of the AI Application Security management service
-// (/v3/api/applications) needed by the incapsula_ai_application_security_application
+// (/v3/applications) needed by the incapsula_ai_application_security_application
 // acceptance tests. Requests and responses are wrapped in the backend
 // ImpervaApiBody<T> envelope ({"data": …}), matching ApplicationController.
 
@@ -32,7 +32,7 @@ type MockAiApplicationSecurityApplication struct {
 // handleAiApplicationSecurityApplications routes AI Application Security application requests by method
 // and whether an {applicationId} path segment is present.
 func (m *MockImpervaServer) handleAiApplicationSecurityApplications(w http.ResponseWriter, r *http.Request, path string) {
-	applicationID := strings.TrimPrefix(path, "v3/api/applications")
+	applicationID := strings.TrimPrefix(path, "v3/applications")
 	applicationID = strings.TrimPrefix(applicationID, "/")
 
 	switch r.Method {
@@ -69,7 +69,7 @@ func (m *MockImpervaServer) decodeAiApplicationSecurityRequest(r *http.Request) 
 	return &req, nil
 }
 
-// handleAiApplicationSecurityApplicationCreate handles POST /v3/api/applications.
+// handleAiApplicationSecurityApplicationCreate handles POST /v3/applications.
 func (m *MockImpervaServer) handleAiApplicationSecurityApplicationCreate(w http.ResponseWriter, r *http.Request) {
 	req, err := m.decodeAiApplicationSecurityRequest(r)
 	if err != nil {
@@ -114,7 +114,7 @@ func (m *MockImpervaServer) handleAiApplicationSecurityApplicationCreate(w http.
 	m.writeAiApplicationSecurityObject(w, app)
 }
 
-// handleAiApplicationSecurityApplicationRead handles GET /v3/api/applications?applicationId=&caid=,
+// handleAiApplicationSecurityApplicationRead handles GET /v3/applications?applicationId=&caid=,
 // returning ImpervaApiBody<List<ApplicationDetailsDto>>.
 func (m *MockImpervaServer) handleAiApplicationSecurityApplicationRead(w http.ResponseWriter, r *http.Request) {
 	applicationID := r.URL.Query().Get("applicationId")
@@ -137,7 +137,7 @@ func (m *MockImpervaServer) handleAiApplicationSecurityApplicationRead(w http.Re
 	json.NewEncoder(w).Encode(map[string]interface{}{"data": list})
 }
 
-// handleAiApplicationSecurityApplicationUpdate handles PATCH /v3/api/applications/{applicationId}.
+// handleAiApplicationSecurityApplicationUpdate handles PATCH /v3/applications/{applicationId}.
 func (m *MockImpervaServer) handleAiApplicationSecurityApplicationUpdate(w http.ResponseWriter, r *http.Request, applicationID string) {
 	req, err := m.decodeAiApplicationSecurityRequest(r)
 	if err != nil {
@@ -171,7 +171,7 @@ func (m *MockImpervaServer) handleAiApplicationSecurityApplicationUpdate(w http.
 	m.writeAiApplicationSecurityObject(w, app)
 }
 
-// handleAiApplicationSecurityApplicationDelete handles DELETE /v3/api/applications/{applicationId}.
+// handleAiApplicationSecurityApplicationDelete handles DELETE /v3/applications/{applicationId}.
 func (m *MockImpervaServer) handleAiApplicationSecurityApplicationDelete(w http.ResponseWriter, applicationID string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
