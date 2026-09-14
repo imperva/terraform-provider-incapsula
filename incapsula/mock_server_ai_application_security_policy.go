@@ -161,7 +161,8 @@ func (m *MockImpervaServer) handleAiApplicationSecurityPolicyRead(w http.Respons
 }
 
 // handleAiApplicationSecurityPolicyUpdate handles PATCH /v3/applications/{applicationId}/policies/{policyId}.
-// Terraform always sends the full desired state, so every field is replaced.
+// The policy's scalar fields are replaced, but the guardrails are *mutated in place*, mirroring
+// PolicyService.mutateExistingGuardians: see mutateAiApplicationSecurityGuardrails.
 func (m *MockImpervaServer) handleAiApplicationSecurityPolicyUpdate(w http.ResponseWriter, r *http.Request, policyID string) {
 	req, err := m.decodeAiApplicationSecurityPolicyRequest(r)
 	if err != nil {
@@ -183,8 +184,8 @@ func (m *MockImpervaServer) handleAiApplicationSecurityPolicyUpdate(w http.Respo
 	policy.Name = req.Name
 	policy.Description = req.Description
 	policy.Active = req.Active
-	policy.Request = normalizeGuardrails(req.Request)
-	policy.Response = normalizeGuardrails(req.Response)
+	policy.Request = mutateAiApplicationSecurityGuardrails(policy.Request, req.Request)
+	policy.Response = mutateAiApplicationSecurityGuardrails(policy.Response, req.Response)
 
 	w.WriteHeader(http.StatusOK)
 	m.writeAiApplicationSecurityPolicyObject(w, policy)
@@ -218,4 +219,39 @@ func normalizeGuardrails(guardrails []AiApplicationSecurityGuardrail) []AiApplic
 		return []AiApplicationSecurityGuardrail{}
 	}
 	return guardrails
+}
+
+// mutateAiApplicationSecurityGuardrails applies a PATCH body's guardrails to the ones a policy
+// already holds in that phase, mirroring PolicyService.mutateExistingGuardians. PATCH is
+// update-only:
+//
+//   - guardrails are matched by type within the phase (the path already fixes the phase);
+//   - an incoming guardrail whose type has no existing counterpart is silently ignored — PATCH
+//     never inserts;
+//   - an existing guardrail whose type is absent from the body is left untouched — PATCH never
+//     deletes;
+//   - if the body repeats a type, the first occurrence wins (Collectors.toMap(…, (a, b) -> a)).
+//
+// Only mode, active and config are mutable. This is deliberately *not* a full replace: modelling
+// it as one would let acceptance tests pass against the mock while failing against the real
+// service, which is exactly the divergence these tests exist to catch.
+func mutateAiApplicationSecurityGuardrails(existing, incoming []AiApplicationSecurityGuardrail) []AiApplicationSecurityGuardrail {
+	byType := make(map[string]AiApplicationSecurityGuardrail, len(incoming))
+	for _, g := range incoming {
+		if _, seen := byType[g.GuardrailType]; !seen {
+			byType[g.GuardrailType] = g
+		}
+	}
+
+	mutated := normalizeGuardrails(existing)
+	for i := range mutated {
+		update, ok := byType[mutated[i].GuardrailType]
+		if !ok {
+			continue
+		}
+		mutated[i].GuardrailMode = update.GuardrailMode
+		mutated[i].Active = update.Active
+		mutated[i].Config = update.Config
+	}
+	return mutated
 }
