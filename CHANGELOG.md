@@ -1,17 +1,29 @@
+## 3.40.0 (Sep 3, 2026)
+
+FEATURES:
+* **New Resource:** `incapsula_ai_application_security_application` — manages an AI Application Security application (SDK, EDGE, or API deployment type) ([#676](https://github.com/imperva/terraform-provider-incapsula/pull/676))
+* **New Resource:** `incapsula_ai_application_security_policy` — manages an AI Application Security policy with an ordered set of guardrails attached to the PROMPT or RESPONSE phase ([#676](https://github.com/imperva/terraform-provider-incapsula/pull/676))
+* **New Resource:** `incapsula_ai_application_security_api_key` — manages an AI Application Security API key for an application ([#676](https://github.com/imperva/terraform-provider-incapsula/pull/676))
+
+BUG FIXES:
+- custom certificate hardcoded id fix ([#680](https://github.com/imperva/terraform-provider-incapsula/pull/680))
+
+
 ## 3.39.3 (Aug 19, 2026)
 
-BUT FIXES:
+BUG FIXES:
 - Fix cloud origin resource url ([#675](https://github.com/imperva/terraform-provider-incapsula/pull/675))
 
 
 ## 3.39.2 (Aug 13, 2026)
 
-BUT FIXES:
+BUG FIXES:
 - Revert fix for: Occasional 401 error when creating domains ([#672](https://github.com/imperva/terraform-provider-incapsula/pull/672))
+
 
 ## 3.39.1 (Aug 11, 2026)
 
-BUT FIXES:
+BUG FIXES:
 - Rename field from originTlsPolicy to originSslProtocol for cloud origin resource ([#668](https://github.com/imperva/terraform-provider-incapsula/pull/668))
 
 
@@ -20,26 +32,26 @@ BUT FIXES:
 FEATURES:
 * **New Resource:** `incapsula_cloud_origin_domain`
 
-BUT FIXES:
+BUG FIXES:
 - fix: Add retry with exponential backoff for transient API failures ([#663](https://github.com/imperva/terraform-provider-incapsula/pull/663))
 
 
 ## 3.38.3 (Jun 1, 2026)
 
-BUT FIXES:
+BUG FIXES:
 - Show Error properly when creation of a site with WC as primary domain fails ([#644](https://github.com/imperva/terraform-provider-incapsula/pull/644))
 - Verify the API credentials using the lightweight verify endpoint issue ([#646](https://github.com/imperva/terraform-provider-incapsula/pull/646))
 
 
 ## 3.38.2 (May 3, 2026)
 
-BUT FIXES:
+BUG FIXES:
 - Revert Incap Rule deletion - disable before delete, a new fix will be released soon
 
 
 ## 3.38.1 (Apr 26, 2026)
 
-BUT FIXES:
+BUG FIXES:
 - Incap Rule deletion - disable before delete (issue #626) ([#639](https://github.com/imperva/terraform-provider-incapsula/pull/639))
 
 
@@ -51,7 +63,7 @@ Resource Update: Support approved_ips on account_user resource
 
 ## 3.37.1 (Jan 25, 2026)
 
-BUT FIXES:
+BUG FIXES:
 - Account_role: support caid for role delete  ([#622](https://github.com/imperva/terraform-provider-incapsula/pull/622))
 
 
@@ -63,7 +75,7 @@ FEATURES:
 IMPROVEMENTS:
 - add PQC flag to site ssl config resource([#613](https://github.com/imperva/terraform-provider-incapsula/pull/613))
 
-BUT FIXES:
+BUG FIXES:
 - V3 Site: Cant Create site under sub account  ([#619](https://github.com/imperva/terraform-provider-incapsula/pull/619))
 
 
@@ -72,7 +84,7 @@ BUT FIXES:
 IMPROVEMENTS:
 - Support client_apps & countries & continents in bot_access_control rule exception([#606](https://github.com/imperva/terraform-provider-incapsula/pull/606))
 
-BUT FIXES:
+BUG FIXES:
 Site_v3: Don't save account id change to state  ([#605](https://github.com/imperva/terraform-provider-incapsula/pull/605))
 Account_role: Support caid for account role editing  ([#610](https://github.com/imperva/terraform-provider-incapsula/pull/610))
 
@@ -91,7 +103,7 @@ IMPROVEMENTS:
 
 ## 3.34.4 (Sep 7, 2025)
 
-BUT FIXES:
+BUG FIXES:
 Fixed documentation for ssl_instructions and ssl_validation ([#588](https://github.com/imperva/terraform-provider-incapsula/pull/588))
 Converting datatype int to int64 to handle 32 bit systems ([#590](https://github.com/imperva/terraform-provider-incapsula/pull/590))
 incapsula_custom_certificate resource update flow crash ([#591](https://github.com/imperva/terraform-provider-incapsula/pull/591))
