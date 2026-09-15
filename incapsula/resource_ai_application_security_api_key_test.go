@@ -33,7 +33,10 @@ func TestAccIncapsulaAiApplicationSecurityApiKeyBasic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(aiApplicationSecurityApiKeyResourceName, "application_id"),
 					// The plaintext key must be present after create.
 					resource.TestCheckResourceAttrSet(aiApplicationSecurityApiKeyResourceName, "api_key"),
-					resource.TestCheckResourceAttr(aiApplicationSecurityApiKeyResourceName, "active", "true"),
+					// active is always false: AIFW-1131 dropped the entity's active column
+					// without removing it from the shared DTO, so the backend zero-values it
+					// on every response, regardless of key state.
+					resource.TestCheckResourceAttr(aiApplicationSecurityApiKeyResourceName, "active", "false"),
 				),
 			},
 			{
