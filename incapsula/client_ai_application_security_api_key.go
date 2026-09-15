@@ -8,8 +8,9 @@ import (
 	"net/http"
 )
 
-// API key endpoints (relative to c.config.BaseURLAPI). Unlike the application
-// controller (/v3/api/applications), the api-key controller path has no /api/ segment.
+// API key endpoints (relative to c.config.BaseURLAPI). The api-key, policy and application
+// controllers all share the /v3/applications base path (the application controller dropped its
+// former /api/ segment in AIFW-1432).
 const (
 	// aiApplicationSecurityApiKeyAppEndpoint is the application-scoped path for create and delete.
 	aiApplicationSecurityApiKeyAppEndpoint = "/ai-application-security/v3/applications/%s/api-keys"

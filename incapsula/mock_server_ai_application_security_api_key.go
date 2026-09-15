@@ -107,12 +107,15 @@ func (m *MockImpervaServer) handleAiApplicationSecurityApiKeyCreate(w http.Respo
 	m.nextAiApplicationSecurityApiKeyID++
 
 	key := &MockAiApplicationSecurityApiKey{
-		Id:            id,
-		MaskedApiKey:  fmt.Sprintf("****%04d", id),
-		AccountId:     accountID,
-		Name:          req.Name,
-		CreatedAt:     1700000000000,
-		Active:        true,
+		Id:           id,
+		MaskedApiKey: fmt.Sprintf("****%04d", id),
+		AccountId:    accountID,
+		Name:         req.Name,
+		CreatedAt:    1700000000000,
+		// active is always false on the real backend: AIFW-1131 dropped the entity's active
+		// column but left the field on the shared ApiKeyDto, so MapStruct silently zero-values
+		// it on every response. Mirroring false here keeps the mock honest about that.
+		Active:        false,
 		ApplicationId: applicationID,
 	}
 	m.aiApplicationSecurityApiKeys[id] = key
