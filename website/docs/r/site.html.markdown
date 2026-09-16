@@ -8,7 +8,9 @@ description: |-
 
 # incapsula_site
 
-Provides a Incapsula Site resource. 
+Provides a Incapsula Site resource.
+**This resource should be used for creating Non-SNI sites only** - site created as SNI by default and require follow-up configuration via [incapsula_application_delivery resource](https://registry.terraform.io/providers/imperva/incapsula/latest/docs/resources/application_delivery) to enable Non-SNI support.
+For SNI sites, use [incapsula_site_v3 instead](https://registry.terraform.io/providers/imperva/incapsula/latest/docs/resources/site_v3).
 Sites are the core resource that is required by all other resources.
 
 ## Example Usage
@@ -66,8 +68,8 @@ The following arguments are supported:
   > **NOTE:** `restricted_cname_reuse` parameter is currently not supported. Please do not use/change value.
 
 * `restricted_cname_reuse` - (Optional) Use this option to allow Imperva to detect and add domains that are using the Imperva-provided CNAME (not recommended). One of: true | false.
-* `domain_validation` - (Optional) Sets the domain validation method that will be used to generate an SSL certificate. Options are `email`, `html`, `cname` and `dns`.
-* `approver` - (Optional) Sets the approver e-mail address that will be used to perform SSL domain validation.
+* `domain_validation` - (Optional) **Applies to Non-SNI sites only.** Sets the domain validation method that will be used to generate an Imperva account certificate. Options are `email`, `html`, `cname` and `dns`.
+* `approver` - (Optional) **Applies to Non-SNI sites only.** Sets the approver e-mail address that will be used to perform SSL domain validation for account certificate.
 * `ignore_ssl` - (Optional) Sets the ignore SSL flag (if the site is in pending-select-approver state). Pass "true" or empty string in the value parameter.
 * `acceleration_level` - (Optional) Sets the acceleration level of the site. Options are `none`, `standard`, and `aggressive`.
 * `seal_location` - (Optional) Sets the seal location. Options are `api.seal_location.none`, `api.seal_location.bottom_left`, `api.seal_location.right_bottom`, `api.seal_location.left`, and `api.seal_location.right`.
@@ -77,8 +79,8 @@ The following arguments are supported:
 * `hashing_enabled` - (Optional) Specify if hashing (masking setting) should be enabled.
 * `hash_salt` - (Optional) Specify the hash salt (masking setting), required if hashing is enabled. Maximum length of 64 characters.
 * `log_level` - (Optional) The log level. Options are `full`, `security`, and `none`.
-* `naked_domain_san` - (Optional) Use `true` to add the naked domain SAN to a www site’s SSL certificate. Default value: `true`
-* `wildcard_san` - (Optional) Use `true` to add the wildcard SAN or `false` to add the full domain SAN to the site’s SSL certificate. Default value: `true`
+* `naked_domain_san` - (Optional) **Applies to Non-SNI sites only.** Use `true` to add the naked domain SAN to a www site’s Imperva account certificate. Default value: `true`
+* `wildcard_san` - (Optional) **Applies to Non-SNI sites only.** Use `true` to add the wildcard SAN or `false` to add the full domain SAN to the site’s SSL certificate. Default value: `true`
 * `perf_client_comply_no_cache` - (Optional) Comply with No-Cache and Max-Age directives in client requests. By default, these cache directives are ignored. Resources are dynamically profiled and re-configured to optimize performance.
 * `perf_client_enable_client_side_caching` - (Optional) Cache content on client browsers or applications. When not enabled, content is cached only on the Imperva proxies.
 * `perf_client_send_age_header` - (Optional) Send Cache-Control: max-age and Age headers.
