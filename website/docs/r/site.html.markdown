@@ -8,10 +8,9 @@ description: |-
 
 # incapsula_site
 
-Provides a Incapsula Site resource.
-**This resource should be used for creating Non-SNI sites only** - site created as SNI by default and require follow-up configuration via [incapsula_application_delivery resource](https://registry.terraform.io/providers/imperva/incapsula/latest/docs/resources/application_delivery) to enable Non-SNI support.
+Provides an Incapsula Site resource. Sites are the foundation for all other Incapsula resources
+**This resource should be used to create Non-SNI sites only.**  Sites are created as SNI by default. To enable Non-SNI support, configure the site using the [incapsula_application_delivery resource](https://registry.terraform.io/providers/imperva/incapsula/latest/docs/resources/application_delivery) after creation.
 For SNI sites, use [incapsula_site_v3 instead](https://registry.terraform.io/providers/imperva/incapsula/latest/docs/resources/site_v3).
-Sites are the core resource that is required by all other resources.
 
 ## Example Usage
 
@@ -69,7 +68,7 @@ The following arguments are supported:
 
 * `restricted_cname_reuse` - (Optional) Use this option to allow Imperva to detect and add domains that are using the Imperva-provided CNAME (not recommended). One of: true | false.
 * `domain_validation` - (Optional) **Applies to Non-SNI sites only.** Sets the domain validation method that will be used to generate an Imperva account certificate. Options are `email`, `html`, `cname` and `dns`.
-* `approver` - (Optional) **Applies to Non-SNI sites only.** Sets the approver e-mail address that will be used to perform SSL domain validation for account certificate.
+* `approver` - (Optional) **Applies to Non-SNI sites only.** Sets the approver e-mail address that will be used to perform SSL domain validation for the account certificates.
 * `ignore_ssl` - (Optional) Sets the ignore SSL flag (if the site is in pending-select-approver state). Pass "true" or empty string in the value parameter.
 * `acceleration_level` - (Optional) Sets the acceleration level of the site. Options are `none`, `standard`, and `aggressive`.
 * `seal_location` - (Optional) Sets the seal location. Options are `api.seal_location.none`, `api.seal_location.bottom_left`, `api.seal_location.right_bottom`, `api.seal_location.left`, and `api.seal_location.right`.
