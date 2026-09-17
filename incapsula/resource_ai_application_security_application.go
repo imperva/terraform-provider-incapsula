@@ -292,7 +292,14 @@ func resourceAiApplicationSecurityApplicationRead(ctx context.Context, d *schema
 	d.Set("name", app.Name)
 	d.Set("application_type", app.ApplicationType)
 	d.Set("region", app.Region)
-	d.Set("configuration", flattenAiApplicationSecurityApplicationConfig(app.Configuration))
+	// configuration is EDGE-only per the schema and CustomizeDiff's validation of user-authored
+	// config; the backend can return a populated configuration object even for SDK/API apps, so
+	// Read must apply the same gate rather than trusting the backend's field presence.
+	if app.ApplicationType == "EDGE" {
+		d.Set("configuration", flattenAiApplicationSecurityApplicationConfig(app.Configuration))
+	} else {
+		d.Set("configuration", nil)
+	}
 
 	return nil
 }
