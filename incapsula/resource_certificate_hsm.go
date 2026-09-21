@@ -38,13 +38,6 @@ func resourceCustomCertificateHsm() *schema.Resource {
 		Read:   resourceCertificateRead,
 		Update: resourceCertificateHsmCreateAndUpdate,
 		Delete: resourceCertificateHsmDelete,
-		Importer: &schema.ResourceImporter{
-			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				d.SetId("12345")
-				d.Set("site_id", d.Get("site_id").(string))
-				return []*schema.ResourceData{d}, nil
-			},
-		},
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
 			"site_id": {
@@ -114,7 +107,8 @@ func resourceCertificateHsmCreateAndUpdate(d *schema.ResourceData, m interface{}
 		return err
 	}
 
-	d.SetId("12345")
+	// There is no unique ID in the response and only one cert per site, so the site ID is used as the resource ID.
+	d.SetId(siteId)
 	log.Printf("[DEBUG] Done createing HSM custome certificate for site id %s, now reding the data", siteId)
 
 	return resourceCertificateRead(d, m)
