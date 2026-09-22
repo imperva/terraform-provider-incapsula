@@ -3,22 +3,13 @@ subcategory: "Advanced Bot Protection"
 layout: "incapsula"
 page_title: "incapsula_abp_conditions"
 description: |-
-  Lists the literal ABP Conditions of an account. Use this to reference Conditions that are not managed by this Terraform configuration when all of them are of interest. Use incapsula_abp_condition to look up a single Condition by name instead.
-  Only literal conditions are returned. Condition lists and condition list entries; see incapsula_abp_condition_list.
-  Note: unless managed says otherwise, only account-owned conditions are listed. Managed conditions are excluded by default.
-  Note: The time of reading this datasource is not defined by the terraform module. That means that the read is subject to race-conditions. If a condition is created or deleted in the same plan as this datasource is read, it may yield unexpected results, like an inexhaustive listing. If deterministic operation is required, specify resource dependencies explicitly to force terraform plan order.
+  Lists the literal ABP Conditions of an account, ordered by name. Condition lists and condition list entries are not included. Use incapsula_abp_condition to look up a single Condition by name instead.
 ---
 
 
 # incapsula_abp_conditions
 
-Lists the literal ABP Conditions of an account. Use this to reference Conditions that are not managed by this Terraform configuration when all of them are of interest. Use `incapsula_abp_condition` to look up a single Condition by `name` instead.
-
-Only literal conditions are returned. Condition lists and condition list entries; see `incapsula_abp_condition_list`.
-
-Note: unless managed says otherwise, only account-owned conditions are listed. Managed conditions are excluded by default.
-
-Note: The time of reading this datasource is not defined by the terraform module. That means that the read is subject to race-conditions. If a condition is created or deleted in the same plan as this datasource is read, it may yield unexpected results, like an inexhaustive listing. If deterministic operation is required, specify resource dependencies explicitly to force terraform plan order.
+Lists the literal ABP Conditions of an account, ordered by name. Condition lists and condition list entries are not included. Use `incapsula_abp_condition` to look up a single Condition by name instead.
 
 
 
@@ -27,21 +18,16 @@ Note: The time of reading this datasource is not defined by the terraform module
 
 ### Required
 
-- `account_id` (String) ABP account UUID to list the Conditions of. Managed conditions are visible from any account.
+- `account_id` (String) ABP account UUID to list the Conditions of.
 
 ### Optional
 
-- `managed` (String) Which Conditions to list with respect to ownership. One of:
-
-  - `managed_excluded` (default): account-owned Conditions only
-  - `managed_only`: managed (Imperva-owned) Conditions only
-  - `all`: both
-
-Managed Conditions are visible from every account and there may be a great many of them, so they are excluded unless asked for.
+- `account_owned` (Boolean) Include account-owned Conditions. Defaults to `true`.
+- `managed` (Boolean) Include managed Conditions. Defaults to `false`.
 
 ### Read-Only
 
-- `conditions` (List of Object) All matching literal Conditions, ordered by `name` and then by `id`. (see [below for nested schema](#nestedatt--conditions))
+- `conditions` (List of Object) The matching Conditions. (see [below for nested schema](#nestedatt--conditions))
 - `id` (String) The ID of this resource.
 
 <a id="nestedatt--conditions"></a>
