@@ -63,13 +63,16 @@ type DataCentersConfigurationDTO struct {
 }
 
 // AddDataCenter adds an incap rule to be managed by Incapsula
-func (c *Client) PutDataCentersConfiguration(siteID string, requestDTO DataCentersConfigurationDTO) (*DataCentersConfigurationDTO, error) {
-	log.Printf("[INFO] Updating Incapsula data centers configuration for siteID: %s\n", siteID)
+// accountID is optional - pass 0 to operate on the account the API credentials belong to.
+// It must be provided when the site belongs to a different account, e.g. when a parent
+// account's API key manages a site that resides in one of its sub accounts.
+func (c *Client) PutDataCentersConfiguration(siteID string, accountID int, requestDTO DataCentersConfigurationDTO) (*DataCentersConfigurationDTO, error) {
+	log.Printf("[INFO] Updating Incapsula data centers configuration for siteID: %s, accountID: %d\n", siteID, accountID)
 
 	baseURLv3 := c.config.BaseURL[:len(c.config.BaseURL)-3] + "/v3"
 	dcsJSON, err := json.Marshal(requestDTO)
 	reqURL := fmt.Sprintf("%s/sites/%s/data-centers-configuration", baseURLv3, siteID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, reqURL, dcsJSON, CreateDataCenterConfiguration)
+	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodPut, reqURL, dcsJSON, GetRequestParamsWithCaid(accountID), CreateDataCenterConfiguration)
 	if err != nil {
 		return nil, fmt.Errorf("Error executing update Data Centers configuration request for siteID %s: %s", siteID, err)
 	}
@@ -92,13 +95,15 @@ func (c *Client) PutDataCentersConfiguration(siteID string, requestDTO DataCente
 }
 
 // ListDataCenters gets the Incapsula list of data centers
-func (c *Client) GetDataCentersConfiguration(siteID string) (*DataCentersConfigurationDTO, error) {
-	log.Printf("[INFO] Getting Data Centers configuration (site_id: %s)\n", siteID)
+// accountID is optional - pass 0 to operate on the account the API credentials belong to.
+// See PutDataCentersConfiguration.
+func (c *Client) GetDataCentersConfiguration(siteID string, accountID int) (*DataCentersConfigurationDTO, error) {
+	log.Printf("[INFO] Getting Data Centers configuration (site_id: %s, account_id: %d)\n", siteID, accountID)
 
 	// Get request to Incapsula
 	baseURLv3 := c.config.BaseURL[:len(c.config.BaseURL)-3] + "/v3"
 	reqURL := fmt.Sprintf("%s/sites/%s/data-centers-configuration", baseURLv3, siteID)
-	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadDataCenterConfiguration)
+	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, reqURL, nil, GetRequestParamsWithCaid(accountID), ReadDataCenterConfiguration)
 	if err != nil {
 		return nil, fmt.Errorf("Error executing get Data Centers configuration request for siteID %s: %s", siteID, err)
 	}

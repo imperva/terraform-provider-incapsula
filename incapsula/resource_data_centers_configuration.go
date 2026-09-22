@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"hash/crc32"
 	"log"
+	"strconv"
 	"strings"
 )
 
@@ -19,7 +20,23 @@ func resourceDataCentersConfiguration() *schema.Resource {
 		Delete: resourceDataCentersConfigurationDelete,
 		Importer: &schema.ResourceImporter{
 			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				d.Set("site_id", d.Id())
+				idSlice := strings.Split(d.Id(), "/")
+				if len(idSlice) > 2 || idSlice[0] == "" {
+					return nil, fmt.Errorf("unexpected format of ID (%q), expected site_id or site_id/account_id", d.Id())
+				}
+
+				siteID := idSlice[0]
+				d.Set("site_id", siteID)
+
+				if len(idSlice) == 2 {
+					accountID, err := strconv.Atoi(idSlice[1])
+					if err != nil {
+						return nil, fmt.Errorf("failed to convert Account Id from import command, actual value: %s, expected numeric id", idSlice[1])
+					}
+					d.Set("account_id", accountID)
+				}
+
+				d.SetId(siteID)
 				return []*schema.ResourceData{d}, nil
 			},
 		},
@@ -31,6 +48,13 @@ func resourceDataCentersConfiguration() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
+			},
+			"account_id": {
+				Description: "Numeric identifier of the account in which the site is located. " +
+					"Specify it when the site belongs to an account other than the one the API credentials " +
+					"were issued for, e.g. when a parent account's API key manages a sub account's site.",
+				Type:     schema.TypeInt,
+				Optional: true,
 			},
 			"site_lb_algorithm": {
 				Description:  "How to load balance between multiple Data Centers.",
@@ -342,7 +366,7 @@ func resourceDataCentersConfigurationCreate(d *schema.ResourceData, m interface{
 	client := m.(*Client)
 
 	requestDTO := populateFromConfDataCentersConfigurationDTO(d)
-	responseDTO, err := client.PutDataCentersConfiguration(d.Get("site_id").(string), requestDTO)
+	responseDTO, err := client.PutDataCentersConfiguration(d.Get("site_id").(string), d.Get("account_id").(int), requestDTO)
 	if err != nil {
 		return fmt.Errorf("Error updating Data Centers configuration for site (%s): %s",
 			d.Get("site_id"), err)
@@ -363,7 +387,7 @@ func resourceDataCentersConfigurationRead(d *schema.ResourceData, m interface{})
 	// Implement by reading the ListDataCentersResponse for the data center
 	client := m.(*Client)
 
-	responseDTO, err := client.GetDataCentersConfiguration(d.Get("site_id").(string))
+	responseDTO, err := client.GetDataCentersConfiguration(d.Get("site_id").(string), d.Get("account_id").(int))
 	if err != nil {
 		return fmt.Errorf("Error getting Data Centers configuration for site (%s): %s", d.Get("site_id"), err)
 	}
@@ -444,7 +468,7 @@ func resourceDataCentersConfigurationRead(d *schema.ResourceData, m interface{})
 func resourceDataCentersConfigurationDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 
-	responseDTO, err := client.GetDataCentersConfiguration(d.Get("site_id").(string))
+	responseDTO, err := client.GetDataCentersConfiguration(d.Get("site_id").(string), d.Get("account_id").(int))
 	if err != nil {
 		return fmt.Errorf("Error deleting Data Centers configuration for site (%s): %s", d.Get("site_id"), err)
 	}

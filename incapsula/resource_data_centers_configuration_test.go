@@ -75,7 +75,7 @@ func testAccCheckIncapsulaDataCentersConfigurationDestroy(state *terraform.State
 			return nil
 		}
 
-		listDataCenterResponse, _ := client.GetDataCentersConfiguration(siteID)
+		listDataCenterResponse, _ := client.GetDataCentersConfiguration(siteID, 0)
 
 		// See comment above - the data center may have already been deleted
 		// This workaround will be removed in the future
@@ -129,7 +129,7 @@ func testCheckIncapsulaDataCentersConfigurationExists(name string) resource.Test
 			return nil
 		}
 
-		responseDTO, err := client.GetDataCentersConfiguration(siteIDString)
+		responseDTO, err := client.GetDataCentersConfiguration(siteIDString, 0)
 		if responseDTO == nil || responseDTO.Data == nil || len(responseDTO.Data) == 0 {
 			return fmt.Errorf("Incapsula data centers configuration: %s (Site ID: %d) does not exist\n%s", name, siteID, err)
 		}

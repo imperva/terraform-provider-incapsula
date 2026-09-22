@@ -615,7 +615,7 @@ func resourceSiteRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("perf_ttl_use_shortest_caching", performanceSettingsResponse.TTL.UseShortestCaching)
 
 	// Get the original data center ID (the first in the list of associated data centers)
-	dcsConfDTO, err := client.GetDataCentersConfiguration(d.Id())
+	dcsConfDTO, err := client.GetDataCentersConfiguration(d.Id(), 0)
 	if err != nil || len(dcsConfDTO.Data) == 0 || len(dcsConfDTO.Data[0].DataCenters) == 0 {
 		log.Printf("[ERROR] Could not read Incapsula data centers for domain: %s and site id: %d, %s\n", domain, siteID, err)
 		return err

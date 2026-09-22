@@ -154,6 +154,7 @@ resource "incapsula_data_centers_configuration" "example-weighted-data-centers-c
 The following arguments are supported:
 
 * `site_id` - (Required) Numeric identifier of the site to operate on.
+* `account_id` - (Optional) Numeric identifier of the account in which the site is located. Specify it when the site belongs to an account other than the one the API credentials were issued for - for example when a parent account's API key manages a site that resides in one of its sub accounts. When omitted, the operation is performed on the account identified by the authentication parameters.
 * `site_topology` - (Optional) One of: SINGLE_SERVER (no failover), SINGLE_DC (allows failover and LB), or MULTIPLE_DC (allows also Geo and/or AD Forward rules assignment)
 * `site_lb_algorithm` - (Optional) How to load balance between multiple Data Centers. One of: BEST_CONNECTION_TIME, GEO_PREFERRED, GEO_REQUIRED, WEIGHTED_LB.
 * `fail_over_required_monitors` - (Optional) How many Imperva PoPs should assess Data Center as down before failover is performed. One of: ONE, MANY, MOST, ALL.
@@ -202,4 +203,10 @@ Data Centers Configuration can be imported using the `id`, e.g.:
 
 ```
 $ terraform import incapsula_data_centers_configuration.demo 1234
+```
+
+When the site is located in another account, import using `site_id/account_id`, e.g.:
+
+```
+$ terraform import incapsula_data_centers_configuration.demo 1234/5678
 ```
