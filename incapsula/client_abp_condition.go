@@ -156,6 +156,21 @@ func (c *Client) abpConditionUrl(conditionId string) string {
 	return fmt.Sprintf("%s/botmanagement/v1/condition/%s", c.config.BaseURLAPI, conditionId)
 }
 
+func flattenAbpCondition(condition *AbpCondition) map[string]any {
+	return map[string]any{
+		"id":             condition.Id,
+		"account_id":     condition.AccountId,
+		"managed":        condition.AccountId == "",
+		"name":           condition.Name,
+		"description":    condition.Description,
+		"code":           condition.Code,
+		"template":       condition.Template,
+		"last_change_by": condition.LastChangeBy,
+		"created_at":     condition.CreatedAt,
+		"modified_at":    condition.ModifiedAt,
+	}
+}
+
 // ListAbpConditions returns every Condition visible from the given Account,
 // including managed (Imperva-owned) Conditions which carry an empty
 // AccountId.
