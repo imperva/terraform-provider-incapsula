@@ -51,15 +51,14 @@ func dataSourceAbpConditions() *schema.Resource {
 				ValidateFunc: validation.IsUUID,
 			},
 			"managed": {
-				Description: "Include managed conditions. Defaults to `false`.",
+				Description: "Only list managed conditions. Defaults to `false`.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
 			"account_owned": {
-				Description: "Include account-owned Conditions. Defaults to `true`.",
+				Description: "Only list account-owned conditions. Defaults to the opposite of `managed`.",
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     true,
 			},
 			"conditions": {
 				Description: "The matching Conditions.",
@@ -76,11 +75,19 @@ func dataSourceAbpConditions() *schema.Resource {
 func dataSourceAbpConditionsRead(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
 	accountId := data.Get("account_id").(string)
-	includeManaged := data.Get("managed").(bool)
-	includeAccountOwned := data.Get("account_owned").(bool)
+	onlyManaged := data.Get("managed").(bool)
 
-	if !includeManaged && !includeAccountOwned {
-		return diag.Errorf("at least one of managed or account_owned must be true, otherwise no Condition can match")
+	// account_owned defaults to the opposite of managed, which a schema Default
+	// cannot express, so tell unset apart from false via the raw config.
+	onlyAccountOwned := !onlyManaged
+	if raw := data.GetRawConfig(); !raw.IsNull() {
+		if v := raw.GetAttr("account_owned"); v.IsKnown() && !v.IsNull() {
+			onlyAccountOwned = v.True()
+		}
+	}
+
+	if onlyManaged == onlyAccountOwned {
+		return diag.Errorf("exactly one of managed or account_owned must be true")
 	}
 
 	conditions, err := client.ListAbpConditions(accountId)
@@ -96,7 +103,7 @@ func dataSourceAbpConditionsRead(ctx context.Context, data *schema.ResourceData,
 		if c.Kind != AbpConditionKindLiteral {
 			continue
 		}
-		if isManaged := c.AccountId == ""; (isManaged && !includeManaged) || (!isManaged && !includeAccountOwned) {
+		if isManaged := c.AccountId == ""; isManaged != onlyManaged {
 			continue
 		}
 		matches = append(matches, c)
