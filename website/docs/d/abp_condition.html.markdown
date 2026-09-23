@@ -3,13 +3,13 @@ subcategory: "Advanced Bot Protection"
 layout: "incapsula"
 page_title: "incapsula_abp_condition"
 description: |-
-  Looks up a literal ABP Condition by name. Names are case-sensitive and matched exactly. The lookup fails if more than one condition matches.
+  Looks up a literal ABP Condition by name. Names are case-sensitive and matched exactly. The lookup fails if more than one condition matches. Use incapsula_abp_conditions to retrieve every literal Condition of an account instead.
 ---
 
 
 # incapsula_abp_condition
 
-Looks up a literal ABP Condition by name. Names are case-sensitive and matched exactly. The lookup fails if more than one condition matches.
+Looks up a literal ABP Condition by name. Names are case-sensitive and matched exactly. The lookup fails if more than one condition matches. Use `incapsula_abp_conditions` to retrieve every literal Condition of an account instead.
 
 ## Example Usage
 
@@ -48,3 +48,4 @@ data "incapsula_abp_condition" "managed_monitoring_tools" {
 - `id` (String) The ID of this resource.
 - `last_change_by` (String) Identifier of the user who last changed this condition.
 - `modified_at` (String) RFC3339 timestamp at which the Condition was last modified.
+- `template` (String) Editor template the server uses to validate `code`. Open enumeration; `custom` for conditions that do not use a specific editor template.
