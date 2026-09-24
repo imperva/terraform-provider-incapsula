@@ -15,7 +15,7 @@ Lists the literal ABP Conditions of an account, ordered by name. Condition lists
 
 ```terraform
 # List the account-owned conditions.
-data "incapsula_abp_conditions" "account_owned" {
+data "incapsula_abp_conditions" "account" {
   account_id = var.account_id
 }
 
@@ -39,8 +39,7 @@ output "managed_condition_names" {
 
 ### Optional
 
-- `account_owned` (Boolean) Only list account-owned conditions. Defaults to the opposite of `managed`.
-- `managed` (Boolean) Only list managed conditions. Defaults to `false`.
+- `managed` (Boolean) If `true`, only managed conditions are listed, otherwise only account-owned conditions. Defaults to `false`.
 
 ### Read-Only
 

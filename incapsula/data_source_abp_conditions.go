@@ -51,12 +51,7 @@ func dataSourceAbpConditions() *schema.Resource {
 				ValidateFunc: validation.IsUUID,
 			},
 			"managed": {
-				Description: "Only list managed conditions. Defaults to `false`.",
-				Type:        schema.TypeBool,
-				Optional:    true,
-			},
-			"account_owned": {
-				Description: "Only list account-owned conditions. Defaults to the opposite of `managed`.",
+				Description: "If `true`, only managed conditions are listed, otherwise only account-owned conditions. Defaults to `false`.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
@@ -75,20 +70,7 @@ func dataSourceAbpConditions() *schema.Resource {
 func dataSourceAbpConditionsRead(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
 	accountId := data.Get("account_id").(string)
-	onlyManaged := data.Get("managed").(bool)
-
-	// account_owned defaults to the opposite of managed, which a schema Default
-	// cannot express, so tell unset apart from false via the raw config.
-	onlyAccountOwned := !onlyManaged
-	if raw := data.GetRawConfig(); !raw.IsNull() {
-		if v := raw.GetAttr("account_owned"); v.IsKnown() && !v.IsNull() {
-			onlyAccountOwned = v.True()
-		}
-	}
-
-	if onlyManaged == onlyAccountOwned {
-		return diag.Errorf("exactly one of managed or account_owned must be true")
-	}
+	managed := data.Get("managed").(bool)
 
 	conditions, err := client.ListAbpConditions(accountId)
 	if err != nil {
@@ -103,7 +85,7 @@ func dataSourceAbpConditionsRead(ctx context.Context, data *schema.ResourceData,
 		if c.Kind != AbpConditionKindLiteral {
 			continue
 		}
-		if isManaged := c.AccountId == ""; isManaged != onlyManaged {
+		if isManaged := c.AccountId == ""; isManaged != managed {
 			continue
 		}
 		matches = append(matches, c)
