@@ -1,5 +1,5 @@
 # List the account-owned conditions.
-data "incapsula_abp_conditions" "account_owned" {
+data "incapsula_abp_conditions" "account" {
   account_id = var.account_id
 }
 
