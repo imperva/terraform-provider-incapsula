@@ -196,3 +196,17 @@ func (c *Client) DeleteAbpPolicy(policyId string) error {
 	}
 	return nil
 }
+
+func flattenAbpPolicy(policy *AbpPolicy) map[string]any {
+	description := ""
+	if policy.Description != nil {
+		description = *policy.Description
+	}
+	return map[string]any{
+		"id":          policy.Id,
+		"name":        policy.Name,
+		"description": description,
+		"directive":   flattenAbpDirectives(policy.Directives),
+		"modified_at": policy.ModifiedAt,
+	}
+}
