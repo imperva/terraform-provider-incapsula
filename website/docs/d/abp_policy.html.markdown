@@ -3,13 +3,13 @@ subcategory: "Advanced Bot Protection"
 layout: "incapsula"
 page_title: "incapsula_abp_policy"
 description: |-
-  Looks up an ABP Policy by name, id, or by selecting the account global policy. Exactly one of name, id, or account_global must be set. Names are case-sensitive and matched exactly; the lookup fails if more than one policy matches.
+  Looks up an ABP Policy by name, id, or by selecting the account global policy. Exactly one of name, id, or account_global must be set. Names are case-sensitive and matched exactly; the lookup fails if more than one policy matches. Use incapsula_abp_policies to retrieve every Policy of an account instead.
 ---
 
 
 # incapsula_abp_policy
 
-Looks up an ABP Policy by name, id, or by selecting the account global policy. Exactly one of `name`, `id`, or `account_global` must be set. Names are case-sensitive and matched exactly; the lookup fails if more than one policy matches.
+Looks up an ABP Policy by name, id, or by selecting the account global policy. Exactly one of `name`, `id`, or `account_global` must be set. Names are case-sensitive and matched exactly; the lookup fails if more than one policy matches. Use `incapsula_abp_policies` to retrieve every Policy of an account instead.
 
 ## Example Usage
 

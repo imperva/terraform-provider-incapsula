@@ -108,6 +108,7 @@ func Provider() *schema.Provider {
 			"incapsula_abp_conditions":                  dataSourceAbpConditions(),
 			"incapsula_abp_condition_list":              dataSourceAbpConditionList(),
 			"incapsula_abp_policy":                      dataSourceAbpPolicy(),
+			"incapsula_abp_policies":                    dataSourceAbpPolicies(),
 			"incapsula_abp_directive":                   dataSourceAbpDirective(),
 		},
 
