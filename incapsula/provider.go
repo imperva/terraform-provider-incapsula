@@ -91,6 +91,9 @@ func Provider() *schema.Provider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
+			"incapsula_gcp_psc_target":      dataSourceIncapsulaGcpPscTarget(),
+			"incapsula_gcp_domains":         dataSourceIncapsulaGcpDomains(),
+			"incapsula_gcp_regions":         dataSourceIncapsulaGcpRegions(),
 			"incapsula_role_abilities":      dataSourceRoleAbilities(),
 			"incapsula_data_center":         dataSourceDataCenter(),
 			"incapsula_account_data":        dataSourceAccount(),

@@ -1,10 +1,12 @@
 package incapsula
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -63,6 +65,57 @@ func checkResponse(t *testing.T, siteV3Response *SiteV3Response, siteV3Request S
 
 	if siteV3Response.Data[0].Cname != Cname {
 		t.Errorf("Should have  %s site cname. Got: %s", Cname, siteV3Response.Data[0].Cname)
+	}
+}
+
+func TestSiteV3RequestMarshalsIsLoadBalancerSite(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	log.Printf("[DEBUG] Running test client_site_v3_test.TestSiteV3RequestMarshalsIsLoadBalancerSite")
+
+	unset := SiteV3Request{Name: "example.com", SiteType: "PUBLIC_CLOUD"}
+	unsetJSON, err := json.Marshal(unset)
+	if err != nil {
+		t.Fatalf("unexpected marshal error: %s", err)
+	}
+	if strings.Contains(string(unsetJSON), "isLoadBalancerSite") {
+		t.Errorf("Unset is_load_balancer_site should be omitted. Got: %s", string(unsetJSON))
+	}
+
+	trueVal := true
+	set := SiteV3Request{Name: "example.com", SiteType: "PUBLIC_CLOUD", CloudType: "GCP", IsLoadBalancerSite: &trueVal}
+	setJSON, err := json.Marshal(set)
+	if err != nil {
+		t.Fatalf("unexpected marshal error: %s", err)
+	}
+	if !strings.Contains(string(setJSON), "\"isLoadBalancerSite\":true") {
+		t.Errorf("Explicit true is_load_balancer_site should be sent as true. Got: %s", string(setJSON))
+	}
+
+	falseVal := false
+	setFalse := SiteV3Request{Name: "example.com", IsLoadBalancerSite: &falseVal}
+	setFalseJSON, err := json.Marshal(setFalse)
+	if err != nil {
+		t.Fatalf("unexpected marshal error: %s", err)
+	}
+	if !strings.Contains(string(setFalseJSON), "\"isLoadBalancerSite\":false") {
+		t.Errorf("Explicit false is_load_balancer_site should be sent as false. Got: %s", string(setFalseJSON))
+	}
+}
+
+func TestSiteV3ResponseUnmarshalsAuthorityHeader(t *testing.T) {
+	log.Printf("======================== BEGIN TEST ========================")
+	log.Printf("[DEBUG] Running test client_site_v3_test.TestSiteV3ResponseUnmarshalsAuthorityHeader")
+
+	body := "{\"data\":[{\"id\":123,\"name\":\"lb.example.com\",\"type\":\"PUBLIC_CLOUD\",\"cloud\":\"GCP\",\"isLoadBalancerSite\":true,\"authorityHeader\":\"abc-51999737.example.net\"}]}"
+	var resp SiteV3Response
+	if err := json.Unmarshal([]byte(body), &resp); err != nil {
+		t.Fatalf("unexpected unmarshal error: %s", err)
+	}
+	if resp.Data[0].IsLoadBalancerSite == nil || !*resp.Data[0].IsLoadBalancerSite {
+		t.Errorf("Expected isLoadBalancerSite=true. Got: %v", resp.Data[0].IsLoadBalancerSite)
+	}
+	if resp.Data[0].AuthorityHeader != "abc-51999737.example.net" {
+		t.Errorf("Expected authorityHeader to be parsed. Got: %s", resp.Data[0].AuthorityHeader)
 	}
 }
 
