@@ -1,5 +1,5 @@
 ---
-subcategory: "Advanced Bot Protection"
+subcategory: "Deprecated"
 layout: "incapsula"
 page_title: "incapsula_abp_websites"
 description: |-
@@ -8,6 +8,11 @@ description: |-
 ---
 
 # incapsula_abp_websites
+
+-> DEPRECATED: incapsula_abp_websites
+
+This resource has been DEPRECATED. It will be removed in a future version.
+Please use the `incapsula_abp_site` resource instead.
 
 Provides an ABP (Advanced Bot Protection) website resource. Allows you to enable and configure ABP for given websites.
 

@@ -3,7 +3,7 @@ package incapsula
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -52,7 +52,7 @@ func (c *Client) RequestAbpWebsitesWithBody(accountId int, account AbpTerraformA
 
 	// Read the body
 	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
+	responseBody, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		diags = append(diags, httpBodyErrorDiagnostic(err, resourceName, accountId, method, action, responseBody))
@@ -106,7 +106,7 @@ func (c *Client) RequestAbpWebsites(accountId int, autoPublish bool, method stri
 
 	// Read the body
 	defer resp.Body.Close()
-	responseBody, err := ioutil.ReadAll(resp.Body)
+	responseBody, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		diags = append(diags, httpBodyErrorDiagnostic(err, resourceName, accountId, method, action, responseBody))

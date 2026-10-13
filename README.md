@@ -66,11 +66,11 @@ In order to run the full suite of Acceptance tests, run `make testacc`.
 $ make testacc
 ```
 
-An automation script is provided for Mac darwin 64amd based developers that 
-encapsulates initial setups along make described commands. 
+An automation script is provided for Mac darwin 64amd based developers that
+encapsulates initial setups along make described commands.
 Please note that OS_ARCH=darwin_amd64 is uncommented in GNUmakefile for default Mac users, if needed for Linux users comment back and uncomment OS_ARCH=linux_amd64
 
-Brew is a pre-requisite for this script, as the main package manager to install 
+Brew is a pre-requisite for this script, as the main package manager to install
 the dependent libraries such as Golang, Terraform and Git.
 More details about this script is provided as inner code comments and description.
 
@@ -178,3 +178,25 @@ To add new endpoints to the mock server:
 3. Add tests in `mock_server_test.go`
 4. Update this documentation
 
+### Generating documentation using tfplugindocs (only for ABP at the moment)
+
+Prerequisite:
+
+    go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
+
+Make sure `$(go env GOPATH)/bin` is in your `$PATH`, then run:
+
+```sh
+# Generate docs for abp_* resources/data sources into website/docs/{r,d}.
+# Skips any resource that already has a hand-written doc.
+scripts/gen-abp-docs.sh
+
+# Overwrite existing legacy docs as well.
+FORCE=1 scripts/gen-abp-docs.sh
+```
+
+The script renders the full provider schema, keeps only the `abp_*` files, and
+converts them to the legacy `website/` layout (`.html.markdown` + `incapsula`
+front matter). Afterwards, review the generated
+`website/docs/{r,d}/abp_*.html.markdown` files and add sidebar entries in
+`website/incapsula.erb` if needed.
