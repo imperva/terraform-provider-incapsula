@@ -53,6 +53,38 @@ func TestAiApplicationSecurityApplicationReadDefaultsContentTypeWhenEmpty(t *tes
 	}
 }
 
+// TestAiApplicationSecurityApplicationReadOmitsConfigurationForNonEdgeType is a regression test
+// for a Read defect: the real backend can return a non-empty "configuration" object even for
+// SDK/API applications (schema says configuration is EDGE-only, enforced by CustomizeDiff on
+// user-authored config — but Read didn't apply the same rule to backend data). Without the
+// application_type gate in Read, this leaks a default-valued configuration block into state on
+// terraform import, causing a spurious plan diff that only self-heals after one apply.
+func TestAiApplicationSecurityApplicationReadOmitsConfigurationForNonEdgeType(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
+	// SDK app; backend (unexpectedly) still returns a populated configuration object.
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(200)
+		rw.Write([]byte(`{"data":[{"applicationId":"app-456","name":"sdk-app","accountId":55,"region":"US","applicationType":"SDK","configuration":{"contentType":"application/json","isStreaming":false,"siteId":0}}]}`))
+	}))
+	defer server.Close()
+
+	client := &Client{config: &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}, httpClient: &http.Client{}}
+
+	d := resourceAiApplicationSecurityApplication().TestResourceData()
+	d.SetId("app-456")
+	d.Set("account_id", 55)
+
+	if diags := resourceAiApplicationSecurityApplicationRead(context.Background(), d, client); diags.HasError() {
+		t.Fatalf("Read returned error: %+v", diags)
+	}
+
+	if got := d.Get("configuration.#").(int); got != 0 {
+		t.Errorf("configuration not suppressed for SDK application_type: got %d items, want 0 (backend sent a non-empty configuration object)", got)
+	}
+}
+
 func TestAccIncapsulaAiApplicationSecurityApplicationBasic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

@@ -13,13 +13,6 @@ func resourceCertificate() *schema.Resource {
 		Read:   resourceCertificateRead,
 		Update: resourceCertificateUpdate,
 		Delete: resourceCertificateDelete,
-		Importer: &schema.ResourceImporter{
-			State: func(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-				d.SetId("12345")
-				d.Set("site_id", d.Get("site_id").(string))
-				return []*schema.ResourceData{d}, nil
-			},
-		},
 		Schema: map[string]*schema.Schema{
 			// Required Arguments
 			"site_id": {
@@ -85,8 +78,8 @@ func resourceCertificateCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	// TODO: Setting this to arbitrary value as there is only one cert for each site.
-	d.SetId("12345")
+	// There is no unique ID in the response and only one cert per site, so the site ID is used as the resource ID.
+	d.SetId(d.Get("site_id").(string))
 
 	return resourceCertificateRead(d, m)
 }
@@ -112,7 +105,9 @@ func resourceCertificateRead(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.Set("input_hash", listCertificatesResponse.SSL.CustomCertificate.InputHash)
-	d.SetId("12345")
+	if d.Id() == "12345" {
+		d.SetId(siteID)
+	}
 
 	return nil
 }
@@ -146,7 +141,6 @@ func resourceCertificateUpdate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	d.SetId("12345")
 	return resourceCertificateRead(d, m)
 }
 

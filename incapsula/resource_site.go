@@ -102,13 +102,13 @@ func resourceSite() *schema.Resource {
 				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"domain_validation": {
-				Description:      "email or html or dns or cname.",
+				Description:      "Applies to Non-SNI sites only. Sets the domain validation method that will be used to generate an Imperva account certificate. Options are email, html, cname and dns.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"approver": {
-				Description:      "my.approver@email.com (some approver email address).",
+				Description:      "Applies to Non-SNI sites only. Sets the approver e-mail address that will be used to perform SSL domain validation for account certificate.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
@@ -339,14 +339,14 @@ func resourceSite() *schema.Resource {
 				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"naked_domain_san": {
-				Description:      "Use 'true' to add the naked domain SAN to a www site’s SSL certificate. Default value: true",
+				Description:      "Applies to Non-SNI sites only. Use ‘true’ to add the naked domain SAN to a www site’s Imperva account certificate. Default value: true",
 				Type:             schema.TypeBool,
 				Optional:         true,
 				Default:          true,
 				DiffSuppressFunc: deprecatedFlagDiffSuppress(),
 			},
 			"wildcard_san": {
-				Description:      "Use 'true' to add the wildcard SAN or 'false' to add the full domain SAN to the site’s SSL certificate. Default value: true",
+				Description:      "Applies to Non-SNI sites only. Use ‘true’ to add the wildcard SAN or ‘false’ to add the full domain SAN to the site’s SSL certificate. Default value: true",
 				Type:             schema.TypeBool,
 				Optional:         true,
 				Default:          true,
