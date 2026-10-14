@@ -51,7 +51,7 @@ func dataSourceSiteRead(ctx context.Context, d *schema.ResourceData, m interface
 	accountID := d.Get("account_id").(int)
 
 	var accountIDStr string
-	if accountID > 0 {
+	if accountID != 0 {
 		accountIDStr = strconv.Itoa(accountID)
 	}
 

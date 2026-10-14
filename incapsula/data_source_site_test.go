@@ -18,9 +18,10 @@ func TestAccIncapsulaDataSourceSite_Basic(t *testing.T) {
 			{
 				Config: testAccCheckIncapsulaDataSourceSiteBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.incapsula_site_lookup.test", "site_id"),
+					resource.TestCheckResourceAttrPair("data.incapsula_site_lookup.test", "site_id", "incapsula_site_v3.test", "id"),
+					resource.TestCheckResourceAttrPair("data.incapsula_site_lookup.test", "name", "incapsula_site_v3.test", "name"),
 					resource.TestCheckResourceAttrSet("data.incapsula_site_lookup.test", "cname"),
-					resource.TestCheckResourceAttrSet("data.incapsula_site_lookup.test", "type"),
+					resource.TestCheckResourceAttrPair("data.incapsula_site_lookup.test", "type", "incapsula_site_v3.test", "type"),
 				),
 			},
 		},
@@ -35,8 +36,10 @@ func TestAccIncapsulaDataSourceSite_WithSubAccount(t *testing.T) {
 			{
 				Config: testAccCheckIncapsulaDataSourceSiteWithAccount(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.incapsula_site_lookup.test_account", "site_id"),
+					resource.TestCheckResourceAttrPair("data.incapsula_site_lookup.test_account", "site_id", "incapsula_site_v3.test_account", "id"),
+					resource.TestCheckResourceAttrPair("data.incapsula_site_lookup.test_account", "name", "incapsula_site_v3.test_account", "name"),
 					resource.TestCheckResourceAttrSet("data.incapsula_site_lookup.test_account", "cname"),
+					resource.TestCheckResourceAttrPair("data.incapsula_site_lookup.test_account", "type", "incapsula_site_v3.test_account", "type"),
 				),
 			},
 		},
@@ -135,7 +138,7 @@ data "incapsula_site_lookup" "test" {
 }
 
 resource "incapsula_cache_rule" "example" {
-  site_id = data.incapsula_site.test.site_id
+  site_id = data.incapsula_site_lookup.test.site_id
   name    = "test-cache-rule-%s"
   action  = "HTTP_CACHE_MAKE_STATIC"
   enabled = true

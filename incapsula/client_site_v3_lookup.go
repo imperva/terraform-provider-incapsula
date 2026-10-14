@@ -73,6 +73,16 @@ func (c *Client) ListV3Sites(accountId string, siteName string) (*SiteV3Response
 // GetV3SiteByName retrieves a site by name within an account
 func (c *Client) GetV3SiteByName(siteName string, accountId string) (*SiteV3Request, diag.Diagnostics) {
 	var diags diag.Diagnostics
+
+	if siteName == "" {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  "Site name is required",
+			Detail:   "Site name cannot be empty",
+		})
+		return nil, diags
+	}
+
 	log.Printf("[INFO] getting v3 site by name: %s (account_id: %s)", siteName, accountId)
 
 	listResponse, diags := c.ListV3Sites(accountId, siteName)
@@ -82,11 +92,11 @@ func (c *Client) GetV3SiteByName(siteName string, accountId string) (*SiteV3Requ
 
 	log.Printf("[DEBUG] GetV3SiteByName - listResponse.Data length: %d, response: %+v", len(listResponse.Data), listResponse)
 
-	if len(listResponse.Data) == 0 {
+	if len(listResponse.Data) != 1 {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
-			Summary:  "Site not found",
-			Detail:   fmt.Sprintf("Site with name '%s' not found in account %s", siteName, accountId),
+			Summary:  "Site lookup error",
+			Detail:   fmt.Sprintf("Expected exactly 1 site with name '%s' in account %s, but found %d", siteName, accountId, len(listResponse.Data)),
 		})
 		return nil, diags
 	}
