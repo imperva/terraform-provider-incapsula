@@ -10,10 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
-// ListV3Sites retrieves sites for an account, optionally filtering by name
-func (c *Client) ListV3Sites(accountId string, siteName string) (*SiteV3Response, diag.Diagnostics) {
+// ListV3Sites retrieves sites for an account, optionally filtering by name with pagination
+func (c *Client) ListV3Sites(accountId string, siteName string, page int) (*SiteV3Response, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	log.Printf("[INFO] listing v3 sites for account id: %s (filter by name: %s)", accountId, siteName)
+	log.Printf("[INFO] listing v3 sites for account id: %s (filter by name: %s, page: %d)", accountId, siteName, page)
 
 	listUrl := fmt.Sprintf("%s%s", c.config.BaseURLAPI, endpointSiteV3)
 	queryParams := map[string]string{}
@@ -23,6 +23,7 @@ func (c *Client) ListV3Sites(accountId string, siteName string) (*SiteV3Response
 	if siteName != "" {
 		queryParams["names"] = siteName
 	}
+	queryParams["page_num"] = fmt.Sprintf("%d", page)
 	log.Printf("[DEBUG] ListV3Sites - listUrl: %s, queryParams: %+v, apiID: %s", listUrl, queryParams, c.config.APIID)
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, listUrl, nil, queryParams, ReadSite)
 	if err != nil {
@@ -85,7 +86,7 @@ func (c *Client) GetV3SiteByName(siteName string, accountId string) (*SiteV3Requ
 
 	log.Printf("[INFO] getting v3 site by name: %s (account_id: %s)", siteName, accountId)
 
-	listResponse, diags := c.ListV3Sites(accountId, siteName)
+	listResponse, diags := c.ListV3Sites(accountId, siteName, 0)
 	if len(diags) > 0 {
 		return nil, diags
 	}
