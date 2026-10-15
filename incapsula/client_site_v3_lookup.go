@@ -23,7 +23,7 @@ func (c *Client) ListV3Sites(accountId string, siteName string, page int) (*Site
 	if siteName != "" {
 		queryParams["names"] = siteName
 	}
-	queryParams["page_num"] = fmt.Sprintf("%d", page)
+	queryParams["page"] = fmt.Sprintf("%d", page)
 	log.Printf("[DEBUG] ListV3Sites - listUrl: %s, queryParams: %+v, apiID: %s", listUrl, queryParams, c.config.APIID)
 	resp, err := c.DoJsonAndQueryParamsRequestWithHeaders(http.MethodGet, listUrl, nil, queryParams, ReadSite)
 	if err != nil {
