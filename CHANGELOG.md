@@ -1,3 +1,11 @@
+## 3.40.0 (Oct 8, 2026)
+
+BUG FIXES:
+- Updated documentation for incapsula_site resource ([#690](https://github.com/imperva/terraform-provider-incapsula/pull/690))
+- fix(ai-application-security): gate configuration in Read to EDGE apps ([#691](https://github.com/imperva/terraform-provider-incapsula/pull/691))
+
+
+
 ## 3.40.0 (Sep 3, 2026)
 
 FEATURES:
