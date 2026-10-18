@@ -28,6 +28,7 @@ const DeleteAccount = "delete_account"
 
 const CreateSubAccount = "create_sub_account"
 const ReadSubAccount = "read_sub_account"
+const ReadSubAccountsList = "read_sub_accounts_list"
 const DeleteSubAccount = "delete_sub_account"
 
 const ReadAccountDataStorageRegion = "read_account_data_storage_region"
