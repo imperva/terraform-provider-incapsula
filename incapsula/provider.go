@@ -99,6 +99,7 @@ func Provider() *schema.Provider {
 			"incapsula_account_permissions": dataSourceAccountPermissions(),
 			"incapsula_account_roles":       dataSourceAccountRoles(),
 			"incapsula_ssl_instructions":    dataSourceSSLInstructions(),
+			"incapsula_site":                dataSourceSite(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
