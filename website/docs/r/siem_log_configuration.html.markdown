@@ -140,6 +140,7 @@ The following arguments are supported:
 * `format` - (Optional) Log format - compatible only with CLOUD_WAF and ATTACK_ANALYTICS producers. Values: `CEF`, `W3C` , `LEEF`
 * `public_key` - (Optional) Public key for encryption - compatible only with CLOUD_WAF and ATTACK_ANALYTICS producers.
 * `public_key_file_name` - (Optional) The name of the public key file corresponding to the public_key field. This is compatible only with CLOUD_WAF and ATTACK_ANALYTICS producers.
+* `batch_packaging_type` - (Optional) How log batches are packaged in the payload sent to the connection. Values: `NONE`, `IMPERVA_METADATA_PREFIX`. When unset, no payload settings are sent.
 
 **Note**: The connection should be chosen according to conjunction of producer and dataset:
 

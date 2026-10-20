@@ -36,6 +36,8 @@ const AttackAnalyticsProvider = "ATTACK_ANALYTICS"
 
 var AttackAnalyticsDatasets = []string{"WAF_ANALYTICS_LOGS"}
 
+var BatchPackagingTypes = []string{"NONE", "IMPERVA_METADATA_PREFIX"}
+
 func resourceSiemLogConfiguration() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceSiemLogConfigurationCreate,
@@ -126,6 +128,12 @@ func resourceSiemLogConfiguration() *schema.Resource {
 				Optional:    true,
 				Required:    false,
 			},
+			"batch_packaging_type": {
+				Description:  "How log batches are packaged in the payload sent to the connection.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice(BatchPackagingTypes, false),
+			},
 		},
 	}
 }
@@ -167,6 +175,21 @@ func resourceValidation(d *schema.ResourceData) error {
 	return nil
 }
 
+func buildSiemLogConfigurationPayload(d *schema.ResourceData) *Payload {
+	batchPackagingType := d.Get("batch_packaging_type").(string)
+	if batchPackagingType == "" {
+		return nil
+	}
+	return &Payload{BatchPackaging: BatchPackaging{Type: batchPackagingType}}
+}
+
+func batchPackagingTypeFromPayload(payload *Payload) string {
+	if payload == nil {
+		return ""
+	}
+	return payload.BatchPackaging.Type
+}
+
 func resourceSiemLogConfigurationCreate(d *schema.ResourceData, m interface{}) error {
 	resErr := resourceValidation(d)
 	if resErr != nil {
@@ -186,6 +209,7 @@ func resourceSiemLogConfigurationCreate(d *schema.ResourceData, m interface{}) e
 		LogsLevel:         d.Get("logs_level").(string),
 		PublicKey:         d.Get("public_key").(string),
 		PublicKeyFileNAme: d.Get("public_key_file_name").(string),
+		Payload:           buildSiemLogConfigurationPayload(d),
 	}}})
 	if err != nil {
 		return err
@@ -202,14 +226,16 @@ func resourceSiemLogConfigurationCreate(d *schema.ResourceData, m interface{}) e
 func resourceSiemLogConfigurationRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	reponse, statusCode, err := client.ReadSiemLogConfiguration(d.Id(), d.Get("account_id").(string))
+	// If the resource is deleted on the server, blow it out locally and run through the normal TF cycle.
+	// The client reports any non-200 as an error, so 404 is checked first.
+	if statusCode != nil && *statusCode == 404 {
+		d.SetId("")
+		return nil
+	}
 	if err != nil {
 		return err
 	}
-	// If the connection is deleted on the server, blow it out locally and run through the normal TF cycle
-	if *statusCode == 404 {
-		d.SetId("")
-		return nil
-	} else if (*statusCode == 200) && (reponse != nil) && (len(reponse.Data) == 1) {
+	if (*statusCode == 200) && (reponse != nil) && (len(reponse.Data) == 1) {
 		var logConfiguration = reponse.Data[0]
 		d.Set("account_id", logConfiguration.AssetID)
 		d.Set("configuration_name", logConfiguration.ConfigurationName)
@@ -222,6 +248,7 @@ func resourceSiemLogConfigurationRead(d *schema.ResourceData, m interface{}) err
 		d.Set("logs_level", logConfiguration.LogsLevel)
 		d.Set("public_key", logConfiguration.PublicKey)
 		d.Set("public_key_file_name", logConfiguration.PublicKeyFileNAme)
+		d.Set("batch_packaging_type", batchPackagingTypeFromPayload(logConfiguration.Payload))
 		return nil
 	} else {
 		return fmt.Errorf("[ERROR] Unsupported operation. Response status code: %d", *statusCode)
@@ -248,6 +275,7 @@ func resourceSiemLogConfigurationUpdate(d *schema.ResourceData, m interface{}) e
 		LogsLevel:         d.Get("logs_level").(string),
 		PublicKey:         d.Get("public_key").(string),
 		PublicKeyFileNAme: d.Get("public_key_file_name").(string),
+		Payload:           buildSiemLogConfigurationPayload(d),
 	}}})
 
 	if err != nil {

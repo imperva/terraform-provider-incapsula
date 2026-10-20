@@ -1,11 +1,14 @@
 package incapsula
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
@@ -293,5 +296,46 @@ func testACCStateSiemLogConfigurationID(resourceType string) resource.ImportStat
 		}
 
 		return "", fmt.Errorf("[ERROR] Cannot find SiemLogConfiguration ID")
+	}
+}
+
+func TestBuildSiemLogConfigurationPayloadOmitsPayloadWhenBatchPackagingTypeUnset(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceSiemLogConfiguration().Schema, map[string]interface{}{})
+
+	payload := buildSiemLogConfigurationPayload(d)
+
+	if payload != nil {
+		t.Errorf("Should not build a payload when batch_packaging_type is unset, got: %+v", payload)
+	}
+}
+
+func TestBuildSiemLogConfigurationPayloadSetsBatchPackagingType(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceSiemLogConfiguration().Schema, map[string]interface{}{"batch_packaging_type": "IMPERVA_METADATA_PREFIX"})
+
+	payload := buildSiemLogConfigurationPayload(d)
+
+	if payload == nil || payload.BatchPackaging.Type != "IMPERVA_METADATA_PREFIX" {
+		t.Errorf("Should send batch_packaging_type as payload.batchPackaging.type, got: %+v", payload)
+	}
+}
+
+func TestSiemLogConfigurationDataSerializesPayloadOnlyWhenSet(t *testing.T) {
+	withoutPayload, _ := json.Marshal(SiemLogConfigurationData{})
+	withPayload, _ := json.Marshal(SiemLogConfigurationData{Payload: &Payload{BatchPackaging: BatchPackaging{Type: "NONE"}}})
+
+	if strings.Contains(string(withoutPayload), "payload") {
+		t.Errorf("Should omit payload when unset, got: %s", withoutPayload)
+	}
+	if !strings.Contains(string(withPayload), `"payload":{"batchPackaging":{"type":"NONE"}}`) {
+		t.Errorf("Should serialize payload.batchPackaging.type, got: %s", withPayload)
+	}
+}
+
+func TestBatchPackagingTypeFromPayloadReadsBackType(t *testing.T) {
+	if batchPackagingTypeFromPayload(nil) != "" {
+		t.Errorf("Should map a missing payload to an empty batch_packaging_type")
+	}
+	if batchPackagingTypeFromPayload(&Payload{BatchPackaging: BatchPackaging{Type: "NONE"}}) != "NONE" {
+		t.Errorf("Should map payload.batchPackaging.type to batch_packaging_type")
 	}
 }
