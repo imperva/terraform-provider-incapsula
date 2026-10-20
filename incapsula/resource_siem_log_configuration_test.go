@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
@@ -337,5 +339,58 @@ func TestBatchPackagingTypeFromPayloadReadsBackType(t *testing.T) {
 	}
 	if batchPackagingTypeFromPayload(&Payload{BatchPackaging: BatchPackaging{Type: "NONE"}}) != "NONE" {
 		t.Errorf("Should map payload.batchPackaging.type to batch_packaging_type")
+	}
+}
+
+func TestSiemLogConfigurationSchemaAcceptsAnyProducerAndDataset(t *testing.T) {
+	testCases := []struct {
+		name     string
+		producer string
+		datasets []interface{}
+	}{
+		{name: "dataset of another producer", producer: "ATTACK_ANALYTICS", datasets: []interface{}{"CLOUD_WAF_ACCESS"}},
+		{name: "dataset unknown to the provider", producer: "CLOUD_WAF", datasets: []interface{}{"NEW_DATASET"}},
+		{name: "producer unknown to the provider", producer: "NEW_PRODUCER", datasets: []interface{}{"NEW_DATASET"}},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			config := terraform.NewResourceConfigRaw(map[string]interface{}{
+				"configuration_name": "name",
+				"producer":           testCase.producer,
+				"datasets":           testCase.datasets,
+				"enabled":            true,
+				"connection_id":      "connection",
+			})
+
+			diagnostics := resourceSiemLogConfiguration().Validate(config)
+
+			if diagnostics.HasError() {
+				t.Errorf("Should leave producer and dataset validation to the API, got: %v", diagnostics)
+			}
+		})
+	}
+}
+
+func TestSiemLogConfigurationCreateSurfacesApiDatasetValidationError(t *testing.T) {
+	detail := "Dataset CLOUD_WAF_ACCESS is not valid for provider ATTACK_ANALYTICS."
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(http.StatusBadRequest)
+		rw.Write([]byte(`{"errors":[{"status":400,"id":"abc","code":"1050","title":"Bad Request","detail":"` + detail + `"}]}`))
+	}))
+	defer server.Close()
+	client := &Client{config: &Config{BaseURLAPI: server.URL}, httpClient: &http.Client{}}
+	d := schema.TestResourceDataRaw(t, resourceSiemLogConfiguration().Schema, map[string]interface{}{
+		"configuration_name": "name",
+		"producer":           "ATTACK_ANALYTICS",
+		"datasets":           []interface{}{"CLOUD_WAF_ACCESS"},
+		"enabled":            true,
+		"connection_id":      "connection",
+	})
+
+	err := resourceSiemLogConfigurationCreate(d, client)
+
+	if err == nil || !strings.Contains(err.Error(), detail) {
+		t.Errorf("Should return the API detail, got: %v", err)
 	}
 }

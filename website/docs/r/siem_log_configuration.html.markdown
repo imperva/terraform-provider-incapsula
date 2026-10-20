@@ -131,8 +131,8 @@ NwIDAQAB
 The following arguments are supported:
 * `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `configurationName` - (Required) Unique configuration name.
-* `producer` - (Required) Provider type. Values: `ABP`, `NETSEC`, `ATO`, `AUDIT`, `CLOUD_WAF`, `ATTACK_ANALYTICS`
-* `datasets` - (Required) An array of strings representing the type of logs. Values:<br /> `ABP` for provider type `ABP`<br /> `CONNECTION`, `NETFLOW`, `IP`, `ATTACK`,`NOTIFICATIONS` for provider type `NETSEC`<br /> `ATO` for provider type `ATO`<br /> `AUDIT_TRAIL` for provider type `AUDIT` <br /> `GOOGLE_ANALYTICS_IDS`, `SIGNIFICANT_DOMAIN_DISCOVERY`, `SIGNIFICANT_SCRIPT_DISCOVERY`, `SIGNIFICANT_DATA_TRANSFER_DISCOVERY`, `DOMAIN_DISCOVERY_ENFORCE_MODE`, `CSP_HEADER_HEALTH` for provider type `CSP`<br /> `WAF_RAW_LOGS`, `CLOUD_WAF_ACCESS` for provider type `CLOUD_WAF` <br /> `WAF_ANALYTICS_LOGS` for provider type `ATTACK_ANALYTICS`
+* `producer` - (Required) Provider type, see the table below. The provider does not check it; the API validates it, and an unknown producer fails `terraform apply` with an error naming the `provider` field.
+* `datasets` - (Required) An array of strings representing the type of logs. The datasets must match the producer, see the table below. The provider does not check them; the API validates them and `terraform apply` fails with the API error: an unknown dataset names the field (e.g. `datasets[0]`), and a dataset that does not match the producer names both.
 * `enabled`  - (Required) Boolean. Values: `true`/ `false`
 * `connectionId` - (Required) Connection id associated with this log configuration
 * `logs_level` - (Optional) Security log level - compatible only with CLOUD_WAF producer. Values: `NONE`, `FULL`, `SECURITY`
@@ -142,7 +142,7 @@ The following arguments are supported:
 * `public_key_file_name` - (Optional) The name of the public key file corresponding to the public_key field. This is compatible only with CLOUD_WAF and ATTACK_ANALYTICS producers.
 * `batch_packaging_type` - (Optional) How log batches are packaged in the payload sent to the connection. Values: `NONE`, `IMPERVA_METADATA_PREFIX`. When unset, no payload settings are sent.
 
-**Note**: The connection should be chosen according to conjunction of producer and dataset:
+**Note**: Producers and datasets at the time of writing. New producers and datasets can be added to the API without a provider release.
 
 | producer         | datasets                                                                                                                                                              |
 |------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
