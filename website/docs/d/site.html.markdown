@@ -1,19 +1,19 @@
 ---
 subcategory: "Site Management"
 layout: "incapsula"
-page_title: "Incapsula: site-lookup"
+page_title: "Incapsula: site"
 description: |-
-    Provides an Incapsula Site Lookup data source.
+    Provides an Incapsula Site data source.
 ---
 
-# incapsula_site_lookup
+# incapsula_site
 
 Provides a way to look up a site by name and retrieve its external ID. The returned site ID can be used in other Terraform resources across different files and states.
 
 ## Example Usage
 
 ```hcl
-data "incapsula_site_lookup" "example" {
+data "incapsula_site" "example" {
   name = "mysite.example.com"
 }
 
@@ -22,7 +22,7 @@ data "incapsula_site_lookup" "example" {
 ### Search in Sub-Account
 
 ```hcl
-data "incapsula_site_lookup" "subaccount" {
+data "incapsula_site" "subaccount" {
   name       = "mysite.example.com"
   account_id = 1234568
 }

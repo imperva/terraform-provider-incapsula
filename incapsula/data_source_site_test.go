@@ -18,10 +18,10 @@ func TestAccIncapsulaDataSourceSite_Basic(t *testing.T) {
 			{
 				Config: testAccCheckIncapsulaDataSourceSiteBasic(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("data.incapsula_site_lookup.test", "site_id", "incapsula_site_v3.test", "id"),
-					resource.TestCheckResourceAttrPair("data.incapsula_site_lookup.test", "name", "incapsula_site_v3.test", "name"),
-					resource.TestCheckResourceAttrSet("data.incapsula_site_lookup.test", "cname"),
-					resource.TestCheckResourceAttrPair("data.incapsula_site_lookup.test", "type", "incapsula_site_v3.test", "type"),
+					resource.TestCheckResourceAttrPair("data.incapsula_site.test", "site_id", "incapsula_site_v3.test", "id"),
+					resource.TestCheckResourceAttrPair("data.incapsula_site.test", "name", "incapsula_site_v3.test", "name"),
+					resource.TestCheckResourceAttrSet("data.incapsula_site.test", "cname"),
+					resource.TestCheckResourceAttrPair("data.incapsula_site.test", "type", "incapsula_site_v3.test", "type"),
 				),
 			},
 		},
@@ -36,10 +36,10 @@ func TestAccIncapsulaDataSourceSite_WithSubAccount(t *testing.T) {
 			{
 				Config: testAccCheckIncapsulaDataSourceSiteWithAccount(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair("data.incapsula_site_lookup.test_account", "site_id", "incapsula_site_v3.test_account", "id"),
-					resource.TestCheckResourceAttrPair("data.incapsula_site_lookup.test_account", "name", "incapsula_site_v3.test_account", "name"),
-					resource.TestCheckResourceAttrSet("data.incapsula_site_lookup.test_account", "cname"),
-					resource.TestCheckResourceAttrPair("data.incapsula_site_lookup.test_account", "type", "incapsula_site_v3.test_account", "type"),
+					resource.TestCheckResourceAttrPair("data.incapsula_site.test_account", "site_id", "incapsula_site_v3.test_account", "id"),
+					resource.TestCheckResourceAttrPair("data.incapsula_site.test_account", "name", "incapsula_site_v3.test_account", "name"),
+					resource.TestCheckResourceAttrSet("data.incapsula_site.test_account", "cname"),
+					resource.TestCheckResourceAttrPair("data.incapsula_site.test_account", "type", "incapsula_site_v3.test_account", "type"),
 				),
 			},
 		},
@@ -54,8 +54,8 @@ func TestAccIncapsulaDataSourceSite_CrossStateReference(t *testing.T) {
 			{
 				Config: testAccCheckIncapsulaDataSourceSiteCrossStateReference(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.incapsula_site_lookup.test", "site_id"),
-					resource.TestCheckResourceAttrPair("incapsula_cache_rule.example", "site_id", "data.incapsula_site_lookup.test", "site_id"),
+					resource.TestCheckResourceAttrSet("data.incapsula_site.test", "site_id"),
+					resource.TestCheckResourceAttrPair("incapsula_cache_rule.example", "site_id", "data.incapsula_site.test", "site_id"),
 				),
 			},
 		},
@@ -76,7 +76,7 @@ resource "incapsula_site_v3" "test" {
   type = "Managed"
 }
 
-data "incapsula_site_lookup" "test" {
+data "incapsula_site" "test" {
   name = incapsula_site_v3.test.name
 
   depends_on = [incapsula_site_v3.test]
@@ -98,7 +98,7 @@ resource "incapsula_site_v3" "test_account" {
   type = "Managed"
 }
 
-data "incapsula_site_lookup" "test_account" {
+data "incapsula_site" "test_account" {
   name = incapsula_site_v3.test_account.name
 
   depends_on = [incapsula_site_v3.test_account]
@@ -110,7 +110,7 @@ data "incapsula_site_lookup" "test_account" {
 // Uncomment and configure when testing with multiple accounts
 // func testAccCheckIncapsulaDataSourceSiteWithExplicitAccount() string {
 //   return fmt.Sprintf(`
-// data "incapsula_site_lookup" "test" {
+// data "incapsula_site" "test" {
 //   name = "existing-site-name"
 //   account_id = <your-test-account-id>
 // }
@@ -131,14 +131,14 @@ resource "incapsula_site_v3" "test" {
   type = "Managed"
 }
 
-data "incapsula_site_lookup" "test" {
+data "incapsula_site" "test" {
   name = incapsula_site_v3.test.name
 
   depends_on = [incapsula_site_v3.test]
 }
 
 resource "incapsula_cache_rule" "example" {
-  site_id = data.incapsula_site_lookup.test.site_id
+  site_id = data.incapsula_site.test.site_id
   name    = "test-cache-rule-%s"
   action  = "HTTP_CACHE_MAKE_STATIC"
   enabled = true

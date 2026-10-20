@@ -779,7 +779,7 @@ resource "incapsula_ato_endpoint_mitigation_configuration" "example-ato-endpoint
 # Assuming you have a site already created by another Terraform configuration,
 # you can reference it by name in a different state/file:
 
-data "incapsula_site_lookup" "my_site" {
+data "incapsula_site" "my_site" {
   name = "example.com"
 
   # Optional: scope to a specific sub-account
@@ -788,7 +788,7 @@ data "incapsula_site_lookup" "my_site" {
 
 # Now use the looked-up site in your resources
 resource "incapsula_cache_rule" "example" {
-  site_id = data.incapsula_site_lookup.my_site.site_id
+  site_id = data.incapsula_site.my_site.site_id
   name    = "example-rule"
   # ... other cache rule configuration
 }
