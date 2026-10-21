@@ -55,7 +55,7 @@ func TestAccSiemGenericHttpConnection(t *testing.T) {
 					resource.TestCheckResourceAttr(genericHttpSiemConnectionResource, "connection_name", genericHttpSiemConnectionName),
 					resource.TestCheckResourceAttr(genericHttpSiemConnectionResource, "auth_type", HttpAuthTypeHeaders),
 					resource.TestCheckResourceAttr(genericHttpSiemConnectionResource, "auth_header.#", "1"),
-					resource.TestCheckResourceAttr(genericHttpSiemConnectionResource, "disable_cert_verification", "false"),
+					resource.TestCheckResourceAttr(genericHttpSiemConnectionResource, "disable_cert_verification", "true"),
 				),
 			},
 			{
@@ -173,6 +173,7 @@ func getAccIncapsulaGenericHttpSiemConnectionHeadersConfig(connectionName string
 			connection_name = "%s"
 			url             = "%s"
 			auth_type       = "HEADERS"
+			disable_cert_verification = true
 			headers = {
 				"Content-Type" = "application/json"
 			}
@@ -192,6 +193,7 @@ func getAccIncapsulaGenericHttpSiemConnectionBasicAuthConfig(connectionName stri
 			connection_name = "%s"
 			url             = "%s"
 			auth_type       = "BASIC_AUTH"
+			disable_cert_verification = true
 			username        = "%s"
 			password        = "%s"
 		}`,
