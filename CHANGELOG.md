@@ -1,3 +1,8 @@
+## Unreleased
+
+FEATURES:
+* **New Resource:** `incapsula_ai_application_security_guardrail_exception` — manages an AI Application Security guardrail exception: a pattern that one guardrail of a policy lets through, with the guardrail chosen by type and phase
+
 ## 3.40.0 (Oct 8, 2026)
 
 BUG FIXES:

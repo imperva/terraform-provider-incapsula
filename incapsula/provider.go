@@ -161,6 +161,7 @@ func Provider() *schema.Provider {
 			"incapsula_ai_application_security_application":                    resourceAiApplicationSecurityApplication(),
 			"incapsula_ai_application_security_policy":                         resourceAiApplicationSecurityPolicy(),
 			"incapsula_ai_application_security_api_key":                        resourceAiApplicationSecurityApiKey(),
+			"incapsula_ai_application_security_guardrail_exception":            resourceAiApplicationSecurityGuardrailException(),
 		},
 	}
 

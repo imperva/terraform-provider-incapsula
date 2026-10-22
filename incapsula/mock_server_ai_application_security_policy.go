@@ -133,8 +133,8 @@ func (m *MockImpervaServer) handleAiApplicationSecurityPolicyCreate(w http.Respo
 		Name:          req.Name,
 		Description:   req.Description,
 		Active:        req.Active,
-		Request:       normalizeGuardrails(req.Request),
-		Response:      normalizeGuardrails(req.Response),
+		Request:       m.withNewMockGuardrailIds(normalizeGuardrails(req.Request)),
+		Response:      m.withNewMockGuardrailIds(normalizeGuardrails(req.Response)),
 	}
 	m.aiApplicationSecurityPolicies[policyID] = policy
 	m.mu.Unlock()
@@ -203,6 +203,12 @@ func (m *MockImpervaServer) handleAiApplicationSecurityPolicyDelete(w http.Respo
 	}
 
 	delete(m.aiApplicationSecurityPolicies, policyID)
+	// the backend deletes a policy's guardrail exceptions with it
+	for id, gex := range m.aiApplicationSecurityGuardrailExceptions {
+		if gex.PolicyId == policyID {
+			delete(m.aiApplicationSecurityGuardrailExceptions, id)
+		}
+	}
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -210,6 +216,16 @@ func (m *MockImpervaServer) handleAiApplicationSecurityPolicyDelete(w http.Respo
 func (m *MockImpervaServer) writeAiApplicationSecurityPolicyObject(w http.ResponseWriter, policy *MockAiApplicationSecurityPolicy) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"data": policy})
+}
+
+// withNewMockGuardrailIds gives each new guardrail an id, like the backend. PATCH keeps them: it changes
+// guardrails in place (mutateAiApplicationSecurityGuardrails). Caller holds the lock.
+func (m *MockImpervaServer) withNewMockGuardrailIds(guardrails []AiApplicationSecurityGuardrail) []AiApplicationSecurityGuardrail {
+	for i := range guardrails {
+		guardrails[i].Id = m.nextAiApplicationSecurityGuardrailID
+		m.nextAiApplicationSecurityGuardrailID++
+	}
+	return guardrails
 }
 
 // normalizeGuardrails returns a non-nil slice so the {"data": …} envelope always carries
