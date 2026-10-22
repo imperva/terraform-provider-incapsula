@@ -12,7 +12,7 @@ Provides a customer Generic HTTP connection configuration resource. Logs are del
 
 The follow-on action is to use the `incapsula_siem_log_configuration` resource to configure the connection.
 
-## Example Usage
+## Example usage
 
 ### Headers authentication
 
@@ -59,7 +59,7 @@ resource "incapsula_siem_generic_http_connection" "example_basic_auth" {
 ### Using the connection in a log configuration
 
 Referencing the connection's `id` lets Terraform create the connection first and destroy the log configuration first.
-Log formats `CEF`, `LEEF` and `W3C` cannot be sent with `Content-Type: application/json`, so this connection sends `text/plain`.
+Log formats `CEF`, `LEEF`, and `W3C` cannot be sent with `Content-Type: application/json`, so this connection sends `text/plain`.
 
 ```hcl
 resource "incapsula_siem_generic_http_connection" "example_webhook" {
@@ -103,7 +103,7 @@ A connection cannot be deleted while a log configuration references it. Referenc
 > **NOTE:**
 `secret` and `password` are write-only: they are never read back from the API. Changing them outside Terraform is not detected as drift. After import, set them in the configuration and run `terraform apply`.
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 
@@ -120,7 +120,7 @@ The following arguments are supported:
 * `headers` - (Optional) Map of additional non-secret HTTP headers, for example `Content-Type`. Up to 20 entries.
 * `disable_cert_verification` - (Optional) Disable server certificate verification, for endpoints using a self-signed certificate. Default: `false`.
 
-## Attributes Reference
+## Attributes reference
 
 The following attributes are exported:
 
@@ -128,7 +128,7 @@ The following attributes are exported:
 
 ## Import
 
-Customer connection can be imported using `accountId`/`connectionId`:
+You can import a customer connection using `accountId`/`connectionId`:
 
 ```
 $ terraform import incapsula_siem_generic_http_connection.example_headers accountId/connectionId

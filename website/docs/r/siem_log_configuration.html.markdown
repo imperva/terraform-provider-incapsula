@@ -10,9 +10,9 @@ description: |-
 
 Provides a resource to configure a log connection.
 
-Dependency is on existing connection, created using the `incapsula_siem_connection` or `incapsula_siem_splunk_connection` resource.
+This resource depends on an existing connection, created using the `incapsula_siem_connection` or `incapsula_siem_splunk_connection` resource.
 
-## Example Usage
+## Example usage
 
 ```hcl
 resource "incapsula_siem_log_configuration" "example_siem_log_configuration_abp"{
@@ -66,21 +66,11 @@ resource "incapsula_siem_log_configuration" "example_siem_log_configuration_csp"
 
 }
 
-resource "incapsula_siem_log_configuration" "example_siem_log_configuration_csp"{
-    accountId = 1234567
-  	configurationName = "CSP SIEM-LOGS configuration"
-  	producer = "CSP"
-	datasets = ["GOOGLE_ANALYTICS_IDS", "SIGNIFICANT_DOMAIN_DISCOVERY", "SIGNIFICANT_SCRIPT_DISCOVERY", "SIGNIFICANT_DATA_TRANSFER_DISCOVERY"]
-  	enabled = true
-  	connectionId = incapsula_siem_connection.example_siem_connection_basic_auth.id
-
-}
-
 resource "incapsula_siem_log_configuration" "example_siem_log_configuration_cloudwaf"{
     accountId = 1234567
   	configurationName = "CLOUD-WAF SIEM-LOGS configuration"
   	producer = "CLOUD_WAF"
-	datasets = [WAF_RAW_LOGS", "CLOUD_WAF_ACCESS"]
+	datasets = ["WAF_RAW_LOGS", "CLOUD_WAF_ACCESS"]
   	enabled = true
   	connectionId = incapsula_siem_connection.example_siem_connection_basic_auth.id
   	logs_level = "NONE"
@@ -100,7 +90,7 @@ NwIDAQAB
   	publicKeyFileName = "examplePublicKey.pem"
 }
 
-resource "incapsula_siem_log_configuration" "example_siem_log_configuration_csp"{
+resource "incapsula_siem_log_configuration" "example_siem_log_configuration_attack_analytics"{
     accountId = 1234567
   	configurationName = "ATTACK-ANALYTICS SIEM-LOGS configuration"
   	producer = "ATTACK_ANALYTICS"
@@ -126,7 +116,7 @@ NwIDAQAB
 
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 * `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
@@ -155,7 +145,7 @@ The following arguments are supported:
 | ATTACK_ANALYTICS | WAF_ANALYTICS_LOGS                                                                                                                                                    |
 
 
-## Attributes Reference
+## Attributes reference
 
 The following attributes are exported:
 
@@ -163,7 +153,7 @@ The following attributes are exported:
 
 ## Import
 
-Customer connection can be imported using `accountId`/`logConfigurationId`:
+You can import a customer log configuration using `accountId`/`logConfigurationId`:
 
 ```
 $ terraform import incapsula_siem_log_configuration.example_siem_log_configuration_abp accountId/logConfigurationId
