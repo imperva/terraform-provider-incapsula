@@ -368,6 +368,10 @@ func TestClientDeleteSiteValidSite(t *testing.T) {
 		if req.URL.String() != fmt.Sprintf("/%s", endpointSiteDelete) {
 			t.Errorf("Should have have hit /%s endpoint. Got: %s", endpointSiteDelete, req.URL.String())
 		}
+		bytedata, _ := io.ReadAll(req.Body)
+		if strings.Contains(string(bytedata), "ignore_grace_period") {
+			t.Errorf("Should not send ignore_grace_period. Got body: %s", string(bytedata))
+		}
 		rw.Write([]byte(`{"res":0,"res_message":"OK"}`))
 	}))
 	defer server.Close()
