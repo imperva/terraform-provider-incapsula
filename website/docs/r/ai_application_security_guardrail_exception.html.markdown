@@ -35,13 +35,17 @@ resource "incapsula_ai_application_security_guardrail_exception" "qa_prompts" {
 * `policy_id` - (Required) UUID of the policy whose guardrail this exception applies to. Changing it creates a new guardrail exception.
 * `guardrail_type` - (Required) Type of the policy's guardrail: `PROMPT_INJECTION`, `PII_STATIC`, `MODERATION`, `ZERO_SHOT_CLASSIFICATION` or `SYSTEM_PROMPT_LEAK`. `RATE_LIMIT` is not supported: it has no text to except.
 * `phase` - (Required) Phase of that guardrail: `PROMPT` or `RESPONSE`. The policy must have exactly one guardrail of this type in this phase; otherwise the apply fails with `policy <id> has no <type> guardrail in phase <phase>` (or, if it has several, `... can't tell which one to use`).
-* `exception_pattern` - (Required) The text the guardrail lets through, by default 3 to 200 words. The service removes leading and trailing whitespace when it saves it, so such whitespace (e.g. a heredoc's trailing newline) is not a change.
+* `exception_pattern` - (Required) The text the guardrail lets through, by default 3 to 200 words and at most 1500 characters. The service removes leading and trailing whitespace when it saves it, so such whitespace (e.g. a heredoc's trailing newline) is not a change.
 * `exception_reason` - (Required) Why the exception exists: `BUSINESS_REQUIREMENT`, `FALSE_POSITIVE` or `OTHER` (exact, case-sensitive).
 * `note` - (Optional) Note for the people managing the exception, up to 1000 characters. Not sent to the gateway. Leading and trailing whitespace is removed when saved.
 * `active` - (Optional) Whether the exception is applied. Default: `true`.
 
 Changing `guardrail_type`, `phase`, `exception_pattern`, `exception_reason`, `note` or `active` updates the guardrail
 exception in place - it keeps its ID, also when it moves to another guardrail of the policy.
+
+A policy can have at most 50 guardrail exceptions, enabled and disabled together. Creating one more fails with
+`This policy already has 50 guardian exceptions, which is the maximum. Delete an exception to add a new one.`
+Setting `active` on an existing exception is always allowed.
 
 ## Attributes Reference
 

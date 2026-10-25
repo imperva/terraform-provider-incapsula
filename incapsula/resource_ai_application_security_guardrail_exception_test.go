@@ -167,6 +167,29 @@ func TestSuppressOuterWhitespaceDiff(t *testing.T) {
 	}
 }
 
+func TestValidateGuardrailExceptionPatternLength(t *testing.T) {
+	atMax := "one two " + strings.Repeat("a", aiApplicationSecurityGuardrailExceptionPatternMaxLength-len("one two "))
+	if _, errs := validateGuardrailExceptionPatternLength(atMax, "exception_pattern"); len(errs) != 0 {
+		t.Errorf("a pattern at the max length must be accepted, got %v", errs)
+	}
+	if _, errs := validateGuardrailExceptionPatternLength("  "+atMax+"\n", "exception_pattern"); len(errs) != 0 {
+		t.Errorf("outer whitespace is trimmed before counting, got %v", errs)
+	}
+	if _, errs := validateGuardrailExceptionPatternLength(atMax+"a", "exception_pattern"); len(errs) != 1 {
+		t.Errorf("a pattern one over the max length must be rejected")
+	}
+	// Hebrew letters are 2 bytes each in UTF-8 but 1 character for the service
+	hebrew := strings.Repeat("ש", aiApplicationSecurityGuardrailExceptionPatternMaxLength)
+	if _, errs := validateGuardrailExceptionPatternLength(hebrew, "exception_pattern"); len(errs) != 0 {
+		t.Errorf("characters are counted, not bytes, got %v", errs)
+	}
+	// an emoji is 2 UTF-16 code units, like Java counts it
+	emojis := strings.Repeat("😀", aiApplicationSecurityGuardrailExceptionPatternMaxLength/2+1)
+	if _, errs := validateGuardrailExceptionPatternLength(emojis, "exception_pattern"); len(errs) != 1 {
+		t.Errorf("an emoji counts as 2 characters, like the service")
+	}
+}
+
 // testAccGuardrailExceptionConfig is the policy test's mandatory policy plus one guardrail exception on it.
 func testAccGuardrailExceptionConfig(attributes string) string {
 	return testAccAiApplicationSecurityPolicyConfig("gex-policy", true) + fmt.Sprintf(`
