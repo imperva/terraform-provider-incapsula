@@ -6,6 +6,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"unicode/utf16"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,6 +15,10 @@ import (
 
 // aiApplicationSecurityGuardrailExceptionReasons are the only accepted exception_reason values (exact, case-sensitive).
 var aiApplicationSecurityGuardrailExceptionReasons = []string{"BUSINESS_REQUIREMENT", "FALSE_POSITIVE", "OTHER"}
+
+// aiApplicationSecurityGuardrailExceptionPatternMaxLength is the service's default max exception_pattern length, in
+// characters after trimming (AIFW-1626). Checked at plan time for a fast error; the service checks again on save.
+const aiApplicationSecurityGuardrailExceptionPatternMaxLength = 1500
 
 func resourceAiApplicationSecurityGuardrailException() *schema.Resource {
 	return &schema.Resource{
@@ -66,10 +71,10 @@ func resourceAiApplicationSecurityGuardrailException() *schema.Resource {
 			},
 			"exception_pattern": {
 				Type: schema.TypeString,
-				Description: "The text the guardrail lets through (by default 3 to 200 words). The service removes leading and " +
-					"trailing whitespace when it saves it, so such whitespace is not a change.",
+				Description: "The text the guardrail lets through (by default 3 to 200 words and at most 1500 characters). " +
+					"The service removes leading and trailing whitespace when it saves it, so such whitespace is not a change.",
 				Required:         true,
-				ValidateFunc:     validation.StringIsNotWhiteSpace,
+				ValidateFunc:     validation.All(validation.StringIsNotWhiteSpace, validateGuardrailExceptionPatternLength),
 				DiffSuppressFunc: suppressOuterWhitespaceDiff,
 			},
 			"exception_reason": {
@@ -128,6 +133,21 @@ func resourceAiApplicationSecurityGuardrailExceptionCustomizeDiff(ctx context.Co
 		return d.SetNewComputed("guardrail_id")
 	}
 	return nil
+}
+
+// validateGuardrailExceptionPatternLength rejects a pattern longer than the service allows. Counted like the service
+// (Java String.length()): after trimming, in UTF-16 code units - not bytes, so non-Latin text gets the same limit.
+func validateGuardrailExceptionPatternLength(value interface{}, key string) (warnings []string, errs []error) {
+	pattern, ok := value.(string)
+	if !ok {
+		return nil, []error{fmt.Errorf("expected type of %s to be string", key)}
+	}
+	length := len(utf16.Encode([]rune(strings.TrimSpace(pattern))))
+	if length > aiApplicationSecurityGuardrailExceptionPatternMaxLength {
+		return nil, []error{fmt.Errorf("%s is too long (%d characters). The maximum is %d characters",
+			key, length, aiApplicationSecurityGuardrailExceptionPatternMaxLength)}
+	}
+	return nil, nil
 }
 
 // suppressOuterWhitespaceDiff ignores a difference only in leading and trailing whitespace - the service trims it.
