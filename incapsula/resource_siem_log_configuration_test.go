@@ -1,11 +1,16 @@
 package incapsula
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
@@ -293,5 +298,99 @@ func testACCStateSiemLogConfigurationID(resourceType string) resource.ImportStat
 		}
 
 		return "", fmt.Errorf("[ERROR] Cannot find SiemLogConfiguration ID")
+	}
+}
+
+func TestBuildSiemLogConfigurationPayloadOmitsPayloadWhenBatchPackagingTypeUnset(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceSiemLogConfiguration().Schema, map[string]interface{}{})
+
+	payload := buildSiemLogConfigurationPayload(d)
+
+	if payload != nil {
+		t.Errorf("Should not build a payload when batch_packaging_type is unset, got: %+v", payload)
+	}
+}
+
+func TestBuildSiemLogConfigurationPayloadSetsBatchPackagingType(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceSiemLogConfiguration().Schema, map[string]interface{}{"batch_packaging_type": "IMPERVA_METADATA_PREFIX"})
+
+	payload := buildSiemLogConfigurationPayload(d)
+
+	if payload == nil || payload.BatchPackaging.Type != "IMPERVA_METADATA_PREFIX" {
+		t.Errorf("Should send batch_packaging_type as payload.batchPackaging.type, got: %+v", payload)
+	}
+}
+
+func TestSiemLogConfigurationDataSerializesPayloadOnlyWhenSet(t *testing.T) {
+	withoutPayload, _ := json.Marshal(SiemLogConfigurationData{})
+	withPayload, _ := json.Marshal(SiemLogConfigurationData{Payload: &Payload{BatchPackaging: BatchPackaging{Type: "NONE"}}})
+
+	if strings.Contains(string(withoutPayload), "payload") {
+		t.Errorf("Should omit payload when unset, got: %s", withoutPayload)
+	}
+	if !strings.Contains(string(withPayload), `"payload":{"batchPackaging":{"type":"NONE"}}`) {
+		t.Errorf("Should serialize payload.batchPackaging.type, got: %s", withPayload)
+	}
+}
+
+func TestBatchPackagingTypeFromPayloadReadsBackType(t *testing.T) {
+	if batchPackagingTypeFromPayload(nil) != "" {
+		t.Errorf("Should map a missing payload to an empty batch_packaging_type")
+	}
+	if batchPackagingTypeFromPayload(&Payload{BatchPackaging: BatchPackaging{Type: "NONE"}}) != "NONE" {
+		t.Errorf("Should map payload.batchPackaging.type to batch_packaging_type")
+	}
+}
+
+func TestSiemLogConfigurationSchemaAcceptsAnyProducerAndDataset(t *testing.T) {
+	testCases := []struct {
+		name     string
+		producer string
+		datasets []interface{}
+	}{
+		{name: "dataset of another producer", producer: "ATTACK_ANALYTICS", datasets: []interface{}{"CLOUD_WAF_ACCESS"}},
+		{name: "dataset unknown to the provider", producer: "CLOUD_WAF", datasets: []interface{}{"NEW_DATASET"}},
+		{name: "producer unknown to the provider", producer: "NEW_PRODUCER", datasets: []interface{}{"NEW_DATASET"}},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			config := terraform.NewResourceConfigRaw(map[string]interface{}{
+				"configuration_name": "name",
+				"producer":           testCase.producer,
+				"datasets":           testCase.datasets,
+				"enabled":            true,
+				"connection_id":      "connection",
+			})
+
+			diagnostics := resourceSiemLogConfiguration().Validate(config)
+
+			if diagnostics.HasError() {
+				t.Errorf("Should leave producer and dataset validation to the API, got: %v", diagnostics)
+			}
+		})
+	}
+}
+
+func TestSiemLogConfigurationCreateSurfacesApiDatasetValidationError(t *testing.T) {
+	detail := "Dataset CLOUD_WAF_ACCESS is not valid for provider ATTACK_ANALYTICS."
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(http.StatusBadRequest)
+		rw.Write([]byte(`{"errors":[{"status":400,"id":"abc","code":"1050","title":"Bad Request","detail":"` + detail + `"}]}`))
+	}))
+	defer server.Close()
+	client := &Client{config: &Config{BaseURLAPI: server.URL}, httpClient: &http.Client{}}
+	d := schema.TestResourceDataRaw(t, resourceSiemLogConfiguration().Schema, map[string]interface{}{
+		"configuration_name": "name",
+		"producer":           "ATTACK_ANALYTICS",
+		"datasets":           []interface{}{"CLOUD_WAF_ACCESS"},
+		"enabled":            true,
+		"connection_id":      "connection",
+	})
+
+	err := resourceSiemLogConfigurationCreate(d, client)
+
+	if err == nil || !strings.Contains(err.Error(), detail) {
+		t.Errorf("Should return the API detail, got: %v", err)
 	}
 }
