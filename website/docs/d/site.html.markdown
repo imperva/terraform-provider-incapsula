@@ -31,7 +31,7 @@ data "incapsula_site" "subaccount" {
 ## Argument Reference
 
 * `name` - (Required) The name of the site to look up.
-* `account_id` - (Optional) Sub-account ID to search in.
+* `account_id` - (Optional) ID of the subaccount to search. If omitted, searches the account associated with your Incapsula provider credentials. This value is required only when searching a subaccount.
 
 ## Attributes Reference
 
