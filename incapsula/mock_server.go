@@ -47,12 +47,17 @@ type MockImpervaServer struct {
 	// AI Application Security API key storage: map[apiKeyId]*MockAiApplicationSecurityApiKey
 	aiApplicationSecurityApiKeys map[int64]*MockAiApplicationSecurityApiKey
 
+	// AI Application Security guardrail exception storage: map[id]*MockAiApplicationSecurityGuardrailException
+	aiApplicationSecurityGuardrailExceptions map[string]*MockAiApplicationSecurityGuardrailException
+
 	// ID generators
-	nextAccountID                     int
-	nextSiteID                        int
-	nextAiApplicationSecurityAppID    int
-	nextAiApplicationSecurityPolicyID int
-	nextAiApplicationSecurityApiKeyID int64
+	nextAccountID                                 int
+	nextSiteID                                    int
+	nextAiApplicationSecurityAppID                int
+	nextAiApplicationSecurityPolicyID             int
+	nextAiApplicationSecurityApiKeyID             int64
+	nextAiApplicationSecurityGuardrailID          int64
+	nextAiApplicationSecurityGuardrailExceptionID int
 }
 
 // MockAccount represents an account in the mock server
@@ -120,17 +125,20 @@ type MockCSPStatus struct {
 // NewMockImpervaServer creates a new mock server instance
 func NewMockImpervaServer() *MockImpervaServer {
 	mock := &MockImpervaServer{
-		accounts:                          make(map[int]*MockAccount),
-		sites:                             make(map[int]*MockSite),
-		cspDomains:                        make(map[int]map[string]*MockCSPDomain),
-		aiApplicationSecurityApplications: make(map[string]*MockAiApplicationSecurityApplication),
-		aiApplicationSecurityPolicies:     make(map[string]*MockAiApplicationSecurityPolicy),
-		aiApplicationSecurityApiKeys:      make(map[int64]*MockAiApplicationSecurityApiKey),
-		nextAccountID:                     1000,
-		nextSiteID:                        10000,
-		nextAiApplicationSecurityAppID:    1,
-		nextAiApplicationSecurityPolicyID: 1,
-		nextAiApplicationSecurityApiKeyID: 1,
+		accounts:                                      make(map[int]*MockAccount),
+		sites:                                         make(map[int]*MockSite),
+		cspDomains:                                    make(map[int]map[string]*MockCSPDomain),
+		aiApplicationSecurityApplications:             make(map[string]*MockAiApplicationSecurityApplication),
+		aiApplicationSecurityPolicies:                 make(map[string]*MockAiApplicationSecurityPolicy),
+		aiApplicationSecurityApiKeys:                  make(map[int64]*MockAiApplicationSecurityApiKey),
+		aiApplicationSecurityGuardrailExceptions:      make(map[string]*MockAiApplicationSecurityGuardrailException),
+		nextAccountID:                                 1000,
+		nextSiteID:                                    10000,
+		nextAiApplicationSecurityAppID:                1,
+		nextAiApplicationSecurityPolicyID:             1,
+		nextAiApplicationSecurityApiKeyID:             1,
+		nextAiApplicationSecurityGuardrailID:          1,
+		nextAiApplicationSecurityGuardrailExceptionID: 1,
 	}
 
 	// Create the HTTP server with the router
@@ -198,6 +206,11 @@ func (m *MockImpervaServer) router(w http.ResponseWriter, r *http.Request) {
 	// CSP API endpoints
 	case strings.HasPrefix(path, "csp-api/v1/sites/"):
 		m.handleCSPAPI(w, r, path)
+
+	// AI Application Security guardrail exception endpoints (v3/applications/{id}/policies/{id}/guardian-exceptions[/{id}]).
+	// Matched before the policy endpoints, whose broader "/policies" match would claim these paths.
+	case strings.Contains(path, "v3/applications/") && strings.Contains(path, "/guardian-exceptions"):
+		m.handleAiApplicationSecurityGuardrailExceptions(w, r, path)
 
 	// AI Application Security policy endpoints (/v3/applications/{applicationId}/policies[/{policyId}]).
 	// Matched before the application endpoints and tolerant of the "/ai-application-security"
