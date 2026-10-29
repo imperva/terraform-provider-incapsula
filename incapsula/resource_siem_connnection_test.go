@@ -15,6 +15,9 @@ const siemConnectionResourceType = "incapsula_siem_connection"
 const s3ArnSiemConnectionResourceName = "test_acc_s3arn"
 const s3ArnSiemConnectionResource = siemConnectionResourceType + "." + s3ArnSiemConnectionResourceName
 
+// S3 path the Imperva role can write to; the API verifies write access on create
+const s3ArnSiemConnectionTestPath = "data-platform-access-logs-dev/test/cwaf/51319839"
+
 var s3ArnSiemConnectionName = "SIEMCONNECTIONS3ARN" + RandomLetterAndNumberString(10)
 
 var s3ArnSiemConnectionNameUpdated = "UPDATED" + s3ArnSiemConnectionName
@@ -56,7 +59,7 @@ func TestAccSiemConnection_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				SkipFunc: isS3EnvVarExist,
-				Config:   getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName, "/data/testing/accounts/53548213"),
+				Config:   getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName, s3ArnSiemConnectionTestPath),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemConnectionExists(s3ArnSiemConnectionResource),
 					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "connection_name", s3ArnSiemConnectionName),
@@ -102,7 +105,7 @@ func TestAccSiemConnection_Update(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				SkipFunc: isS3EnvVarExist,
-				Config:   getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName, "data-platform-access-logs-dev/test/cwaf/51319839"),
+				Config:   getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName, s3ArnSiemConnectionTestPath),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemConnectionExists(s3ArnSiemConnectionResource),
 					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "connection_name", s3ArnSiemConnectionName),
@@ -111,7 +114,7 @@ func TestAccSiemConnection_Update(t *testing.T) {
 			},
 			{
 				SkipFunc: isS3EnvVarExist,
-				Config:   getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionNameUpdated, "data-platform-access-logs-dev/test/cwaf/51319839"),
+				Config:   getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionNameUpdated, s3ArnSiemConnectionTestPath),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckIncapsulaSiemConnectionExists(s3ArnSiemConnectionResource),
 					resource.TestCheckResourceAttr(s3ArnSiemConnectionResource, "connection_name", s3ArnSiemConnectionNameUpdated),
