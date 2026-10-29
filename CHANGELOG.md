@@ -1,4 +1,19 @@
-## 3.40.0 (Oct 8, 2026)
+
+## 3.41.1 (Oct 29, 2026)
+
+FEATURES:
+* **New Data Source:** `incapsula_site` — search for sites by name ([#694](https://github.com/imperva/terraform-provider-incapsula/pull/694))
+* **New Resource:** `incapsula_siem_generic_http_connection` — manages a SIEM generic HTTP connection ([#697](https://github.com/imperva/terraform-provider-incapsula/pull/697))
+
+IMPROVEMENTS:
+- Site resource: stop sending ignore_grace_period on delete ([#700](https://github.com/imperva/terraform-provider-incapsula/pull/700))
+
+BUG FIXES:
+- fix(account_user): read approved_ips as set on update ([#701](https://github.com/imperva/terraform-provider-incapsula/pull/701))
+
+
+
+## 3.40.1 (Oct 8, 2026)
 
 BUG FIXES:
 - Updated documentation for incapsula_site resource ([#690](https://github.com/imperva/terraform-provider-incapsula/pull/690))
