@@ -16,7 +16,7 @@ const endpointAccountStatus = "account"
 const endpointAccountVerify = "account/verify"
 const endpointAccountUpdate = "accounts/configure"
 const endpointAccountDelete = "accounts/delete"
-const endpointSubAccountsList = "account-management/api/v3/accounts/sub-accounts"
+const endpointSubAccountsList = "account-management/v3/accounts/sub-accounts"
 
 const subAccountsListPageSize = 100
 
