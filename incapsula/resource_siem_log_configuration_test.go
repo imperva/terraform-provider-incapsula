@@ -157,7 +157,7 @@ func TestSiemLogConfiguration_Update(t *testing.T) {
 }
 
 func getAccIncapsulaSiemLogConfigurationConfigBasic(siemLogConfigurationName string, abpDatasets string, netsecDatasets string, atoDatasets string, auditDatasets string, cspDatasets string, cloudWafDatasets string, attackAnalyticsDatasets string) string {
-	return getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName, "data-platform-access-logs-dev/test/cwaf/51319839") + fmt.Sprintf(`
+	return getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName, s3ArnSiemConnectionTestPath) + fmt.Sprintf(`
 		resource "%s" "%s" {
 			configuration_name = "%s"
   			producer = "ABP"
