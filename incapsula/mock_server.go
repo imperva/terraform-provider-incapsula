@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -167,6 +168,8 @@ func (m *MockImpervaServer) router(w http.ResponseWriter, r *http.Request) {
 
 	// Account endpoints
 	switch {
+	case path == "api/v3/accounts/sub-accounts" && r.Method == http.MethodGet:
+		m.handleSubAccountsList(w, r)
 	case path == "accounts/add" && r.Method == http.MethodPost:
 		m.handleAccountAdd(w, r)
 	case path == "account/verify" && r.Method == http.MethodPost:
@@ -317,6 +320,55 @@ func (m *MockImpervaServer) handleAccountAdd(w http.ResponseWriter, r *http.Requ
 }
 
 // handleAccountVerify handles POST /account/verify (lightweight credential verification)
+// handleSubAccountsList lists the accounts whose parent is the mock's current account (1000), or that have no
+// parent set, sorted by ID
+func (m *MockImpervaServer) handleSubAccountsList(w http.ResponseWriter, r *http.Request) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	pageNum, _ := strconv.Atoi(r.URL.Query().Get("page_num"))
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if err != nil || pageSize < 1 {
+		pageSize = 50
+	}
+
+	var items []map[string]interface{}
+	for _, account := range m.accounts {
+		if account.ParentID == 1000 || account.ParentID == 0 {
+			items = append(items, map[string]interface{}{
+				"sub_account_id":   account.AccountID,
+				"sub_account_name": account.AccountName,
+				"parent_id":        account.ParentID,
+			})
+		}
+	}
+	sort.Slice(items, func(i, j int) bool {
+		return items[i]["sub_account_id"].(int) < items[j]["sub_account_id"].(int)
+	})
+
+	start := pageNum * pageSize
+	if start > len(items) {
+		start = len(items)
+	}
+	end := start + pageSize
+	if end > len(items) {
+		end = len(items)
+	}
+	data := items[start:end]
+	if data == nil {
+		data = []map[string]interface{}{}
+	}
+
+	m.writeJSONResponse(w, map[string]interface{}{
+		"data": data,
+		"pagination": map[string]interface{}{
+			"page_num":    pageNum,
+			"page_size":   pageSize,
+			"total_count": len(items),
+		},
+	})
+}
+
 func (m *MockImpervaServer) handleAccountVerify(w http.ResponseWriter, r *http.Request) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()

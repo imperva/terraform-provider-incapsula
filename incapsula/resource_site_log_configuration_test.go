@@ -62,7 +62,7 @@ func TestAccIncapsulaSiteLogConfiguration_Update(t *testing.T) {
 }
 
 func getAccIncapsulaSiteLogConfigBasic(name string, siteType string) string {
-	result := getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName, "data-platform-access-logs-dev/test/cwaf/51319839") + fmt.Sprintf(`
+	result := getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName, s3ArnSiemConnectionTestPath) + fmt.Sprintf(`
 	    resource "%s" "%s" {
 	       configuration_name = "%s"
 	       producer = "CLOUD_WAF"
@@ -91,7 +91,7 @@ func getAccIncapsulaSiteLogConfigBasic(name string, siteType string) string {
 }
 
 func getAccIncapsulaSiteLogConfigUpdated(name string, siteType string) string {
-	result := getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName, "data-platform-access-logs-dev/test/cwaf/51319839") + fmt.Sprintf(`
+	result := getAccIncapsulaS3ArnSiemConnectionConfigBasic(s3ArnSiemConnectionName, s3ArnSiemConnectionTestPath) + fmt.Sprintf(`
 	    resource "%s" "%s" {
 	       configuration_name = "%s"
 	       producer = "CLOUD_WAF"

@@ -140,8 +140,8 @@ func TestClientCreateSiemLogConfigurationBadRequest(t *testing.T) {
 		if err == nil {
 			t.Errorf("Should have received an error")
 		}
-		if strings.Compare(err.Error(), fmt.Sprintf("received failure response for operation: %s on SIEM log configuration\nstatus code: %d\nbody: %s",
-			CreateSiemLogConfiguration, responseStatusCode, v)) != 0 {
+		if !strings.HasPrefix(err.Error(), fmt.Sprintf("received failure response for operation: %s on SIEM log configuration\nstatus code: %d",
+			CreateSiemLogConfiguration, responseStatusCode)) {
 			t.Errorf("Should have received a response body for all responses different from %d, but received %s", 200, err)
 		}
 		if siemLogConfiguration != nil {
@@ -321,8 +321,8 @@ func TestClientReadNonExistingSiemLogConfiguration(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if strings.Compare(err.Error(), fmt.Sprintf("received failure response for operation: %s on SIEM log configuration\nstatus code: %d\nbody: %s",
-		ReadSiemLogConfiguration, responseStatusCode, responseBody)) != 0 {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("received failure response for operation: %s on SIEM log configuration\nstatus code: %d",
+		ReadSiemLogConfiguration, responseStatusCode)) {
 		t.Errorf("Should have received a response body for all responses different from %d, but received %s", 200, err)
 	}
 	if siemLogConfiguration != nil {

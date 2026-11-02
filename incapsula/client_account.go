@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"net/url"
 	"strconv"
 )
@@ -15,6 +16,9 @@ const endpointAccountStatus = "account"
 const endpointAccountVerify = "account/verify"
 const endpointAccountUpdate = "accounts/configure"
 const endpointAccountDelete = "accounts/delete"
+const endpointSubAccountsList = "account-management/api/v3/accounts/sub-accounts"
+
+const subAccountsListPageSize = 100
 
 // AccountVerifyResponse contains minimal account information for credential verification
 type AccountVerifyResponse struct {
@@ -305,4 +309,58 @@ func convertMinutesToMilliseconds(value string) (int, error) {
 		return 0, err
 	}
 	return minutes * 60000, nil
+}
+
+// SubAccountItem is a single entry returned by the sub-accounts list API
+type SubAccountItem struct {
+	SubAccountID   int    `json:"sub_account_id"`
+	SubAccountName string `json:"sub_account_name"`
+	ParentID       int    `json:"parent_id"`
+}
+
+// SubAccountsListResponse is a single page of the sub-accounts list API
+type SubAccountsListResponse struct {
+	Data       []SubAccountItem `json:"data"`
+	Pagination struct {
+		PageNum    int `json:"page_num"`
+		PageSize   int `json:"page_size"`
+		TotalCount int `json:"total_count"`
+	} `json:"pagination"`
+}
+
+// ListSubAccounts returns all the accounts directly below the account of the current credentials
+// (a reseller's accounts, or a parent account's sub accounts). All pages are fetched.
+func (c *Client) ListSubAccounts() ([]SubAccountItem, error) {
+	log.Printf("[INFO] Listing Incapsula sub accounts of the current account\n")
+
+	var result []SubAccountItem
+	for pageNum := 0; ; pageNum++ {
+		reqURL := fmt.Sprintf("%s/%s?page_num=%d&page_size=%d", c.config.BaseURLAPI, endpointSubAccountsList, pageNum, subAccountsListPageSize)
+		log.Printf("[DEBUG] Incapsula sub accounts list request: %s\n", reqURL)
+		resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, reqURL, nil, ReadSubAccountsList)
+		if err != nil {
+			return nil, fmt.Errorf("Error listing sub accounts (page %d): %s", pageNum, err)
+		}
+
+		responseBody, err := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
+		if err != nil {
+			return nil, fmt.Errorf("Error reading sub accounts list response (page %d): %s", pageNum, err)
+		}
+		log.Printf("[DEBUG] Incapsula sub accounts list JSON response: %s\n", string(responseBody))
+
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("Error from Incapsula service when listing sub accounts (page %d), status %d: %s", pageNum, resp.StatusCode, string(responseBody))
+		}
+
+		var page SubAccountsListResponse
+		if err = json.Unmarshal(responseBody, &page); err != nil {
+			return nil, fmt.Errorf("Error parsing sub accounts list JSON response (page %d): %s\nresponse: %s", pageNum, err, string(responseBody))
+		}
+
+		result = append(result, page.Data...)
+		if len(page.Data) < subAccountsListPageSize || len(result) >= page.Pagination.TotalCount {
+			return result, nil
+		}
+	}
 }

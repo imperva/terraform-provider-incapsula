@@ -1,6 +1,7 @@
 package incapsula
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/go-uuid"
 	"log"
@@ -169,8 +170,8 @@ func TestClientCreateSiemConnectionBadRequest(t *testing.T) {
 		if err == nil {
 			t.Errorf("Should have received an error")
 		}
-		if strings.Compare(err.Error(), fmt.Sprintf("received failure response for operation: %s on SIEM connection\nstatus code: %d\nbody: %s",
-			CreateSiemConnection, responseStatusCode, v)) != 0 {
+		if !strings.HasPrefix(err.Error(), fmt.Sprintf("received failure response for operation: %s on SIEM connection\nstatus code: %d",
+			CreateSiemConnection, responseStatusCode)) {
 			t.Errorf("Should have received a response body for all responses different from %d, but received %s", 200, err)
 		}
 		if siemConnection != nil {
@@ -340,8 +341,8 @@ func TestClientReadNonExistingSiemConnection(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should have received an error")
 	}
-	if strings.Compare(err.Error(), fmt.Sprintf("received failure response for operation: %s on SIEM connection\nstatus code: %d\nbody: %s",
-		ReadSiemConnection, responseStatusCode, responseBody)) != 0 {
+	if !strings.HasPrefix(err.Error(), fmt.Sprintf("received failure response for operation: %s on SIEM connection\nstatus code: %d",
+		ReadSiemConnection, responseStatusCode)) {
 		t.Errorf("Should have received a response body for all responses different from %d, but received %s", 200, err)
 	}
 	if siemConnection != nil {
@@ -1031,5 +1032,151 @@ func TestClientUpdateExistingSftpSiemConnection(t *testing.T) {
 	var received = siemConnection.Data[0]
 	if !reflect.DeepEqual(sent, received) {
 		t.Errorf("Returned data should be same as sent data")
+	}
+}
+
+func newSiemHttpConnectionTestClient(serverURL string) *Client {
+	config := &Config{APIID: RandomCapitalLetterAndNumberString(20), APIKey: RandomLetterAndNumberString(40), BaseURL: serverURL, BaseURLRev2: serverURL, BaseURLAPI: serverURL}
+	return &Client{config: config, httpClient: &http.Client{}}
+}
+
+func siemHttpConnectionResponse(connectionInfo string) string {
+	return fmt.Sprintf(`{"data":[{"id":"%s","connectionName":"%s","assetId":"%s","storageType":"CUSTOMER_HTTP","connectionInfo":%s}]}`,
+		RandomLowLetterAndNumberString(24), RandomLetterAndNumberString(20), RandomNumbersExcludingZeroString(10), connectionInfo)
+}
+
+func captureSiemHttpConnectionCreateRequest(t *testing.T, connectionInfo HttpConnectionInfo) map[string]interface{} {
+	assetId := RandomNumbersExcludingZeroString(10)
+	endpoint := fmt.Sprintf("/%s/?caid=%s", endpointSiemConnection, assetId)
+	var requestBody map[string]interface{}
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.String() != endpoint {
+			t.Errorf("Should have have hit %s endpoint. Got: %s", endpoint, req.URL.String())
+		}
+		if err := json.NewDecoder(req.Body).Decode(&requestBody); err != nil {
+			t.Errorf("Request body should be valid JSON: %s", err)
+		}
+		rw.WriteHeader(201)
+		rw.Write([]byte(siemHttpConnectionResponse(`{"url":"https://example.com/ingest","authentication":{"type":"BASIC_AUTH","username":"admin","password":"cipher"},"disableCertVerification":false}`)))
+	}))
+	defer server.Close()
+
+	_, _, err := newSiemHttpConnectionTestClient(server.URL).CreateSiemConnection(&SiemConnection{Data: []SiemConnectionData{{
+		AssetID:        assetId,
+		ConnectionName: RandomLetterAndNumberString(20),
+		StorageType:    StorageTypeCustomerHttp,
+		ConnectionInfo: connectionInfo,
+	}}})
+	if err != nil {
+		t.Fatalf("Should not have received an error, got: %s", err)
+	}
+	return requestBody
+}
+
+func requestConnectionInfo(requestBody map[string]interface{}) map[string]interface{} {
+	return requestBody["data"].([]interface{})[0].(map[string]interface{})["connectionInfo"].(map[string]interface{})
+}
+
+func TestClientCreateSiemHttpConnectionWithHeadersAuthSendsOrderedAuthHeaders(t *testing.T) {
+	requestBody := captureSiemHttpConnectionCreateRequest(t, HttpConnectionInfo{
+		Url: "https://example.com/ingest",
+		Authentication: HttpAuthenticationInfo{Type: HttpAuthTypeHeaders, AuthHeaders: []AuthHeaderInfo{
+			{HeaderName: "X-goog-api-key", SecretFormat: "{secret}", Secret: "first"},
+			{HeaderName: "X-Webhook-Access-Key", SecretFormat: "Bearer {secret}", Secret: "second"},
+		}},
+		Headers: map[string]string{"Content-Type": "application/json"},
+	})
+
+	if storageType := requestBody["data"].([]interface{})[0].(map[string]interface{})["storageType"]; storageType != StorageTypeCustomerHttp {
+		t.Errorf("Should have sent storageType %s, got: %v", StorageTypeCustomerHttp, storageType)
+	}
+	authentication := requestConnectionInfo(requestBody)["authentication"].(map[string]interface{})
+	authHeaders := authentication["authHeaders"].([]interface{})
+	if len(authHeaders) != 2 || authHeaders[0].(map[string]interface{})["headerName"] != "X-goog-api-key" || authHeaders[1].(map[string]interface{})["headerName"] != "X-Webhook-Access-Key" {
+		t.Errorf("Should have sent both auth headers in declaration order, got: %v", authHeaders)
+	}
+	if _, hasUsername := authentication["username"]; hasUsername {
+		t.Errorf("Should not have sent username for HEADERS auth")
+	}
+	if _, hasPassword := authentication["password"]; hasPassword {
+		t.Errorf("Should not have sent password for HEADERS auth")
+	}
+}
+
+func TestClientCreateSiemHttpConnectionWithBasicAuthOmitsAuthHeaders(t *testing.T) {
+	requestBody := captureSiemHttpConnectionCreateRequest(t, HttpConnectionInfo{
+		Url:            "https://example.com/ingest",
+		Authentication: HttpAuthenticationInfo{Type: HttpAuthTypeBasicAuth, Username: "admin", Password: "pass"},
+	})
+
+	authentication := requestConnectionInfo(requestBody)["authentication"].(map[string]interface{})
+	if authentication["username"] != "admin" || authentication["password"] != "pass" {
+		t.Errorf("Should have sent username and password, got: %v", authentication)
+	}
+	if _, hasAuthHeaders := authentication["authHeaders"]; hasAuthHeaders {
+		t.Errorf("Should not have sent authHeaders for BASIC_AUTH")
+	}
+}
+
+func TestClientCreateSiemHttpConnectionWithEmptyHeadersOmitsHeaders(t *testing.T) {
+	requestBody := captureSiemHttpConnectionCreateRequest(t, HttpConnectionInfo{
+		Url:            "https://example.com/ingest",
+		Authentication: HttpAuthenticationInfo{Type: HttpAuthTypeBasicAuth, Username: "admin", Password: "pass"},
+		Headers:        map[string]string{},
+	})
+
+	if _, hasHeaders := requestConnectionInfo(requestBody)["headers"]; hasHeaders {
+		t.Errorf("Should not have sent headers when the map is empty")
+	}
+}
+
+func TestSiemConnectionUnmarshalCustomerHttp(t *testing.T) {
+	testCases := []struct {
+		name           string
+		connectionInfo string
+		expected       HttpConnectionInfo
+	}{
+		{
+			name:           "headers auth without headers map and with ciphertext secret",
+			connectionInfo: `{"url":"https://example.com/ingest","authentication":{"type":"HEADERS","authHeaders":[{"headerName":"X-Key","secretFormat":"{secret}","secret":"ZW5jcnlwdGVk=="}]},"disableCertVerification":true}`,
+			expected: HttpConnectionInfo{
+				Url:                     "https://example.com/ingest",
+				Authentication:          HttpAuthenticationInfo{Type: HttpAuthTypeHeaders, AuthHeaders: []AuthHeaderInfo{{HeaderName: "X-Key", SecretFormat: "{secret}", Secret: "ZW5jcnlwdGVk=="}}},
+				DisableCertVerification: true,
+			},
+		},
+		{
+			name:           "basic auth with headers map",
+			connectionInfo: `{"url":"https://example.com/ingest","authentication":{"type":"BASIC_AUTH","username":"admin","password":"cipher"},"headers":{"Content-Type":"application/json"},"disableCertVerification":false}`,
+			expected: HttpConnectionInfo{
+				Url:            "https://example.com/ingest",
+				Authentication: HttpAuthenticationInfo{Type: HttpAuthTypeBasicAuth, Username: "admin", Password: "cipher"},
+				Headers:        map[string]string{"Content-Type": "application/json"},
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			var connection SiemConnection
+			if err := json.Unmarshal([]byte(siemHttpConnectionResponse(testCase.connectionInfo)), &connection); err != nil {
+				t.Fatalf("Should not have received an error, got: %s", err)
+			}
+			if !reflect.DeepEqual(connection.Data[0].ConnectionInfo, testCase.expected) {
+				t.Errorf("Expected %+v, got %+v", testCase.expected, connection.Data[0].ConnectionInfo)
+			}
+		})
+	}
+}
+
+func TestRedactSiemConnectionSecretsMasksSecretAndPassword(t *testing.T) {
+	redacted := redactSiemConnectionSecrets([]byte(`{"data":[{"connectionInfo":{"url":"https://example.com","authentication":{"authHeaders":[{"headerName":"X-Key","secret":"top-secret"}],"password":"hunter2"}}}]}`))
+
+	if strings.Contains(redacted, "top-secret") || strings.Contains(redacted, "hunter2") {
+		t.Errorf("Should have masked secret values, got: %s", redacted)
+	}
+	if !strings.Contains(redacted, "https://example.com") {
+		t.Errorf("Should have kept non-secret values, got: %s", redacted)
 	}
 }

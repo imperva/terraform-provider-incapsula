@@ -24,6 +24,16 @@ type SiemLogConfigurationData struct {
 	LogsLevel         string        `json:"logsLevel,omitempty"`
 	PublicKey         string        `json:"publicKey,omitempty"`
 	PublicKeyFileNAme string        `json:"publicKeyFileName,omitempty"`
+	// Pointer so an unset payload is omitted: PUT clears a stored payload when the field is absent.
+	Payload *Payload `json:"payload,omitempty"`
+}
+
+type BatchPackaging struct {
+	Type string `json:"type"`
+}
+
+type Payload struct {
+	BatchPackaging BatchPackaging `json:"batchPackaging"`
 }
 
 type SiemLogConfiguration struct {
@@ -89,8 +99,7 @@ func siemLogConfigurationRequest(c *Client, operation string, method string, req
 	log.Printf("[DEBUG] Incapsula returned response: %s\nfor %s operation on SIEM log configuration", body, operation)
 
 	if resp.StatusCode != expectedSuccessStatusCode {
-		return nil, nil, &resp.StatusCode, fmt.Errorf("received failure response for operation: %s on SIEM log configuration\nstatus code: %d\nbody: %s",
-			operation, resp.StatusCode, body)
+		return nil, nil, &resp.StatusCode, formatSiemApiError(operation, "SIEM log configuration", resp.StatusCode, body)
 	}
 
 	return &body, &responseBody, &resp.StatusCode, nil

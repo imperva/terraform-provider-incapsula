@@ -142,14 +142,16 @@ func resourceSiemSftpConnectionCreate(d *schema.ResourceData, m interface{}) err
 func resourceSiemSftpConnectionRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	response, statusCode, err := client.ReadSiemConnection(d.Id(), d.Get("account_id").(string))
+	// If the resource is deleted on the server, blow it out locally and run through the normal TF cycle.
+	// The client reports any non-200 as an error, so 404 is checked first.
+	if statusCode != nil && *statusCode == 404 {
+		d.SetId("")
+		return nil
+	}
 	if err != nil {
 		return err
 	}
-	// If the connection is deleted on the server, blow it out locally and run through the normal TF cycle
-	if *statusCode == 404 {
-		d.SetId("")
-		return nil
-	} else if (*statusCode == 200) && (response != nil) && (len(response.Data) == 1) {
+	if (*statusCode == 200) && (response != nil) && (len(response.Data) == 1) {
 		var connection = response.Data[0]
 		d.Set("account_id", connection.AssetID)
 		d.Set("connection_name", connection.ConnectionName)

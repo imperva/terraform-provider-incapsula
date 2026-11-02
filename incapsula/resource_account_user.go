@@ -252,7 +252,7 @@ func resourceUserUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if approvedIpsChanged {
-		approvedIps = d.Get("approved_ips").([]interface{})
+		approvedIps = d.Get("approved_ips").(*schema.Set).List()
 		log.Printf("[DEBUG] approved_ips will be updated: %v (is nil: %v, length: %d)\n",
 			approvedIps, approvedIps == nil, len(approvedIps))
 	} else {

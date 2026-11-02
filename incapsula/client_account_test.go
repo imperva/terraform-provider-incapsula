@@ -369,3 +369,95 @@ func TestClientDeleteAccountValidAccount(t *testing.T) {
 		t.Errorf("Should not have received an error")
 	}
 }
+
+////////////////////////////////////////////////////////////////
+// ListSubAccounts Tests
+////////////////////////////////////////////////////////////////
+
+func TestClientListSubAccountsBadConnection(t *testing.T) {
+	config := &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: "badness.incapsula.com"}
+	client := &Client{config: config, httpClient: &http.Client{Timeout: time.Millisecond * 1}}
+	accounts, err := client.ListSubAccounts()
+	if err == nil {
+		t.Errorf("Should have received an error")
+	}
+	if !strings.HasPrefix(err.Error(), "Error listing sub accounts") {
+		t.Errorf("Should have received a client error, got: %s", err)
+	}
+	if accounts != nil {
+		t.Errorf("Should have received nil accounts")
+	}
+}
+
+func TestClientListSubAccountsBadJSON(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.Write([]byte(`{`))
+	}))
+	defer server.Close()
+
+	client := &Client{config: &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}, httpClient: &http.Client{}}
+	_, err := client.ListSubAccounts()
+	if err == nil || !strings.HasPrefix(err.Error(), "Error parsing sub accounts list JSON response") {
+		t.Errorf("Should have received a JSON parse error, got: %v", err)
+	}
+}
+
+func TestClientListSubAccountsErrorStatus(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(http.StatusForbidden)
+		rw.Write([]byte(`{"message":"not eligible"}`))
+	}))
+	defer server.Close()
+
+	client := &Client{config: &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}, httpClient: &http.Client{}}
+	_, err := client.ListSubAccounts()
+	if err == nil || !strings.HasPrefix(err.Error(), "Error from Incapsula service when listing sub accounts") {
+		t.Errorf("Should have received a service error, got: %v", err)
+	}
+}
+
+func TestClientListSubAccountsPaging(t *testing.T) {
+	total := subAccountsListPageSize + 5
+	var pagesRequested []string
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.URL.Path != "/"+endpointSubAccountsList {
+			t.Errorf("Should have hit /%s endpoint. Got: %s", endpointSubAccountsList, req.URL.Path)
+		}
+		if req.Method != http.MethodGet {
+			t.Errorf("Should have used GET. Got: %s", req.Method)
+		}
+		if op := req.Header.Get("x-tf-operation"); !strings.HasPrefix(op, "read") {
+			t.Errorf("Operation should start with read. Got: %s", op)
+		}
+		pageNum := req.URL.Query().Get("page_num")
+		pagesRequested = append(pagesRequested, pageNum)
+		count := subAccountsListPageSize
+		first := 1
+		if pageNum == "1" {
+			count = 5
+			first = subAccountsListPageSize + 1
+		}
+		var items []string
+		for i := 0; i < count; i++ {
+			items = append(items, fmt.Sprintf(`{"sub_account_id":%d,"sub_account_name":"acc%d","parent_id":7}`, first+i, first+i))
+		}
+		rw.Write([]byte(fmt.Sprintf(`{"data":[%s],"pagination":{"page_num":%s,"page_size":%d,"total_count":%d}}`,
+			strings.Join(items, ","), pageNum, subAccountsListPageSize, total)))
+	}))
+	defer server.Close()
+
+	client := &Client{config: &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}, httpClient: &http.Client{}}
+	accounts, err := client.ListSubAccounts()
+	if err != nil {
+		t.Fatalf("Should not have received an error: %v", err)
+	}
+	if len(accounts) != total {
+		t.Errorf("Should have received %d accounts, got %d", total, len(accounts))
+	}
+	if strings.Join(pagesRequested, ",") != "0,1" {
+		t.Errorf("Should have requested pages 0,1. Got: %v", pagesRequested)
+	}
+	if accounts[0].SubAccountID != 1 || accounts[0].ParentID != 7 || accounts[0].SubAccountName != "acc1" {
+		t.Errorf("Unexpected first account: %+v", accounts[0])
+	}
+}
