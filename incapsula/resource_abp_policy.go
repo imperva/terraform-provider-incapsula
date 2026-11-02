@@ -17,6 +17,7 @@ var abpDirectiveActionRegexp = regexp.MustCompile(`^[_a-z][_a-z0-9]*$`)
 
 type AbpPolicy struct {
 	Id          string         `json:"id,omitempty"`
+	AccountId   string         `json:"account_id,omitempty"`
 	Name        string         `json:"name"`
 	Description *string        `json:"description,omitempty"`
 	Directives  []AbpDirective `json:"directives"`
@@ -156,9 +157,12 @@ func flattenAbpDirectives(directives []AbpDirective) []any {
 }
 
 // serializeAbpPolicy writes the server's view of a policy back into state.
-// Unlike other ABP resources, the policy API does not return account_id, so
-// that field is left as configured (and cannot be populated on import).
 func serializeAbpPolicy(data *schema.ResourceData, policy *AbpPolicy) error {
+	if policy.AccountId != "" {
+		if err := data.Set("account_id", policy.AccountId); err != nil {
+			return err
+		}
+	}
 	if err := data.Set("name", policy.Name); err != nil {
 		return err
 	}
@@ -267,7 +271,8 @@ func resourceAbpPolicyImport(ctx context.Context, data *schema.ResourceData, m a
 	}
 
 	data.SetId(id)
-	// The policy API does not return account_id; the user must set it in
-	// configuration after import.
+	if err := serializeAbpPolicy(data, policy); err != nil {
+		return nil, err
+	}
 	return []*schema.ResourceData{data}, nil
 }
