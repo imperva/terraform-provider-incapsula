@@ -42,8 +42,10 @@ which is owned by its own resource.
 This is also how conditions are added to a policy: a directive exposes a
 ` + "`condition_list_id`" + ` (and, for ` + "`proof_of_work`" + ` directives, a
 ` + "`skip_condition_list_id`" + `), which can be used as the ` + "`parent_condition_list_id`" + `
-of an entry to attach a condition to that directive. These IDs are available on
-the ` + "`incapsula_abp_policy`" + ` resource and the ` + "`incapsula_abp_directive`" + ` data source.`,
+of an entry to attach a condition to that directive. Obtain those IDs from the
+` + "`incapsula_abp_directive`" + ` data source, which addresses a directive by its
+` + "`action`" + `; reading them off the ` + "`incapsula_abp_policy`" + ` resource by list index is
+unreliable when directives are added, removed or reordered.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {

@@ -109,9 +109,8 @@ resource "incapsula_abp_policy" "policy1" {
   }
 }
 
-# Demonstrate referencing directives by action. This way is preferred than referencing directives
-# by its sequential index via `incapsula_abp_policy.some_policy.directive[i]` as it gives more
-# predictable result
+# Demonstrate referencing a directive by action with the `incapsula_abp_directive` data source.
+# Always address directives this way, never by index (see the WARNING on `policy2` below).
 data "incapsula_abp_directive" "policy1_block" {
   policy_id = incapsula_abp_policy.policy1.id
   action    = "block"
@@ -126,8 +125,8 @@ resource "incapsula_abp_condition_list_entry" "policy1_block_okhttp" {
 }
 
 #
-# Create a policy and populate it with conditions
-# referencing directive directly via `incapsula_abp_policy.<name>.directive`
+# Create a policy with a proof_of_work directive and populate its directives
+# with conditions
 #
 
 resource "incapsula_abp_proof_of_work_configuration" "pow1" {
@@ -169,27 +168,50 @@ data "incapsula_abp_policy" "policy2" {
   name       = incapsula_abp_policy.policy2.name
 }
 
-# Add condition to the directive. Directive is referenced by its sequential index in the policy
+# Address each directive by its action.
+#
+# WARNING: never index directives (`incapsula_abp_policy.foo.directive[0]`). The index
+# moves when directives are added, removed or reordered, so conditions end up on the
+# wrong directive. The nested `condition_list_id` is unreliable for the same reason:
+# on the apply that changes the directive list it is still reported at its old
+# position. This data source re-reads it from the API and is not affected.
+data "incapsula_abp_directive" "policy2_allow" {
+  policy_id = incapsula_abp_policy.policy2.id
+  action    = "allow"
+}
+
+data "incapsula_abp_directive" "policy2_block" {
+  policy_id = incapsula_abp_policy.policy2.id
+  action    = "block"
+}
+
+data "incapsula_abp_directive" "policy2_pow" {
+  policy_id = incapsula_abp_policy.policy2.id
+  action    = "proof_of_work"
+}
+
+# Add condition to the `allow` directive
 resource "incapsula_abp_condition_list_entry" "policy2_allow_monitoring_tools" {
   account_id               = var.account_id
-  parent_condition_list_id = incapsula_abp_policy.policy2.directive[0].condition_list_id
+  parent_condition_list_id = data.incapsula_abp_directive.policy2_allow.condition_list_id
   condition_id             = data.incapsula_abp_condition.managed_monitoring_tools.id
   state                    = "active"
   tags                     = ["terraform_managed"]
 }
 
-# Skip the proof_of_work directive for the managed monitoring tools condition
+# Skip the `proof_of_work` directive for the managed monitoring tools condition
 resource "incapsula_abp_condition_list_entry" "policy2_pow_skip_monitoring_tools" {
   account_id               = var.account_id
-  parent_condition_list_id = incapsula_abp_policy.policy2.directive[2].skip_condition_list_id
+  parent_condition_list_id = data.incapsula_abp_directive.policy2_pow.skip_condition_list_id
   condition_id             = data.incapsula_abp_condition.managed_monitoring_tools.id
   state                    = "active"
   tags                     = ["terraform_managed"]
 }
 
+# Add a whole condition list to the `block` directive
 resource "incapsula_abp_condition_list_entry" "policy2_block_sample_condition_list" {
   account_id               = var.account_id
-  parent_condition_list_id = incapsula_abp_policy.policy2.directive[1].condition_list_id
+  parent_condition_list_id = data.incapsula_abp_directive.policy2_block.condition_list_id
   condition_list_id        = incapsula_abp_condition_list.sample_condition_list.id
   state                    = "monitor"
   tags                     = ["terraform_managed"]
@@ -296,8 +318,8 @@ resource "incapsula_abp_account_site_priority" "accprio" {
 # Add a condition to the default policy
 #
 
-# Lookup a default policy via default selector of the site. This is required
-# to get access to the policy directives
+# Lookup a default policy via default selector of the site, demonstrating the
+# lookup by `id`.
 # Note that default selector is indexed with `[0]` even if it is not techically a list,
 # since every site can have only one default selector. This is limitation of
 # Terraform Plugin SDK v2
@@ -305,11 +327,19 @@ data "incapsula_abp_policy" "default_policy" {
   id = incapsula_abp_site.sample_site.default_selector[0].policy_id
 }
 
+# Address the `allow` directive of the default policy by action. The directives of
+# a default policy are created by the backend in an order this configuration does
+# not control, so `data.incapsula_abp_policy.default_policy.directive[0]` is not
+# guaranteed to be the `allow` one.
+data "incapsula_abp_directive" "sample_site_default_allow" {
+  policy_id = data.incapsula_abp_policy.default_policy.id
+  action    = "allow"
+}
 
 # Add `specific_visitor` to the allow directive of the default policy
 resource "incapsula_abp_condition_list_entry" "sample_site_default_allow_specific_visitor" {
   account_id               = var.account_id
-  parent_condition_list_id = data.incapsula_abp_policy.default_policy.directive[0].condition_list_id
+  parent_condition_list_id = data.incapsula_abp_directive.sample_site_default_allow.condition_list_id
   condition_id             = incapsula_abp_condition.specific_visitor.id
   tags                     = ["specific_visitor"]
   state                    = "monitor"

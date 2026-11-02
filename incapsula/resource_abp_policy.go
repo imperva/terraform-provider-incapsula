@@ -40,14 +40,28 @@ func resourceAbpPolicy() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceAbpPolicyImport,
 		},
+		CustomizeDiff: resourceAbpPolicyCustomizeDiff,
 
 		Description: `Provides an ABP Policy resource. A Policy is an ordered collection of
 directives, each pairing an action with the conditions that trigger it, applied
 to traffic that a Site's selector maps to this Policy.
 
-All ` + "`directive`" + ` blocks must be specified explicitly. Each directive exposes a
-` + "`condition_list_id`" + ` to which conditions are attached via
-` + "`incapsula_abp_condition_list_entry`" + `.`,
+All ` + "`directive`" + ` blocks must be specified explicitly. Conditions are attached to
+a directive with ` + "`incapsula_abp_condition_list_entry`" + `, using the directive's
+condition list as the entry's ` + "`parent_condition_list_id`" + `. Look that condition
+list up with the ` + "`incapsula_abp_directive`" + ` data source, which addresses a
+directive by its ` + "`action`" + ` (see the example below).
+
+Do not read ` + "`directive[i].condition_list_id`" + ` off this resource instead. A list
+index is not a stable handle on a directive, and on the apply that adds, removes
+or reorders directives those nested ids are still reported at their old
+positions, so conditions can be attached to the wrong directive or the apply can
+fail outright. The data source re-reads them from the API and is unaffected.
+
+A directive is identified by its ` + "`action`" + `, which is how the backend-owned
+condition lists are kept attached to the right directive when directives are
+added, removed or reordered. Two directives in the same policy therefore must
+not share an ` + "`action`" + `.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -69,7 +83,7 @@ All ` + "`directive`" + ` blocks must be specified explicitly. Each directive ex
 				Required:    true,
 			},
 			"directive": {
-				Description: "Ordered list of directives evaluated top-down for this policy. A policy must have at least one directive.",
+				Description: "Ordered list of directives evaluated top-down for this policy. A policy must have at least one directive, and no two directives may share an `action`.",
 				Type:        schema.TypeList,
 				Required:    true,
 				MinItems:    1,
@@ -87,6 +101,31 @@ All ` + "`directive`" + ` blocks must be specified explicitly. Each directive ex
 								),
 							),
 						},
+						// Known limitation: these two are backend-owned ids
+						// nested inside a TypeList, and SDKv2 keeps such a
+						// computed value attached to its list index. Whenever
+						// `directive` changes shape they are therefore reported
+						// at their old position for the duration of that plan:
+						// a newly added directive plans its id as null instead
+						// of unknown, so a resource consuming it fails the
+						// apply with "Provider produced inconsistent final
+						// plan", and after a reorder a consumer silently
+						// receives the id of whichever directive previously sat
+						// at that index.
+						//
+						// There is no escape hatch: SetNew / SetNewComputed
+						// (helper/schema/resource_diff.go) go through
+						// checkKey(key, caller, false), which resolves
+						// top-level schema keys only, so `directive.N.*` cannot
+						// be marked unknown from CustomizeDiff. Fixing it means
+						// publishing the ids as top-level action-keyed maps, or
+						// moving the resource to terraform-plugin-framework.
+						//
+						// Until then the supported way to attach conditions to
+						// a directive is the `incapsula_abp_directive` data
+						// source, which re-reads the ids from the API and so is
+						// immune to both problems. Prefer it over these
+						// attributes in docs and examples.
 						"condition_list_id": {
 							Description: "Condition list containing conditions for this directive.",
 							Type:        schema.TypeString,
@@ -109,6 +148,43 @@ All ` + "`directive`" + ` blocks must be specified explicitly. Each directive ex
 	}
 }
 
+// resourceAbpPolicyCustomizeDiff rejects two directives with the same action.
+// Directive identity comes from the action (see extractAbpDirectives), so
+// duplicates would make it impossible to tell which backend-owned condition
+// list belongs to which directive. They are also unaddressable through the
+// incapsula_abp_directive data source.
+//
+// Actions that are still unknown at plan time are skipped: Terraform re-plans
+// every instance just before applying it, with the configuration fully
+// resolved, so a duplicate hidden behind an unknown is caught then.
+func resourceAbpPolicyCustomizeDiff(ctx context.Context, diff *schema.ResourceDiff, m any) error {
+	raw, ok := diff.Get("directive").([]any)
+	if !ok {
+		return nil
+	}
+	seen := make(map[string]bool, len(raw))
+	for i, item := range raw {
+		directive, ok := item.(map[string]any)
+		if !ok {
+			continue
+		}
+		if !diff.NewValueKnown(fmt.Sprintf("directive.%d.action", i)) {
+			continue
+		}
+		action, _ := directive["action"].(string)
+		// Required and non-empty by validation; guards a nested object that
+		// carries no action at all.
+		if action == "" {
+			continue
+		}
+		if seen[action] {
+			return fmt.Errorf("policy has more than one directive with action %q; each directive in a policy must have a unique action", action)
+		}
+		seen[action] = true
+	}
+	return nil
+}
+
 func extractAbpPolicy(data *schema.ResourceData) AbpPolicy {
 	description := data.Get("description").(string)
 	return AbpPolicy{
@@ -118,17 +194,73 @@ func extractAbpPolicy(data *schema.ResourceData) AbpPolicy {
 	}
 }
 
+// abpConditionLists holds the condition lists the backend has allocated for a
+// single directive.
+type abpConditionLists struct {
+	conditionId     string
+	skipConditionId string
+}
+
+// priorAbpConditionLists indexes the condition lists recorded in state by
+// directive action. The backend owns these ids and an update must send each of
+// them back on the directive it belongs to: an id that is not sent is deleted
+// together with all of its entries, and an id sent on a different directive
+// silently re-targets every condition attached to it onto another action.
+//
+// State is read rather than the post-diff value because SDKv2 keeps a computed
+// nested attribute attached to its list index, which does not survive
+// directives being inserted, removed or reordered.
+func priorAbpConditionLists(data *schema.ResourceData) map[string]abpConditionLists {
+	prior, _ := data.GetChange("directive")
+	raw, ok := prior.([]any)
+	if !ok {
+		return nil
+	}
+	lists := make(map[string]abpConditionLists, len(raw))
+	for _, item := range raw {
+		directive, ok := item.(map[string]any)
+		if !ok {
+			continue
+		}
+		action, _ := directive["action"].(string)
+		if action == "" {
+			continue
+		}
+		// Actions are unique within a policy (see
+		// resourceAbpPolicyCustomizeDiff), but a policy changed out of band
+		// may still hold duplicates; keep the first one.
+		if _, exists := lists[action]; exists {
+			continue
+		}
+		conditionId, _ := directive["condition_list_id"].(string)
+		skipConditionId, _ := directive["skip_condition_list_id"].(string)
+		lists[action] = abpConditionLists{conditionId: conditionId, skipConditionId: skipConditionId}
+	}
+	return lists
+}
+
 func extractAbpDirectives(data *schema.ResourceData) []AbpDirective {
+	prior := priorAbpConditionLists(data)
 	raw := data.Get("directive").([]any)
 	directives := make([]AbpDirective, len(raw))
 	for i, item := range raw {
 		m := item.(map[string]any)
-		d := AbpDirective{Action: m["action"].(string)}
-		if cid, ok := m["condition_list_id"].(string); ok && cid != "" {
-			d.ConditionId = &cid
-		}
-		if skipCid, ok := m["skip_condition_list_id"].(string); ok && skipCid != "" {
-			d.SkipConditionId = &skipCid
+		action := m["action"].(string)
+		d := AbpDirective{Action: action}
+		// A directive whose action is not in state is new to this policy: its
+		// condition lists are left out so the backend allocates them. On
+		// create nothing is in state, which also keeps condition_id out of the
+		// request, where the API does not accept it.
+		if lists, found := prior[action]; found {
+			if lists.conditionId != "" {
+				conditionId := lists.conditionId
+				d.ConditionId = &conditionId
+			}
+			if lists.skipConditionId != "" {
+				skipConditionId := lists.skipConditionId
+				d.SkipConditionId = &skipConditionId
+			}
+			delete(prior, action)
 		}
 		if powId, ok := m["proof_of_work_configuration_id"].(string); ok && powId != "" {
 			d.ProofOfWorkConfigurationId = &powId
