@@ -6,10 +6,9 @@ description: |-
   Provides an ABP Policy resource. A Policy is an ordered collection of
   directives, each pairing an action with the conditions that trigger it, applied
   to traffic that a Site's selector maps to this Policy.
-  Set use_standard_directives to create the Policy with the standard set of
-  directives (matching the ABP UI's "Standard Directives" choice), or provide
-  explicit directive blocks. Each directive exposes a condition_list_id to
-  which conditions are attached via incapsula_abp_condition_list_entry.
+  All directive blocks must be specified explicitly. Each directive exposes a
+  condition_list_id to which conditions are attached via
+  incapsula_abp_condition_list_entry.
 ---
 
 
@@ -19,23 +18,14 @@ Provides an ABP Policy resource. A Policy is an ordered collection of
 directives, each pairing an action with the conditions that trigger it, applied
 to traffic that a Site's selector maps to this Policy.
 
-Set `use_standard_directives` to create the Policy with the standard set of
-directives (matching the ABP UI's "Standard Directives" choice), or provide
-explicit `directive` blocks. Each directive exposes a `condition_list_id` to
-which conditions are attached via `incapsula_abp_condition_list_entry`.
+All `directive` blocks must be specified explicitly. Each directive exposes a
+`condition_list_id` to which conditions are attached via
+`incapsula_abp_condition_list_entry`.
 
 ## Example Usage
 
 ```terraform
-# Policy with standard (auto-generated) directives.
-resource "incapsula_abp_policy" "policy_with_standard_directives" {
-  account_id              = var.account_id
-  name                    = "Policy with standard directives"
-  description             = "Terraform-managed policy with standard directives"
-  use_standard_directives = true
-}
-
-# Policy with custom directives. Conditions are attached to a directive's
+# Policy with explicit directives. Conditions are attached to a directive's
 # condition list via `incapsula_abp_condition_list_entry`.
 resource "incapsula_abp_policy" "policy_with_custom_directives" {
   account_id  = var.account_id
@@ -64,12 +54,8 @@ resource "incapsula_abp_policy" "policy_with_custom_directives" {
 
 - `account_id` (String) ABP account UUID this Policy belongs to.
 - `description` (String) Description of the policy. Set to empty string if omitted
+- `directive` (Block List, Min: 1) Ordered list of directives evaluated top-down for this policy. A policy must have at least one directive. (see [below for nested schema](#nestedblock--directive))
 - `name` (String) Policy name. 1..100 characters.
-
-### Optional
-
-- `directive` (Block List) Ordered list of directives evaluated top-down for this policy. A policy must have at least one directive. Computed when `use_standard_directives` is true; otherwise required. (see [below for nested schema](#nestedblock--directive))
-- `use_standard_directives` (Boolean) If true, the policy is created with the standard set of directives (matching the ABP UI's "Standard Directives" choice). When set, custom `directive` blocks must not be specified.
 
 ### Read-Only
 

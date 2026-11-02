@@ -70,36 +70,63 @@ data "incapsula_abp_condition_list" "sample_condition_list_lookup" {
 
 
 #
-# Create a policy with standard directives and populate it with conditions
+# Create a policy and populate it with conditions
 # using`incapsula_abp_directive` data source
 #
 #
 
-resource "incapsula_abp_policy" "policy_with_standard_directives" {
-  account_id              = var.account_id
-  name                    = "Policy with standard directives"
-  description             = "Terraform-managed policy with standard directives"
-  use_standard_directives = true
+resource "incapsula_abp_policy" "policy1" {
+  account_id  = var.account_id
+  name        = "Policy with explicit directives"
+  description = "Terraform-managed policy with explicitly specified directives"
+
+  directive {
+    action = "allow"
+  }
+
+  directive {
+    action = "block"
+  }
+
+  directive {
+    action = "captcha_cleared"
+  }
+
+  directive {
+    action = "captcha"
+  }
+
+  directive {
+    action = "identify"
+  }
+
+  directive {
+    action = "tarpit"
+  }
+
+  directive {
+    action = "delay"
+  }
 }
 
 # Demonstrate referencing directives by action. This way is preferred than referencing directives
 # by its sequential index via `incapsula_abp_policy.some_policy.directive[i]` as it gives more
 # predictable result
-data "incapsula_abp_directive" "std_policy_block" {
-  policy_id = incapsula_abp_policy.policy_with_standard_directives.id
+data "incapsula_abp_directive" "policy1_block" {
+  policy_id = incapsula_abp_policy.policy1.id
   action    = "block"
 }
 
-resource "incapsula_abp_condition_list_entry" "std_policy_allow_okhttp" {
+resource "incapsula_abp_condition_list_entry" "policy1_block_okhttp" {
   account_id               = var.account_id
-  parent_condition_list_id = data.incapsula_abp_directive.std_policy_block.condition_list_id
+  parent_condition_list_id = data.incapsula_abp_directive.policy1_block.condition_list_id
   condition_id             = incapsula_abp_condition.okhttp.id
   state                    = "active"
   tags                     = ["terraform_managed"]
 }
 
 #
-# Create a policy with custom directives and populate it with conditions
+# Create a policy and populate it with conditions
 # referencing directive directly via `incapsula_abp_policy.<name>.directive`
 #
 
