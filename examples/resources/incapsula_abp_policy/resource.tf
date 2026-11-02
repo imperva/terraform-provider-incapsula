@@ -1,12 +1,4 @@
-# Policy with standard (auto-generated) directives.
-resource "incapsula_abp_policy" "policy_with_standard_directives" {
-  account_id              = var.account_id
-  name                    = "Policy with standard directives"
-  description             = "Terraform-managed policy with standard directives"
-  use_standard_directives = true
-}
-
-# Policy with custom directives. Conditions are attached to a directive's
+# Policy with explicit directives. Conditions are attached to a directive's
 # condition list via `incapsula_abp_condition_list_entry`.
 resource "incapsula_abp_policy" "policy_with_custom_directives" {
   account_id  = var.account_id

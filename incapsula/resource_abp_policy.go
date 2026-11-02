@@ -15,26 +15,6 @@ import (
 // abpDirectiveActionRegexp matches a valid directive action: snake_case only.
 var abpDirectiveActionRegexp = regexp.MustCompile(`^[_a-z][_a-z0-9]*$`)
 
-// standardDirectiveActions mirrors the actions the ABP frontend creates
-// when a user picks "Standard Directives" in the create-policy modal.
-var standardDirectiveActions = []string{
-	"allow",
-	"block",
-	"captcha_cleared",
-	"captcha",
-	"identify",
-	"tarpit",
-	"delay",
-}
-
-func standardDirectives() []AbpDirective {
-	directives := make([]AbpDirective, len(standardDirectiveActions))
-	for i, action := range standardDirectiveActions {
-		directives[i] = AbpDirective{Action: action}
-	}
-	return directives
-}
-
 type AbpPolicy struct {
 	Id          string         `json:"id,omitempty"`
 	Name        string         `json:"name"`
@@ -56,16 +36,6 @@ func resourceAbpPolicy() *schema.Resource {
 		ReadContext:   resourceAbpPolicyRead,
 		UpdateContext: resourceAbpPolicyUpdate,
 		DeleteContext: resourceAbpPolicyDelete,
-		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, m any) error {
-			if !d.Get("use_standard_directives").(bool) {
-				return nil
-			}
-			directiveCfg := d.GetRawConfig().GetAttr("directive")
-			if !directiveCfg.IsNull() && directiveCfg.LengthInt() > 0 {
-				return fmt.Errorf("`directive` blocks must not be set when `use_standard_directives` is true")
-			}
-			return nil
-		},
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceAbpPolicyImport,
 		},
@@ -74,10 +44,9 @@ func resourceAbpPolicy() *schema.Resource {
 directives, each pairing an action with the conditions that trigger it, applied
 to traffic that a Site's selector maps to this Policy.
 
-Set ` + "`use_standard_directives`" + ` to create the Policy with the standard set of
-directives (matching the ABP UI's "Standard Directives" choice), or provide
-explicit ` + "`directive`" + ` blocks. Each directive exposes a ` + "`condition_list_id`" + ` to
-which conditions are attached via ` + "`incapsula_abp_condition_list_entry`" + `.`,
+All ` + "`directive`" + ` blocks must be specified explicitly. Each directive exposes a
+` + "`condition_list_id`" + ` to which conditions are attached via
+` + "`incapsula_abp_condition_list_entry`" + `.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -98,17 +67,11 @@ which conditions are attached via ` + "`incapsula_abp_condition_list_entry`" + `
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"use_standard_directives": {
-				Description: "If true, the policy is created with the standard set of directives (matching the ABP UI's \"Standard Directives\" choice). When set, custom `directive` blocks must not be specified.",
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-			},
 			"directive": {
-				Description: "Ordered list of directives evaluated top-down for this policy. A policy must have at least one directive. Computed when `use_standard_directives` is true; otherwise required.",
+				Description: "Ordered list of directives evaluated top-down for this policy. A policy must have at least one directive.",
 				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
+				MinItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"action": {
@@ -146,17 +109,11 @@ which conditions are attached via ` + "`incapsula_abp_condition_list_entry`" + `
 }
 
 func extractAbpPolicy(data *schema.ResourceData) AbpPolicy {
-	var directives []AbpDirective
-	if data.Get("use_standard_directives").(bool) {
-		directives = standardDirectives()
-	} else {
-		directives = extractAbpDirectives(data)
-	}
 	description := data.Get("description").(string)
 	return AbpPolicy{
 		Name:        data.Get("name").(string),
 		Description: &description,
-		Directives:  directives,
+		Directives:  extractAbpDirectives(data),
 	}
 }
 
