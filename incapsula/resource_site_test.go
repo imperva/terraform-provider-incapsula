@@ -120,7 +120,7 @@ func TestAccIncapsulaSite_DeprecationFlagChangeAttributes(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIncapsulaSiteConfigAllParams(resource_name, domainName, false, "aggressive", "active",
-					true, "dns", false, false,
+					true, "", false, false,
 					"ref123", "api.seal_location.bottom_right", false, false,
 					"EU", true, "salt123", "full",
 					false, false, false, true,
@@ -136,7 +136,7 @@ func TestAccIncapsulaSite_DeprecationFlagChangeAttributes(t *testing.T) {
 					resource.TestCheckResourceAttr(full_resource_name, "acceleration_level", "aggressive"),
 					resource.TestCheckResourceAttr(full_resource_name, "active", "active"),
 					resource.TestCheckResourceAttr(full_resource_name, "domain_redirect_to_full", "true"),
-					resource.TestCheckResourceAttr(full_resource_name, "domain_validation", "dns"),
+					resource.TestCheckResourceAttr(full_resource_name, "domain_validation", ""),
 					resource.TestCheckResourceAttr(full_resource_name, "ignore_ssl", "false"),
 					resource.TestCheckResourceAttr(full_resource_name, "remove_ssl", "false"),
 					resource.TestCheckResourceAttr(full_resource_name, "ref_id", "ref123"),
@@ -188,7 +188,7 @@ func TestAccIncapsulaSite_DeprecationFlagChangeAttributes(t *testing.T) {
 					resource.TestCheckResourceAttr(full_resource_name, "acceleration_level", "aggressive"),
 					resource.TestCheckResourceAttr(full_resource_name, "active", "active"),
 					resource.TestCheckResourceAttr(full_resource_name, "domain_redirect_to_full", "true"),
-					resource.TestCheckResourceAttr(full_resource_name, "domain_validation", "dns"),
+					resource.TestCheckResourceAttr(full_resource_name, "domain_validation", ""),
 					resource.TestCheckResourceAttr(full_resource_name, "ignore_ssl", "false"),
 					resource.TestCheckResourceAttr(full_resource_name, "remove_ssl", "false"),
 					resource.TestCheckResourceAttr(full_resource_name, "ref_id", "ref123"),
