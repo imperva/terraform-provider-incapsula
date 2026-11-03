@@ -13,7 +13,6 @@ import (
 func TestAccIncapsulaDataSourceSite_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIncapsulaDataSourceSiteBasic(),
@@ -31,7 +30,6 @@ func TestAccIncapsulaDataSourceSite_Basic(t *testing.T) {
 func TestAccIncapsulaDataSourceSite_WithSubAccount(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIncapsulaDataSourceSiteWithAccount(),
@@ -49,7 +47,6 @@ func TestAccIncapsulaDataSourceSite_WithSubAccount(t *testing.T) {
 func TestAccIncapsulaDataSourceSite_CrossStateReference(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		Providers: testAccProviders,
-		PreCheck:  func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckIncapsulaDataSourceSiteCrossStateReference(),
