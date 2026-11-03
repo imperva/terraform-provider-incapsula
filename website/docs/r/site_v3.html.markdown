@@ -32,6 +32,21 @@ resource "incapsula_site_v3" "aws-site" {
 }
 ```
 
+### Imperva for Google Cloud load balancer website
+
+```hcl
+resource "incapsula_site_v3" "igc-lb-site" {
+  name                  = "my-igc-lb-site"
+  type                  = "PUBLIC_CLOUD"
+  cloud_type            = "GCP"
+  is_load_balancer_site = true
+}
+
+output "authority_header" {
+  value = incapsula_site_v3.igc-lb-site.authority_header
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -42,6 +57,8 @@ The following arguments are supported:
 * `cloud_type` - (Optional) The cloud provider type. Required when `type` is `PUBLIC_CLOUD`. Supported values: `AWS`, `GCP`. This field cannot be changed after creation.
 * `ref_id` - (Optional) Sets the Reference ID. A free-text field that enables you to add a unique identifier to correlate a website in our service with an object on the customer side.
 * `active` - (Optional) Whether the site is active or bypassing the Imperva network.
+* `is_load_balancer_site` - (Optional) Indicates whether the site is an Imperva for Google Cloud load balancer website. You can set `is_load_balancer_site` **only when you create the site** and **only when** `type` is `PUBLIC_CLOUD` and `cloud_type` is `GCP`. A load balancer website (`true`) provides the `authority_header` required to configure the Imperva for Google Cloud integration. A domain website (`false`, or the field omitted when `type` is `PUBLIC_CLOUD` and `cloud_type` is `GCP`) lets you manage a protected domain separately with its own security policies and rules. It does not provide Imperva for Google Cloud onboarding parameters. See the [Imperva for Google Cloud onboarding guide](gcp_onboarding.html) and the [Imperva for Google Cloud security guide](gcp_security.html).
+
 ## Attributes Reference
 
 The following attributes are exported:
@@ -49,7 +66,8 @@ The following attributes are exported:
 * `id` - Unique identifier in the API for the site.
 * `creation_time` - Creation time of the site.
 * `cname` - The CNAME provided by Imperva that is used for pointing your website traffic to the Imperva network.
-
+* `is_load_balancer_site` - Indicates whether the site is an Imperva for Google Cloud load balancer website. A legacy Imperva for Google Cloud default site that was created automatically before multi-site support reports `false`. When you import a legacy default site, omit `is_load_balancer_site` or set it to `false`.
+* `authority_header` - The authority header assigned by Imperva for an Imperva for Google Cloud load balancer website (format `<key>-<accountId>.<domain>`). Available for Imperva for Google Cloud load balancer websites and legacy Imperva for Google Cloud default sites. Empty for domain websites and sites that are not part of Imperva for Google Cloud.
 
 ## Import
 

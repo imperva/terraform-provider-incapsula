@@ -14,15 +14,17 @@ const endpointSiteV3 = "/sites-mgmt/v3/sites"
 
 // SiteAddResponse contains the relevant site information when adding an Incapsula managed site
 type SiteV3Request struct {
-	Id           int    `json:"id,omitempty"`
-	AccountId    int    `json:"accountId,omitempty"`
-	CreationTime int64  `json:"creationTime,omitempty"`
-	Cname        string `json:"cname,omitempty"`
-	Name         string `json:"name,omitempty"`
-	SiteType     string `json:"type,omitempty"`
-	CloudType    string `json:"cloud,omitempty"`
-	RefId        string `json:"refId,omitempty"`
-	Active       bool   `json:"active"`
+	Id                 int    `json:"id,omitempty"`
+	AccountId          int    `json:"accountId,omitempty"`
+	CreationTime       int64  `json:"creationTime,omitempty"`
+	Cname              string `json:"cname,omitempty"`
+	Name               string `json:"name,omitempty"`
+	SiteType           string `json:"type,omitempty"`
+	CloudType          string `json:"cloud,omitempty"`
+	RefId              string `json:"refId,omitempty"`
+	Active             bool   `json:"active"`
+	IsLoadBalancerSite *bool  `json:"isLoadBalancerSite,omitempty"`
+	AuthorityHeader    string `json:"authorityHeader,omitempty"`
 }
 
 type SiteV3Response struct {

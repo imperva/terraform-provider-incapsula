@@ -1,15 +1,22 @@
 package incapsula
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"math/rand"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
@@ -187,4 +194,252 @@ func testSiteV3Importer(s *terraform.State) (string, error) {
 		return fmt.Sprintf("%d/%s", accountId1, rs.Primary.ID), nil
 	}
 	return "", fmt.Errorf("Error finding an Site V3")
+}
+
+func siteV3CtyObject(values map[string]cty.Value) cty.Value {
+	attrs := map[string]cty.Value{}
+	for name, attrType := range resourceSiteV3().CoreConfigSchema().ImpliedType().AttributeTypes() {
+		if v, ok := values[name]; ok {
+			attrs[name] = v
+		} else {
+			attrs[name] = cty.NullVal(attrType)
+		}
+	}
+	return cty.ObjectVal(attrs)
+}
+
+func siteV3Diff(t *testing.T, state *terraform.InstanceState, config map[string]interface{}) (*terraform.InstanceDiff, error) {
+	rawConfig := map[string]cty.Value{}
+	for k, v := range config {
+		switch val := v.(type) {
+		case string:
+			rawConfig[k] = cty.StringVal(val)
+		case bool:
+			rawConfig[k] = cty.BoolVal(val)
+		}
+	}
+	if state == nil {
+		state = &terraform.InstanceState{RawState: cty.NullVal(resourceSiteV3().CoreConfigSchema().ImpliedType())}
+	}
+	state.RawConfig = siteV3CtyObject(rawConfig)
+	return resourceSiteV3().Diff(context.Background(), state, terraform.NewResourceConfigRaw(config), nil)
+}
+
+func existingGcpSiteState(isLb *bool) *terraform.InstanceState {
+	attributes := map[string]string{
+		"id":         "123",
+		"account_id": "1",
+		"name":       "lb.example.com",
+		"type":       "PUBLIC_CLOUD",
+		"cloud_type": "GCP",
+		"active":     "true",
+	}
+	rawState := map[string]cty.Value{
+		"id":         cty.StringVal("123"),
+		"account_id": cty.StringVal("1"),
+		"name":       cty.StringVal("lb.example.com"),
+		"type":       cty.StringVal("PUBLIC_CLOUD"),
+		"cloud_type": cty.StringVal("GCP"),
+		"active":     cty.True,
+	}
+	if isLb != nil {
+		attributes["is_load_balancer_site"] = strconv.FormatBool(*isLb)
+		rawState["is_load_balancer_site"] = cty.BoolVal(*isLb)
+	}
+	return &terraform.InstanceState{ID: "123", Attributes: attributes, RawState: siteV3CtyObject(rawState)}
+}
+
+func gcpSiteConfig(isLb bool) map[string]interface{} {
+	return map[string]interface{}{
+		"account_id":            "1",
+		"name":                  "lb.example.com",
+		"type":                  "PUBLIC_CLOUD",
+		"cloud_type":            "GCP",
+		"is_load_balancer_site": isLb,
+	}
+}
+
+func TestSiteV3DiffAdoptsLoadBalancerFlagWhenStateHasNoValue(t *testing.T) {
+	diff, err := siteV3Diff(t, existingGcpSiteState(nil), gcpSiteConfig(true))
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	if diff != nil {
+		if _, ok := diff.Attributes["is_load_balancer_site"]; ok {
+			t.Errorf("Expected no diff for is_load_balancer_site. Got: %+v", diff.Attributes["is_load_balancer_site"])
+		}
+		if diff.RequiresNew() {
+			t.Errorf("Expected no replacement. Got: %+v", diff)
+		}
+	}
+}
+
+func TestSiteV3DiffPlansLoadBalancerFlagChangeInPlaceOnExistingSite(t *testing.T) {
+	current := true
+	diff, err := siteV3Diff(t, existingGcpSiteState(&current), gcpSiteConfig(false))
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	if diff == nil || diff.Attributes["is_load_balancer_site"] == nil || diff.Attributes["is_load_balancer_site"].New != "false" {
+		t.Fatalf("Expected in-place diff for is_load_balancer_site. Got: %+v", diff)
+	}
+	if diff.RequiresNew() {
+		t.Errorf("Expected no replacement. Got: %+v", diff)
+	}
+}
+
+func TestSiteV3UpdateSendsChangedLoadBalancerFlag(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceSiteV3().Schema, map[string]interface{}{"is_load_balancer_site": true})
+	isLb := changedLoadBalancerSiteFlag(d)
+	if isLb == nil || !*isLb {
+		t.Fatalf("Expected is_load_balancer_site=true to be sent. Got: %v", isLb)
+	}
+}
+
+func TestSiteV3UpdateOmitsUnchangedLoadBalancerFlag(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, resourceSiteV3().Schema, map[string]interface{}{"name": "lb.example.com"})
+	if isLb := changedLoadBalancerSiteFlag(d); isLb != nil {
+		t.Fatalf("Expected is_load_balancer_site to be omitted. Got: %v", *isLb)
+	}
+}
+
+func TestSiteV3DiffNoChangeWhenLoadBalancerFlagMatchesState(t *testing.T) {
+	current := true
+	diff, err := siteV3Diff(t, existingGcpSiteState(&current), gcpSiteConfig(true))
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	if diff != nil && diff.RequiresNew() {
+		t.Errorf("Expected no replacement. Got: %+v", diff)
+	}
+}
+
+func TestSiteV3DiffLeavesLoadBalancerFlagValidationToApi(t *testing.T) {
+	config := map[string]interface{}{
+		"name":                  "waf.example.com",
+		"type":                  "CLOUD_WAF",
+		"is_load_balancer_site": false,
+	}
+	if _, err := siteV3Diff(t, nil, config); err != nil {
+		t.Fatalf("Expected no plan-time error. Got: %v", err)
+	}
+}
+
+func TestSiteV3DiffAllowsLoadBalancerFlagOnNewGcpSite(t *testing.T) {
+	config := gcpSiteConfig(true)
+	delete(config, "account_id")
+	diff, err := siteV3Diff(t, nil, config)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	if diff == nil || diff.Attributes["is_load_balancer_site"] == nil || diff.Attributes["is_load_balancer_site"].New != "true" {
+		t.Errorf("Expected is_load_balancer_site=true in create diff. Got: %+v", diff)
+	}
+}
+
+func TestSiteV3DiffOmittedLoadBalancerFlagKeepsStateOnUnrelatedChange(t *testing.T) {
+	current := true
+	config := gcpSiteConfig(true)
+	delete(config, "is_load_balancer_site")
+	config["name"] = "renamed.example.com"
+	diff, err := siteV3Diff(t, existingGcpSiteState(&current), config)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	if diff == nil || diff.Attributes["name"] == nil {
+		t.Fatalf("Expected a name diff. Got: %+v", diff)
+	}
+	if _, ok := diff.Attributes["is_load_balancer_site"]; ok {
+		t.Errorf("Expected no diff for an omitted is_load_balancer_site. Got: %+v", diff.Attributes["is_load_balancer_site"])
+	}
+	if diff.RequiresNew() {
+		t.Errorf("Expected no replacement. Got: %+v", diff)
+	}
+}
+
+func applySiteV3Update(t *testing.T, state *terraform.InstanceState, config map[string]interface{}) string {
+	var patchBody string
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if req.Method == http.MethodPatch {
+			body, _ := io.ReadAll(req.Body)
+			patchBody = string(body)
+		}
+		rw.WriteHeader(200)
+		rw.Write([]byte(`{"data":[{"id":123,"name":"renamed.example.com","type":"PUBLIC_CLOUD","cloud":"GCP","accountId":1,"active":true}]}`))
+	}))
+	defer server.Close()
+	client := &Client{config: &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}, httpClient: &http.Client{}}
+
+	diff, err := siteV3Diff(t, state, config)
+	if err != nil {
+		t.Fatalf("unexpected diff error: %s", err)
+	}
+	if diff == nil {
+		t.Fatalf("Expected a diff")
+	}
+	if _, diags := resourceSiteV3().Apply(context.Background(), state, diff, client); diags.HasError() {
+		t.Fatalf("unexpected apply error: %v", diags)
+	}
+	if patchBody == "" {
+		t.Fatalf("Expected a PATCH request")
+	}
+	return patchBody
+}
+
+func TestSiteV3ApplySendsChangedLoadBalancerFlagInPatch(t *testing.T) {
+	current := true
+	config := gcpSiteConfig(false)
+	config["name"] = "renamed.example.com"
+	body := applySiteV3Update(t, existingGcpSiteState(&current), config)
+	if !strings.Contains(body, `"isLoadBalancerSite":false`) {
+		t.Errorf("Expected isLoadBalancerSite=false in PATCH body. Got: %s", body)
+	}
+}
+
+func TestSiteV3ApplyOmitsLoadBalancerFlagWhenStateHasNoValue(t *testing.T) {
+	config := gcpSiteConfig(true)
+	config["name"] = "renamed.example.com"
+	body := applySiteV3Update(t, existingGcpSiteState(nil), config)
+	if strings.Contains(body, "isLoadBalancerSite") {
+		t.Errorf("Expected no isLoadBalancerSite in PATCH body. Got: %s", body)
+	}
+}
+
+func TestSiteV3ApplyOmitsUnchangedLoadBalancerFlag(t *testing.T) {
+	current := true
+	config := gcpSiteConfig(true)
+	delete(config, "is_load_balancer_site")
+	config["name"] = "renamed.example.com"
+	body := applySiteV3Update(t, existingGcpSiteState(&current), config)
+	if strings.Contains(body, "isLoadBalancerSite") {
+		t.Errorf("Expected no isLoadBalancerSite in PATCH body. Got: %s", body)
+	}
+}
+
+func TestSiteV3ApplyKeepsPriorStateWhenPatchIsRejected(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(400)
+		rw.Write([]byte(`{"errors":[{"status":400,"detail":"isLoadBalancerSite cannot be set"}]}`))
+	}))
+	defer server.Close()
+	client := &Client{config: &Config{APIID: "foo", APIKey: "bar", BaseURLAPI: server.URL}, httpClient: &http.Client{}}
+
+	current := true
+	state := existingGcpSiteState(&current)
+	config := gcpSiteConfig(false)
+	config["name"] = "renamed.example.com"
+	diff, err := siteV3Diff(t, state, config)
+	if err != nil {
+		t.Fatalf("unexpected diff error: %s", err)
+	}
+	newState, diags := resourceSiteV3().Apply(context.Background(), state, diff, client)
+	if !diags.HasError() {
+		t.Fatalf("Expected an apply error")
+	}
+	if newState.Attributes["name"] != "lb.example.com" {
+		t.Errorf("Expected name to stay lb.example.com. Got: %s", newState.Attributes["name"])
+	}
+	if newState.Attributes["is_load_balancer_site"] != "true" {
+		t.Errorf("Expected is_load_balancer_site to stay true. Got: %s", newState.Attributes["is_load_balancer_site"])
+	}
 }
