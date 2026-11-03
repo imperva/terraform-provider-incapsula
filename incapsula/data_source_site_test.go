@@ -12,12 +12,11 @@ import (
 
 func TestAccIncapsulaDataSourceSite_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
+		PreCheck:  func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
-				SkipFunc: IsTestDomainEnvVarExist,
-				Config:   testAccCheckIncapsulaDataSourceSiteBasic(),
+				Config: testAccCheckIncapsulaDataSourceSiteBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair("data.incapsula_site.test", "site_id", "incapsula_site_v3.test", "id"),
 					resource.TestCheckResourceAttrPair("data.incapsula_site.test", "name", "incapsula_site_v3.test", "name"),
@@ -31,12 +30,11 @@ func TestAccIncapsulaDataSourceSite_Basic(t *testing.T) {
 
 func TestAccIncapsulaDataSourceSite_WithSubAccount(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
+		PreCheck:  func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
-				SkipFunc: IsTestDomainEnvVarExist,
-				Config:   testAccCheckIncapsulaDataSourceSiteWithAccount(),
+				Config: testAccCheckIncapsulaDataSourceSiteWithAccount(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair("data.incapsula_site.test_account", "site_id", "incapsula_site_v3.test_account", "id"),
 					resource.TestCheckResourceAttrPair("data.incapsula_site.test_account", "name", "incapsula_site_v3.test_account", "name"),
@@ -50,12 +48,11 @@ func TestAccIncapsulaDataSourceSite_WithSubAccount(t *testing.T) {
 
 func TestAccIncapsulaDataSourceSite_CrossStateReference(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
+		PreCheck:  func() { testAccPreCheck(t) },
 		Steps: []resource.TestStep{
 			{
-				SkipFunc: IsTestDomainEnvVarExist,
-				Config:   testAccCheckIncapsulaDataSourceSiteCrossStateReference(),
+				Config: testAccCheckIncapsulaDataSourceSiteCrossStateReference(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.incapsula_site.test", "site_id"),
 					resource.TestCheckResourceAttrPair("incapsula_cache_rule.example", "site_id", "data.incapsula_site.test", "site_id"),
@@ -74,9 +71,13 @@ func testAccCheckIncapsulaDataSourceSiteBasic() string {
 	}
 
 	return fmt.Sprintf(`
+data "incapsula_account_data" "account_data" {
+}
+
 resource "incapsula_site_v3" "test" {
   name = "example%s.%s"
   type = "Managed"
+  account_id = data.incapsula_account_data.account_data.current_account
 }
 
 data "incapsula_site" "test" {
@@ -96,9 +97,13 @@ func testAccCheckIncapsulaDataSourceSiteWithAccount() string {
 	}
 
 	return fmt.Sprintf(`
+data "incapsula_account_data" "account_data" {
+}
+
 resource "incapsula_site_v3" "test_account" {
   name = "example%s.%s"
   type = "Managed"
+  account_id = data.incapsula_account_data.account_data.current_account
 }
 
 data "incapsula_site" "test_account" {
@@ -129,9 +134,13 @@ func testAccCheckIncapsulaDataSourceSiteCrossStateReference() string {
 	}
 
 	return fmt.Sprintf(`
+data "incapsula_account_data" "account_data" {
+}
+
 resource "incapsula_site_v3" "test" {
   name = "example%s.%s"
   type = "Managed"
+  account_id = data.incapsula_account_data.account_data.current_account
 }
 
 data "incapsula_site" "test" {
