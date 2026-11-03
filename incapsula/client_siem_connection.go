@@ -32,6 +32,33 @@ type SftpConnectionInfo struct {
 	Path     string `json:"path"`
 }
 
+const StorageTypeCustomerHttp = "CUSTOMER_HTTP"
+
+const HttpAuthTypeHeaders = "HEADERS"
+const HttpAuthTypeBasicAuth = "BASIC_AUTH"
+
+// AuthHeaderInfo is one entry of a HEADERS authentication.
+type AuthHeaderInfo struct {
+	HeaderName   string `json:"headerName"`
+	SecretFormat string `json:"secretFormat"`
+	Secret       string `json:"secret,omitempty"`
+}
+
+// HttpAuthenticationInfo is the polymorphic authentication object, discriminated by Type.
+type HttpAuthenticationInfo struct {
+	Type        string           `json:"type"`
+	AuthHeaders []AuthHeaderInfo `json:"authHeaders,omitempty"`
+	Username    string           `json:"username,omitempty"`
+	Password    string           `json:"password,omitempty"`
+}
+
+type HttpConnectionInfo struct {
+	Url                     string                 `json:"url"`
+	Authentication          HttpAuthenticationInfo `json:"authentication"`
+	Headers                 map[string]string      `json:"headers,omitempty"`
+	DisableCertVerification bool                   `json:"disableCertVerification"`
+}
+
 type ConnectionInfo interface {
 	getConnectionInfo() any
 }
@@ -52,6 +79,10 @@ func (s SftpConnectionInfo) getConnectionInfo() any {
 		Password: s.Password,
 		Path:     s.Path,
 	}
+}
+
+func (c HttpConnectionInfo) getConnectionInfo() any {
+	return c
 }
 
 func (s S3ConnectionInfo) getConnectionInfo() any {
@@ -105,6 +136,18 @@ func (s *SiemConnectionData) UnmarshalJSON(input []byte) error {
 			Password: jsonMap["connectionInfo"].(map[string]interface{})["password"].(string),
 			Path:     jsonMap["connectionInfo"].(map[string]interface{})["path"].(string),
 		}
+	} else if s.StorageType == StorageTypeCustomerHttp {
+		// Re-marshal into the typed struct: optional members (headers, authHeaders, username/password)
+		// would panic under the map-assertion idiom used above.
+		rawConnectionInfo, marshalErr := json.Marshal(jsonMap["connectionInfo"])
+		if marshalErr != nil {
+			return fmt.Errorf("marshal CUSTOMER_HTTP connectionInfo: %w", marshalErr)
+		}
+		var httpConnectionInfo HttpConnectionInfo
+		if unmarshalErr := json.Unmarshal(rawConnectionInfo, &httpConnectionInfo); unmarshalErr != nil {
+			return fmt.Errorf("unmarshal CUSTOMER_HTTP connectionInfo: %w", unmarshalErr)
+		}
+		s.ConnectionInfo = httpConnectionInfo
 	} else {
 		err = errors.New("unsupported ConnectionInfo type")
 	}
@@ -150,8 +193,43 @@ func dSiemConnectionResponseClose(c io.Closer) {
 	}
 }
 
+var siemConnectionSecretKeys = map[string]bool{"secret": true, "password": true}
+
+const redactedSecretValue = "***"
+
+// redactSiemConnectionSecrets masks secret values so request and response bodies can be logged safely.
+func redactSiemConnectionSecrets(data []byte) string {
+	var parsed interface{}
+	if err := json.Unmarshal(data, &parsed); err != nil {
+		return string(data)
+	}
+	redacted, err := json.Marshal(redactSecretValues(parsed))
+	if err != nil {
+		return string(data)
+	}
+	return string(redacted)
+}
+
+func redactSecretValues(value interface{}) interface{} {
+	switch typed := value.(type) {
+	case map[string]interface{}:
+		for key, nested := range typed {
+			if siemConnectionSecretKeys[key] {
+				typed[key] = redactedSecretValue
+			} else {
+				typed[key] = redactSecretValues(nested)
+			}
+		}
+	case []interface{}:
+		for index, nested := range typed {
+			typed[index] = redactSecretValues(nested)
+		}
+	}
+	return value
+}
+
 func siemConnectionRequest(c *Client, operation string, method string, reqURL string, data []byte, accountIdStr string, expectedSuccessStatusCode int) (*string, *[]byte, *int, error) {
-	log.Printf("[INFO] Executing operation %s on SIEM connection with data: %s", operation, data)
+	log.Printf("[INFO] Executing operation %s on SIEM connection with data: %s", operation, redactSiemConnectionSecrets(data))
 
 	var params = map[string]string{}
 	accountId, err := strconv.Atoi(accountIdStr)
@@ -171,11 +249,10 @@ func siemConnectionRequest(c *Client, operation string, method string, reqURL st
 	if err != nil {
 		return nil, nil, &resp.StatusCode, fmt.Errorf("error occurred: %s\n when reading response from body: %s", err, body)
 	}
-	log.Printf("[DEBUG] Incapsula returned response: %s\nfor %s operation on SIEM connection", body, operation)
+	log.Printf("[DEBUG] Incapsula returned response: %s\nfor %s operation on SIEM connection", redactSiemConnectionSecrets(responseBody), operation)
 
 	if resp.StatusCode != expectedSuccessStatusCode {
-		return nil, nil, &resp.StatusCode, fmt.Errorf("received failure response for operation: %s on SIEM connection\nstatus code: %d\nbody: %s",
-			operation, resp.StatusCode, body)
+		return nil, nil, &resp.StatusCode, formatSiemApiError(operation, "SIEM connection", resp.StatusCode, body)
 	}
 
 	return &body, &responseBody, &resp.StatusCode, nil

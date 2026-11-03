@@ -99,6 +99,7 @@ func Provider() *schema.Provider {
 			"incapsula_account_permissions": dataSourceAccountPermissions(),
 			"incapsula_account_roles":       dataSourceAccountRoles(),
 			"incapsula_ssl_instructions":    dataSourceSSLInstructions(),
+			"incapsula_site":                dataSourceSite(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -151,6 +152,7 @@ func Provider() *schema.Provider {
 			"incapsula_siem_splunk_connection":                                 resourceSiemSplunkConnection(),
 			"incapsula_siem_sftp_connection":                                   resourceSiemSftpConnection(),
 			"incapsula_siem_log_configuration":                                 resourceSiemLogConfiguration(),
+			"incapsula_siem_generic_http_connection":                           resourceSiemGenericHttpConnection(),
 			"incapsula_waiting_room":                                           resourceWaitingRoom(),
 			"incapsula_abp_websites":                                           resourceAbpWebsites(),
 			"incapsula_delivery_rules_configuration":                           resourceDeliveryRulesConfiguration(),

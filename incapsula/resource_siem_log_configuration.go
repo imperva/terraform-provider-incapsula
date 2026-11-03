@@ -8,33 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-const AbpProvider = "ABP"
-
-var AbpDatasets = []string{"ABP"}
-
-const NetsecProvider = "NETSEC"
-
-var NetsecDatasets = []string{"CONNECTION", "IP", "NETFLOW", "ATTACK", "NOTIFICATIONS"}
-
-const AtoProvider = "ATO"
-
-var AtoDatasets = []string{"ATO"}
-
-const AuditProvider = "AUDIT"
-
-var AuditDatasets = []string{"AUDIT_TRAIL"}
-
-const CspProvider = "CSP"
-
-var CspDatasets = []string{"GOOGLE_ANALYTICS_IDS", "SIGNIFICANT_DOMAIN_DISCOVERY", "SIGNIFICANT_SCRIPT_DISCOVERY", "SIGNIFICANT_DATA_TRANSFER_DISCOVERY", "DOMAIN_DISCOVERY_ENFORCE_MODE", "CSP_HEADER_HEALTH"}
-
-const CloudWafProvider = "CLOUD_WAF"
-
-var CloudWafDatasets = []string{"WAF_RAW_LOGS", "CLOUD_WAF_ACCESS"}
-
-const AttackAnalyticsProvider = "ATTACK_ANALYTICS"
-
-var AttackAnalyticsDatasets = []string{"WAF_ANALYTICS_LOGS"}
+var BatchPackagingTypes = []string{"NONE", "IMPERVA_METADATA_PREFIX"}
 
 func resourceSiemLogConfiguration() *schema.Resource {
 	return &schema.Resource{
@@ -72,19 +46,15 @@ func resourceSiemLogConfiguration() *schema.Resource {
 				Required:    true,
 			},
 			"producer": {
-				Description:  "Type of the producer.",
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.StringInSlice([]string{AbpProvider, NetsecProvider, AtoProvider, AuditProvider, CspProvider, CloudWafProvider, AttackAnalyticsProvider}, false),
+				Description: "Type of the producer. Validated by the API.",
+				Type:        schema.TypeString,
+				Required:    true,
 			},
 			"datasets": {
-				Description: "All datasets for the supported producers.",
+				Description: "Datasets to send. Validated against the producer by the API.",
 				Type:        schema.TypeList,
-				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.StringInSlice([]string{AbpDatasets[0], NetsecDatasets[0], NetsecDatasets[1], NetsecDatasets[2], NetsecDatasets[3], NetsecDatasets[4], AtoDatasets[0], AuditDatasets[0], CspDatasets[0], CspDatasets[1], CspDatasets[2], CspDatasets[3], CspDatasets[4], CspDatasets[5], CloudWafDatasets[0], CloudWafDatasets[1], AttackAnalyticsDatasets[0]}, false),
-				},
-				Required: true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Required:    true,
 			},
 			"enabled": {
 				Description: "True if the connection is enabled, false otherwise.",
@@ -126,53 +96,32 @@ func resourceSiemLogConfiguration() *schema.Resource {
 				Optional:    true,
 				Required:    false,
 			},
+			"batch_packaging_type": {
+				Description:  "How log batches are packaged in the payload sent to the connection.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice(BatchPackagingTypes, false),
+			},
 		},
 	}
 }
 
-func resourceValidation(d *schema.ResourceData) error {
-	producer := d.Get("producer").(string)
-	datasets := d.Get("datasets").([]interface{})
-
-	var providerDatasets []string
-	if producer == AbpProvider {
-		providerDatasets = AbpDatasets
-	} else if producer == NetsecProvider {
-		providerDatasets = NetsecDatasets
-	} else if producer == AtoProvider {
-		providerDatasets = AtoDatasets
-	} else if producer == AuditProvider {
-		providerDatasets = AuditDatasets
-	} else if producer == CspProvider {
-		providerDatasets = CspDatasets
-	} else if producer == CloudWafProvider {
-		providerDatasets = CloudWafDatasets
-	} else if producer == AttackAnalyticsProvider {
-		providerDatasets = AttackAnalyticsDatasets
+func buildSiemLogConfigurationPayload(d *schema.ResourceData) *Payload {
+	batchPackagingType := d.Get("batch_packaging_type").(string)
+	if batchPackagingType == "" {
+		return nil
 	}
+	return &Payload{BatchPackaging: BatchPackaging{Type: batchPackagingType}}
+}
 
-	for _, s := range datasets {
-		found := false
-		for _, k := range providerDatasets {
-			if s.(string) == k {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			return fmt.Errorf("[ERROR] Unsupported dataset %v for producesr %s", datasets, producer)
-		}
+func batchPackagingTypeFromPayload(payload *Payload) string {
+	if payload == nil {
+		return ""
 	}
-	return nil
+	return payload.BatchPackaging.Type
 }
 
 func resourceSiemLogConfigurationCreate(d *schema.ResourceData, m interface{}) error {
-	resErr := resourceValidation(d)
-	if resErr != nil {
-		return resErr
-	}
-
 	client := m.(*Client)
 	response, statusCode, err := client.CreateSiemLogConfiguration(&SiemLogConfiguration{Data: []SiemLogConfigurationData{{
 		AssetID:           d.Get("account_id").(string),
@@ -186,6 +135,7 @@ func resourceSiemLogConfigurationCreate(d *schema.ResourceData, m interface{}) e
 		LogsLevel:         d.Get("logs_level").(string),
 		PublicKey:         d.Get("public_key").(string),
 		PublicKeyFileNAme: d.Get("public_key_file_name").(string),
+		Payload:           buildSiemLogConfigurationPayload(d),
 	}}})
 	if err != nil {
 		return err
@@ -202,14 +152,16 @@ func resourceSiemLogConfigurationCreate(d *schema.ResourceData, m interface{}) e
 func resourceSiemLogConfigurationRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Client)
 	reponse, statusCode, err := client.ReadSiemLogConfiguration(d.Id(), d.Get("account_id").(string))
+	// If the resource is deleted on the server, blow it out locally and run through the normal TF cycle.
+	// The client reports any non-200 as an error, so 404 is checked first.
+	if statusCode != nil && *statusCode == 404 {
+		d.SetId("")
+		return nil
+	}
 	if err != nil {
 		return err
 	}
-	// If the connection is deleted on the server, blow it out locally and run through the normal TF cycle
-	if *statusCode == 404 {
-		d.SetId("")
-		return nil
-	} else if (*statusCode == 200) && (reponse != nil) && (len(reponse.Data) == 1) {
+	if (*statusCode == 200) && (reponse != nil) && (len(reponse.Data) == 1) {
 		var logConfiguration = reponse.Data[0]
 		d.Set("account_id", logConfiguration.AssetID)
 		d.Set("configuration_name", logConfiguration.ConfigurationName)
@@ -222,6 +174,7 @@ func resourceSiemLogConfigurationRead(d *schema.ResourceData, m interface{}) err
 		d.Set("logs_level", logConfiguration.LogsLevel)
 		d.Set("public_key", logConfiguration.PublicKey)
 		d.Set("public_key_file_name", logConfiguration.PublicKeyFileNAme)
+		d.Set("batch_packaging_type", batchPackagingTypeFromPayload(logConfiguration.Payload))
 		return nil
 	} else {
 		return fmt.Errorf("[ERROR] Unsupported operation. Response status code: %d", *statusCode)
@@ -229,11 +182,6 @@ func resourceSiemLogConfigurationRead(d *schema.ResourceData, m interface{}) err
 }
 
 func resourceSiemLogConfigurationUpdate(d *schema.ResourceData, m interface{}) error {
-	resErr := resourceValidation(d)
-	if resErr != nil {
-		return resErr
-	}
-
 	client := m.(*Client)
 	_, _, err := client.UpdateSiemLogConfiguration(&SiemLogConfiguration{Data: []SiemLogConfigurationData{{
 		ID:                d.Id(),
@@ -248,6 +196,7 @@ func resourceSiemLogConfigurationUpdate(d *schema.ResourceData, m interface{}) e
 		LogsLevel:         d.Get("logs_level").(string),
 		PublicKey:         d.Get("public_key").(string),
 		PublicKeyFileNAme: d.Get("public_key_file_name").(string),
+		Payload:           buildSiemLogConfigurationPayload(d),
 	}}})
 
 	if err != nil {

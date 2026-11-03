@@ -10,9 +10,9 @@ description: |-
 
 Provides a resource to configure a log connection.
 
-Dependency is on existing connection, created using the `incapsula_siem_connection` or `incapsula_siem_splunk_connection` resource.
+This resource depends on an existing connection, created using the `incapsula_siem_connection` or `incapsula_siem_splunk_connection` resource.
 
-## Example Usage
+## Example usage
 
 ```hcl
 resource "incapsula_siem_log_configuration" "example_siem_log_configuration_abp"{
@@ -66,21 +66,11 @@ resource "incapsula_siem_log_configuration" "example_siem_log_configuration_csp"
 
 }
 
-resource "incapsula_siem_log_configuration" "example_siem_log_configuration_csp"{
-    accountId = 1234567
-  	configurationName = "CSP SIEM-LOGS configuration"
-  	producer = "CSP"
-	datasets = ["GOOGLE_ANALYTICS_IDS", "SIGNIFICANT_DOMAIN_DISCOVERY", "SIGNIFICANT_SCRIPT_DISCOVERY", "SIGNIFICANT_DATA_TRANSFER_DISCOVERY"]
-  	enabled = true
-  	connectionId = incapsula_siem_connection.example_siem_connection_basic_auth.id
-
-}
-
 resource "incapsula_siem_log_configuration" "example_siem_log_configuration_cloudwaf"{
     accountId = 1234567
   	configurationName = "CLOUD-WAF SIEM-LOGS configuration"
   	producer = "CLOUD_WAF"
-	datasets = [WAF_RAW_LOGS", "CLOUD_WAF_ACCESS"]
+	datasets = ["WAF_RAW_LOGS", "CLOUD_WAF_ACCESS"]
   	enabled = true
   	connectionId = incapsula_siem_connection.example_siem_connection_basic_auth.id
   	logs_level = "NONE"
@@ -100,7 +90,7 @@ NwIDAQAB
   	publicKeyFileName = "examplePublicKey.pem"
 }
 
-resource "incapsula_siem_log_configuration" "example_siem_log_configuration_csp"{
+resource "incapsula_siem_log_configuration" "example_siem_log_configuration_attack_analytics"{
     accountId = 1234567
   	configurationName = "ATTACK-ANALYTICS SIEM-LOGS configuration"
   	producer = "ATTACK_ANALYTICS"
@@ -126,13 +116,13 @@ NwIDAQAB
 
 ```
 
-## Argument Reference
+## Argument reference
 
 The following arguments are supported:
 * `account_id` - (Optional) The account to operate on. If not specified, operation will be performed on the account identified by the authentication parameters.
 * `configurationName` - (Required) Unique configuration name.
-* `producer` - (Required) Provider type. Values: `ABP`, `NETSEC`, `ATO`, `AUDIT`, `CLOUD_WAF`, `ATTACK_ANALYTICS`
-* `datasets` - (Required) An array of strings representing the type of logs. Values:<br /> `ABP` for provider type `ABP`<br /> `CONNECTION`, `NETFLOW`, `IP`, `ATTACK`,`NOTIFICATIONS` for provider type `NETSEC`<br /> `ATO` for provider type `ATO`<br /> `AUDIT_TRAIL` for provider type `AUDIT` <br /> `GOOGLE_ANALYTICS_IDS`, `SIGNIFICANT_DOMAIN_DISCOVERY`, `SIGNIFICANT_SCRIPT_DISCOVERY`, `SIGNIFICANT_DATA_TRANSFER_DISCOVERY`, `DOMAIN_DISCOVERY_ENFORCE_MODE`, `CSP_HEADER_HEALTH` for provider type `CSP`<br /> `WAF_RAW_LOGS`, `CLOUD_WAF_ACCESS` for provider type `CLOUD_WAF` <br /> `WAF_ANALYTICS_LOGS` for provider type `ATTACK_ANALYTICS`
+* `producer` - (Required) Provider type, see the table below. The provider does not check it; the API validates it, and an unknown producer fails `terraform apply` with an error naming the `provider` field.
+* `datasets` - (Required) An array of strings representing the type of logs. The datasets must match the producer, see the table below. The provider does not check them; the API validates them and `terraform apply` fails with the API error: an unknown dataset names the field (e.g. `datasets[0]`), and a dataset that does not match the producer names both.
 * `enabled`  - (Required) Boolean. Values: `true`/ `false`
 * `connectionId` - (Required) Connection id associated with this log configuration
 * `logs_level` - (Optional) Security log level - compatible only with CLOUD_WAF producer. Values: `NONE`, `FULL`, `SECURITY`
@@ -140,8 +130,9 @@ The following arguments are supported:
 * `format` - (Optional) Log format - compatible only with CLOUD_WAF and ATTACK_ANALYTICS producers. Values: `CEF`, `W3C` , `LEEF`
 * `public_key` - (Optional) Public key for encryption - compatible only with CLOUD_WAF and ATTACK_ANALYTICS producers.
 * `public_key_file_name` - (Optional) The name of the public key file corresponding to the public_key field. This is compatible only with CLOUD_WAF and ATTACK_ANALYTICS producers.
+* `batch_packaging_type` - (Optional) How log batches are packaged in the payload sent to the connection. Values: `NONE`, `IMPERVA_METADATA_PREFIX`. When unset, no payload settings are sent.
 
-**Note**: The connection should be chosen according to conjunction of producer and dataset:
+**Note**: Producers and datasets at the time of writing. New producers and datasets can be added to the API without a provider release.
 
 | producer         | datasets                                                                                                                                                              |
 |------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -154,7 +145,7 @@ The following arguments are supported:
 | ATTACK_ANALYTICS | WAF_ANALYTICS_LOGS                                                                                                                                                    |
 
 
-## Attributes Reference
+## Attributes reference
 
 The following attributes are exported:
 
@@ -162,7 +153,7 @@ The following attributes are exported:
 
 ## Import
 
-Customer connection can be imported using `accountId`/`logConfigurationId`:
+You can import a customer log configuration using `accountId`/`logConfigurationId`:
 
 ```
 $ terraform import incapsula_siem_log_configuration.example_siem_log_configuration_abp accountId/logConfigurationId
