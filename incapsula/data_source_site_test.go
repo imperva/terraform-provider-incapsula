@@ -16,7 +16,8 @@ func TestAccIncapsulaDataSourceSite_Basic(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaDataSourceSiteBasic(),
+				SkipFunc: IsTestDomainEnvVarExist,
+				Config:   testAccCheckIncapsulaDataSourceSiteBasic(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair("data.incapsula_site.test", "site_id", "incapsula_site_v3.test", "id"),
 					resource.TestCheckResourceAttrPair("data.incapsula_site.test", "name", "incapsula_site_v3.test", "name"),
@@ -34,7 +35,8 @@ func TestAccIncapsulaDataSourceSite_WithSubAccount(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaDataSourceSiteWithAccount(),
+				SkipFunc: IsTestDomainEnvVarExist,
+				Config:   testAccCheckIncapsulaDataSourceSiteWithAccount(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair("data.incapsula_site.test_account", "site_id", "incapsula_site_v3.test_account", "id"),
 					resource.TestCheckResourceAttrPair("data.incapsula_site.test_account", "name", "incapsula_site_v3.test_account", "name"),
@@ -52,7 +54,8 @@ func TestAccIncapsulaDataSourceSite_CrossStateReference(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaDataSourceSiteCrossStateReference(),
+				SkipFunc: IsTestDomainEnvVarExist,
+				Config:   testAccCheckIncapsulaDataSourceSiteCrossStateReference(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.incapsula_site.test", "site_id"),
 					resource.TestCheckResourceAttrPair("incapsula_cache_rule.example", "site_id", "data.incapsula_site.test", "site_id"),
