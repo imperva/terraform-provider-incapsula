@@ -1,4 +1,13 @@
 
+## 3.42.0 (Nov 3, 2026)
+
+FEATURES:
+* **New Data Source:** `incapsula_account` — search for accounts by name ([#696](https://github.com/imperva/terraform-provider-incapsula/pull/696))
+
+IMPROVEMENTS:
+- test(siem): use real S3 path in acceptance test ([#703](https://github.com/imperva/terraform-provider-incapsula/pull/703))
+
+
 ## 3.41.1 (Oct 29, 2026)
 
 FEATURES:
