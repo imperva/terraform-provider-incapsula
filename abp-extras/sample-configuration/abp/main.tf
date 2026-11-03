@@ -75,10 +75,11 @@ data "incapsula_abp_condition_list" "sample_condition_list_lookup" {
 #
 #
 
+# `description` is optional: omitting it leaves the policy without one.
+# `policy2` below shows the other case.
 resource "incapsula_abp_policy" "policy1" {
-  account_id  = var.account_id
-  name        = "Policy with explicit directives"
-  description = "Terraform-managed policy with explicitly specified directives"
+  account_id = var.account_id
+  name       = "Policy with explicit directives"
 
   directive {
     action = "allow"

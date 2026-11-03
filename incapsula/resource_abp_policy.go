@@ -72,15 +72,16 @@ not share an ` + "`action`" + `.`,
 				ValidateFunc: validation.IsUUID,
 			},
 			"name": {
-				Description:  "Policy name. 1..100 characters.",
+				Description:  "Policy name. 1..100 characters, without leading or trailing whitespace.",
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringLenBetween(1, 100),
+				ValidateFunc: validation.All(validation.StringLenBetween(1, 100), validateAbpPolicyName),
 			},
 			"description": {
-				Description: "Description of the policy. Set to empty string if omitted",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description: "Description of the policy. Optional: the API stores no description " +
+					"when it is omitted, which is reflected in state as the empty string.",
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 			"directive": {
 				Description: "Ordered list of directives evaluated top-down for this policy. A policy must have at least one directive, and no two directives may share an `action`.",
@@ -148,6 +149,27 @@ not share an ` + "`action`" + `.`,
 	}
 }
 
+// validateAbpPolicyName rejects a name the backend would not store verbatim.
+// It trims the whitespace around a policy name before storing it
+// (lens-core `Name::try_new`), so a padded name never matches the value read
+// back and every plan reports the same unconvergeable change. A whitespace-only
+// name is rejected for the same reason: it trims to the empty string, which the
+// API refuses. Failing at plan time names the offending argument instead.
+func validateAbpPolicyName(i any, k string) ([]string, []error) {
+	v, ok := i.(string)
+	if !ok {
+		return nil, []error{fmt.Errorf("expected type of %q to be string", k)}
+	}
+	trimmed := strings.TrimSpace(v)
+	if trimmed == "" {
+		return nil, []error{fmt.Errorf("%q must not be empty or consist only of whitespace", k)}
+	}
+	if trimmed != v {
+		return nil, []error{fmt.Errorf("%q must not have leading or trailing whitespace, which the API trims away, leaving a permanent diff; use %q", k, trimmed)}
+	}
+	return nil, nil
+}
+
 // resourceAbpPolicyCustomizeDiff rejects two directives with the same action.
 // Directive identity comes from the action (see extractAbpDirectives), so
 // duplicates would make it impossible to tell which backend-owned condition
@@ -185,13 +207,21 @@ func resourceAbpPolicyCustomizeDiff(ctx context.Context, diff *schema.ResourceDi
 	return nil
 }
 
+// extractAbpPolicy builds the request body from the configuration. An omitted
+// description reaches here as the empty string, which is left out of the
+// request so the API stores no description at all (`description` is
+// `Option<String>` in both CreatePolicyV1 and UpdatePolicyV1, and an update
+// that omits it clears it). The value read back is normalised to the empty
+// string again by serializeAbpPolicy, so this round-trips without drift.
 func extractAbpPolicy(data *schema.ResourceData) AbpPolicy {
-	description := data.Get("description").(string)
-	return AbpPolicy{
-		Name:        data.Get("name").(string),
-		Description: &description,
-		Directives:  extractAbpDirectives(data),
+	policy := AbpPolicy{
+		Name:       data.Get("name").(string),
+		Directives: extractAbpDirectives(data),
 	}
+	if description := data.Get("description").(string); description != "" {
+		policy.Description = &description
+	}
+	return policy
 }
 
 // abpConditionLists holds the condition lists the backend has allocated for a
@@ -298,14 +328,12 @@ func serializeAbpPolicy(data *schema.ResourceData, policy *AbpPolicy) error {
 	if err := data.Set("name", policy.Name); err != nil {
 		return err
 	}
+	description := ""
 	if policy.Description != nil {
-		if err := data.Set("description", policy.Description); err != nil {
-			return err
-		}
-	} else {
-		if err := data.Set("description", ""); err != nil {
-			return err
-		}
+		description = *policy.Description
+	}
+	if err := data.Set("description", description); err != nil {
+		return err
 	}
 	if err := data.Set("directive", flattenAbpDirectives(policy.Directives)); err != nil {
 		return err
