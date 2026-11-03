@@ -12,6 +12,7 @@ import (
 
 func TestAccIncapsulaDataSourceSite_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -29,6 +30,7 @@ func TestAccIncapsulaDataSourceSite_Basic(t *testing.T) {
 
 func TestAccIncapsulaDataSourceSite_WithSubAccount(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -46,6 +48,7 @@ func TestAccIncapsulaDataSourceSite_WithSubAccount(t *testing.T) {
 
 func TestAccIncapsulaDataSourceSite_CrossStateReference(t *testing.T) {
 	resource.Test(t, resource.TestCase{
+		PreCheck:  func() { testAccPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
@@ -75,6 +78,7 @@ resource "incapsula_site_v3" "test" {
   name = "example%s.%s"
   type = "Managed"
   account_id = data.incapsula_account_data.account_data.current_account
+  depends_on = [data.incapsula_account_data.account_data]
 }
 
 data "incapsula_site" "test" {
@@ -101,6 +105,7 @@ resource "incapsula_site_v3" "test_account" {
   name = "example%s.%s"
   type = "Managed"
   account_id = data.incapsula_account_data.account_data.current_account
+  depends_on = [data.incapsula_account_data.account_data]
 }
 
 data "incapsula_site" "test_account" {
@@ -138,6 +143,7 @@ resource "incapsula_site_v3" "test" {
   name = "example%s.%s"
   type = "Managed"
   account_id = data.incapsula_account_data.account_data.current_account
+  depends_on = [data.incapsula_account_data.account_data]
 }
 
 data "incapsula_site" "test" {
