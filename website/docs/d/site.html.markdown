@@ -8,7 +8,7 @@ description: |-
 
 # incapsula_site
 
-Provides a way to look up a site by name and retrieve its external ID. The returned site ID can be used in other Terraform resources across different files and states.
+Provides a way to look up a site by name and retrieve its external ID. The returned site ID can be used in other Terraform resources across different files and states. For Imperva for Google Cloud load balancer websites, the data source also returns the onboarding parameters, including the `authority_header`.
 
 ## Example Usage
 
@@ -28,6 +28,18 @@ data "incapsula_site" "subaccount" {
 }
 ```
 
+### Imperva for Google Cloud Load Balancer Website
+
+```hcl
+data "incapsula_site" "lb" {
+  name = "my-gcp-lb-site"
+}
+
+output "authority_header" {
+  value = data.incapsula_site.lb.authority_header
+}
+```
+
 ## Argument Reference
 
 * `name` - (Required) The name of the site to look up.
@@ -38,3 +50,6 @@ data "incapsula_site" "subaccount" {
 * `site_id` - The external ID of the site.
 * `cname` - The CNAME record of the site.
 * `type` - The type of the site.
+* `cloud_type` - The cloud provider type of the site, `AWS` or `GCP`. Empty for sites that are not `PUBLIC_CLOUD`.
+* `is_load_balancer_site` - Indicates whether the site is an Imperva for Google Cloud load balancer website. `false` for domain websites, legacy Imperva for Google Cloud default sites, and sites that are not part of Imperva for Google Cloud.
+* `authority_header` - The authority header assigned by Imperva for an Imperva for Google Cloud load balancer website. Available for load balancer websites and legacy Imperva for Google Cloud default sites. Empty for domain websites and sites that are not part of Imperva for Google Cloud.

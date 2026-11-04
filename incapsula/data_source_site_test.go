@@ -71,9 +71,14 @@ func testAccCheckIncapsulaDataSourceSiteBasic() string {
 	}
 
 	return fmt.Sprintf(`
+data "incapsula_account_data" "account_data" {
+}
+
 resource "incapsula_site_v3" "test" {
   name = "example%s.%s"
   type = "Managed"
+  account_id = data.incapsula_account_data.account_data.current_account
+  depends_on = [data.incapsula_account_data.account_data]
 }
 
 data "incapsula_site" "test" {
@@ -93,9 +98,14 @@ func testAccCheckIncapsulaDataSourceSiteWithAccount() string {
 	}
 
 	return fmt.Sprintf(`
+data "incapsula_account_data" "account_data" {
+}
+
 resource "incapsula_site_v3" "test_account" {
   name = "example%s.%s"
   type = "Managed"
+  account_id = data.incapsula_account_data.account_data.current_account
+  depends_on = [data.incapsula_account_data.account_data]
 }
 
 data "incapsula_site" "test_account" {
@@ -126,9 +136,14 @@ func testAccCheckIncapsulaDataSourceSiteCrossStateReference() string {
 	}
 
 	return fmt.Sprintf(`
+data "incapsula_account_data" "account_data" {
+}
+
 resource "incapsula_site_v3" "test" {
   name = "example%s.%s"
   type = "Managed"
+  account_id = data.incapsula_account_data.account_data.current_account
+  depends_on = [data.incapsula_account_data.account_data]
 }
 
 data "incapsula_site" "test" {
