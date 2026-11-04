@@ -89,7 +89,7 @@ resource "incapsula_abp_domain" "test_com" {
 - `divert_host` (String) Domain or IP to which traffic is diverted when the `divert` directive triggers.
 - `enable_mitigation` (Boolean) If false, all active conditions are treated as monitor-only. If true (default), conditions behave per their state.
 - `enable_mobile_sdk_token` (Boolean) Enable to allow mobile SDK tokens. Only enable if you use the ABP mobile SDK with this domain.
-- `encryption_key_id` (String) Existing encryption key to copy when creating this Domain. If unset, a copy of the account default key is used.
+- `encryption_key_id` (String) Existing encryption key to copy when creating this Domain. If unset, a copy of the account default key is used. Honoured on create only: the API consumes it once to clone the key material and never returns it, so later changes to it are ignored.
 - `filter_out_static_assets` (Boolean) CWAF only. Prevents common static asset paths from being analyzed by ABP.
 - `interstitial_inprogress_iframe_src` (String) URL of the iframe used to display the PoW challenge in progress.
 - `log_region` (String) Region in which ABP logs are stored. One of: apac, australia, eu, usa, india.

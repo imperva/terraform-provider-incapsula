@@ -15,26 +15,34 @@ func resourceAbpCredential() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceAbpCredentialCreate,
 		ReadContext:   resourceAbpCredentialRead,
+		UpdateContext: resourceAbpCredentialUpdate,
 		DeleteContext: resourceAbpCredentialDelete,
 
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceAbpCredentialImport,
 		},
+		CustomizeDiff: resourceAbpCredentialCustomizeDiff,
 
 		Description: `Provides an ABP Account credential used to authenticate with the Analysis
-Host. The secret is generated server-side on creation and cannot be retrieved
-again later, so it is exposed at creation time only.
+Host. The secret is generated server-side on creation.
 The secret is encrypted by ` + "`rsa_key`" + ` using OAEP with SHA256 and the label 'abp_credential', and stored
 only as ` + "`encrypted_secret`" + `; the plaintext ` + "`secret`" + ` is never written to
 state.
 Decrypt locally with, for example:
 ` + "`terraform output -raw encrypted_secret | base64 -d | openssl pkeyutl -decrypt -inkey <your-private-key-file> -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -pkeyopt rsa_oaep_label:$(echo -n 'abp_credential' | xxd -p)`" + `.
 
-NOTE: credentials cannot be modified in place. Changing ` + "`account_id`" + ` or
-` + "`rsa_key`" + ` forces resource replacement. The Account configuration must be
-published for the analysis host to begin accepting a new credential, and you
-should keep the previous credential alive until that publish completes (see the
-API documentation for the recommended rotation procedure).`,
+` + "`rsa_key`" + ` only decides which key the secret in state is encrypted to, so
+changing it is an in-place re-encryption of the same secret: the credential on
+the server is left untouched. For the same reason ` + "`terraform import`" + ` is
+safe — the imported credential simply has no ` + "`encrypted_secret`" + ` until the
+first apply, which fills it in place without replacing anything.
+
+NOTE: the secret itself cannot be rotated in place. Changing
+` + "`account_id`" + ` replaces the credential, which generates a new secret. The
+Account configuration must be published for the analysis host to begin accepting
+a new credential, and you should keep the previous credential alive until that
+publish completes (see the API documentation for the recommended rotation
+procedure).`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -45,10 +53,9 @@ API documentation for the recommended rotation procedure).`,
 				ValidateFunc: validation.IsUUID,
 			},
 			"rsa_key": {
-				Description: "A full PEM-encoded RSA public key to use for encrypting the secret in state. If set, the secret is encrypted to this key and stored only in `encrypted_secret`, keeping the plaintext out of state.",
+				Description: "A full PEM-encoded RSA public key used for encrypting the secret in state. The secret is encrypted to this key and stored only in `encrypted_secret`, keeping the plaintext out of state. Changing it re-encrypts the same secret in place.",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 			},
 			"encrypted_secret": {
 				Description: "The RSA-encrypted, base64-encoded credential secret",
@@ -68,6 +75,8 @@ API documentation for the recommended rotation procedure).`,
 		},
 	}
 }
+
+const abpCredentialEncryptionLabel = "abp_credential"
 
 func serializeAbpCredential(data *schema.ResourceData, c *AbpCredential) error {
 	if err := data.Set("account_id", c.AccountId); err != nil {
@@ -103,7 +112,7 @@ func resourceAbpCredentialCreate(ctx context.Context, data *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 	rsaKey := data.Get("rsa_key").(string)
-	encrypted, err := encryptRsa([]byte(rsaKey), []byte(created.Secret), "abp_credential")
+	encrypted, err := encryptRsa([]byte(rsaKey), []byte(created.Secret), abpCredentialEncryptionLabel)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -134,6 +143,50 @@ func resourceAbpCredentialRead(ctx context.Context, data *schema.ResourceData, m
 	return nil
 }
 
+// resourceAbpCredentialUpdate re-encrypts the existing secret. rsa_key is the
+// only updatable attribute and is a purely local concern — it decides which key
+// the secret in state is encrypted to — so the credential on the server is read
+// but never modified.
+func resourceAbpCredentialUpdate(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
+	client := m.(*Client)
+	id := data.Id()
+
+	cred, err := client.ReadAbpCredential(id)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if cred == nil {
+		return diag.Errorf("ABP Credential %s no longer exists, so its secret cannot be re-encrypted. Run 'terraform apply -refresh-only' to drop it from state and create a replacement.", id)
+	}
+	if cred.Secret == "" {
+		return diag.Errorf("ABP Credential %s read response did not contain a secret", id)
+	}
+
+	if err := serializeAbpCredential(data, cred); err != nil {
+		return diag.FromErr(err)
+	}
+
+	rsaKey := data.Get("rsa_key").(string)
+	encrypted, err := encryptRsa([]byte(rsaKey), []byte(cred.Secret), abpCredentialEncryptionLabel)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err := data.Set("encrypted_secret", encrypted); err != nil {
+		return diag.FromErr(err)
+	}
+	log.Printf("[INFO] Re-encrypted the secret of ABP Credential %s", id)
+	return nil
+}
+
+// resourceAbpCredentialCustomizeDiff marks encrypted_secret as unknown whenever
+// rsa_key changes, so that the re-encryption is visible in the plan.
+func resourceAbpCredentialCustomizeDiff(ctx context.Context, diff *schema.ResourceDiff, m any) error {
+	if diff.Id() != "" && diff.HasChange("rsa_key") {
+		return diff.SetNewComputed("encrypted_secret")
+	}
+	return nil
+}
+
 func resourceAbpCredentialDelete(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*Client)
 	if err := client.DeleteAbpCredential(data.Id()); err != nil {
@@ -143,8 +196,10 @@ func resourceAbpCredentialDelete(ctx context.Context, data *schema.ResourceData,
 	return nil
 }
 
-// resourceAbpCredentialImport imports an existing credential by its ID. The
-// secret is not returned by the read endpoint and will remain empty in state.
+// resourceAbpCredentialImport imports an existing credential by its ID.
+// rsa_key is not part of the remote object, so it is left empty; the first
+// apply after the import re-encrypts the secret in place and fills
+// encrypted_secret without replacing the credential.
 func resourceAbpCredentialImport(ctx context.Context, data *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
 	id := strings.TrimSpace(data.Id())
 	if id == "" {

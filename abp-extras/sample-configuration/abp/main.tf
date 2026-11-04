@@ -419,6 +419,12 @@ resource "incapsula_abp_domain" "dummy_com" {
   cookiescope = "dummy.com"
   log_region  = "eu"
   cookie_mode = "legacy"
+
+  // Clone an existing key's material instead of generating a fresh key. This
+  // is honoured on create only: the API never returns it, so changing it later
+  // is ignored and does not replace the domain (which would destroy its keys).
+  encryption_key_id = incapsula_abp_domain_encryption_key.test_com.id
+
   captcha_settings {
     managed_hcaptcha {
       difficulty = "auto"
@@ -495,6 +501,8 @@ resource "incapsula_abp_credential" "my_credential" {
   account_id = var.account_id
   // RSA key to use for encryption, pem encoded
   // decrypt using ex:`terraform output -raw encrypted_secret | base64 -d | openssl pkeyutl -decrypt -inkey <your-private-key-file> -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -pkeyopt rsa_oaep_label:$(echo -n 'abp_credential' | xxd -p)
+  // Changing this key re-encrypts the same secret in place; the credential on
+  // the server, and therefore the secret itself, is left untouched.
   rsa_key = <<EOF
 -----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA2p9NrmAlOC6ZbXVuKoj4

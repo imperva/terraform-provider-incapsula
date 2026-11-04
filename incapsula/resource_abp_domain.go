@@ -155,11 +155,17 @@ and is preserved on update.`,
 				},
 			},
 			"encryption_key_id": {
-				Description:  "Existing encryption key to copy when creating this Domain. If unset, a copy of the account default key is used.",
+				Description:  "Existing encryption key to copy when creating this Domain. If unset, a copy of the account default key is used. Honoured on create only: the API consumes it once to clone the key material and never returns it, so later changes to it are ignored.",
 				Type:         schema.TypeString,
 				Optional:     true,
-				ForceNew:     true,
 				ValidateFunc: validation.IsUUID,
+				// The value is not part of the Domain, so it cannot be read
+				// back and an imported Domain never has one. Letting it produce
+				// a diff would replace — and therefore destroy — the Domain on
+				// the first apply after an import.
+				DiffSuppressFunc: func(k, old, new string, data *schema.ResourceData) bool {
+					return data.Id() != ""
+				},
 			},
 			"analysis_ip_lookup_mode":  ipLookupModeSchema("Controls how the analysis host determines the end-user's IP. Omit the block for `none`."),
 			"challenge_ip_lookup_mode": ipLookupModeSchema("Controls how the challenge host determines the end-user's IP. Omit the block for `none`."),

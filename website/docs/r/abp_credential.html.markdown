@@ -4,37 +4,48 @@ layout: "incapsula"
 page_title: "incapsula_abp_credential"
 description: |-
   Provides an ABP Account credential used to authenticate with the Analysis
-  Host. The secret is generated server-side on creation and cannot be retrieved
-  again later, so it is exposed at creation time only.
+  Host. The secret is generated server-side on creation.
   The secret is encrypted by rsa_key using OAEP with SHA256 and the label 'abp_credential', and stored
   only as encrypted_secret; the plaintext secret is never written to
   state.
   Decrypt locally with, for example:
   terraform output -raw encrypted_secret | base64 -d | openssl pkeyutl -decrypt -inkey <your-private-key-file> -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -pkeyopt rsa_oaep_label:$(echo -n 'abp_credential' | xxd -p).
-  NOTE: credentials cannot be modified in place. Changing account_id or
-  rsa_key forces resource replacement. The Account configuration must be
-  published for the analysis host to begin accepting a new credential, and you
-  should keep the previous credential alive until that publish completes (see the
-  API documentation for the recommended rotation procedure).
+  rsa_key only decides which key the secret in state is encrypted to, so
+  changing it is an in-place re-encryption of the same secret: the credential on
+  the server is left untouched. For the same reason terraform import is
+  safe — the imported credential simply has no encrypted_secret until the
+  first apply, which fills it in place without replacing anything.
+  NOTE: the secret itself cannot be rotated in place. Changing
+  account_id replaces the credential, which generates a new secret. The
+  Account configuration must be published for the analysis host to begin accepting
+  a new credential, and you should keep the previous credential alive until that
+  publish completes (see the API documentation for the recommended rotation
+  procedure).
 ---
 
 
 # incapsula_abp_credential
 
 Provides an ABP Account credential used to authenticate with the Analysis
-Host. The secret is generated server-side on creation and cannot be retrieved
-again later, so it is exposed at creation time only.
+Host. The secret is generated server-side on creation.
 The secret is encrypted by `rsa_key` using OAEP with SHA256 and the label 'abp_credential', and stored
 only as `encrypted_secret`; the plaintext `secret` is never written to
 state.
 Decrypt locally with, for example:
 `terraform output -raw encrypted_secret | base64 -d | openssl pkeyutl -decrypt -inkey <your-private-key-file> -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -pkeyopt rsa_oaep_label:$(echo -n 'abp_credential' | xxd -p)`.
 
-NOTE: credentials cannot be modified in place. Changing `account_id` or
-`rsa_key` forces resource replacement. The Account configuration must be
-published for the analysis host to begin accepting a new credential, and you
-should keep the previous credential alive until that publish completes (see the
-API documentation for the recommended rotation procedure).
+`rsa_key` only decides which key the secret in state is encrypted to, so
+changing it is an in-place re-encryption of the same secret: the credential on
+the server is left untouched. For the same reason `terraform import` is
+safe — the imported credential simply has no `encrypted_secret` until the
+first apply, which fills it in place without replacing anything.
+
+NOTE: the secret itself cannot be rotated in place. Changing
+`account_id` replaces the credential, which generates a new secret. The
+Account configuration must be published for the analysis host to begin accepting
+a new credential, and you should keep the previous credential alive until that
+publish completes (see the API documentation for the recommended rotation
+procedure).
 
 ## Example Usage
 
@@ -62,7 +73,7 @@ output "encrypted_secret" {
 ### Required
 
 - `account_id` (String) Account UUID this credential belongs to.
-- `rsa_key` (String) A full PEM-encoded RSA public key to use for encrypting the secret in state. If set, the secret is encrypted to this key and stored only in `encrypted_secret`, keeping the plaintext out of state.
+- `rsa_key` (String) A full PEM-encoded RSA public key used for encrypting the secret in state. The secret is encrypted to this key and stored only in `encrypted_secret`, keeping the plaintext out of state. Changing it re-encrypts the same secret in place.
 
 ### Read-Only
 
