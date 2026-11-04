@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"reflect"
 )
 
 const abpSiteResourceName = "ABP Site"
@@ -14,6 +15,7 @@ type AbpSite struct {
 	Id                           string        `json:"id,omitempty"`
 	AccountId                    string        `json:"account_id,omitempty"`
 	Name                         string        `json:"name"`
+	Industry                     *string       `json:"industry,omitempty"`
 	Selectors                    []AbpSelector `json:"selectors"`
 	DefaultMaxRequestsPerMinute  *int          `json:"default_max_requests_per_minute,omitempty"`
 	DefaultMaxRequestsPerSession *int          `json:"default_max_requests_per_session,omitempty"`
@@ -30,14 +32,29 @@ type AbpSelector struct {
 	Id               string              `json:"id,omitempty"`
 	PolicyId         *string             `json:"policy_id"`
 	Criteria         AbpSelectorCriteria `json:"criteria"`
+	Purpose          *string             `json:"purpose,omitempty"`
 	AnalysisSettings AbpAnalysisSettings `json:"analysis_settings"`
+	DerivedId        string              `json:"derived_id,omitempty"`
+	CreatedAt        string              `json:"created_at,omitempty"`
+	ModifiedAt       string              `json:"modified_at,omitempty"`
 }
 
-// AbpSelectorCriteria is a oneOf — exactly one of the three fields must be set.
+// AbpSelectorCriteria is a oneOf — exactly one of the match fields must be
+// set. `case_insensitive` applies to the `path_prefix` variant only; the
+// backend omits it when false.
 type AbpSelectorCriteria struct {
-	Postback   *string `json:"postback,omitempty"`
-	PathPrefix *string `json:"path_prefix,omitempty"`
-	PathRegex  *string `json:"path_regex,omitempty"`
+	Postback         *string `json:"postback,omitempty"`
+	PathPrefix       *string `json:"path_prefix,omitempty"`
+	PathRegex        *string `json:"path_regex,omitempty"`
+	ApiSecurityGroup *string `json:"api_security_group,omitempty"`
+	CaseInsensitive  bool    `json:"case_insensitive,omitempty"`
+}
+
+func (AbpSelectorCriteria) abpWireOneOf() abpWireOneOf {
+	return abpWireOneOf{
+		Selectors: []string{"postback", "path_prefix", "path_regex", "api_security_group"},
+		Extra:     []string{"case_insensitive"},
+	}
 }
 
 type AbpAnalysisSettings struct {
@@ -64,6 +81,10 @@ const (
 	AbpRateLimitingModePerSite     = "per_site"
 	AbpRateLimitingModeCustomScope = "custom_scope"
 )
+
+func (AbpRateLimiting) abpWireOneOf() abpWireOneOf {
+	return abpWireOneOf{Selectors: []string{"custom_scope"}}
+}
 
 func (r AbpRateLimiting) MarshalJSON() ([]byte, error) {
 	switch r.Mode {
@@ -136,12 +157,19 @@ func flattenAbpSelectors(selectors []AbpSelector, nestedKind bool) ([]any, error
 		m := map[string]any{
 			"id":                s.Id,
 			"analysis_settings": string(encoded),
+			"derived_id":        s.DerivedId,
+			"created_at":        s.CreatedAt,
+			"modified_at":       s.ModifiedAt,
+			"purpose":           "",
 		}
 		if s.PolicyId != nil {
 			m["policy_id"] = *s.PolicyId
 		}
+		if s.Purpose != nil {
+			m["purpose"] = *s.Purpose
+		}
 
-		criteria := map[string]any{}
+		criteria := map[string]any{"case_insensitive": s.Criteria.CaseInsensitive}
 		if s.Criteria.PathPrefix != nil {
 			criteria["path_prefix"] = *s.Criteria.PathPrefix
 		}
@@ -151,9 +179,14 @@ func flattenAbpSelectors(selectors []AbpSelector, nestedKind bool) ([]any, error
 		if s.Criteria.Postback != nil {
 			criteria["postback"] = *s.Criteria.Postback
 		}
+		if s.Criteria.ApiSecurityGroup != nil {
+			criteria["api_security_group"] = *s.Criteria.ApiSecurityGroup
+		}
 		if nestedKind {
 			m["kind"] = []any{criteria}
 		} else {
+			// The flat shape is only used for the default selector, whose
+			// criteria is always a `/` path prefix.
 			for k, v := range criteria {
 				m[k] = v
 			}
@@ -181,10 +214,14 @@ func flattenAbpSite(site *AbpSite) (map[string]any, error) {
 		"id":               site.Id,
 		"account_id":       site.AccountId,
 		"name":             site.Name,
+		"industry":         "",
 		"selector":         selectors,
 		"default_selector": defaultSelector,
 		"created_at":       site.CreatedAt,
 		"modified_at":      site.ModifiedAt,
+	}
+	if site.Industry != nil {
+		m["industry"] = *site.Industry
 	}
 	if site.DefaultMaxRequestsPerMinute != nil {
 		m["default_max_requests_per_minute"] = *site.DefaultMaxRequestsPerMinute
@@ -307,6 +344,11 @@ func (c *Client) UpdateAbpSite(siteId string, site AbpSite) (*AbpSite, error) {
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal %s: %w", abpSiteResourceName, err)
+	}
+
+	body, err = c.abpPreserveUnmodelledFields(c.abpSiteUrl(siteId), body, reflect.TypeOf(AbpSite{}), abpSiteResourceName, ReadAbpSite)
+	if err != nil {
+		return nil, err
 	}
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, c.abpSiteUrl(siteId), body, UpdateAbpSite)

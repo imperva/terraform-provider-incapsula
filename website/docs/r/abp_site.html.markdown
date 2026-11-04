@@ -32,6 +32,7 @@ read-only as `default_selector` and is preserved across updates.
 resource "incapsula_abp_site" "sample_site" {
   account_id = var.account_id
   name       = "Sample site"
+  industry   = "retail"
 
   default_max_requests_per_minute  = 60
   default_max_requests_per_session = 600
@@ -39,20 +40,37 @@ resource "incapsula_abp_site" "sample_site" {
 
   # Match by path prefix and apply a specific policy.
   selector {
-    path_prefix       = "/login"
-    policy_id         = incapsula_abp_policy.policy_with_custom_directives.id
+    purpose   = "login"
+    policy_id = incapsula_abp_policy.policy_with_custom_directives.id
+    kind {
+      path_prefix      = "/login"
+      case_insensitive = true
+    }
     analysis_settings = data.incapsula_abp_site_analysis_settings.login.json
   }
 
   # Match by regex.
   selector {
-    path_regex        = "\\.png$"
+    kind {
+      path_regex = "\\.png$"
+    }
     analysis_settings = data.incapsula_abp_site_analysis_settings.static.json
   }
 
   # A postback selector.
   selector {
-    postback          = "web_interrogation"
+    kind {
+      postback = "web_interrogation"
+    }
+    analysis_settings = data.incapsula_abp_site_analysis_settings.postback.json
+  }
+
+  # Match requests of an API Security group.
+  selector {
+    purpose = "backend_api"
+    kind {
+      api_security_group = "checkout-api"
+    }
     analysis_settings = data.incapsula_abp_site_analysis_settings.postback.json
   }
 }
@@ -71,6 +89,7 @@ resource "incapsula_abp_site" "sample_site" {
 - `default_max_requests_per_minute` (Number) Default maximum number of requests without a token per minute. Applied to selectors that opt in via `use_site_rate_limiting_parameters`.
 - `default_max_requests_per_session` (Number) Default maximum number of requests without a token per session.
 - `default_max_session_length` (String) Default maximum length of a session without a token, in moi duration format (e.g. "2d1h").
+- `industry` (String) Industry the Site operates in. Informational metadata, unused by the runtime. One of: financial_services, retail, travel, media, telecom, crypto, healthcare, government, ticketing, real_estate, insurance, automotive, nonprofit, utilities, other.
 - `selector` (Block List) Ordered list of Selectors evaluated top-down for this Site. The first matching Selector decides which Policy is applied. (see [below for nested schema](#nestedblock--selector))
 
 ### Read-Only
@@ -86,24 +105,30 @@ resource "incapsula_abp_site" "sample_site" {
 Required:
 
 - `analysis_settings` (String) JSON-encoded analysis settings for this selector, typically produced by an `incapsula_abp_site_analysis_settings` data source.
-- `kind` (Block List, Min: 1, Max: 1) Match criteria for this Selector. Exactly one of `path_prefix`, `path_regex`, `postback` must be set. (see [below for nested schema](#nestedblock--selector--kind))
+- `kind` (Block List, Min: 1, Max: 1) Match criteria for this Selector. Exactly one of `path_prefix`, `path_regex`, `postback`, `api_security_group` must be set. (see [below for nested schema](#nestedblock--selector--kind))
 
 Optional:
 
 - `policy_id` (String) Policy applied when this Selector matches. Omit to apply no policy (e.g. for static assets).
+- `purpose` (String) What this Selector matches, e.g. the user flow or endpoint kind. Informational metadata, unused by the runtime. One of: login, signup, password_reset, mfa, search, browse, cart, checkout, payment, form_submission, booking, backend_api, unknown, other. `unknown` means "explicitly not known", which is distinct from omitting the attribute.
 
 Read-Only:
 
+- `created_at` (String) RFC3339 timestamp at which the Selector was created.
+- `derived_id` (String) Server-derived ID, recomputed from the Selector's fields whenever any of them change. ABP's request counters are reported against it.
 - `id` (String) Server-assigned Selector ID.
+- `modified_at` (String) RFC3339 timestamp at which the Selector was last modified.
 
 <a id="nestedblock--selector--kind"></a>
 ### Nested Schema for `selector.kind`
 
 Optional:
 
-- `path_prefix` (String) Match requests whose path begins with this prefix. Mutually exclusive with `path_regex` and `postback`.
-- `path_regex` (String) Match requests whose path matches this regular expression. Mutually exclusive with `path_prefix` and `postback`.
-- `postback` (String) Match a specific Postback request type. One of: web_interrogation, ios_interrogation, web_automation, android_interrogation. Mutually exclusive with `path_prefix` and `path_regex`.
+- `api_security_group` (String) Match requests belonging to this API Security group. Mutually exclusive with `path_prefix`, `path_regex` and `postback`.
+- `case_insensitive` (Boolean) Match `path_prefix` without regard to case. Applies to `path_prefix` only.
+- `path_prefix` (String) Match requests whose path begins with this prefix. Mutually exclusive with `path_regex`, `postback` and `api_security_group`.
+- `path_regex` (String) Match requests whose path matches this regular expression. Mutually exclusive with `path_prefix`, `postback` and `api_security_group`.
+- `postback` (String) Match a specific Postback request type. One of: web_interrogation, ios_interrogation, web_automation, android_interrogation. Mutually exclusive with `path_prefix`, `path_regex` and `api_security_group`.
 
 
 
@@ -113,9 +138,14 @@ Optional:
 Read-Only:
 
 - `analysis_settings` (String)
+- `case_insensitive` (Boolean)
+- `created_at` (String)
+- `derived_id` (String)
 - `id` (String)
+- `modified_at` (String)
 - `path_prefix` (String)
 - `policy_id` (String)
+- `purpose` (String)
 
 ## Import
 

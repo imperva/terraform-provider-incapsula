@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"reflect"
 )
 
 const abpProofOfWorkConfigurationResourceName = "ABP Proof Of Work Configuration"
@@ -120,6 +121,11 @@ func (c *Client) UpdateAbpProofOfWorkConfiguration(id string, config AbpProofOfW
 	body, err := json.Marshal(config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal %s: %w", abpProofOfWorkConfigurationResourceName, err)
+	}
+
+	body, err = c.abpPreserveUnmodelledFields(c.abpProofOfWorkConfigurationUrl(id), body, reflect.TypeOf(AbpProofOfWorkConfiguration{}), abpProofOfWorkConfigurationResourceName, ReadAbpProofOfWorkConfiguration)
+	if err != nil {
+		return nil, err
 	}
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, c.abpProofOfWorkConfigurationUrl(id), body, UpdateAbpProofOfWorkConfiguration)

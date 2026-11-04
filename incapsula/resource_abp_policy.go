@@ -21,6 +21,7 @@ type AbpPolicy struct {
 	Name        string         `json:"name"`
 	Description *string        `json:"description,omitempty"`
 	Directives  []AbpDirective `json:"directives"`
+	CreatedAt   string         `json:"created_at,omitempty"`
 	ModifiedAt  string         `json:"modified_at,omitempty"`
 }
 

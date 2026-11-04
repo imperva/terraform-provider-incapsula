@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"reflect"
 )
 
 const abpConditionResourceName = "ABP Condition"
@@ -49,6 +50,8 @@ type AbpCondition struct {
 	Tags      []string
 	State     string
 
+	RecommendedDirectives []string
+
 	CreatedAt  string
 	ModifiedAt string
 }
@@ -57,19 +60,20 @@ type AbpCondition struct {
 // strings let UnmarshalJSON distinguish "field absent" from "field
 // present and empty", which is how the variant is identified.
 type abpConditionWire struct {
-	Id           string   `json:"id,omitempty"`
-	AccountId    string   `json:"account_id,omitempty"`
-	Name         *string  `json:"name,omitempty"`
-	Description  *string  `json:"description,omitempty"`
-	Code         *string  `json:"code,omitempty"`
-	Template     *string  `json:"template,omitempty"`
-	LastChangeBy string   `json:"last_change_by,omitempty"`
-	Reference    *string  `json:"reference,omitempty"`
-	Parent       string   `json:"parent,omitempty"`
-	Tags         []string `json:"tags,omitempty"`
-	State        string   `json:"state,omitempty"`
-	CreatedAt    string   `json:"created_at,omitempty"`
-	ModifiedAt   string   `json:"modified_at,omitempty"`
+	Id                    string   `json:"id,omitempty"`
+	AccountId             string   `json:"account_id,omitempty"`
+	Name                  *string  `json:"name,omitempty"`
+	Description           *string  `json:"description,omitempty"`
+	Code                  *string  `json:"code,omitempty"`
+	Template              *string  `json:"template,omitempty"`
+	LastChangeBy          string   `json:"last_change_by,omitempty"`
+	Reference             *string  `json:"reference,omitempty"`
+	Parent                string   `json:"parent,omitempty"`
+	Tags                  []string `json:"tags,omitempty"`
+	State                 string   `json:"state,omitempty"`
+	RecommendedDirectives []string `json:"recommended_directives,omitempty"`
+	CreatedAt             string   `json:"created_at,omitempty"`
+	ModifiedAt            string   `json:"modified_at,omitempty"`
 }
 
 func (c *AbpCondition) UnmarshalJSON(data []byte) error {
@@ -84,6 +88,7 @@ func (c *AbpCondition) UnmarshalJSON(data []byte) error {
 	c.Parent = w.Parent
 	c.Tags = w.Tags
 	c.State = w.State
+	c.RecommendedDirectives = w.RecommendedDirectives
 	c.CreatedAt = w.CreatedAt
 	c.ModifiedAt = w.ModifiedAt
 
@@ -112,6 +117,19 @@ func (c *AbpCondition) UnmarshalJSON(data []byte) error {
 		c.Kind = AbpConditionKindList
 	}
 	return nil
+}
+
+// abpWireOneOf declares the keys of every variant. The kind is selected by
+// `reference` (reference) or `code` (literal), as in UnmarshalJSON.
+func (AbpCondition) abpWireOneOf() abpWireOneOf {
+	return abpWireOneOf{
+		Selectors: []string{"reference", "code"},
+		Extra: []string{
+			"id", "account_id", "name", "description", "template",
+			"last_change_by", "owner", "parent", "tags", "state",
+			"created_at", "modified_at", "recommended_directives",
+		},
+	}
 }
 
 // MarshalJSON emits only the fields that belong to the active variant so
@@ -157,6 +175,10 @@ func (c *Client) abpConditionUrl(conditionId string) string {
 }
 
 func flattenAbpCondition(condition *AbpCondition) map[string]any {
+	recommended := make([]any, 0, len(condition.RecommendedDirectives))
+	for _, directive := range condition.RecommendedDirectives {
+		recommended = append(recommended, directive)
+	}
 	return map[string]any{
 		"id":             condition.Id,
 		"account_id":     condition.AccountId,
@@ -168,6 +190,8 @@ func flattenAbpCondition(condition *AbpCondition) map[string]any {
 		"last_change_by": condition.LastChangeBy,
 		"created_at":     condition.CreatedAt,
 		"modified_at":    condition.ModifiedAt,
+
+		"recommended_directives": recommended,
 	}
 }
 
@@ -269,6 +293,11 @@ func (c *Client) UpdateAbpCondition(conditionId string, condition AbpCondition) 
 	body, err := json.Marshal(condition)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal %s: %w", abpConditionResourceName, err)
+	}
+
+	body, err = c.abpPreserveUnmodelledFields(c.abpConditionUrl(conditionId), body, reflect.TypeOf(AbpCondition{}), abpConditionResourceName, ReadAbpCondition)
+	if err != nil {
+		return nil, err
 	}
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, c.abpConditionUrl(conditionId), body, UpdateAbpCondition)

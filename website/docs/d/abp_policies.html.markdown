@@ -41,6 +41,7 @@ output "policy_names" {
 
 Read-Only:
 
+- `created_at` (String)
 - `description` (String)
 - `directive` (List of Object) (see [below for nested schema](#nestedobjatt--policies--directive))
 - `id` (String)

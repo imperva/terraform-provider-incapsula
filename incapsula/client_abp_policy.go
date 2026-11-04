@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"reflect"
 )
 
 func (c *Client) AbpPolicyUrl(policyId string) string {
@@ -83,6 +84,11 @@ func (c *Client) UpdateAbpPolicy(policyId string, policy AbpPolicy) (*AbpPolicy,
 	body, err := json.Marshal(policy)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal %s: %w", abpPolicyResourceName, err)
+	}
+
+	body, err = c.abpPreserveUnmodelledFields(c.AbpPolicyUrl(policyId), body, reflect.TypeOf(AbpPolicy{}), abpPolicyResourceName, ReadAbpPolicy)
+	if err != nil {
+		return nil, err
 	}
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, c.AbpPolicyUrl(policyId), body, UpdateAbpPolicy)
@@ -207,6 +213,7 @@ func flattenAbpPolicy(policy *AbpPolicy) map[string]any {
 		"name":        policy.Name,
 		"description": description,
 		"directive":   flattenAbpDirectives(policy.Directives),
+		"created_at":  policy.CreatedAt,
 		"modified_at": policy.ModifiedAt,
 	}
 }

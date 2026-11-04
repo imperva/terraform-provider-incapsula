@@ -73,6 +73,12 @@ func abpConditionReadOnlyAttributes() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
+		"recommended_directives": {
+			Description: "Directive actions this Condition is recommended for, as advertised by the API. Empty for account-owned Conditions.",
+			Type:        schema.TypeList,
+			Computed:    true,
+			Elem:        &schema.Schema{Type: schema.TypeString},
+		},
 		"created_at": {
 			Description: "RFC3339 timestamp at which the Condition was created.",
 			Type:        schema.TypeString,

@@ -60,6 +60,7 @@ Read-Only:
 - `default_max_session_length` (String)
 - `default_selector` (List of Object) (see [below for nested schema](#nestedobjatt--sites--default_selector))
 - `id` (String)
+- `industry` (String)
 - `modified_at` (String)
 - `name` (String)
 - `selector` (List of Object) (see [below for nested schema](#nestedobjatt--sites--selector))
@@ -70,9 +71,14 @@ Read-Only:
 Read-Only:
 
 - `analysis_settings` (String)
+- `case_insensitive` (Boolean)
+- `created_at` (String)
+- `derived_id` (String)
 - `id` (String)
+- `modified_at` (String)
 - `path_prefix` (String)
 - `policy_id` (String)
+- `purpose` (String)
 
 
 <a id="nestedobjatt--sites--selector"></a>
@@ -81,15 +87,21 @@ Read-Only:
 Read-Only:
 
 - `analysis_settings` (String)
+- `created_at` (String)
+- `derived_id` (String)
 - `id` (String)
 - `kind` (List of Object) (see [below for nested schema](#nestedobjatt--sites--selector--kind))
+- `modified_at` (String)
 - `policy_id` (String)
+- `purpose` (String)
 
 <a id="nestedobjatt--sites--selector--kind"></a>
 ### Nested Schema for `sites.selector.kind`
 
 Read-Only:
 
+- `api_security_group` (String)
+- `case_insensitive` (Boolean)
 - `path_prefix` (String)
 - `path_regex` (String)
 - `postback` (String)

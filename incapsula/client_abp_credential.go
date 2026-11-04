@@ -8,6 +8,8 @@ import (
 	"net/http"
 )
 
+const abpCredentialEncryptionLabel = "abp_credential"
+
 const abpCredentialResourceName = "ABP Credential"
 
 type AbpCredential struct {

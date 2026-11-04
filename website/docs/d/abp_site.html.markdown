@@ -43,6 +43,7 @@ data "incapsula_abp_site" "external_site" {
 - `default_max_session_length` (String) Default maximum length of a session without a token, in moi duration format.
 - `default_selector` (List of Object) Catch-all selector matching all request paths after all other selectors. (see [below for nested schema](#nestedatt--default_selector))
 - `id` (String) The ID of this resource.
+- `industry` (String) Industry the Site operates in. Informational metadata, unused by the runtime.
 - `modified_at` (String) RFC3339 timestamp at which the Site was last modified.
 - `selector` (List of Object) Ordered list of user-defined Selectors for this Site. (see [below for nested schema](#nestedatt--selector))
 
@@ -52,9 +53,14 @@ data "incapsula_abp_site" "external_site" {
 Read-Only:
 
 - `analysis_settings` (String)
+- `case_insensitive` (Boolean)
+- `created_at` (String)
+- `derived_id` (String)
 - `id` (String)
+- `modified_at` (String)
 - `path_prefix` (String)
 - `policy_id` (String)
+- `purpose` (String)
 
 
 <a id="nestedatt--selector"></a>
@@ -63,15 +69,21 @@ Read-Only:
 Read-Only:
 
 - `analysis_settings` (String)
+- `created_at` (String)
+- `derived_id` (String)
 - `id` (String)
 - `kind` (List of Object) (see [below for nested schema](#nestedobjatt--selector--kind))
+- `modified_at` (String)
 - `policy_id` (String)
+- `purpose` (String)
 
 <a id="nestedobjatt--selector--kind"></a>
 ### Nested Schema for `selector.kind`
 
 Read-Only:
 
+- `api_security_group` (String)
+- `case_insensitive` (Boolean)
 - `path_prefix` (String)
 - `path_regex` (String)
 - `postback` (String)

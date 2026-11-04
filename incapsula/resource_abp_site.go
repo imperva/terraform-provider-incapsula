@@ -14,6 +14,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+// abpSiteIndustries is SiteIndustryV1.
+var abpSiteIndustries = []string{
+	"financial_services", "retail", "travel", "media", "telecom", "crypto",
+	"healthcare", "government", "ticketing", "real_estate", "insurance",
+	"automotive", "nonprofit", "utilities", "other",
+}
+
+// abpSelectorPurposes is SelectorPurposeV1.
+var abpSelectorPurposes = []string{
+	"login", "signup", "password_reset", "mfa", "search", "browse", "cart",
+	"checkout", "payment", "form_submission", "booking", "backend_api",
+	"unknown", "other",
+}
+
 func resourceAbpSite() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceAbpSiteCreate,
@@ -47,6 +61,12 @@ read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 100),
+			},
+			"industry": {
+				Description:  "Industry the Site operates in. Informational metadata, unused by the runtime. One of: " + strings.Join(abpSiteIndustries, ", ") + ".",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice(abpSiteIndustries, false),
 			},
 			"default_max_requests_per_minute": {
 				Description:  "Default maximum number of requests without a token per minute. Applied to selectors that opt in via `use_site_rate_limiting_parameters`.",
@@ -85,31 +105,49 @@ read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 							Optional:     true,
 							ValidateFunc: validation.IsUUID,
 						},
+						"purpose": {
+							Description:  "What this Selector matches, e.g. the user flow or endpoint kind. Informational metadata, unused by the runtime. One of: " + strings.Join(abpSelectorPurposes, ", ") + ". `unknown` means \"explicitly not known\", which is distinct from omitting the attribute.",
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringInSlice(abpSelectorPurposes, false),
+						},
 						"kind": {
-							Description: "Match criteria for this Selector. Exactly one of `path_prefix`, `path_regex`, `postback` must be set.",
+							Description: "Match criteria for this Selector. Exactly one of `path_prefix`, `path_regex`, `postback`, `api_security_group` must be set.",
 							Type:        schema.TypeList,
 							Required:    true,
 							MaxItems:    1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"path_prefix": {
-										Description: "Match requests whose path begins with this prefix. Mutually exclusive with `path_regex` and `postback`.",
+										Description: "Match requests whose path begins with this prefix. Mutually exclusive with `path_regex`, `postback` and `api_security_group`.",
 										Type:        schema.TypeString,
 										Optional:    true,
 										Computed:    true,
 									},
+									"case_insensitive": {
+										Description: "Match `path_prefix` without regard to case. Applies to `path_prefix` only.",
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Default:     false,
+									},
 									"path_regex": {
-										Description: "Match requests whose path matches this regular expression. Mutually exclusive with `path_prefix` and `postback`.",
+										Description: "Match requests whose path matches this regular expression. Mutually exclusive with `path_prefix`, `postback` and `api_security_group`.",
 										Type:        schema.TypeString,
 										Optional:    true,
 										Computed:    true,
 									},
 									"postback": {
-										Description:  "Match a specific Postback request type. One of: web_interrogation, ios_interrogation, web_automation, android_interrogation. Mutually exclusive with `path_prefix` and `path_regex`.",
+										Description:  "Match a specific Postback request type. One of: web_interrogation, ios_interrogation, web_automation, android_interrogation. Mutually exclusive with `path_prefix`, `path_regex` and `api_security_group`.",
 										Type:         schema.TypeString,
 										Optional:     true,
 										Computed:     true,
 										ValidateFunc: validation.StringInSlice([]string{"web_interrogation", "ios_interrogation", "web_automation", "android_interrogation"}, false),
+									},
+									"api_security_group": {
+										Description: "Match requests belonging to this API Security group. Mutually exclusive with `path_prefix`, `path_regex` and `postback`.",
+										Type:        schema.TypeString,
+										Optional:    true,
+										Computed:    true,
 									},
 								},
 							},
@@ -119,6 +157,21 @@ read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 							Type:         schema.TypeString,
 							Required:     true,
 							ValidateFunc: validation.StringIsJSON,
+						},
+						"derived_id": {
+							Description: "Server-derived ID, recomputed from the Selector's fields whenever any of them change. ABP's request counters are reported against it.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"created_at": {
+							Description: "RFC3339 timestamp at which the Selector was created.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"modified_at": {
+							Description: "RFC3339 timestamp at which the Selector was last modified.",
+							Type:        schema.TypeString,
+							Computed:    true,
 						},
 					},
 				},
@@ -144,8 +197,33 @@ read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
+						"case_insensitive": {
+							Description: "Whether `path_prefix` is matched without regard to case.",
+							Type:        schema.TypeBool,
+							Computed:    true,
+						},
+						"purpose": {
+							Description: "What this Selector matches. Unset for the generated default.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
 						"analysis_settings": {
 							Description: "JSON-encoded analysis settings of the default selector.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"derived_id": {
+							Description: "Server-derived ID the Selector's request counters are reported against.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"created_at": {
+							Description: "RFC3339 timestamp at which the Selector was created.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"modified_at": {
+							Description: "RFC3339 timestamp at which the Selector was last modified.",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
@@ -201,6 +279,9 @@ func extractAbpSelector(raw map[string]any, nestedKind bool) (AbpSelector, error
 	if pid, ok := raw["policy_id"].(string); ok && pid != "" {
 		sel.PolicyId = &pid
 	}
+	if purpose, ok := raw["purpose"].(string); ok && purpose != "" {
+		sel.Purpose = &purpose
+	}
 	return sel, nil
 }
 
@@ -208,11 +289,14 @@ func extractAbpSelectorCriteria(raw map[string]any) (AbpSelectorCriteria, error)
 	prefix, _ := raw["path_prefix"].(string)
 	regex, _ := raw["path_regex"].(string)
 	postback, _ := raw["postback"].(string)
+	group, _ := raw["api_security_group"].(string)
+	caseInsensitive, _ := raw["case_insensitive"].(bool)
 
 	set := 0
 	c := AbpSelectorCriteria{}
 	if prefix != "" {
 		c.PathPrefix = &prefix
+		c.CaseInsensitive = caseInsensitive
 		set++
 	}
 	if regex != "" {
@@ -223,8 +307,15 @@ func extractAbpSelectorCriteria(raw map[string]any) (AbpSelectorCriteria, error)
 		c.Postback = &postback
 		set++
 	}
+	if group != "" {
+		c.ApiSecurityGroup = &group
+		set++
+	}
 	if set != 1 {
-		return c, fmt.Errorf("selector requires exactly one of path_prefix, path_regex, postback (got %d)", set)
+		return c, fmt.Errorf("selector requires exactly one of path_prefix, path_regex, postback, api_security_group (got %d)", set)
+	}
+	if caseInsensitive && prefix == "" {
+		return c, fmt.Errorf("case_insensitive applies to path_prefix only")
 	}
 	return c, nil
 }
@@ -233,6 +324,10 @@ func extractAbpSite(data *schema.ResourceData) (AbpSite, error) {
 	site := AbpSite{
 		Name:      data.Get("name").(string),
 		Selectors: []AbpSelector{},
+	}
+	if v, ok := data.GetOk("industry"); ok {
+		s := v.(string)
+		site.Industry = &s
 	}
 	if v, ok := data.GetOk("default_max_requests_per_minute"); ok {
 		n := v.(int)

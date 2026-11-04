@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"reflect"
 )
 
 const abpDomainResourceName = "ABP Domain"
@@ -54,6 +55,13 @@ type AbpDomainCriteria struct {
 	Fqdn              string
 }
 
+func (AbpDomainCriteria) abpWireOneOf() abpWireOneOf {
+	return abpWireOneOf{
+		Selectors: []string{"exact", "prefix", "suffix", "cloudwaf_id", "cloudwaf_website_id"},
+		Extra:     []string{"fqdn"},
+	}
+}
+
 func (c AbpDomainCriteria) MarshalJSON() ([]byte, error) {
 	switch {
 	case c.Exact != "":
@@ -99,6 +107,10 @@ type AbpIpLookupMode struct {
 	HeaderName   string
 	ReverseIndex int
 	HasLookup    bool
+}
+
+func (AbpIpLookupMode) abpWireOneOf() abpWireOneOf {
+	return abpWireOneOf{Selectors: []string{"lookup"}}
 }
 
 func (m AbpIpLookupMode) MarshalJSON() ([]byte, error) {
@@ -158,6 +170,10 @@ const (
 	AbpCaptchaModeManagedGeetest  = "managed_geetest"
 	AbpCaptchaModeManagedHcaptcha = "managed_hcaptcha"
 )
+
+func (AbpCaptchaSettings) abpWireOneOf() abpWireOneOf {
+	return abpWireOneOf{Selectors: []string{"geetest", "managed_geetest", "managed_hcaptcha"}}
+}
 
 func (c AbpCaptchaSettings) MarshalJSON() ([]byte, error) {
 	switch c.Mode {
@@ -227,6 +243,10 @@ func (c *AbpCaptchaSettings) UnmarshalJSON(data []byte) error {
 type AbpNoJsInjectionPath struct {
 	PathPrefix string
 	IncapRule  string
+}
+
+func (AbpNoJsInjectionPath) abpWireOneOf() abpWireOneOf {
+	return abpWireOneOf{Selectors: []string{"path_prefix", "incap_rule"}}
 }
 
 func (p AbpNoJsInjectionPath) MarshalJSON() ([]byte, error) {
@@ -320,32 +340,39 @@ func (c *Client) ReadAbpDomain(domainId string) (*AbpDomain, error) {
 	return &domain, nil
 }
 
+// abpDomainUpdatePayload is UpdateDomainV1: the subset of a Domain the update
+// endpoint reads. The identity and timestamp fields are modelled, and left
+// empty, so that the merge drops them from the request body rather than
+// echoing them back. Everything else a read returns (`criteria`,
+// `mobile_api_obfuscate_path`) is not settable here, is therefore not
+// modelled, and rides along untouched.
+type abpDomainUpdatePayload struct {
+	Id                              string                 `json:"id,omitempty"`
+	AccountId                       string                 `json:"account_id,omitempty"`
+	CreatedAt                       string                 `json:"created_at,omitempty"`
+	ModifiedAt                      string                 `json:"modified_at,omitempty"`
+	SiteId                          string                 `json:"site_id"`
+	ChallengeIpLookupMode           AbpIpLookupMode        `json:"challenge_ip_lookup_mode"`
+	AnalysisIpLookupMode            AbpIpLookupMode        `json:"analysis_ip_lookup_mode"`
+	Cookiescope                     string                 `json:"cookiescope"`
+	CaptchaSettings                 AbpCaptchaSettings     `json:"captcha_settings"`
+	LogRegion                       string                 `json:"log_region"`
+	NoJsInjectionPaths              []AbpNoJsInjectionPath `json:"no_js_injection_paths"`
+	ObfuscatePath                   *string                `json:"obfuscate_path,omitempty"`
+	CookieMode                      string                 `json:"cookie_mode"`
+	UnmaskedHeaders                 []string               `json:"unmasked_headers"`
+	ProxyFlags                      []string               `json:"proxy_flags"`
+	FilterOutStaticAssets           *bool                  `json:"filter_out_static_assets,omitempty"`
+	EnableMitigation                bool                   `json:"enable_mitigation"`
+	EnableMobileSdkToken            *bool                  `json:"enable_mobile_sdk_token,omitempty"`
+	InterstitialInprogressIframeSrc *string                `json:"interstitial_inprogress_iframe_src,omitempty"`
+	DivertHost                      *string                `json:"divert_host,omitempty"`
+}
+
 func (c *Client) UpdateAbpDomain(domainId string, domain AbpDomain) (*AbpDomain, error) {
 	log.Printf("[INFO] Updating %s with id %s", abpDomainResourceName, domainId)
 
-	// criteria is not part of UpdateDomainV1; clear it so it's omitted.
-	updateBody := domain
-	updateBody.Criteria = AbpDomainCriteria{}
-
-	type updatePayload struct {
-		SiteId                          string                 `json:"site_id"`
-		ChallengeIpLookupMode           AbpIpLookupMode        `json:"challenge_ip_lookup_mode"`
-		AnalysisIpLookupMode            AbpIpLookupMode        `json:"analysis_ip_lookup_mode"`
-		Cookiescope                     string                 `json:"cookiescope"`
-		CaptchaSettings                 AbpCaptchaSettings     `json:"captcha_settings"`
-		LogRegion                       string                 `json:"log_region"`
-		NoJsInjectionPaths              []AbpNoJsInjectionPath `json:"no_js_injection_paths"`
-		ObfuscatePath                   *string                `json:"obfuscate_path,omitempty"`
-		CookieMode                      string                 `json:"cookie_mode"`
-		UnmaskedHeaders                 []string               `json:"unmasked_headers"`
-		ProxyFlags                      []string               `json:"proxy_flags"`
-		FilterOutStaticAssets           *bool                  `json:"filter_out_static_assets,omitempty"`
-		EnableMitigation                bool                   `json:"enable_mitigation"`
-		EnableMobileSdkToken            *bool                  `json:"enable_mobile_sdk_token,omitempty"`
-		InterstitialInprogressIframeSrc *string                `json:"interstitial_inprogress_iframe_src,omitempty"`
-		DivertHost                      *string                `json:"divert_host,omitempty"`
-	}
-	body, err := json.Marshal(updatePayload{
+	body, err := json.Marshal(abpDomainUpdatePayload{
 		SiteId:                          domain.SiteId,
 		ChallengeIpLookupMode:           domain.ChallengeIpLookupMode,
 		AnalysisIpLookupMode:            domain.AnalysisIpLookupMode,
@@ -365,6 +392,11 @@ func (c *Client) UpdateAbpDomain(domainId string, domain AbpDomain) (*AbpDomain,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal %s: %w", abpDomainResourceName, err)
+	}
+
+	body, err = c.abpPreserveUnmodelledFields(c.abpDomainUrl(domainId), body, reflect.TypeOf(abpDomainUpdatePayload{}), abpDomainResourceName, ReadAbpDomain)
+	if err != nil {
+		return nil, err
 	}
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodPut, c.abpDomainUrl(domainId), body, UpdateAbpDomain)

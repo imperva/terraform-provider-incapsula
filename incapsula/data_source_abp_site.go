@@ -55,6 +55,11 @@ func dataSourceAbpSite() *schema.Resource {
 // in lockstep.
 func abpSiteReadOnlyAttributes() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"industry": {
+			Description: "Industry the Site operates in. Informational metadata, unused by the runtime.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
 		"default_max_requests_per_minute": {
 			Description: "Default maximum number of requests without a token per minute.",
 			Type:        schema.TypeInt,
@@ -86,24 +91,39 @@ func abpSiteReadOnlyAttributes() map[string]*schema.Schema {
 						Type:        schema.TypeString,
 						Computed:    true,
 					},
+					"purpose": {
+						Description: "What this Selector matches, e.g. the user flow or endpoint kind. Informational metadata, unused by the runtime. Empty when unset.",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
 					"kind": {
-						Description: "Match criteria for this Selector. Will be one of `path_prefix`, `path_regex`, `postback`",
+						Description: "Match criteria for this Selector. Will be one of `path_prefix`, `path_regex`, `postback`, `api_security_group`",
 						Type:        schema.TypeList,
 						Computed:    true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"path_prefix": {
-									Description: "Matches requests whose path begins with this prefix. Mutually exclusive with `path_regex` and `postback`.",
+									Description: "Matches requests whose path begins with this prefix. Mutually exclusive with `path_regex`, `postback` and `api_security_group`.",
 									Type:        schema.TypeString,
 									Computed:    true,
 								},
+								"case_insensitive": {
+									Description: "Whether `path_prefix` is matched without regard to case.",
+									Type:        schema.TypeBool,
+									Computed:    true,
+								},
 								"path_regex": {
-									Description: "Matches requests whose path matches this regular expression. Mutually exclusive with `path_prefix` and `postback`.",
+									Description: "Matches requests whose path matches this regular expression. Mutually exclusive with `path_prefix`, `postback` and `api_security_group`.",
 									Type:        schema.TypeString,
 									Computed:    true,
 								},
 								"postback": {
-									Description: "Matches a specific Postback request type. One of: web_interrogation, ios_interrogation, web_automation, android_interrogation. Mutually exclusive with `path_prefix` and `path_regex`.",
+									Description: "Matches a specific Postback request type. One of: web_interrogation, ios_interrogation, web_automation, android_interrogation. Mutually exclusive with `path_prefix`, `path_regex` and `api_security_group`.",
+									Type:        schema.TypeString,
+									Computed:    true,
+								},
+								"api_security_group": {
+									Description: "Matches requests belonging to this API Security group. Mutually exclusive with `path_prefix`, `path_regex` and `postback`.",
 									Type:        schema.TypeString,
 									Computed:    true,
 								},
@@ -112,6 +132,21 @@ func abpSiteReadOnlyAttributes() map[string]*schema.Schema {
 					},
 					"analysis_settings": {
 						Description: "JSON-encoded analysis settings for this selector.",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
+					"derived_id": {
+						Description: "Server-derived ID, recomputed from the Selector's fields whenever any of them change. ABP's request counters are reported against it.",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
+					"created_at": {
+						Description: "RFC3339 timestamp at which the Selector was created.",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
+					"modified_at": {
+						Description: "RFC3339 timestamp at which the Selector was last modified.",
 						Type:        schema.TypeString,
 						Computed:    true,
 					},
@@ -139,8 +174,33 @@ func abpSiteReadOnlyAttributes() map[string]*schema.Schema {
 						Type:        schema.TypeString,
 						Computed:    true,
 					},
+					"case_insensitive": {
+						Description: "Whether `path_prefix` is matched without regard to case.",
+						Type:        schema.TypeBool,
+						Computed:    true,
+					},
+					"purpose": {
+						Description: "What this Selector matches. Unset for the generated default.",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
 					"analysis_settings": {
 						Description: "JSON-encoded analysis settings of the default selector.",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
+					"derived_id": {
+						Description: "Server-derived ID the Selector's request counters are reported against.",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
+					"created_at": {
+						Description: "RFC3339 timestamp at which the Selector was created.",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
+					"modified_at": {
+						Description: "RFC3339 timestamp at which the Selector was last modified.",
 						Type:        schema.TypeString,
 						Computed:    true,
 					},

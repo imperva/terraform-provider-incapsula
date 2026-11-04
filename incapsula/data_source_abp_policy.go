@@ -96,6 +96,11 @@ func abpPolicyReadOnlyAttributes() map[string]*schema.Schema {
 				},
 			},
 		},
+		"created_at": {
+			Description: "RFC3339 timestamp at which the Policy was created.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
 		"modified_at": {
 			Description: "RFC3339 timestamp at which the Policy was last modified.",
 			Type:        schema.TypeString,

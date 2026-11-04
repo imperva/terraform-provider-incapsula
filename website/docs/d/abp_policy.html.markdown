@@ -47,6 +47,7 @@ data "incapsula_abp_policy" "default_policy" {
 
 ### Read-Only
 
+- `created_at` (String) RFC3339 timestamp at which the Policy was created.
 - `description` (String) Description of the policy.
 - `directive` (List of Object) Ordered list of directives evaluated top-down for this policy. (see [below for nested schema](#nestedatt--directive))
 - `modified_at` (String) RFC3339 timestamp at which the Policy was last modified.

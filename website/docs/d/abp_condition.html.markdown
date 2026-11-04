@@ -48,4 +48,5 @@ data "incapsula_abp_condition" "managed_monitoring_tools" {
 - `id` (String) The ID of this resource.
 - `last_change_by` (String) Identifier of the user who last changed this condition.
 - `modified_at` (String) RFC3339 timestamp at which the Condition was last modified.
+- `recommended_directives` (List of String) Directive actions this Condition is recommended for, as advertised by the API. Empty for account-owned Conditions.
 - `template` (String) Editor template the server uses to validate `code`. Open enumeration; `custom` for conditions that do not use a specific editor template.

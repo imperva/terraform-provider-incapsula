@@ -3,6 +3,7 @@
 resource "incapsula_abp_site" "sample_site" {
   account_id = var.account_id
   name       = "Sample site"
+  industry   = "retail"
 
   default_max_requests_per_minute  = 60
   default_max_requests_per_session = 600
@@ -10,20 +11,37 @@ resource "incapsula_abp_site" "sample_site" {
 
   # Match by path prefix and apply a specific policy.
   selector {
-    path_prefix       = "/login"
-    policy_id         = incapsula_abp_policy.policy_with_custom_directives.id
+    purpose   = "login"
+    policy_id = incapsula_abp_policy.policy_with_custom_directives.id
+    kind {
+      path_prefix      = "/login"
+      case_insensitive = true
+    }
     analysis_settings = data.incapsula_abp_site_analysis_settings.login.json
   }
 
   # Match by regex.
   selector {
-    path_regex        = "\\.png$"
+    kind {
+      path_regex = "\\.png$"
+    }
     analysis_settings = data.incapsula_abp_site_analysis_settings.static.json
   }
 
   # A postback selector.
   selector {
-    postback          = "web_interrogation"
+    kind {
+      postback = "web_interrogation"
+    }
+    analysis_settings = data.incapsula_abp_site_analysis_settings.postback.json
+  }
+
+  # Match requests of an API Security group.
+  selector {
+    purpose = "backend_api"
+    kind {
+      api_security_group = "checkout-api"
+    }
     analysis_settings = data.incapsula_abp_site_analysis_settings.postback.json
   }
 }

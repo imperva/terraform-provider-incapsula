@@ -60,4 +60,5 @@ Read-Only:
 - `managed` (Boolean)
 - `modified_at` (String)
 - `name` (String)
+- `recommended_directives` (List of String)
 - `template` (String)
