@@ -40,7 +40,7 @@ data "incapsula_abp_site" "external_site" {
 - `created_at` (String) RFC3339 timestamp at which the Site was created.
 - `default_max_requests_per_minute` (Number) Default maximum number of requests without a token per minute.
 - `default_max_requests_per_session` (Number) Default maximum number of requests without a token per session.
-- `default_max_session_length` (String) Default maximum length of a session without a token, in moi duration format.
+- `default_max_session_length` (String) Default maximum length of a session without a token. Duration format, e.g. "2d1h".
 - `default_selector` (List of Object) Catch-all selector matching all request paths after all other selectors. (see [below for nested schema](#nestedatt--default_selector))
 - `id` (String) The ID of this resource.
 - `industry` (String) Industry the Site operates in. Informational metadata, unused by the runtime.

@@ -71,7 +71,7 @@ func abpSiteReadOnlyAttributes() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"default_max_session_length": {
-			Description: "Default maximum length of a session without a token, in moi duration format.",
+			Description: "Default maximum length of a session without a token. Duration format, e.g. \"2d1h\".",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},

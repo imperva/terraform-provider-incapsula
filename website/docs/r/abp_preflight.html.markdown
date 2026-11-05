@@ -10,6 +10,26 @@ description: |-
   configuration or external dependent state changes, or if too much time has
   passed since it was created. Publishing an older preflight can act as a
   rollback as long as it is still consistent with any external state.
+  NOTE: pending_hash is what makes the whole pipeline work, even
+  though it is optional. It should always be set to
+  data.incapsula_abp_pending_changes.<name>.hash: that both triggers a
+  new preflight when the configuration changes and orders the preflight after the
+  resources it is supposed to snapshot. Omitting it means the preflight is created
+  once, in parallel with those resources, and is never refreshed again. Only the
+  resources reachable through that data source's depends_on take part
+  in this, so every ABP resource must be listed there (most simply: keep them all
+  in one module and depend on that module).
+  NOTE: this resource does not re-read the preflight from the server, so a
+  preflight that the server has invalidated or deleted still looks healthy in
+  state and terraform plan reports no changes. Warnings the server
+  attaches to a preflight — including the one saying that changes made after the
+  snapshot will not be published — are not surfaced either. If publishing starts
+  failing with "ABP preflight is not publishable", force a new one with
+  terraform apply -replace=incapsula_abp_preflight.<name>. Importing an
+  existing preflight is not supported, and terraform destroy only drops
+  it from state: nothing is deleted or published, so an account destroyed through
+  Terraform is left with the deleted objects still live until something publishes
+  again.
 ---
 
 
@@ -23,6 +43,28 @@ A preflight may become invalid and be deleted by the server if the account
 configuration or external dependent state changes, or if too much time has
 passed since it was created. Publishing an older preflight can act as a
 rollback as long as it is still consistent with any external state.
+
+NOTE: `pending_hash` is what makes the whole pipeline work, even
+though it is optional. It should always be set to
+`data.incapsula_abp_pending_changes.<name>.hash`: that both triggers a
+new preflight when the configuration changes and orders the preflight after the
+resources it is supposed to snapshot. Omitting it means the preflight is created
+once, in parallel with those resources, and is never refreshed again. Only the
+resources reachable through that data source's `depends_on` take part
+in this, so every ABP resource must be listed there (most simply: keep them all
+in one module and depend on that module).
+
+NOTE: this resource does not re-read the preflight from the server, so a
+preflight that the server has invalidated or deleted still looks healthy in
+state and `terraform plan` reports no changes. Warnings the server
+attaches to a preflight — including the one saying that changes made after the
+snapshot will not be published — are not surfaced either. If publishing starts
+failing with "ABP preflight is not publishable", force a new one with
+`terraform apply -replace=incapsula_abp_preflight.<name>`. Importing an
+existing preflight is not supported, and `terraform destroy` only drops
+it from state: nothing is deleted or published, so an account destroyed through
+Terraform is left with the deleted objects still live until something publishes
+again.
 
 ## Example Usage
 
@@ -46,11 +88,11 @@ resource "incapsula_abp_preflight" "current" {
 
 ### Required
 
-- `account_id` (String) ABP account UUID this preflight belongs to.
+- `account_id` (String) ABP account UUID this preflight belongs to. Changing it replaces the resource: a preflight belongs to one account, so Terraform forgets this one (it stays on the server) and creates a preflight for the new account.
 
 ### Optional
 
-- `pending_hash` (String) Any string to facilitate change detection, using the hash from `data.incapsula_abp_pending_changes` causes a replacement of this resource (and thereby a new preflight)
+- `pending_hash` (String) Change-detection value; set it to `data.incapsula_abp_pending_changes.<name>.hash`. Any change to it replaces the resource, which is how a new snapshot of the configuration is taken. Strongly recommended: see the notes above for what omitting it costs.
 
 ### Read-Only
 

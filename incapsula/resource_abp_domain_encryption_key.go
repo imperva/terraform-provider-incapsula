@@ -25,21 +25,30 @@ func resourceAbpDomainEncryptionKey() *schema.Resource {
 between 24 and 64 raw bytes (32-88 base64 characters).
 
 NOTE: encryption keys cannot be modified in place. Changing ` + "`key`" + ` or
-` + "`domain_id`" + ` forces resource replacement. The Account configuration must
-be published for the analysis host to begin accepting a new key, and you should
-keep the previous key alive until that publish completes (see the API
-documentation for the recommended rotation procedure).`,
+` + "`domain_id`" + ` replaces the resource, and by default Terraform deletes the
+old key *before* creating the new one — which is exactly what you must avoid,
+because the Account configuration has to be published before the analysis host
+accepts a new key. Add ` + "`lifecycle { create_before_destroy = true }`" + ` to
+the resource so the new key is created first and the previous one stays alive
+until the publish completes (see the API documentation for the recommended
+rotation procedure).
+
+NOTE: the API returns key material in plaintext, so the ` + "`key`" + ` value is
+stored in Terraform state. Protect the state as you would the key itself.`,
 
 		Schema: map[string]*schema.Schema{
 			"domain_id": {
-				Description:  "Domain UUID this key belongs to.",
+				Description: "Domain UUID this key belongs to. Changing it replaces the key: " +
+					"Terraform deletes this key and creates a new one on the new Domain.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.IsUUID,
 			},
 			"key": {
-				Description:  "Base64-encoded key material (32..88 characters).",
+				Description: "Base64-encoded key material (32..88 characters). Must be valid " +
+					"base64; an invalid value is only rejected when the change is applied. " +
+					"Changing it replaces the key (see the rotation note above).",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,

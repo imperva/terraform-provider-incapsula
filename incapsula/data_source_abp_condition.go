@@ -26,7 +26,12 @@ func dataSourceAbpCondition() *schema.Resource {
 		},
 		"managed": {
 			Description: "If `true`, the lookup is restricted to managed (Imperva-owned) " +
-				"conditions. If `false` or unset, account-owned conditions are matched too. " +
+				"conditions. If `false` or unset, **both** managed and account-owned " +
+				"conditions are matched — it does not restrict the lookup to account-owned " +
+				"ones, and there is no way to do so. A lookup therefore fails when an " +
+				"account-owned condition shares its name with a managed one. Note that " +
+				"`managed` on the `incapsula_abp_conditions` data source means something " +
+				"different: there, `false` lists only account-owned conditions. " +
 				"Reflects whether the matched condition is managed.",
 			Type:     schema.TypeBool,
 			Optional: true,
@@ -58,20 +63,23 @@ func abpConditionReadOnlyAttributes() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"code": {
-			Description: "Server-side normalized MOI expression.",
-			Type:        schema.TypeString,
-			Computed:    true,
+			Description: "Server-side normalized MOI expression. The API does not expose the " +
+				"expression of managed Conditions, so this is always empty for them.",
+			Type:     schema.TypeString,
+			Computed: true,
 		},
 		"template": {
 			Description: "Editor template the server uses to validate `code`. Open enumeration; " +
-				"`custom` for conditions that do not use a specific editor template.",
+				"`custom` for conditions that do not use a specific editor template. Always " +
+				"empty for managed Conditions.",
 			Type:     schema.TypeString,
 			Computed: true,
 		},
 		"last_change_by": {
-			Description: "Identifier of the user who last changed this condition.",
-			Type:        schema.TypeString,
-			Computed:    true,
+			Description: "Identifier of the user who last changed this condition. Always empty " +
+				"for managed Conditions.",
+			Type:     schema.TypeString,
+			Computed: true,
 		},
 		"recommended_directives": {
 			Description: "Directive actions this Condition is recommended for, as advertised by the API. Empty for account-owned Conditions.",
@@ -80,14 +88,18 @@ func abpConditionReadOnlyAttributes() map[string]*schema.Schema {
 			Elem:        &schema.Schema{Type: schema.TypeString},
 		},
 		"created_at": {
-			Description: "RFC3339 timestamp at which the Condition was created.",
-			Type:        schema.TypeString,
-			Computed:    true,
+			Description: "RFC3339 timestamp at which the Condition was created. Managed " +
+				"Conditions report the Unix epoch (`1970-01-01T00:00:00Z`), as the API does not " +
+				"track it for them.",
+			Type:     schema.TypeString,
+			Computed: true,
 		},
 		"modified_at": {
-			Description: "RFC3339 timestamp at which the Condition was last modified.",
-			Type:        schema.TypeString,
-			Computed:    true,
+			Description: "RFC3339 timestamp at which the Condition was last modified. Managed " +
+				"Conditions report the Unix epoch (`1970-01-01T00:00:00Z`), as the API does not " +
+				"track it for them.",
+			Type:     schema.TypeString,
+			Computed: true,
 		},
 	}
 }

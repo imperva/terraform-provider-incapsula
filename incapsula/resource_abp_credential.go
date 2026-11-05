@@ -46,14 +46,16 @@ procedure).`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Description:  "Account UUID this credential belongs to.",
+				Description: "Account UUID this credential belongs to. Changing it replaces the " +
+					"credential — Terraform deletes the existing one and creates a new one with a " +
+					"new secret — because the API cannot move a credential to another account.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.IsUUID,
 			},
 			"rsa_key": {
-				Description: "A full PEM-encoded RSA public key used for encrypting the secret in state. The secret is encrypted to this key and stored only in `encrypted_secret`, keeping the plaintext out of state. Changing it re-encrypts the same secret in place.",
+				Description: "A full PEM-encoded RSA public key used for encrypting the secret in state. Must be a `BEGIN PUBLIC KEY` (SPKI) PEM block of at least 3072 bits; other formats and smaller keys are rejected. The secret is encrypted to this key and stored only in `encrypted_secret`, keeping the plaintext out of state. Changing it re-encrypts the same secret in place.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
@@ -68,7 +70,7 @@ procedure).`,
 				Computed:    true,
 			},
 			"modified_at": {
-				Description: "RFC3339 timestamp at which the credential was last modified. Empty if it has never been modified.",
+				Description: "RFC3339 timestamp at which the credential was last modified. Always empty: the API does not track modifications of a credential.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},

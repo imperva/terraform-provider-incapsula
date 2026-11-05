@@ -25,15 +25,25 @@ func resourceAbpCondition() *schema.Resource {
 		Description: `Provides an ABP Condition resource. A condition contains MOI expression
 evaluated against incoming requests. Conditions are referenced from policies
 (directly or via condition lists) to drive directive actions.
-NOTE: API stores and returns formatted and optimized condition code, so the provider
-uses "code" as a source of truth only during condition creation, and then updates
-the condition only when "code" is changed in the terraform. If the code is changed
-outside of terraform (via UI) the condition won't be recreated. Also, it is recommended
-to copy "code_normalized" to "code" after running "terraform import".`,
+
+NOTE: the API stores and returns a formatted and optimized form of the condition
+code, so the provider keeps the ` + "`code`" + ` you wrote and exposes the
+server's form separately as ` + "`code_normalized`" + `. This has two
+consequences. A code change made outside Terraform (for example in the UI) is
+**not** reported by ` + "`terraform plan`" + `. And the ` + "`code`" + ` from
+your configuration is sent on every update, so any later change to this
+resource — even to ` + "`name`" + ` alone — silently replaces the out-of-band
+code with the configured one.
+
+It is therefore recommended to copy ` + "`code_normalized`" + ` into
+` + "`code`" + ` after running ` + "`terraform import`" + `, and to make all code
+changes through Terraform.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Description:  "ABP account UUID this Condition belongs to.",
+				Description: "ABP account UUID this Condition belongs to. Changing it replaces " +
+					"the Condition — Terraform deletes the existing one and creates a new one — " +
+					"because the API cannot move a Condition to another account.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
@@ -46,14 +56,16 @@ to copy "code_normalized" to "code" after running "terraform import".`,
 				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 			"description": {
-				Description: "Description of the policy. Set to empty string if omitted",
+				Description: "Description of the condition. Required; pass an empty string for no description.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
 			"code": {
 				Description: "MOI expression evaluated against the request. The server stores a " +
 					"normalized form internally; see `code_normalized` for the server's view. " +
-					"Out-of-band edits to this field (via the UI or API) will not be detected as drift.",
+					"Out-of-band edits to this field (via the UI or API) are not detected as drift, " +
+					"and the next update of this resource — whatever it changes — overwrites them " +
+					"with the value configured here.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
@@ -83,7 +95,12 @@ to copy "code_normalized" to "code" after running "terraform import".`,
 					"Omitting `template` is the same as setting `custom`.\n\n" +
 					"**WARNING:** for any value other than `custom`, the server requires `code` to " +
 					"match that template's expected structure. Mismatched `code` makes condition " +
-					"create/update fail.",
+					"create/update fail.\n\n" +
+					"**WARNING:** the template is fixed when the condition is created. The API " +
+					"ignores a new value on update, so changing it appears to succeed while nothing " +
+					"changes and the next plan shows the same change again. To change the template, " +
+					"recreate the condition, for example with " +
+					"`terraform apply -replace=incapsula_abp_condition.<name>`.",
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,

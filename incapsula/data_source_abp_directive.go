@@ -25,14 +25,20 @@ func dataSourceAbpDirective() *schema.Resource {
 				Computed: true,
 			},
 			"policy_id": {
-				Description:  "ID of the ABP Policy to search within. Mutually exclusive with `account_global_policy`.",
+				Description: "ID of the ABP Policy to search within. Mutually exclusive with " +
+					"`account_global_policy`. This is a search argument, not an output: it stays " +
+					"empty when the directive is looked up in the account global policy.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.IsUUID,
 				ExactlyOneOf: []string{"policy_id", "account_global_policy"},
 			},
 			"account_global_policy": {
-				Description:  "If true, look up a directive within the account global policy. Requires `account_id` and is mutually exclusive with `policy_id`.",
+				Description: "If true, look up a directive within the account global policy. " +
+					"Requires `account_id` and is mutually exclusive with `policy_id`. Only ever " +
+					"write `true`: writing `false` explicitly — including from a variable — is " +
+					"rejected with an \"exactly one of ...\" error, because the attribute counts as " +
+					"set even when its value is the default. Omit it instead.",
 				Type:         schema.TypeBool,
 				Optional:     true,
 				Default:      false,
@@ -40,7 +46,7 @@ func dataSourceAbpDirective() *schema.Resource {
 				RequiredWith: []string{"account_id"},
 			},
 			"account_id": {
-				Description:  "ABP account UUID. Required when `account_global_policy` is true.",
+				Description:  "ABP account UUID. Required when `account_global_policy` is true, and ignored otherwise.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.IsUUID,
@@ -57,12 +63,12 @@ func dataSourceAbpDirective() *schema.Resource {
 				Computed:    true,
 			},
 			"skip_condition_list_id": {
-				Description: "Condition list whose matches skip this directive. Only set when `action` is `proof_of_work`.",
+				Description: "Condition list whose matches skip this directive. Only set when `action` is `proof_of_work`; an empty string otherwise, never null.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
 			"proof_of_work_configuration_id": {
-				Description: "ID of the proof-of-work configuration applied. Only set when `action` is `proof_of_work`.",
+				Description: "ID of the proof-of-work configuration applied. Only set when `action` is `proof_of_work`; an empty string otherwise, never null.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},

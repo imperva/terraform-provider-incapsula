@@ -4,12 +4,15 @@ layout: "incapsula"
 page_title: "incapsula_abp_conditions"
 description: |-
   Lists the literal ABP Conditions of an account, ordered by name. Condition lists and condition list entries are not included. Use incapsula_abp_condition to look up a single Condition by name instead.
+  Note: with managed = true the list also contains managed Conditions that are deprecated or hidden in the UI, and the API offers no way to tell them apart beyond their name.
 ---
 
 
 # incapsula_abp_conditions
 
 Lists the literal ABP Conditions of an account, ordered by name. Condition lists and condition list entries are not included. Use `incapsula_abp_condition` to look up a single Condition by name instead.
+
+Note: with `managed = true` the list also contains managed Conditions that are deprecated or hidden in the UI, and the API offers no way to tell them apart beyond their name.
 
 ## Example Usage
 
@@ -39,7 +42,7 @@ output "managed_condition_names" {
 
 ### Optional
 
-- `managed` (Boolean) If `true`, only managed conditions are listed, otherwise only account-owned conditions. Defaults to `false`.
+- `managed` (Boolean) If `true`, only managed (Imperva-owned) conditions are listed; if `false`, only account-owned conditions are listed. Defaults to `false`. Note that `managed` on the singular `incapsula_abp_condition` data source means something different: there, `false` matches managed conditions as well.
 
 ### Read-Only
 

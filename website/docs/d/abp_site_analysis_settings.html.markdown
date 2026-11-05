@@ -6,6 +6,11 @@ description: |-
   Builds an analysis-settings document for use in an incapsula_abp_site
   selector. Pass the resulting json attribute to the selector's
   analysis_settings field.
+  NOTE: use_site_rate_limiting_parameters defaults to true,
+  in which case the Site-level defaults are used and
+  max_requests_per_minute, max_requests_per_session and
+  max_session_length have no effect at all. Set it to
+  false whenever you set any of the three.
 ---
 
 
@@ -15,16 +20,30 @@ Builds an analysis-settings document for use in an `incapsula_abp_site`
 selector. Pass the resulting `json` attribute to the selector's
 `analysis_settings` field.
 
+NOTE: `use_site_rate_limiting_parameters` defaults to `true`,
+in which case the Site-level defaults are used and
+`max_requests_per_minute`, `max_requests_per_session` and
+`max_session_length` have no effect at all. Set it to
+`false` whenever you set any of the three.
+
 ## Example Usage
 
 ```terraform
 # Builds the opaque `json` analysis-settings value consumed by an
 # `incapsula_abp_site` selector's `analysis_settings` field.
 
-# Per-site rate limiting.
+# Per-site rate limiting, using the Site's default limits.
 data "incapsula_abp_site_analysis_settings" "login" {
-  rate_limiting           = "per_site"
-  max_requests_per_minute = 100
+  rate_limiting = "per_site"
+}
+
+# Per-site rate limiting with its own limits. `use_site_rate_limiting_parameters`
+# must be false, otherwise the Site defaults win and `max_requests_per_minute` is
+# ignored.
+data "incapsula_abp_site_analysis_settings" "checkout" {
+  rate_limiting                     = "per_site"
+  max_requests_per_minute           = 100
+  use_site_rate_limiting_parameters = false
 }
 
 # No rate limiting.
@@ -52,11 +71,11 @@ data "incapsula_abp_site_analysis_settings" "postback" {
 
 ### Optional
 
-- `max_requests_per_minute` (Number) Override the site default for this selector.
-- `max_requests_per_session` (Number) Override the site default for this selector.
-- `max_session_length` (String) Override the site default for this selector. Moi duration format (e.g. "2d1h").
+- `max_requests_per_minute` (Number) Maximum number of requests without a token per minute for selectors using these settings. Only takes effect when `use_site_rate_limiting_parameters` is set to `false`.
+- `max_requests_per_session` (Number) Maximum number of requests without a token per session for selectors using these settings. Only takes effect when `use_site_rate_limiting_parameters` is set to `false`.
+- `max_session_length` (String) Maximum length of a session without a token for selectors using these settings. Only takes effect when `use_site_rate_limiting_parameters` is set to `false`. Duration format, e.g. "2d1h". Use the largest fitting units and omit zero components: write "2h", not "120m".
 - `rate_limiting_custom_scope` (String) Custom scope name; required iff `rate_limiting = custom_scope`. Selectors sharing the same scope share rate-limit counters.
-- `use_site_rate_limiting_parameters` (Boolean) When true, fall back to the site-level defaults for rate-limiting parameters not set on this selector.
+- `use_site_rate_limiting_parameters` (Boolean) Whether the Site-level defaults are used instead of the three values above. Defaults to `true`, which means the Site's `default_max_requests_per_minute`, `default_max_requests_per_session` and `default_max_session_length` apply and `max_requests_per_minute`, `max_requests_per_session` and `max_session_length` are **ignored entirely** — it is not a per-value fallback. Set it to `false` whenever you want those three to take effect.
 
 ### Read-Only
 

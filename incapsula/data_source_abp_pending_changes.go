@@ -11,13 +11,30 @@ func dataSourceAbpPendingChanges() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceAbpPendingChangesRead,
 
-		Description: "Exposes a hash to facilitate change detection caused by e.g. a depends_on = [module.x]\n",
+		Description: "Produces a marker value used to trigger a new `incapsula_abp_preflight` " +
+			"(and thereby a new publish) when the ABP configuration changes.\n\n" +
+			"**How it actually works.** This data source performs no API call and does not " +
+			"inspect the account: `hash` is a fixed value. Change detection comes entirely " +
+			"from `depends_on`. When something this data source depends on has a planned " +
+			"change, Terraform postpones reading it, `hash` becomes unknown for the duration " +
+			"of the plan, and the preflight that consumes it is therefore replaced. When " +
+			"nothing in `depends_on` changes, `hash` stays the same and no new preflight is " +
+			"created.\n\n" +
+			"Two consequences worth knowing. **Every ABP resource must be reachable through " +
+			"`depends_on`** (for example by keeping them all in one module and depending on " +
+			"that module): a change to a resource outside it does not trigger a preflight or " +
+			"a publish, so it stays pending — `terraform plan` reports no changes while the " +
+			"account still has unpublished changes — until something else publishes the " +
+			"account, which then activates it along with everything else. And **changes made " +
+			"outside Terraform are never noticed**, so they do not trigger a publish either.",
 
 		Schema: map[string]*schema.Schema{
 			"hash": {
-				Description: "Stable (but computed) marker facilitating change-detection if any resource that this data depends on changes",
-				Type:        schema.TypeString,
-				Computed:    true,
+				Description: "Change-detection marker. Its value is constant and carries no " +
+					"information about the account; it is only unknown — and therefore a trigger " +
+					"— while something this data source depends on has a planned change.",
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}

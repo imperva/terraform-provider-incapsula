@@ -50,14 +50,16 @@ read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Description:  "ABP account UUID this Site belongs to.",
+				Description: "ABP account UUID this Site belongs to. Changing it replaces the " +
+					"Site — Terraform deletes the existing Site, with its selectors and Domains, " +
+					"and creates a new one — because the API cannot move a Site to another account.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.IsUUID,
 			},
 			"name": {
-				Description:  "Human-readable name of the Site. 1..100 characters.",
+				Description:  "Human-readable name of the Site. 1..100 characters, without leading or trailing whitespace.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 100),
@@ -69,21 +71,21 @@ read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 				ValidateFunc: validation.StringInSlice(abpSiteIndustries, false),
 			},
 			"default_max_requests_per_minute": {
-				Description:  "Default maximum number of requests without a token per minute. Applied to selectors that opt in via `use_site_rate_limiting_parameters`.",
+				Description:  "Default maximum number of requests without a token per minute. Used by every selector whose analysis settings keep `use_site_rate_limiting_parameters = true` (the default).",
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.IntAtLeast(0),
 			},
 			"default_max_requests_per_session": {
-				Description:  "Default maximum number of requests without a token per session.",
+				Description:  "Default maximum number of requests without a token per session. Used by every selector whose analysis settings keep `use_site_rate_limiting_parameters = true` (the default).",
 				Type:         schema.TypeInt,
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.IntAtLeast(0),
 			},
 			"default_max_session_length": {
-				Description: "Default maximum length of a session without a token, in moi duration format (e.g. \"2d1h\").",
+				Description: "Default maximum length of a session without a token. Used by every selector whose analysis settings keep `use_site_rate_limiting_parameters = true` (the default). Duration format, e.g. \"2d1h\". Use the largest fitting units and omit zero components: write \"2h\", not \"120m\".",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
@@ -153,7 +155,7 @@ read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 							},
 						},
 						"analysis_settings": {
-							Description:  "JSON-encoded analysis settings for this selector, typically produced by an `incapsula_abp_site_analysis_settings` data source.",
+							Description:  "JSON-encoded analysis settings for this selector, typically produced by an `incapsula_abp_site_analysis_settings` data source. Use that data source rather than hand-written JSON: the value is compared as a string, so key order and whitespace must match its output exactly.",
 							Type:         schema.TypeString,
 							Required:     true,
 							ValidateFunc: validation.StringIsJSON,

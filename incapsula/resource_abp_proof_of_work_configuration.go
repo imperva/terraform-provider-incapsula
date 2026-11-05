@@ -29,14 +29,17 @@ is "proof_of_work".`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Description:  "ABP account UUID this Proof Of Work Configuration belongs to.",
+				Description: "ABP account UUID this Proof Of Work Configuration belongs to. " +
+					"Changing it replaces the configuration — Terraform deletes the existing one " +
+					"and creates a new one — because the API cannot move a Proof Of Work " +
+					"Configuration to another account.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.IsUUID,
 			},
 			"name": {
-				Description:  "Human-readable name of the Proof Of Work Configuration.",
+				Description:  "Human-readable name of the Proof Of Work Configuration. Must not have leading or trailing whitespace.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
@@ -51,8 +54,11 @@ is "proof_of_work".`,
 			},
 			"algorithm": {
 				Description: "Proof Of Work algorithm. One of: bbs, sha1. Optional: when " +
-					"omitted, the backend selects a default and that value is reflected " +
-					"in state.",
+					"omitted, no algorithm is stored and the attribute reads back as an empty " +
+					"string — the algorithm used at runtime is then picked when the account " +
+					"configuration is published. Once a value has been set it cannot be removed " +
+					"(dropping it from the configuration is ignored), and a change made outside " +
+					"Terraform is adopted into state rather than restored.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				Computed:     true,

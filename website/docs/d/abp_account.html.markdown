@@ -3,13 +3,13 @@ subcategory: "Advanced Bot Protection"
 layout: "incapsula"
 page_title: "incapsula_abp_account"
 description: |-
-  Looks up the ABP account belonging to the configured API credentials.
+  Looks up the ABP account belonging to the configured API credentials. account_id and the data source's own id are both the account UUID, so either can be referenced.
 ---
 
 
 # incapsula_abp_account
 
-Looks up the ABP account belonging to the configured API credentials.
+Looks up the ABP account belonging to the configured API credentials. `account_id` and the data source's own `id` are both the account UUID, so either can be referenced.
 
 ## Example Usage
 
@@ -28,5 +28,5 @@ resource "incapsula_abp_site" "example" {
 
 ### Read-Only
 
-- `account_id` (String) ABP account UUID.
+- `account_id` (String) ABP account UUID. Same value as `id`.
 - `id` (String) The ID of this resource.

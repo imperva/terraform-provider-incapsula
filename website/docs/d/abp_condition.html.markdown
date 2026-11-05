@@ -38,15 +38,15 @@ data "incapsula_abp_condition" "managed_monitoring_tools" {
 
 ### Optional
 
-- `managed` (Boolean) If `true`, the lookup is restricted to managed (Imperva-owned) conditions. If `false` or unset, account-owned conditions are matched too. Reflects whether the matched condition is managed.
+- `managed` (Boolean) If `true`, the lookup is restricted to managed (Imperva-owned) conditions. If `false` or unset, **both** managed and account-owned conditions are matched — it does not restrict the lookup to account-owned ones, and there is no way to do so. A lookup therefore fails when an account-owned condition shares its name with a managed one. Note that `managed` on the `incapsula_abp_conditions` data source means something different: there, `false` lists only account-owned conditions. Reflects whether the matched condition is managed.
 
 ### Read-Only
 
-- `code` (String) Server-side normalized MOI expression.
-- `created_at` (String) RFC3339 timestamp at which the Condition was created.
+- `code` (String) Server-side normalized MOI expression. The API does not expose the expression of managed Conditions, so this is always empty for them.
+- `created_at` (String) RFC3339 timestamp at which the Condition was created. Managed Conditions report the Unix epoch (`1970-01-01T00:00:00Z`), as the API does not track it for them.
 - `description` (String) Description of the condition.
 - `id` (String) The ID of this resource.
-- `last_change_by` (String) Identifier of the user who last changed this condition.
-- `modified_at` (String) RFC3339 timestamp at which the Condition was last modified.
+- `last_change_by` (String) Identifier of the user who last changed this condition. Always empty for managed Conditions.
+- `modified_at` (String) RFC3339 timestamp at which the Condition was last modified. Managed Conditions report the Unix epoch (`1970-01-01T00:00:00Z`), as the API does not track it for them.
 - `recommended_directives` (List of String) Directive actions this Condition is recommended for, as advertised by the API. Empty for account-owned Conditions.
-- `template` (String) Editor template the server uses to validate `code`. Open enumeration; `custom` for conditions that do not use a specific editor template.
+- `template` (String) Editor template the server uses to validate `code`. Open enumeration; `custom` for conditions that do not use a specific editor template. Always empty for managed Conditions.

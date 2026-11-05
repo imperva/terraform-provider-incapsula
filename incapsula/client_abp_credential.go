@@ -46,7 +46,8 @@ func (c *Client) CreateAbpCredential(accountId string) (*AbpCredential, error) {
 
 	var created AbpCredential
 	if err := json.Unmarshal(responseBody, &created); err != nil {
-		return nil, fmt.Errorf("error parsing %s create response: %w; body: %s", abpCredentialResourceName, err, string(responseBody))
+		// The body carries the plaintext secret, so it is never echoed.
+		return nil, fmt.Errorf("error parsing %s create response: %w", abpCredentialResourceName, err)
 	}
 	return &created, nil
 }
@@ -75,7 +76,7 @@ func (c *Client) ReadAbpCredential(credentialId string) (*AbpCredential, error) 
 
 	var cred AbpCredential
 	if err := json.Unmarshal(responseBody, &cred); err != nil {
-		return nil, fmt.Errorf("error parsing %s read response: %w; body: %s", abpCredentialResourceName, err, string(responseBody))
+		return nil, fmt.Errorf("error parsing %s read response: %w", abpCredentialResourceName, err)
 	}
 	return &cred, nil
 }

@@ -38,13 +38,13 @@ data "incapsula_abp_directive" "account_global_allow" {
 
 ### Optional
 
-- `account_global_policy` (Boolean) If true, look up a directive within the account global policy. Requires `account_id` and is mutually exclusive with `policy_id`.
-- `account_id` (String) ABP account UUID. Required when `account_global_policy` is true.
-- `policy_id` (String) ID of the ABP Policy to search within. Mutually exclusive with `account_global_policy`.
+- `account_global_policy` (Boolean) If true, look up a directive within the account global policy. Requires `account_id` and is mutually exclusive with `policy_id`. Only ever write `true`: writing `false` explicitly — including from a variable — is rejected with an "exactly one of ..." error, because the attribute counts as set even when its value is the default. Omit it instead.
+- `account_id` (String) ABP account UUID. Required when `account_global_policy` is true, and ignored otherwise.
+- `policy_id` (String) ID of the ABP Policy to search within. Mutually exclusive with `account_global_policy`. This is a search argument, not an output: it stays empty when the directive is looked up in the account global policy.
 
 ### Read-Only
 
 - `condition_list_id` (String) Condition list containing conditions for this directive.
 - `id` (String) Artificial identifier for this data source. Directives have no stable ID in the API, so this is synthesized from the policy and action (`<policy_id>:<action>`, or `global:<account_id>:<action>` for the account global policy) and is not a real API identifier.
-- `proof_of_work_configuration_id` (String) ID of the proof-of-work configuration applied. Only set when `action` is `proof_of_work`.
-- `skip_condition_list_id` (String) Condition list whose matches skip this directive. Only set when `action` is `proof_of_work`.
+- `proof_of_work_configuration_id` (String) ID of the proof-of-work configuration applied. Only set when `action` is `proof_of_work`; an empty string otherwise, never null.
+- `skip_condition_list_id` (String) Condition list whose matches skip this directive. Only set when `action` is `proof_of_work`; an empty string otherwise, never null.

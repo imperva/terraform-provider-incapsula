@@ -4,7 +4,7 @@ layout: "incapsula"
 page_title: "incapsula_abp_sites"
 description: |-
   Lists every ABP Site (a.k.a. Website Group) belonging to an account. Use this to reference Sites that are not managed by this Terraform configuration when all of them are of interest, for example when building an incapsula_abp_account_site_priority list. Use incapsula_abp_site to look up a single Site by site_id or name instead.
-  Note: The time of reading this datasource is not defined by the terraform module. That means thatthe read is subject to race-conditions. If a site is created or deleted in the same plan as this datasource is read, it may yield unexpected results, like an inexhaustive listing, which would cause e.g. site_priority to fail (as that requires an exhaustive list). If deterministic operation is required, specify resource dependencies explicitly to force terraform plan order, e.g. make incapsula_abp_account_site_priority depend on sites that you are creating.
+  Note: The time of reading this datasource is not defined by the terraform module. That means that the read is subject to race-conditions. If a site is created or deleted in the same plan as this datasource is read, it may yield unexpected results, like an inexhaustive listing, which would cause e.g. site_priority to fail (as that requires an exhaustive list). If deterministic operation is required, specify resource dependencies explicitly to force terraform plan order, e.g. make incapsula_abp_account_site_priority depend on sites that you are creating.
 ---
 
 
@@ -12,7 +12,7 @@ description: |-
 
 Lists every ABP Site (a.k.a. Website Group) belonging to an account. Use this to reference Sites that are not managed by this Terraform configuration when all of them are of interest, for example when building an `incapsula_abp_account_site_priority` list. Use `incapsula_abp_site` to look up a single Site by `site_id` or `name` instead.
 
-Note: The time of reading this datasource is not defined by the terraform module. That means thatthe read is subject to race-conditions. If a site is created or deleted in the same plan as this datasource is read, it may yield unexpected results, like an inexhaustive listing, which would cause e.g. `site_priority` to fail (as that requires an exhaustive list). If deterministic operation is required, specify resource dependencies explicitly to force terraform plan order, e.g. make `incapsula_abp_account_site_priority` depend on sites that you are creating.
+Note: The time of reading this datasource is not defined by the terraform module. That means that the read is subject to race-conditions. If a site is created or deleted in the same plan as this datasource is read, it may yield unexpected results, like an inexhaustive listing, which would cause e.g. `site_priority` to fail (as that requires an exhaustive list). If deterministic operation is required, specify resource dependencies explicitly to force terraform plan order, e.g. make `incapsula_abp_account_site_priority` depend on sites that you are creating.
 
 ## Example Usage
 

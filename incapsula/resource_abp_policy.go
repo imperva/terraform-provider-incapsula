@@ -66,7 +66,10 @@ not share an ` + "`action`" + `.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Description:  "ABP account UUID this Policy belongs to.",
+				Description: "ABP account UUID this Policy belongs to. Changing it replaces the " +
+					"Policy — Terraform deletes the existing one, together with its directives' " +
+					"condition lists, and creates a new one — because the API cannot move a Policy " +
+					"to another account.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
@@ -151,11 +154,11 @@ not share an ` + "`action`" + `.`,
 }
 
 // validateAbpPolicyName rejects a name the backend would not store verbatim.
-// It trims the whitespace around a policy name before storing it
-// (lens-core `Name::try_new`), so a padded name never matches the value read
-// back and every plan reports the same unconvergeable change. A whitespace-only
-// name is rejected for the same reason: it trims to the empty string, which the
-// API refuses. Failing at plan time names the offending argument instead.
+// It trims the whitespace around a policy name before storing it, so a padded
+// name never matches the value read back and every plan reports the same
+// unconvergeable change. A whitespace-only name is rejected for the same
+// reason: it trims to the empty string, which the API refuses. Failing at plan
+// time names the offending argument instead.
 func validateAbpPolicyName(i any, k string) ([]string, []error) {
 	v, ok := i.(string)
 	if !ok {

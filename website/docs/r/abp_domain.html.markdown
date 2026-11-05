@@ -6,9 +6,24 @@ description: |-
   Provides an ABP Domain (a.k.a. Website) resource. A Domain maps one or more
   domain names to a Site, and configures how requests are matched, captured, and
   analyzed.
-  NOTE: criteria cannot be changed in-place; modifying it forces resource
-  replacement. obfuscate_path is server-generated when omitted on create
-  and is preserved on update.
+  NOTE: criteria cannot be changed in-place. Changing it replaces the
+  Domain: Terraform deletes the existing Domain — together with its encryption keys
+  and its slot in the Site's Domain priority order — and creates a new one. For the
+  same reason a criteria value that does not meet the required format
+  (the API trims whitespace, so the stored value differs from the configured one)
+  forces that replacement on every apply. Changing account_id replaces
+  the Domain as well, while site_id does not: moving a Domain to another
+  Site of the same account is an in-place update.
+  obfuscate_path is server-generated when omitted on create and is
+  preserved on update.
+  NOTE: the API omits optional fields that have no value instead of returning them
+  as empty, so turning enable_mobile_sdk_token,
+  filter_out_static_assets, divert_host or
+  interstitial_inprogress_iframe_src off outside Terraform is not
+  detected: terraform plan reports no changes even though state and
+  server disagree. Removing such an attribute from the configuration is planned as
+  -> null but stored as false/empty, which for
+  filter_out_static_assets is the opposite of having no value at all.
 ---
 
 
@@ -18,9 +33,26 @@ Provides an ABP Domain (a.k.a. Website) resource. A Domain maps one or more
 domain names to a Site, and configures how requests are matched, captured, and
 analyzed.
 
-NOTE: `criteria` cannot be changed in-place; modifying it forces resource
-replacement. `obfuscate_path` is server-generated when omitted on create
-and is preserved on update.
+NOTE: `criteria` cannot be changed in-place. Changing it replaces the
+Domain: Terraform deletes the existing Domain — together with its encryption keys
+and its slot in the Site's Domain priority order — and creates a new one. For the
+same reason a `criteria` value that does not meet the required format
+(the API trims whitespace, so the stored value differs from the configured one)
+forces that replacement on every apply. Changing `account_id` replaces
+the Domain as well, while `site_id` does not: moving a Domain to another
+Site of the same account is an in-place update.
+
+`obfuscate_path` is server-generated when omitted on create and is
+preserved on update.
+
+NOTE: the API omits optional fields that have no value instead of returning them
+as empty, so turning `enable_mobile_sdk_token`,
+`filter_out_static_assets`, `divert_host` or
+`interstitial_inprogress_iframe_src` off outside Terraform is not
+detected: `terraform plan` reports no changes even though state and
+server disagree. Removing such an attribute from the configuration is planned as
+`-> null` but stored as `false`/empty, which for
+`filter_out_static_assets` is the opposite of having no value at all.
 
 ## Example Usage
 
@@ -75,34 +107,34 @@ resource "incapsula_abp_domain" "test_com" {
 
 ### Required
 
-- `account_id` (String) ABP account UUID this Domain belongs to.
-- `cookiescope` (String) The Domain attribute of the Set-Cookie header set by the ABP JavaScript. Use `$suffix` as the TLD with prefix criteria.
-- `criteria` (Block List, Min: 1, Max: 1) Specifies which domain names this Domain matches. Exactly one of `exact`, `prefix`, `suffix`, `cloudwaf_id` must be set. (see [below for nested schema](#nestedblock--criteria))
-- `site_id` (String) Site (a.k.a. Website Group) UUID this Domain is attached to.
+- `account_id` (String) ABP account UUID this Domain belongs to. Changing it replaces the Domain (see the note above), because the API cannot move a Domain to another account.
+- `cookiescope` (String) The Domain attribute of the Set-Cookie header set by the ABP JavaScript. Use `$suffix` as the TLD with prefix criteria. Must not have leading or trailing whitespace.
+- `criteria` (Block List, Min: 1, Max: 1) Specifies which domain names this Domain matches. Exactly one of `exact`, `prefix`, `suffix`, `cloudwaf_id` must be set; setting none or more than one is only rejected when the change is applied. Changing any of them replaces the Domain (see the note above). (see [below for nested schema](#nestedblock--criteria))
+- `site_id` (String) Site (a.k.a. Website Group) UUID this Domain is attached to. Can be changed in place: the Domain is moved to the new Site without being recreated.
 
 ### Optional
 
 - `analysis_ip_lookup_mode` (Block List, Max: 1) Controls how the analysis host determines the end-user's IP. Omit the block for `none`. (see [below for nested schema](#nestedblock--analysis_ip_lookup_mode))
-- `captcha_settings` (Block List, Max: 1) CAPTCHA configuration. Omit the block for `none`. Set exactly one of `geetest`, `managed_geetest`, `managed_hcaptcha`. (see [below for nested schema](#nestedblock--captcha_settings))
+- `captcha_settings` (Block List, Max: 1) CAPTCHA configuration. Omit the block for `none`. Set exactly one of `geetest`, `managed_geetest`, `managed_hcaptcha`; setting more than one is only rejected when the change is applied. (see [below for nested schema](#nestedblock--captcha_settings))
 - `challenge_ip_lookup_mode` (Block List, Max: 1) Controls how the challenge host determines the end-user's IP. Omit the block for `none`. (see [below for nested schema](#nestedblock--challenge_ip_lookup_mode))
-- `cookie_mode` (String) SameSite policy of the ABP cookies. One of: lax, legacy, none_secure, lax_and_none_secure, lax_and_legacy, legacy_and_none_secure.
-- `divert_host` (String) Domain or IP to which traffic is diverted when the `divert` directive triggers.
+- `cookie_mode` (String) SameSite policy of the ABP cookies. One of: lax, legacy, none_secure, lax_and_none_secure, lax_and_legacy, legacy_and_none_secure. Defaults to `lax`.
+- `divert_host` (String) Domain or IP to which traffic is diverted when the `divert` directive triggers. Requires traffic diversion to be enabled on the account; otherwise the API accepts the value, reports it as applied and then discards it.
 - `enable_mitigation` (Boolean) If false, all active conditions are treated as monitor-only. If true (default), conditions behave per their state.
-- `enable_mobile_sdk_token` (Boolean) Enable to allow mobile SDK tokens. Only enable if you use the ABP mobile SDK with this domain.
+- `enable_mobile_sdk_token` (Boolean) Enable to allow mobile SDK tokens. Only enable if you use the ABP mobile SDK with this domain. Defaults to `false`.
 - `encryption_key_id` (String) Existing encryption key to copy when creating this Domain. If unset, a copy of the account default key is used. Honoured on create only: the API consumes it once to clone the key material and never returns it, so later changes to it are ignored.
-- `filter_out_static_assets` (Boolean) CWAF only. Prevents common static asset paths from being analyzed by ABP.
-- `interstitial_inprogress_iframe_src` (String) URL of the iframe used to display the PoW challenge in progress.
-- `log_region` (String) Region in which ABP logs are stored. One of: apac, australia, eu, usa, india.
+- `filter_out_static_assets` (Boolean) CWAF only. Prevents common static asset paths from being analyzed by ABP. **Not applied on create** — the API ignores the value of a new Domain, and a Domain that has no value stored behaves as if filtering were enabled. Setting `false` on create therefore leaves filtering on, with no diff to show it; set it on a later update (or on an existing Domain) for it to take effect.
+- `interstitial_inprogress_iframe_src` (String) URL of the iframe used to display the PoW challenge in progress. Must be an absolute URL with a scheme and an explicit path; write a bare origin with a trailing slash (`http://www.example.com/`).
+- `log_region` (String) Region in which ABP logs are stored. One of: apac, australia, eu, usa, india. Defaults to `usa`.
 - `no_js_injection_path` (Block List) Rules describing where the ABP JavaScript injection should not occur. Each block must set exactly one of `path_prefix`, `incap_rule`. (see [below for nested schema](#nestedblock--no_js_injection_path))
-- `obfuscate_path` (String) Recommended path under which the ABP JavaScript is loaded. Server-generated when omitted on create.
+- `obfuscate_path` (String) Recommended path under which the ABP JavaScript is loaded. Server-generated when omitted on create. Must start with `/`, with no leading or trailing whitespace and no `#` fragment.
 - `proxy_flags` (Set of String) CloudWAF configuration flags. Allowed values: enable_referrer_fix, dont_minify_post_resubmit_error_page, inject_js_into_body, set_shared_cookie_on_apex.
-- `unmasked_headers` (Set of String) Header names whose values should be visible to ABP (CloudWAF normally masks them). Compared case-insensitively.
+- `unmasked_headers` (Set of String) Header names whose values should be visible to ABP (CloudWAF normally masks them). Compared case-insensitively, so no two entries may differ only in case.
 
 ### Read-Only
 
 - `created_at` (String) RFC3339 timestamp at which the Domain was created.
 - `id` (String) The ID of this resource.
-- `mobile_api_obfuscate_path` (String) Server-managed path used for the mobile API challenge endpoint.
+- `mobile_api_obfuscate_path` (String) Server-managed path used for the mobile API challenge endpoint. Read-only here; it cannot be set through this resource.
 - `modified_at` (String) RFC3339 timestamp at which the Domain was last modified.
 
 <a id="nestedblock--criteria"></a>
@@ -110,10 +142,10 @@ resource "incapsula_abp_domain" "test_com" {
 
 Optional:
 
-- `cloudwaf_id` (Number) CloudWAF website ID; use this when onboarding CloudWAF domains.
-- `exact` (String) Match exactly this fully-qualified domain name.
-- `prefix` (String) Match any domain name with this prefix.
-- `suffix` (String) Match any domain name with this suffix.
+- `cloudwaf_id` (Number) CloudWAF website ID; use this when onboarding CloudWAF domains. Requires a CloudWAF or Connector licence on the account, while matching by `exact`, `prefix` or `suffix` requires a Connector licence; without the right licence the API rejects the Domain with a `license required` error. Changing it replaces the Domain.
+- `exact` (String) Match exactly this fully-qualified domain name. Must not have leading or trailing whitespace. Changing it replaces the Domain.
+- `prefix` (String) Match any domain name with this prefix. Must not have leading or trailing whitespace. Changing it replaces the Domain.
+- `suffix` (String) Match any domain name with this suffix. Must not have leading or trailing whitespace. Changing it replaces the Domain.
 
 
 <a id="nestedblock--analysis_ip_lookup_mode"></a>
@@ -139,8 +171,8 @@ Optional:
 
 Required:
 
-- `geetest_captcha_id` (String)
-- `geetest_private_key` (String, Sensitive)
+- `geetest_captcha_id` (String) Geetest CAPTCHA ID from your Geetest account.
+- `geetest_private_key` (String, Sensitive) Geetest private key matching `geetest_captcha_id`.
 
 
 <a id="nestedblock--captcha_settings--managed_geetest"></a>
@@ -148,7 +180,7 @@ Required:
 
 Required:
 
-- `difficulty` (String)
+- `difficulty` (String) Challenge difficulty. One of: easy, normal, hard.
 
 
 <a id="nestedblock--captcha_settings--managed_hcaptcha"></a>
@@ -156,7 +188,7 @@ Required:
 
 Required:
 
-- `difficulty` (String)
+- `difficulty` (String) Challenge difficulty. `auto` is the only accepted value.
 
 
 

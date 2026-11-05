@@ -15,6 +15,12 @@ description: |-
   incapsula_abp_directive data source, which addresses a directive by its
   action; reading them off the incapsula_abp_policy resource by list index is
   unreliable when directives are added, removed or reordered.
+  NOTE: an entry cannot be re-pointed in place. Changing account_id,
+  parent_condition_list_id, condition_id or
+  condition_list_id replaces the entry: Terraform deletes this entry and
+  creates a new one with the new values. Only the link is recreated — neither the
+  parent list nor the referenced condition is affected — but the entry is briefly
+  absent, so the condition does not apply until the new entry is created.
 ---
 
 
@@ -33,6 +39,13 @@ of an entry to attach a condition to that directive. Obtain those IDs from the
 `incapsula_abp_directive` data source, which addresses a directive by its
 `action`; reading them off the `incapsula_abp_policy` resource by list index is
 unreliable when directives are added, removed or reordered.
+
+NOTE: an entry cannot be re-pointed in place. Changing `account_id`,
+`parent_condition_list_id`, `condition_id` or
+`condition_list_id` replaces the entry: Terraform deletes this entry and
+creates a new one with the new values. Only the link is recreated — neither the
+parent list nor the referenced condition is affected — but the entry is briefly
+absent, so the condition does not apply until the new entry is created.
 
 ## Example Usage
 
@@ -53,14 +66,14 @@ resource "incapsula_abp_condition_list_entry" "sample_condition_list_okhttp" {
 
 ### Required
 
-- `account_id` (String) ABP account UUID this Condition List Entry belongs to.
-- `parent_condition_list_id` (String) UUID of the parent condition list that this entry is attached to.
+- `account_id` (String) ABP account UUID this Condition List Entry belongs to. Changing it replaces the entry (see the note above).
+- `parent_condition_list_id` (String) UUID of the parent condition list that this entry is attached to. Changing it replaces the entry (see the note above).
 - `state` (String) Whether the entry is evaluated. One of: `inactive` (skipped), `monitor` (evaluated, logged only), `active` (evaluated and may trigger an action).
 
 ### Optional
 
-- `condition_id` (String) UUID of a literal condition referenced by this entry. Mutually exclusive with `condition_list_id`.
-- `condition_list_id` (String) UUID of a condition list referenced by this entry. Mutually exclusive with `condition_id`.
+- `condition_id` (String) UUID of a literal condition referenced by this entry. Mutually exclusive with `condition_list_id`. Changing it replaces the entry (see the note above).
+- `condition_list_id` (String) UUID of a condition list referenced by this entry. Mutually exclusive with `condition_id`. Changing it replaces the entry (see the note above).
 - `tags` (Set of String) Snake_case tags applied to the entry. Each tag matches `^[_a-z][_a-z0-9]*$`.
 
 ### Read-Only

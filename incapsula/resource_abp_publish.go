@@ -15,14 +15,35 @@ func resourceAbpPublish() *schema.Resource {
 		ReadContext:   resourceAbpPublishRead,
 		DeleteContext: resourceAbpPublishDelete,
 
-		Description: "Publishes a specific ABP preflight. Replacing the resource by setting a preflight_id fires another publish.\n",
+		Description: `Publishes a specific ABP preflight, making the configuration captured by
+that preflight active on the Analysis Host.
+
+NOTE: publishing activates the **entire account** configuration as it was when
+the preflight was taken — not just the objects this Terraform configuration
+manages. Objects created in the UI or by another workspace are published along
+with yours.
+
+NOTE: publishing is asynchronous. The API accepts the request and this resource
+succeeds as soon as it has been accepted; it does not wait for the publish to
+finish and does not track its outcome, so a publish that fails afterwards is not
+reported here and is not retried. Check the publish status in the UI or the API
+if it matters.
+
+NOTE: the resource's ` + "`id`" + ` is the ID of the published *preflight*, not
+of the publish itself. Destroying the resource only drops it from Terraform
+state: nothing is unpublished or rolled back, and a ` + "`terraform destroy`" + `
+of a whole configuration leaves the account's live configuration as it was at the
+last publish. To go back to an earlier configuration, publish an earlier
+preflight.`,
 
 		Schema: map[string]*schema.Schema{
 			"preflight_id": {
-				Description: "The preflight to publish. Change of it always triggers new publish to be created",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Description: "The preflight to publish. Changing it replaces the resource, which " +
+					"is how another publish is triggered: Terraform forgets the previous publish " +
+					"(it is not undone) and publishes the new preflight.",
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
 			},
 		},
 	}

@@ -33,13 +33,13 @@ resource "incapsula_abp_proof_of_work_configuration" "pow1" {
 
 ### Required
 
-- `account_id` (String) ABP account UUID this Proof Of Work Configuration belongs to.
+- `account_id` (String) ABP account UUID this Proof Of Work Configuration belongs to. Changing it replaces the configuration — Terraform deletes the existing one and creates a new one — because the API cannot move a Proof Of Work Configuration to another account.
 - `difficulty` (Number) Number of credits a client gets for completing a proof-of-work challenge. The amount of work performed by the client is proportional to this number. Must be >= 1.
-- `name` (String) Human-readable name of the Proof Of Work Configuration.
+- `name` (String) Human-readable name of the Proof Of Work Configuration. Must not have leading or trailing whitespace.
 
 ### Optional
 
-- `algorithm` (String) Proof Of Work algorithm. One of: bbs, sha1. Optional: when omitted, the backend selects a default and that value is reflected in state.
+- `algorithm` (String) Proof Of Work algorithm. One of: bbs, sha1. Optional: when omitted, no algorithm is stored and the attribute reads back as an empty string — the algorithm used at runtime is then picked when the account configuration is published. Once a value has been set it cannot be removed (dropping it from the configuration is ignored), and a change made outside Terraform is adopted into state rather than restored.
 
 ### Read-Only
 

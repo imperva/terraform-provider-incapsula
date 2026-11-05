@@ -18,7 +18,13 @@ func dataSourceAbpSiteAnalysisSettings() *schema.Resource {
 
 		Description: `Builds an analysis-settings document for use in an ` + "`incapsula_abp_site`" + `
 selector. Pass the resulting ` + "`json`" + ` attribute to the selector's
-` + "`analysis_settings`" + ` field.`,
+` + "`analysis_settings`" + ` field.
+
+NOTE: ` + "`use_site_rate_limiting_parameters`" + ` defaults to ` + "`true`" + `,
+in which case the Site-level defaults are used and
+` + "`max_requests_per_minute`" + `, ` + "`max_requests_per_session`" + ` and
+` + "`max_session_length`" + ` have no effect at all. Set it to
+` + "`false`" + ` whenever you set any of the three.`,
 
 		Schema: map[string]*schema.Schema{
 			"rate_limiting": {
@@ -33,24 +39,24 @@ selector. Pass the resulting ` + "`json`" + ` attribute to the selector's
 				Optional:    true,
 			},
 			"max_requests_per_minute": {
-				Description:  "Override the site default for this selector.",
+				Description:  "Maximum number of requests without a token per minute for selectors using these settings. Only takes effect when `use_site_rate_limiting_parameters` is set to `false`.",
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ValidateFunc: validation.IntAtLeast(0),
 			},
 			"max_requests_per_session": {
-				Description:  "Override the site default for this selector.",
+				Description:  "Maximum number of requests without a token per session for selectors using these settings. Only takes effect when `use_site_rate_limiting_parameters` is set to `false`.",
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ValidateFunc: validation.IntAtLeast(0),
 			},
 			"max_session_length": {
-				Description: "Override the site default for this selector. Moi duration format (e.g. \"2d1h\").",
+				Description: "Maximum length of a session without a token for selectors using these settings. Only takes effect when `use_site_rate_limiting_parameters` is set to `false`. Duration format, e.g. \"2d1h\". Use the largest fitting units and omit zero components: write \"2h\", not \"120m\".",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"use_site_rate_limiting_parameters": {
-				Description: "When true, fall back to the site-level defaults for rate-limiting parameters not set on this selector.",
+				Description: "Whether the Site-level defaults are used instead of the three values above. Defaults to `true`, which means the Site's `default_max_requests_per_minute`, `default_max_requests_per_session` and `default_max_session_length` apply and `max_requests_per_minute`, `max_requests_per_session` and `max_session_length` are **ignored entirely** — it is not a per-value fallback. Set it to `false` whenever you want those three to take effect.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,

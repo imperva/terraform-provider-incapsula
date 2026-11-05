@@ -5,7 +5,14 @@ page_title: "incapsula_abp_site_domain_priority"
 description: |-
   Manages the priority order of Domains within an ABP Site. The first ID in
   domain_ids has the highest priority. The list must include every Domain
-  attached to the Site exactly once.
+  attached to the Site exactly once — including Domains created outside Terraform.
+  WARNING: if a Domain is attached to the Site but missing from
+  domain_ids, every apply fails with
+  Wrong number of domain IDs supplied until the list is completed, and
+  the plan is of no help: it shows the missing Domain as something to be removed
+  from the list, which the API does not allow. Whenever you add a Domain to the
+  Site, add it here too; the incapsula_abp_domain resources of the Site
+  are the complete list only if no one else creates Domains in it.
   NOTE: this resource wraps a singleton property of the parent Site. Destroying
   it removes the priority from Terraform state but leaves the server-side order
   unchanged.
@@ -16,7 +23,15 @@ description: |-
 
 Manages the priority order of Domains within an ABP Site. The first ID in
 `domain_ids` has the highest priority. The list must include every Domain
-attached to the Site exactly once.
+attached to the Site exactly once — including Domains created outside Terraform.
+
+WARNING: if a Domain is attached to the Site but missing from
+`domain_ids`, every apply fails with
+`Wrong number of domain IDs supplied` until the list is completed, and
+the plan is of no help: it shows the missing Domain as something to be removed
+from the list, which the API does not allow. Whenever you add a Domain to the
+Site, add it here too; the `incapsula_abp_domain` resources of the Site
+are the complete list only if no one else creates Domains in it.
 
 NOTE: this resource wraps a singleton property of the parent Site. Destroying
 it removes the priority from Terraform state but leaves the server-side order
@@ -42,8 +57,8 @@ resource "incapsula_abp_site_domain_priority" "sample_site" {
 
 ### Required
 
-- `domain_ids` (List of String) Domain UUIDs in priority order (highest first). Must include every Domain attached to the Site exactly once.
-- `site_id` (String) Site UUID whose Domain priority order is being managed.
+- `domain_ids` (List of String) Domain UUIDs in priority order (highest first). Must include every Domain attached to the Site exactly once, including Domains created outside Terraform.
+- `site_id` (String) Site UUID whose Domain priority order is being managed. Changing it replaces the resource: Terraform forgets the order of the old Site (leaving it unchanged on the server) and applies this order to the new Site.
 
 ### Read-Only
 

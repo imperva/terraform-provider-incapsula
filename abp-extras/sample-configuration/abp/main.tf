@@ -250,8 +250,12 @@ resource "incapsula_abp_condition_list_entry" "account_global_allow_okhttp" {
 #
 
 data "incapsula_abp_site_analysis_settings" "login" {
-  rate_limiting           = "per_site"
-  max_requests_per_minute = 100
+  rate_limiting = "per_site"
+  # `use_site_rate_limiting_parameters` defaults to true, which means the site
+  # defaults are used and max_requests_per_minute/_session and
+  # max_session_length are ignored. Set it to false to make them count.
+  max_requests_per_minute           = 100
+  use_site_rate_limiting_parameters = false
 }
 
 data "incapsula_abp_site_analysis_settings" "static" {
@@ -259,10 +263,11 @@ data "incapsula_abp_site_analysis_settings" "static" {
 }
 
 data "incapsula_abp_site_analysis_settings" "postback" {
-  rate_limiting                     = "custom_scope"
-  rate_limiting_custom_scope        = "my scope"
-  max_requests_per_minute           = 55
-  max_requests_per_session          = 555
+  rate_limiting              = "custom_scope"
+  rate_limiting_custom_scope = "my scope"
+  max_requests_per_minute    = 55
+  max_requests_per_session   = 555
+  # durations use the largest fitting units: "1h", not "60m"
   max_session_length                = "1h"
   use_site_rate_limiting_parameters = false
 }
@@ -320,6 +325,10 @@ locals {
 
 resource "incapsula_abp_account_site_priority" "accprio" {
   account_id = var.account_id
+  # The list has to contain every site of the account, so the sites whose order
+  # matters come first and everything else - sites created in the UI, by another
+  # workspace or by another module - is appended from the data source. A literal
+  # list breaks as soon as anyone adds a site.
   site_ids = concat(
     local.managed_sites,
     [for site in data.incapsula_abp_sites.all.sites : site.id if !contains(local.managed_sites, site.id)]
@@ -368,8 +377,9 @@ resource "incapsula_abp_domain" "test_com" {
   cookie_mode             = "none_secure"
   enable_mitigation       = false
   enable_mobile_sdk_token = false
-  // Todo: backend auto-prefixes with `/` causing a perpetual change-detection if omitted on this field
-  // Other paths are validated enforcing path prefixing, we could do that in the tf-layer, backend, or not at all
+  # `obfuscate_path` must start with `/`, an iframe src needs an explicit path
+  # (a bare origin must end with `/`), and `unmasked_headers` are compared
+  # case-insensitively, so no two entries may differ only in case
   obfuscate_path                     = "/spooky-path"
   interstitial_inprogress_iframe_src = "http://www.example.com/iframe-src"
   divert_host                        = "www.example.com"
@@ -409,7 +419,7 @@ resource "incapsula_abp_domain" "example_com" {
   cookie_mode = "lax"
 
   // Todo: reference a rule here
-  // Commented out due to no MY available locally
+  // Commented out because it requires an existing Incapsula rule
   # no_js_injection_path {
   #   incap_rule = "URL == \"/admin\""
   # }
@@ -462,6 +472,13 @@ resource "incapsula_abp_site_domain_priority" "sample_site" {
 resource "incapsula_abp_domain_encryption_key" "test_com" {
   domain_id = incapsula_abp_domain.test_com.id
   key       = "U2VjcmV0IGtleSB1c2luZyBzdGF0ZS1vZi10aGUtYXJ0IGJhc2U2NCBlbmNyeXB0aW9u"
+
+  # Keys cannot be changed in place. Without this, rotating the key would delete
+  # the current one before creating its replacement, leaving the domain without
+  # a usable key until the new one is published.
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 #------------------------------------------------------------------------------
@@ -499,28 +516,6 @@ resource "incapsula_abp_site" "site2" {
     analysis_settings = data.incapsula_abp_site_analysis_settings.postback.json
   }
 }
-
-# TODO
-#resource "incapsula_abp_account_site_priority" "accprio" {
-#  account_id = var.account_id
-#  site_ids = [
-#    incapsula_abp_site.sample_site.id,
-#    incapsula_abp_site.site2.id,
-#    data.incapsula_abp_site.ext_site1.id,
-#    data.incapsula_abp_site.ext_site2.id,
-#    data.incapsula_abp_site.ext_site3.id,
-#    data.incapsula_abp_site.ext_site4.id,
-#    data.incapsula_abp_site.ext_site5.id,
-#    data.incapsula_abp_site.ext_site6.id,
-#    data.incapsula_abp_site.ext_site7.id,
-#    data.incapsula_abp_site.ext_site8.id,
-#    data.incapsula_abp_site.ext_site9.id,
-#    data.incapsula_abp_site.ext_site10.id,
-#    data.incapsula_abp_site.ext_site11.id,
-#    data.incapsula_abp_site.ext_site12.id,
-#    data.incapsula_abp_site.ext_site13.id,
-#  ]
-#}
 
 resource "incapsula_abp_credential" "my_credential" {
   account_id = var.account_id

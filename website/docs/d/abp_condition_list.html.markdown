@@ -33,5 +33,5 @@ data "incapsula_abp_condition_list" "sample_condition_list_lookup" {
 - `created_at` (String) RFC3339 timestamp at which the Condition List was created.
 - `description` (String) Description of the condition list.
 - `id` (String) The ID of this resource.
-- `managed` (Boolean) Whether the matched condition list is managed (Imperva-owned).
+- `managed` (Boolean) Whether the matched condition list is managed (Imperva-owned). Always `false`: the API only ever exposes managed conditions as literal conditions, so there are no managed condition lists to look up.
 - `modified_at` (String) RFC3339 timestamp at which the Condition List was last modified.

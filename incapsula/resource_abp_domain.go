@@ -26,26 +26,45 @@ func resourceAbpDomain() *schema.Resource {
 domain names to a Site, and configures how requests are matched, captured, and
 analyzed.
 
-NOTE: ` + "`criteria`" + ` cannot be changed in-place; modifying it forces resource
-replacement. ` + "`obfuscate_path`" + ` is server-generated when omitted on create
-and is preserved on update.`,
+NOTE: ` + "`criteria`" + ` cannot be changed in-place. Changing it replaces the
+Domain: Terraform deletes the existing Domain — together with its encryption keys
+and its slot in the Site's Domain priority order — and creates a new one. For the
+same reason a ` + "`criteria`" + ` value that does not meet the required format
+(the API trims whitespace, so the stored value differs from the configured one)
+forces that replacement on every apply. Changing ` + "`account_id`" + ` replaces
+the Domain as well, while ` + "`site_id`" + ` does not: moving a Domain to another
+Site of the same account is an in-place update.
+
+` + "`obfuscate_path`" + ` is server-generated when omitted on create and is
+preserved on update.
+
+NOTE: the API omits optional fields that have no value instead of returning them
+as empty, so turning ` + "`enable_mobile_sdk_token`" + `,
+` + "`filter_out_static_assets`" + `, ` + "`divert_host`" + ` or
+` + "`interstitial_inprogress_iframe_src`" + ` off outside Terraform is not
+detected: ` + "`terraform plan`" + ` reports no changes even though state and
+server disagree. Removing such an attribute from the configuration is planned as
+` + "`-> null`" + ` but stored as ` + "`false`" + `/empty, which for
+` + "`filter_out_static_assets`" + ` is the opposite of having no value at all.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Description:  "ABP account UUID this Domain belongs to.",
+				Description: "ABP account UUID this Domain belongs to. Changing it replaces the " +
+					"Domain (see the note above), because the API cannot move a Domain to another " +
+					"account.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.IsUUID,
 			},
 			"site_id": {
-				Description:  "Site (a.k.a. Website Group) UUID this Domain is attached to.",
+				Description:  "Site (a.k.a. Website Group) UUID this Domain is attached to. Can be changed in place: the Domain is moved to the new Site without being recreated.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.IsUUID,
 			},
 			"criteria": {
-				Description: "Specifies which domain names this Domain matches. Exactly one of `exact`, `prefix`, `suffix`, `cloudwaf_id` must be set.",
+				Description: "Specifies which domain names this Domain matches. Exactly one of `exact`, `prefix`, `suffix`, `cloudwaf_id` must be set; setting none or more than one is only rejected when the change is applied. Changing any of them replaces the Domain (see the note above).",
 				Type:        schema.TypeList,
 				Required:    true,
 				MaxItems:    1,
@@ -53,28 +72,28 @@ and is preserved on update.`,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"exact": {
-							Description: "Match exactly this fully-qualified domain name.",
+							Description: "Match exactly this fully-qualified domain name. Must not have leading or trailing whitespace. Changing it replaces the Domain.",
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							ForceNew:    true,
 						},
 						"prefix": {
-							Description: "Match any domain name with this prefix.",
+							Description: "Match any domain name with this prefix. Must not have leading or trailing whitespace. Changing it replaces the Domain.",
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							ForceNew:    true,
 						},
 						"suffix": {
-							Description: "Match any domain name with this suffix.",
+							Description: "Match any domain name with this suffix. Must not have leading or trailing whitespace. Changing it replaces the Domain.",
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							ForceNew:    true,
 						},
 						"cloudwaf_id": {
-							Description: "CloudWAF website ID; use this when onboarding CloudWAF domains.",
+							Description: "CloudWAF website ID; use this when onboarding CloudWAF domains. Requires a CloudWAF or Connector licence on the account, while matching by `exact`, `prefix` or `suffix` requires a Connector licence; without the right licence the API rejects the Domain with a `license required` error. Changing it replaces the Domain.",
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Computed:    true,
@@ -84,19 +103,19 @@ and is preserved on update.`,
 				},
 			},
 			"cookiescope": {
-				Description: "The Domain attribute of the Set-Cookie header set by the ABP JavaScript. Use `$suffix` as the TLD with prefix criteria.",
+				Description: "The Domain attribute of the Set-Cookie header set by the ABP JavaScript. Use `$suffix` as the TLD with prefix criteria. Must not have leading or trailing whitespace.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
 			"log_region": {
-				Description:  "Region in which ABP logs are stored. One of: apac, australia, eu, usa, india.",
+				Description:  "Region in which ABP logs are stored. One of: apac, australia, eu, usa, india. Defaults to `usa`.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "usa",
 				ValidateFunc: validation.StringInSlice([]string{"apac", "australia", "eu", "usa", "india"}, false),
 			},
 			"cookie_mode": {
-				Description:  "SameSite policy of the ABP cookies. One of: lax, legacy, none_secure, lax_and_none_secure, lax_and_legacy, legacy_and_none_secure.",
+				Description:  "SameSite policy of the ABP cookies. One of: lax, legacy, none_secure, lax_and_none_secure, lax_and_legacy, legacy_and_none_secure. Defaults to `lax`.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "lax",
@@ -109,38 +128,38 @@ and is preserved on update.`,
 				Default:     true,
 			},
 			"enable_mobile_sdk_token": {
-				Description: "Enable to allow mobile SDK tokens. Only enable if you use the ABP mobile SDK with this domain.",
+				Description: "Enable to allow mobile SDK tokens. Only enable if you use the ABP mobile SDK with this domain. Defaults to `false`.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
 			"filter_out_static_assets": {
-				Description: "CWAF only. Prevents common static asset paths from being analyzed by ABP.",
+				Description: "CWAF only. Prevents common static asset paths from being analyzed by ABP. **Not applied on create** — the API ignores the value of a new Domain, and a Domain that has no value stored behaves as if filtering were enabled. Setting `false` on create therefore leaves filtering on, with no diff to show it; set it on a later update (or on an existing Domain) for it to take effect.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
 			"obfuscate_path": {
-				Description: "Recommended path under which the ABP JavaScript is loaded. Server-generated when omitted on create.",
+				Description: "Recommended path under which the ABP JavaScript is loaded. Server-generated when omitted on create. Must start with `/`, with no leading or trailing whitespace and no `#` fragment.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
 			},
 			"mobile_api_obfuscate_path": {
-				Description: "Server-managed path used for the mobile API challenge endpoint.",
+				Description: "Server-managed path used for the mobile API challenge endpoint. Read-only here; it cannot be set through this resource.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
 			"interstitial_inprogress_iframe_src": {
-				Description: "URL of the iframe used to display the PoW challenge in progress.",
+				Description: "URL of the iframe used to display the PoW challenge in progress. Must be an absolute URL with a scheme and an explicit path; write a bare origin with a trailing slash (`http://www.example.com/`).",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"divert_host": {
-				Description: "Domain or IP to which traffic is diverted when the `divert` directive triggers.",
+				Description: "Domain or IP to which traffic is diverted when the `divert` directive triggers. Requires traffic diversion to be enabled on the account; otherwise the API accepts the value, reports it as applied and then discards it.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"unmasked_headers": {
-				Description: "Header names whose values should be visible to ABP (CloudWAF normally masks them). Compared case-insensitively.",
+				Description: "Header names whose values should be visible to ABP (CloudWAF normally masks them). Compared case-insensitively, so no two entries may differ only in case.",
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -170,7 +189,7 @@ and is preserved on update.`,
 			"analysis_ip_lookup_mode":  ipLookupModeSchema("Controls how the analysis host determines the end-user's IP. Omit the block for `none`."),
 			"challenge_ip_lookup_mode": ipLookupModeSchema("Controls how the challenge host determines the end-user's IP. Omit the block for `none`."),
 			"captcha_settings": {
-				Description: "CAPTCHA configuration. Omit the block for `none`. Set exactly one of `geetest`, `managed_geetest`, `managed_hcaptcha`.",
+				Description: "CAPTCHA configuration. Omit the block for `none`. Set exactly one of `geetest`, `managed_geetest`, `managed_hcaptcha`; setting more than one is only rejected when the change is applied.",
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
@@ -184,13 +203,15 @@ and is preserved on update.`,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"geetest_captcha_id": {
-										Type:     schema.TypeString,
-										Required: true,
+										Description: "Geetest CAPTCHA ID from your Geetest account.",
+										Type:        schema.TypeString,
+										Required:    true,
 									},
 									"geetest_private_key": {
-										Type:      schema.TypeString,
-										Required:  true,
-										Sensitive: true,
+										Description: "Geetest private key matching `geetest_captcha_id`.",
+										Type:        schema.TypeString,
+										Required:    true,
+										Sensitive:   true,
 									},
 								},
 							},
@@ -203,6 +224,7 @@ and is preserved on update.`,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"difficulty": {
+										Description:  "Challenge difficulty. One of: easy, normal, hard.",
 										Type:         schema.TypeString,
 										Required:     true,
 										ValidateFunc: validation.StringInSlice([]string{"easy", "normal", "hard"}, false),
@@ -218,6 +240,7 @@ and is preserved on update.`,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"difficulty": {
+										Description:  "Challenge difficulty. `auto` is the only accepted value.",
 										Type:         schema.TypeString,
 										Required:     true,
 										ValidateFunc: validation.StringInSlice([]string{"auto"}, false),

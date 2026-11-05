@@ -105,7 +105,7 @@ resource "incapsula_abp_condition_list_entry" "pow_skip_monitoring" {
 
 ### Required
 
-- `account_id` (String) ABP account UUID this Policy belongs to.
+- `account_id` (String) ABP account UUID this Policy belongs to. Changing it replaces the Policy — Terraform deletes the existing one, together with its directives' condition lists, and creates a new one — because the API cannot move a Policy to another account.
 - `directive` (Block List, Min: 1) Ordered list of directives evaluated top-down for this policy. A policy must have at least one directive, and no two directives may share an `action`. (see [below for nested schema](#nestedblock--directive))
 - `name` (String) Policy name. 1..100 characters, without leading or trailing whitespace.
 

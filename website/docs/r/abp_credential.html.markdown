@@ -72,15 +72,15 @@ output "encrypted_secret" {
 
 ### Required
 
-- `account_id` (String) Account UUID this credential belongs to.
-- `rsa_key` (String) A full PEM-encoded RSA public key used for encrypting the secret in state. The secret is encrypted to this key and stored only in `encrypted_secret`, keeping the plaintext out of state. Changing it re-encrypts the same secret in place.
+- `account_id` (String) Account UUID this credential belongs to. Changing it replaces the credential — Terraform deletes the existing one and creates a new one with a new secret — because the API cannot move a credential to another account.
+- `rsa_key` (String) A full PEM-encoded RSA public key used for encrypting the secret in state. Must be a `BEGIN PUBLIC KEY` (SPKI) PEM block of at least 3072 bits; other formats and smaller keys are rejected. The secret is encrypted to this key and stored only in `encrypted_secret`, keeping the plaintext out of state. Changing it re-encrypts the same secret in place.
 
 ### Read-Only
 
 - `created_at` (String) RFC3339 timestamp at which the credential was created.
 - `encrypted_secret` (String) The RSA-encrypted, base64-encoded credential secret
 - `id` (String) The ID of this resource.
-- `modified_at` (String) RFC3339 timestamp at which the credential was last modified. Empty if it has never been modified.
+- `modified_at` (String) RFC3339 timestamp at which the credential was last modified. Always empty: the API does not track modifications of a credential.
 
 ## Import
 

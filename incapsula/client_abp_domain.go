@@ -306,7 +306,8 @@ func (c *Client) CreateAbpDomain(accountId string, domain AbpDomain) (*AbpDomain
 
 	var created AbpDomain
 	if err := json.Unmarshal(responseBody, &created); err != nil {
-		return nil, fmt.Errorf("error parsing %s create response: %w; body: %s", abpDomainResourceName, err, string(responseBody))
+		// The body may carry `geetest_private_key`, so it is never echoed.
+		return nil, fmt.Errorf("error parsing %s create response: %w", abpDomainResourceName, err)
 	}
 	return &created, nil
 }
@@ -335,7 +336,7 @@ func (c *Client) ReadAbpDomain(domainId string) (*AbpDomain, error) {
 
 	var domain AbpDomain
 	if err := json.Unmarshal(responseBody, &domain); err != nil {
-		return nil, fmt.Errorf("error parsing %s read response: %w; body: %s", abpDomainResourceName, err, string(responseBody))
+		return nil, fmt.Errorf("error parsing %s read response: %w", abpDomainResourceName, err)
 	}
 	return &domain, nil
 }
@@ -420,7 +421,7 @@ func (c *Client) UpdateAbpDomain(domainId string, domain AbpDomain) (*AbpDomain,
 
 	var updated AbpDomain
 	if err := json.Unmarshal(responseBody, &updated); err != nil {
-		return nil, fmt.Errorf("error parsing %s update response: %w; body: %s", abpDomainResourceName, err, string(responseBody))
+		return nil, fmt.Errorf("error parsing %s update response: %w", abpDomainResourceName, err)
 	}
 	return &updated, nil
 }

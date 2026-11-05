@@ -3,13 +3,16 @@ subcategory: "Advanced Bot Protection"
 layout: "incapsula"
 page_title: "incapsula_abp_policies"
 description: |-
-  Lists every ABP Policy of an account, ordered by name. Use incapsula_abp_policy to look up a single Policy by name or id instead.
+  Lists the ABP Policies of an account, ordered by name. Use incapsula_abp_policy to look up a single Policy by name or id instead.
+  Note what the list contains: the account global policy is not included (use incapsula_abp_policy with account_global = true for it), while the "<site> Default" policies the API creates for every Site are — on a busy account those outnumber hand-written policies, and nothing in the returned data distinguishes them beyond their name.
 ---
 
 
 # incapsula_abp_policies
 
-Lists every ABP Policy of an account, ordered by name. Use `incapsula_abp_policy` to look up a single Policy by name or id instead.
+Lists the ABP Policies of an account, ordered by name. Use `incapsula_abp_policy` to look up a single Policy by name or id instead.
+
+Note what the list contains: the account global policy is **not** included (use `incapsula_abp_policy` with `account_global = true` for it), while the `"<site> Default"` policies the API creates for every Site **are** — on a busy account those outnumber hand-written policies, and nothing in the returned data distinguishes them beyond their name.
 
 ## Example Usage
 
@@ -34,7 +37,7 @@ output "policy_names" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `policies` (List of Object) All Policies belonging to the account. (see [below for nested schema](#nestedatt--policies))
+- `policies` (List of Object) The Policies belonging to the account, except the account global policy. (see [below for nested schema](#nestedatt--policies))
 
 <a id="nestedatt--policies"></a>
 ### Nested Schema for `policies`

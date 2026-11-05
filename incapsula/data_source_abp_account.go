@@ -11,11 +11,13 @@ func dataSourceAbpAccount() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceAbpAccountRead,
 
-		Description: "Looks up the ABP account belonging to the configured API credentials.",
+		Description: "Looks up the ABP account belonging to the configured API credentials. " +
+			"`account_id` and the data source's own `id` are both the account UUID, so either " +
+			"can be referenced.",
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Description: "ABP account UUID.",
+				Description: "ABP account UUID. Same value as `id`.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},

@@ -3,13 +3,13 @@ subcategory: "Advanced Bot Protection"
 layout: "incapsula"
 page_title: "incapsula_abp_policy"
 description: |-
-  Looks up an ABP Policy by name, id, or by selecting the account global policy. Exactly one of name, id, or account_global must be set. Names are case-sensitive and matched exactly; the lookup fails if more than one policy matches. Use incapsula_abp_policies to retrieve every Policy of an account instead.
+  Looks up an ABP Policy by name, id, or by selecting the account global policy. Exactly one of name, id, or account_global must be set — and must be set by being present at all, so do not write account_global = false to mean "look up by name or id". Names are case-sensitive and matched exactly; the lookup fails if more than one policy matches. A lookup by id returns the policy's contents but leaves the search arguments name and account_id empty. Use incapsula_abp_policies to retrieve every Policy of an account instead.
 ---
 
 
 # incapsula_abp_policy
 
-Looks up an ABP Policy by name, id, or by selecting the account global policy. Exactly one of `name`, `id`, or `account_global` must be set. Names are case-sensitive and matched exactly; the lookup fails if more than one policy matches. Use `incapsula_abp_policies` to retrieve every Policy of an account instead.
+Looks up an ABP Policy by name, id, or by selecting the account global policy. Exactly one of `name`, `id`, or `account_global` must be set — and must be set by being present at all, so do not write `account_global = false` to mean "look up by name or id". Names are case-sensitive and matched exactly; the lookup fails if more than one policy matches. A lookup by `id` returns the policy's contents but leaves the search arguments `name` and `account_id` empty. Use `incapsula_abp_policies` to retrieve every Policy of an account instead.
 
 ## Example Usage
 
@@ -40,10 +40,10 @@ data "incapsula_abp_policy" "default_policy" {
 
 ### Optional
 
-- `account_global` (Boolean) If true, look up the account global policy. Requires `account_id` and is mutually exclusive with `name` and `id`.
-- `account_id` (String) ABP account UUID to search within. Required when looking up by `name` or `account_global`.
+- `account_global` (Boolean) If true, look up the account global policy. Requires `account_id` and is mutually exclusive with `name` and `id`. Only ever write `true`: writing `false` explicitly — including from a variable — is rejected with an "exactly one of ..." error, because the attribute counts as set even when its value is the default. Omit it instead. The account global policy has no name and no description of its own, so `name` is empty and `description` is `""`, and the `id` it returns cannot be used to reference the policy elsewhere (use `account_global_policy = true` on `incapsula_abp_directive`).
+- `account_id` (String) ABP account UUID to search within. Required when looking up by `name` or `account_global`, and ignored (not returned) when looking up by `id`.
 - `id` (String) ID of the policy to look up. Mutually exclusive with `name` and `account_global`.
-- `name` (String) Name of the policy to look up. Mutually exclusive with `id` and `account_global`.
+- `name` (String) Name of the policy to look up. Mutually exclusive with `id` and `account_global`. This is a search argument, not an output: a lookup by `id` leaves it empty instead of reporting the policy's name. Note that names are not unique in practice, because the API generates a `"<site> Default"` policy per Site.
 
 ### Read-Only
 

@@ -1,10 +1,18 @@
 # Builds the opaque `json` analysis-settings value consumed by an
 # `incapsula_abp_site` selector's `analysis_settings` field.
 
-# Per-site rate limiting.
+# Per-site rate limiting, using the Site's default limits.
 data "incapsula_abp_site_analysis_settings" "login" {
-  rate_limiting           = "per_site"
-  max_requests_per_minute = 100
+  rate_limiting = "per_site"
+}
+
+# Per-site rate limiting with its own limits. `use_site_rate_limiting_parameters`
+# must be false, otherwise the Site defaults win and `max_requests_per_minute` is
+# ignored.
+data "incapsula_abp_site_analysis_settings" "checkout" {
+  rate_limiting                     = "per_site"
+  max_requests_per_minute           = 100
+  use_site_rate_limiting_parameters = false
 }
 
 # No rate limiting.

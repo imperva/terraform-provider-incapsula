@@ -13,13 +13,18 @@ import (
 func dataSourceAbpPolicy() *schema.Resource {
 	policySchema := map[string]*schema.Schema{
 		"account_id": {
-			Description:  "ABP account UUID to search within. Required when looking up by `name` or `account_global`.",
+			Description: "ABP account UUID to search within. Required when looking up by `name` " +
+				"or `account_global`, and ignored (not returned) when looking up by `id`.",
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.IsUUID,
 		},
 		"name": {
-			Description:  "Name of the policy to look up. Mutually exclusive with `id` and `account_global`.",
+			Description: "Name of the policy to look up. Mutually exclusive with `id` and " +
+				"`account_global`. This is a search argument, not an output: a lookup by `id` " +
+				"leaves it empty instead of reporting the policy's name. Note that names are " +
+				"not unique in practice, because the API generates a `\"<site> Default\"` " +
+				"policy per Site.",
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringIsNotWhiteSpace,
@@ -35,7 +40,14 @@ func dataSourceAbpPolicy() *schema.Resource {
 			ExactlyOneOf: []string{"name", "id", "account_global"},
 		},
 		"account_global": {
-			Description:  "If true, look up the account global policy. Requires `account_id` and is mutually exclusive with `name` and `id`.",
+			Description: "If true, look up the account global policy. Requires `account_id` and " +
+				"is mutually exclusive with `name` and `id`. Only ever write `true`: writing " +
+				"`false` explicitly — including from a variable — is rejected with an " +
+				"\"exactly one of ...\" error, because the attribute counts as set even when its " +
+				"value is the default. Omit it instead. The account global policy has no name " +
+				"and no description of its own, so `name` is empty and `description` is `\"\"`, " +
+				"and the `id` it returns cannot be used to reference the policy elsewhere (use " +
+				"`account_global_policy = true` on `incapsula_abp_directive`).",
 			Type:         schema.TypeBool,
 			Optional:     true,
 			Default:      false,
@@ -49,8 +61,11 @@ func dataSourceAbpPolicy() *schema.Resource {
 		ReadContext: dataSourceAbpPolicyRead,
 
 		Description: "Looks up an ABP Policy by name, id, or by selecting the account global " +
-			"policy. Exactly one of `name`, `id`, or `account_global` must be set. Names are " +
-			"case-sensitive and matched exactly; the lookup fails if more than one policy matches. " +
+			"policy. Exactly one of `name`, `id`, or `account_global` must be set — and must be " +
+			"set by being present at all, so do not write `account_global = false` to mean " +
+			"\"look up by name or id\". Names are case-sensitive and matched exactly; the lookup " +
+			"fails if more than one policy matches. A lookup by `id` returns the policy's " +
+			"contents but leaves the search arguments `name` and `account_id` empty. " +
 			"Use `incapsula_abp_policies` to retrieve every Policy of an account instead.",
 
 		Schema: policySchema,

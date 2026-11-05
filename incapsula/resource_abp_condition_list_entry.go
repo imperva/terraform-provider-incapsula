@@ -45,25 +45,36 @@ This is also how conditions are added to a policy: a directive exposes a
 of an entry to attach a condition to that directive. Obtain those IDs from the
 ` + "`incapsula_abp_directive`" + ` data source, which addresses a directive by its
 ` + "`action`" + `; reading them off the ` + "`incapsula_abp_policy`" + ` resource by list index is
-unreliable when directives are added, removed or reordered.`,
+unreliable when directives are added, removed or reordered.
+
+NOTE: an entry cannot be re-pointed in place. Changing ` + "`account_id`" + `,
+` + "`parent_condition_list_id`" + `, ` + "`condition_id`" + ` or
+` + "`condition_list_id`" + ` replaces the entry: Terraform deletes this entry and
+creates a new one with the new values. Only the link is recreated — neither the
+parent list nor the referenced condition is affected — but the entry is briefly
+absent, so the condition does not apply until the new entry is created.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Description:  "ABP account UUID this Condition List Entry belongs to.",
+				Description: "ABP account UUID this Condition List Entry belongs to. " +
+					"Changing it replaces the entry (see the note above).",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.IsUUID,
 			},
 			"parent_condition_list_id": {
-				Description:  "UUID of the parent condition list that this entry is attached to.",
+				Description: "UUID of the parent condition list that this entry is attached to. " +
+					"Changing it replaces the entry (see the note above).",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.IsUUID,
 			},
 			"condition_id": {
-				Description:  "UUID of a literal condition referenced by this entry. Mutually exclusive with `condition_list_id`.",
+				Description: "UUID of a literal condition referenced by this entry. Mutually " +
+					"exclusive with `condition_list_id`. Changing it replaces the entry (see the " +
+					"note above).",
 				Type:         schema.TypeString,
 				Optional:     true,
 				ForceNew:     true,
@@ -72,7 +83,9 @@ unreliable when directives are added, removed or reordered.`,
 				ExactlyOneOf: []string{"condition_id", "condition_list_id"},
 			},
 			"condition_list_id": {
-				Description:  "UUID of a condition list referenced by this entry. Mutually exclusive with `condition_id`.",
+				Description: "UUID of a condition list referenced by this entry. Mutually " +
+					"exclusive with `condition_id`. Changing it replaces the entry (see the note " +
+					"above).",
 				Type:         schema.TypeString,
 				Optional:     true,
 				ForceNew:     true,

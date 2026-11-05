@@ -55,7 +55,8 @@ func (c *Client) CreateAbpDomainEncryptionKey(domainId string, key AbpDomainEncr
 
 	var created AbpDomainEncryptionKey
 	if err := json.Unmarshal(responseBody, &created); err != nil {
-		return nil, fmt.Errorf("error parsing %s create response: %w; body: %s", abpDomainEncryptionKeyResourceName, err, string(responseBody))
+		// The body carries the key material, so it is never echoed.
+		return nil, fmt.Errorf("error parsing %s create response: %w", abpDomainEncryptionKeyResourceName, err)
 	}
 	return &created, nil
 }
@@ -87,7 +88,7 @@ func (c *Client) ReadAbpDomainEncryptionKey(domainId, keyId string) (*AbpDomainE
 
 	var list abpDomainEncryptionKeyList
 	if err := json.Unmarshal(responseBody, &list); err != nil {
-		return nil, fmt.Errorf("error parsing %s list response: %w; body: %s", abpDomainEncryptionKeyResourceName, err, string(responseBody))
+		return nil, fmt.Errorf("error parsing %s list response: %w", abpDomainEncryptionKeyResourceName, err)
 	}
 	for i := range list.Items {
 		if list.Items[i].Id == keyId {

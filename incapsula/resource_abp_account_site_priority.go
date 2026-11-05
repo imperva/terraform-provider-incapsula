@@ -24,7 +24,15 @@ func resourceAbpAccountSitePriority() *schema.Resource {
 
 		Description: `Manages the priority order of Sites within an ABP Account. The first ID in
 ` + "`site_ids`" + ` has the highest priority. The list must include every Site
-attached to the Account exactly once.
+attached to the Account exactly once — including Sites created outside Terraform.
+
+WARNING: if a Site is missing from ` + "`site_ids`" + `, every apply fails with
+` + "`Wrong number of site IDs supplied`" + `, which does not say how many Sites
+were expected or which ones are missing. A single Site created by anyone — the
+UI, another workspace, another module — is enough to block every apply, so write
+the list so that it cannot go stale: combine your own Sites with the ones read
+from the ` + "`incapsula_abp_sites`" + ` data source (see the example below)
+rather than listing IDs literally.
 
 NOTE: this resource wraps a singleton property of the parent Account.
 Destroying it removes the priority from Terraform state but leaves the
@@ -32,14 +40,16 @@ server-side order unchanged.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
-				Description:  "Account UUID whose Site priority order is being managed.",
+				Description: "Account UUID whose Site priority order is being managed. Changing " +
+					"it replaces the resource: Terraform forgets the order of the old Account " +
+					"(leaving it unchanged on the server) and applies this order to the new one.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: validation.IsUUID,
 			},
 			"site_ids": {
-				Description: "Site UUIDs in priority order (highest first). Must include every Site attached to the Account exactly once.",
+				Description: "Site UUIDs in priority order (highest first). Must include every Site attached to the Account exactly once, including Sites created outside Terraform.",
 				Type:        schema.TypeList,
 				Required:    true,
 				MinItems:    1,

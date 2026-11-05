@@ -29,9 +29,11 @@ func dataSourceAbpConditionList() *schema.Resource {
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"managed": {
-				Description: "Whether the matched condition list is managed (Imperva-owned).",
-				Type:        schema.TypeBool,
-				Computed:    true,
+				Description: "Whether the matched condition list is managed (Imperva-owned). " +
+					"Always `false`: the API only ever exposes managed conditions as literal " +
+					"conditions, so there are no managed condition lists to look up.",
+				Type:     schema.TypeBool,
+				Computed: true,
 			},
 			"description": {
 				Description: "Description of the condition list.",
