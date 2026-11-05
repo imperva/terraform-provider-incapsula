@@ -62,7 +62,7 @@ read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 				Description:  "Human-readable name of the Site. 1..100 characters, without leading or trailing whitespace.",
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringLenBetween(1, 100),
+				ValidateFunc: validation.All(validation.StringLenBetween(1, 100), validateAbpName),
 			},
 			"industry": {
 				Description:  "Industry the Site operates in. Informational metadata, unused by the runtime. One of: " + strings.Join(abpSiteIndustries, ", ") + ".",

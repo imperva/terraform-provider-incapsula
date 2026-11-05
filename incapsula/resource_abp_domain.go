@@ -28,12 +28,13 @@ analyzed.
 
 NOTE: ` + "`criteria`" + ` cannot be changed in-place. Changing it replaces the
 Domain: Terraform deletes the existing Domain — together with its encryption keys
-and its slot in the Site's Domain priority order — and creates a new one. For the
-same reason a ` + "`criteria`" + ` value that does not meet the required format
-(the API trims whitespace, so the stored value differs from the configured one)
-forces that replacement on every apply. Changing ` + "`account_id`" + ` replaces
-the Domain as well, while ` + "`site_id`" + ` does not: moving a Domain to another
-Site of the same account is an in-place update.
+and its slot in the Site's Domain priority order — and creates a new one. Because
+of that, a ` + "`criteria`" + ` value the API would not store verbatim (it trims
+whitespace, so the stored value would differ from the configured one and ask to be
+replaced again on the next apply) is rejected when the configuration is planned.
+Changing ` + "`account_id`" + ` replaces the Domain as well, while
+` + "`site_id`" + ` does not: moving a Domain to another Site of the same account
+is an in-place update.
 
 ` + "`obfuscate_path`" + ` is server-generated when omitted on create and is
 preserved on update.
@@ -72,25 +73,28 @@ server disagree. Removing such an attribute from the configuration is planned as
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"exact": {
-							Description: "Match exactly this fully-qualified domain name. Must not have leading or trailing whitespace. Changing it replaces the Domain.",
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							ForceNew:    true,
+							Description:  "Match exactly this fully-qualified domain name. Must not have leading or trailing whitespace. Changing it replaces the Domain.",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ForceNew:     true,
+							ValidateFunc: validateAbpDomainNamePart,
 						},
 						"prefix": {
-							Description: "Match any domain name with this prefix. Must not have leading or trailing whitespace. Changing it replaces the Domain.",
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							ForceNew:    true,
+							Description:  "Match any domain name with this prefix. Must not have leading or trailing whitespace. Changing it replaces the Domain.",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ForceNew:     true,
+							ValidateFunc: validateAbpDomainNamePart,
 						},
 						"suffix": {
-							Description: "Match any domain name with this suffix. Must not have leading or trailing whitespace. Changing it replaces the Domain.",
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							ForceNew:    true,
+							Description:  "Match any domain name with this suffix. Must not have leading or trailing whitespace. Changing it replaces the Domain.",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							ForceNew:     true,
+							ValidateFunc: validateAbpDomainNamePart,
 						},
 						"cloudwaf_id": {
 							Description: "CloudWAF website ID; use this when onboarding CloudWAF domains. Requires a CloudWAF or Connector licence on the account, while matching by `exact`, `prefix` or `suffix` requires a Connector licence; without the right licence the API rejects the Domain with a `license required` error. Changing it replaces the Domain.",
@@ -103,9 +107,10 @@ server disagree. Removing such an attribute from the configuration is planned as
 				},
 			},
 			"cookiescope": {
-				Description: "The Domain attribute of the Set-Cookie header set by the ABP JavaScript. Use `$suffix` as the TLD with prefix criteria. Must not have leading or trailing whitespace.",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "The Domain attribute of the Set-Cookie header set by the ABP JavaScript. Use `$suffix` as the TLD with prefix criteria. Must not have leading or trailing whitespace.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validateAbpCookiescope,
 			},
 			"log_region": {
 				Description:  "Region in which ABP logs are stored. One of: apac, australia, eu, usa, india. Defaults to `usa`.",

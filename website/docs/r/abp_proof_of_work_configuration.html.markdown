@@ -35,7 +35,7 @@ resource "incapsula_abp_proof_of_work_configuration" "pow1" {
 
 - `account_id` (String) ABP account UUID this Proof Of Work Configuration belongs to. Changing it replaces the configuration — Terraform deletes the existing one and creates a new one — because the API cannot move a Proof Of Work Configuration to another account.
 - `difficulty` (Number) Number of credits a client gets for completing a proof-of-work challenge. The amount of work performed by the client is proportional to this number. Must be >= 1.
-- `name` (String) Human-readable name of the Proof Of Work Configuration. Must not have leading or trailing whitespace.
+- `name` (String) Human-readable name of the Proof Of Work Configuration. 1..100 characters, without leading or trailing whitespace.
 
 ### Optional
 

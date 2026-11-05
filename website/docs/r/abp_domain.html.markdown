@@ -8,12 +8,13 @@ description: |-
   analyzed.
   NOTE: criteria cannot be changed in-place. Changing it replaces the
   Domain: Terraform deletes the existing Domain — together with its encryption keys
-  and its slot in the Site's Domain priority order — and creates a new one. For the
-  same reason a criteria value that does not meet the required format
-  (the API trims whitespace, so the stored value differs from the configured one)
-  forces that replacement on every apply. Changing account_id replaces
-  the Domain as well, while site_id does not: moving a Domain to another
-  Site of the same account is an in-place update.
+  and its slot in the Site's Domain priority order — and creates a new one. Because
+  of that, a criteria value the API would not store verbatim (it trims
+  whitespace, so the stored value would differ from the configured one and ask to be
+  replaced again on the next apply) is rejected when the configuration is planned.
+  Changing account_id replaces the Domain as well, while
+  site_id does not: moving a Domain to another Site of the same account
+  is an in-place update.
   obfuscate_path is server-generated when omitted on create and is
   preserved on update.
   NOTE: the API omits optional fields that have no value instead of returning them
@@ -35,12 +36,13 @@ analyzed.
 
 NOTE: `criteria` cannot be changed in-place. Changing it replaces the
 Domain: Terraform deletes the existing Domain — together with its encryption keys
-and its slot in the Site's Domain priority order — and creates a new one. For the
-same reason a `criteria` value that does not meet the required format
-(the API trims whitespace, so the stored value differs from the configured one)
-forces that replacement on every apply. Changing `account_id` replaces
-the Domain as well, while `site_id` does not: moving a Domain to another
-Site of the same account is an in-place update.
+and its slot in the Site's Domain priority order — and creates a new one. Because
+of that, a `criteria` value the API would not store verbatim (it trims
+whitespace, so the stored value would differ from the configured one and ask to be
+replaced again on the next apply) is rejected when the configuration is planned.
+Changing `account_id` replaces the Domain as well, while
+`site_id` does not: moving a Domain to another Site of the same account
+is an in-place update.
 
 `obfuscate_path` is server-generated when omitted on create and is
 preserved on update.

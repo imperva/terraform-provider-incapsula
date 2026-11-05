@@ -39,10 +39,10 @@ is "proof_of_work".`,
 				ValidateFunc: validation.IsUUID,
 			},
 			"name": {
-				Description:  "Human-readable name of the Proof Of Work Configuration. Must not have leading or trailing whitespace.",
+				Description:  "Human-readable name of the Proof Of Work Configuration. 1..100 characters, without leading or trailing whitespace.",
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.StringIsNotWhiteSpace,
+				ValidateFunc: validation.All(validation.StringLenBetween(1, 100), validateAbpName),
 			},
 			"difficulty": {
 				Description: "Number of credits a client gets for completing a proof-of-work " +
