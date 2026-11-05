@@ -3,13 +3,13 @@ subcategory: "Advanced Bot Protection"
 layout: "incapsula"
 page_title: "incapsula_abp_condition_list"
 description: |-
-  Provides an ABP Condition List resource. A condition list is a named
-  container that groups conditions; entries are managed via
-  incapsula_abp_condition_list_entry. Condition lists can be referenced
-  from policies and from other condition lists.
-  WARNING: destroying a condition list also deletes every entry inside it, on the
+  Provides an ABP Condition List resource. A Condition List is a named
+  container that groups Conditions; entries are managed via
+  incapsula_abp_condition_list_entry. Condition Lists can be referenced
+  from Policies and from other Condition Lists.
+  WARNING: destroying a Condition List also deletes every entry inside it, on the
   server. That includes entries this Terraform configuration does not manage, such
-  as entries added through the UI or by another Terraform state. The conditions the
+  as entries added through the UI or by another Terraform state. The Conditions the
   entries point at are not deleted — only the entries that link them to this
   list.
 ---
@@ -17,14 +17,14 @@ description: |-
 
 # incapsula_abp_condition_list
 
-Provides an ABP Condition List resource. A condition list is a named
-container that groups conditions; entries are managed via
-`incapsula_abp_condition_list_entry`. Condition lists can be referenced
-from policies and from other condition lists.
+Provides an ABP Condition List resource. A Condition List is a named
+container that groups Conditions; entries are managed via
+`incapsula_abp_condition_list_entry`. Condition Lists can be referenced
+from Policies and from other Condition Lists.
 
-WARNING: destroying a condition list also deletes every entry inside it, on the
+WARNING: destroying a Condition List also deletes every entry inside it, on the
 server. That includes entries this Terraform configuration does not manage, such
-as entries added through the UI or by another Terraform state. The conditions the
+as entries added through the UI or by another Terraform state. The Conditions the
 entries point at are not deleted — only the entries that link them to this
 list.
 
@@ -44,11 +44,11 @@ resource "incapsula_abp_condition_list" "sample_condition_list" {
 ### Required
 
 - `account_id` (String) ABP account UUID this Condition List belongs to. Changing it replaces the Condition List — Terraform deletes the existing one (and every entry in it) and creates a new one — because the API cannot move a Condition List to another account.
-- `name` (String) Human-readable name of the condition list. 1..100 characters.
+- `name` (String) Human-readable name of the Condition List. 1..100 characters.
 
 ### Optional
 
-- `description` (String) Description of the condition list. An empty string is indistinguishable from an omitted value, so a description that has already been set cannot be cleared, and a description changed outside Terraform is adopted into state rather than restored.
+- `description` (String) Description of the Condition List. An empty string is indistinguishable from an omitted value, so a description that has already been set cannot be cleared, and a description changed outside Terraform is adopted into state rather than restored.
 
 ### Read-Only
 

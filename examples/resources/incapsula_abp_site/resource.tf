@@ -9,7 +9,7 @@ resource "incapsula_abp_site" "sample_site" {
   default_max_requests_per_session = 600
   default_max_session_length       = "2h"
 
-  # Match by path prefix and apply a specific policy.
+  # Match by path prefix and apply a specific Policy.
   selector {
     purpose   = "login"
     policy_id = incapsula_abp_policy.policy_with_custom_directives.id

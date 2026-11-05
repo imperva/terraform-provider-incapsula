@@ -22,11 +22,11 @@ func resourceAbpCondition() *schema.Resource {
 			StateContext: resourceAbpConditionImport,
 		},
 
-		Description: `Provides an ABP Condition resource. A condition contains MOI expression
-evaluated against incoming requests. Conditions are referenced from policies
-(directly or via condition lists) to drive directive actions.
+		Description: `Provides an ABP Condition resource. A Condition contains MOI expression
+evaluated against incoming requests. Conditions are referenced from Policies
+(directly or via Condition Lists) to drive Directive actions.
 
-NOTE: the API stores and returns a formatted and optimized form of the condition
+NOTE: the API stores and returns a formatted and optimized form of the Condition
 code, so the provider keeps the ` + "`code`" + ` you wrote and exposes the
 server's form separately as ` + "`code_normalized`" + `. This has two
 consequences. A code change made outside Terraform (for example in the UI) is
@@ -50,13 +50,13 @@ changes through Terraform.`,
 				ValidateFunc: validation.IsUUID,
 			},
 			"name": {
-				Description:  "Human-readable name of the condition. 1..100 characters.",
+				Description:  "Human-readable name of the Condition. 1..100 characters.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 			"description": {
-				Description: "Description of the condition. Required; pass an empty string for no description.",
+				Description: "Description of the Condition. Required; pass an empty string for no description.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
@@ -94,19 +94,19 @@ changes through Terraform.`,
 					"  - `identify_eventually`\n\n" +
 					"Omitting `template` is the same as setting `custom`.\n\n" +
 					"**WARNING:** for any value other than `custom`, the server requires `code` to " +
-					"match that template's expected structure. Mismatched `code` makes condition " +
+					"match that template's expected structure. Mismatched `code` makes Condition " +
 					"create/update fail.\n\n" +
-					"**WARNING:** the template is fixed when the condition is created. The API " +
+					"**WARNING:** the template is fixed when the Condition is created. The API " +
 					"ignores a new value on update, so changing it appears to succeed while nothing " +
 					"changes and the next plan shows the same change again. To change the template, " +
-					"recreate the condition, for example with " +
+					"recreate the Condition, for example with " +
 					"`terraform apply -replace=incapsula_abp_condition.<name>`.",
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
 			"last_change_by": {
-				Description: "Identifier of the user who last changed this condition.",
+				Description: "Identifier of the user who last changed this Condition.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},

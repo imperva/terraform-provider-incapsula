@@ -24,14 +24,14 @@ func resourceAbpConditionList() *schema.Resource {
 			StateContext: resourceAbpConditionListImport,
 		},
 
-		Description: `Provides an ABP Condition List resource. A condition list is a named
-container that groups conditions; entries are managed via
-` + "`incapsula_abp_condition_list_entry`" + `. Condition lists can be referenced
-from policies and from other condition lists.
+		Description: `Provides an ABP Condition List resource. A Condition List is a named
+container that groups Conditions; entries are managed via
+` + "`incapsula_abp_condition_list_entry`" + `. Condition Lists can be referenced
+from Policies and from other Condition Lists.
 
-WARNING: destroying a condition list also deletes every entry inside it, on the
+WARNING: destroying a Condition List also deletes every entry inside it, on the
 server. That includes entries this Terraform configuration does not manage, such
-as entries added through the UI or by another Terraform state. The conditions the
+as entries added through the UI or by another Terraform state. The Conditions the
 entries point at are not deleted — only the entries that link them to this
 list.`,
 
@@ -47,13 +47,13 @@ list.`,
 				ValidateFunc: validation.IsUUID,
 			},
 			"name": {
-				Description:  "Human-readable name of the condition list. 1..100 characters.",
+				Description:  "Human-readable name of the Condition List. 1..100 characters.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringLenBetween(1, 100),
 			},
 			"description": {
-				Description: "Description of the condition list. An empty string is " +
+				Description: "Description of the Condition List. An empty string is " +
 					"indistinguishable from an omitted value, so a description that has already " +
 					"been set cannot be cleared, and a description changed outside Terraform is " +
 					"adopted into state rather than restored.",

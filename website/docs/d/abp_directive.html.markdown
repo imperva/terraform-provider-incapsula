@@ -3,25 +3,25 @@ subcategory: "Advanced Bot Protection"
 layout: "incapsula"
 page_title: "incapsula_abp_directive"
 description: |-
-  Looks up a single directive within an ABP Policy by its action. The lookup fails if more than one directive in the policy has the given action.
+  Looks up a single Directive within an ABP Policy by its action. The lookup fails if more than one Directive in the Policy has the given action.
 ---
 
 
 # incapsula_abp_directive
 
-Looks up a single directive within an ABP Policy by its action. The lookup fails if more than one directive in the policy has the given action.
+Looks up a single Directive within an ABP Policy by its action. The lookup fails if more than one Directive in the Policy has the given action.
 
 ## Example Usage
 
 ```terraform
-# Reference a directive by its action. Preferred over indexing into
+# Reference a Directive by its action. Preferred over indexing into
 # `incapsula_abp_policy.<name>.directive[i]` as it is more predictable.
 data "incapsula_abp_directive" "policy_block" {
   policy_id = incapsula_abp_policy.policy_with_custom_directives.id
   action    = "block"
 }
 
-# Reference a directive of the account global policy.
+# Reference a Directive of the account global Policy.
 data "incapsula_abp_directive" "account_global_allow" {
   account_id            = var.account_id
   account_global_policy = true
@@ -34,17 +34,17 @@ data "incapsula_abp_directive" "account_global_allow" {
 
 ### Required
 
-- `action` (String) Action of the directive to look up.
+- `action` (String) Action of the Directive to look up.
 
 ### Optional
 
-- `account_global_policy` (Boolean) If true, look up a directive within the account global policy. Requires `account_id` and is mutually exclusive with `policy_id`. Only ever write `true`: writing `false` explicitly — including from a variable — is rejected with an "exactly one of ..." error, because the attribute counts as set even when its value is the default. Omit it instead.
+- `account_global_policy` (Boolean) If true, look up a Directive within the account global Policy. Requires `account_id` and is mutually exclusive with `policy_id`. Only ever write `true`: writing `false` explicitly — including from a variable — is rejected with an "exactly one of ..." error, because the attribute counts as set even when its value is the default. Omit it instead.
 - `account_id` (String) ABP account UUID. Required when `account_global_policy` is true, and ignored otherwise.
-- `policy_id` (String) ID of the ABP Policy to search within. Mutually exclusive with `account_global_policy`. This is a search argument, not an output: it stays empty when the directive is looked up in the account global policy.
+- `policy_id` (String) ID of the ABP Policy to search within. Mutually exclusive with `account_global_policy`. This is a search argument, not an output: it stays empty when the Directive is looked up in the account global Policy.
 
 ### Read-Only
 
-- `condition_list_id` (String) Condition list containing conditions for this directive.
-- `id` (String) Artificial identifier for this data source. Directives have no stable ID in the API, so this is synthesized from the policy and action (`<policy_id>:<action>`, or `global:<account_id>:<action>` for the account global policy) and is not a real API identifier.
+- `condition_list_id` (String) Condition List containing Conditions for this Directive.
+- `id` (String) Artificial identifier for this data source. Directives have no stable ID in the API, so this is synthesized from the Policy and action (`<policy_id>:<action>`, or `global:<account_id>:<action>` for the account global Policy) and is not a real API identifier.
 - `proof_of_work_configuration_id` (String) ID of the proof-of-work configuration applied. Only set when `action` is `proof_of_work`; an empty string otherwise, never null.
-- `skip_condition_list_id` (String) Condition list whose matches skip this directive. Only set when `action` is `proof_of_work`; an empty string otherwise, never null.
+- `skip_condition_list_id` (String) Condition List whose matches skip this Directive. Only set when `action` is `proof_of_work`; an empty string otherwise, never null.

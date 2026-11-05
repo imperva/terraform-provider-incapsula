@@ -87,7 +87,7 @@ func resourceAbpWebsites() *schema.Resource {
 				Required:    true,
 			},
 			"auto_publish": {
-				Description: "Whether to publish the changes automatically. Changes don't take take effect until they have been published.",
+				Description: "Whether to publish the changes automatically. Changes don't take effect until they have been published.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
@@ -98,7 +98,7 @@ func resourceAbpWebsites() *schema.Resource {
 				Computed:    true,
 			},
 			"website_group": {
-				Description: "List of website groups which are associated to ABP. Website groups are matched in a top-down fashion. If a more specific website group should take precedence over over a wild card entry then that should be higher in the list.",
+				Description: "List of Website Groups which are associated to ABP. Website Groups are matched in a top-down fashion. If a more specific Website Group should take precedence over over a wild card entry then that should be higher in the list.",
 				Type:        schema.TypeList,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -109,15 +109,15 @@ func resourceAbpWebsites() *schema.Resource {
 						"name_id": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "Unique user-defined identifier used to differentiate website groups whose `name` is identical",
+							Description: "Unique user-defined identifier used to differentiate Website Groups whose `name` is identical",
 						},
 						"name": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "Name for the website group. Must be unique unless `name_id` is specified.",
+							Description: "Name for the Website Group. Must be unique unless `name_id` is specified.",
 						},
 						"website": {
-							Description: "List of websites within the website group. Websites are matched in a top-down fashion. If a more specific website should take precedence over over a wild card entry then that should be higher in the list",
+							Description: "List of websites within the Website Group. Websites are matched in a top-down fashion. If a more specific website should take precedence over over a wild card entry then that should be higher in the list",
 							Type:        schema.TypeList,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -134,7 +134,7 @@ func resourceAbpWebsites() *schema.Resource {
 										Type:        schema.TypeBool,
 										Optional:    true,
 										Default:     true,
-										Description: "Enables the ABP conditions for this website. Defaults to true.",
+										Description: "Enables the ABP Conditions for this website. Defaults to true.",
 									},
 								},
 							},

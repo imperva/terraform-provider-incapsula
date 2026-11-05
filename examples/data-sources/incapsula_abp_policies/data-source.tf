@@ -1,4 +1,4 @@
-# List every policy of the account.
+# List every Policy of the account.
 data "incapsula_abp_policies" "all" {
   account_id = var.account_id
 }

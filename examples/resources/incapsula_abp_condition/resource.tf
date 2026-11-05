@@ -6,7 +6,7 @@ resource "incapsula_abp_condition" "specific_visitor" {
 }
 
 # When a template other than "custom" is set, `code` must follow that
-# template's expected structure or the condition will fail to create.
+# template's expected structure or the Condition will fail to create.
 resource "incapsula_abp_condition" "rate_limit" {
   account_id  = var.account_id
   name        = "Too many requests"

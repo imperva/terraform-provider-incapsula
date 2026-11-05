@@ -127,7 +127,7 @@ server disagree. Removing such an attribute from the configuration is planned as
 				ValidateFunc: validation.StringInSlice([]string{"lax", "legacy", "none_secure", "lax_and_none_secure", "lax_and_legacy", "legacy_and_none_secure"}, false),
 			},
 			"enable_mitigation": {
-				Description: "If false, all active conditions are treated as monitor-only. If true (default), conditions behave per their state.",
+				Description: "If false, all active Conditions are treated as monitor-only. If true (default), Conditions behave per their state.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     true,
@@ -159,7 +159,7 @@ server disagree. Removing such an attribute from the configuration is planned as
 				Optional:    true,
 			},
 			"divert_host": {
-				Description: "Domain or IP to which traffic is diverted when the `divert` directive triggers. Requires traffic diversion to be enabled on the account; otherwise the API accepts the value, reports it as applied and then discards it.",
+				Description: "Domain or IP to which traffic is diverted when the `divert` Directive triggers. Requires traffic diversion to be enabled on the account; otherwise the API accepts the value, reports it as applied and then discards it.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},

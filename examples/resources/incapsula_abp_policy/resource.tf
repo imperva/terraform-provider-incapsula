@@ -1,4 +1,4 @@
-# Policy with explicit directives.
+# Policy with explicit Directives.
 resource "incapsula_abp_policy" "policy_with_custom_directives" {
   account_id  = var.account_id
   name        = "Policy with custom directives"
@@ -18,9 +18,9 @@ resource "incapsula_abp_policy" "policy_with_custom_directives" {
   }
 }
 
-# Conditions are attached to a directive's condition list. Address the directive
+# Conditions are attached to a Directive's Condition List. Address the Directive
 # by its action with the `incapsula_abp_directive` data source -- never by its
-# index in the `directive` list, which moves when directives are added, removed
+# index in the `directive` list, which moves when Directives are added, removed
 # or reordered.
 data "incapsula_abp_directive" "block" {
   policy_id = incapsula_abp_policy.policy_with_custom_directives.id
@@ -34,8 +34,8 @@ resource "incapsula_abp_condition_list_entry" "block_bad_bots" {
   state                    = "active"
 }
 
-# A `proof_of_work` directive also has a skip condition list: matches there
-# bypass the directive.
+# A `proof_of_work` Directive also has a skip Condition List: matches there
+# bypass the Directive.
 data "incapsula_abp_directive" "pow" {
   policy_id = incapsula_abp_policy.policy_with_custom_directives.id
   action    = "proof_of_work"

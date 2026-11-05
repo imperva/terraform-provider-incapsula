@@ -13,7 +13,7 @@ func dataSourceAbpConditionList() *schema.Resource {
 		ReadContext: dataSourceAbpConditionListRead,
 
 		Description: "Looks up an ABP Condition List by name. Names are case-sensitive " +
-			"and matched exactly. The lookup fails if more than one condition list matches.",
+			"and matched exactly. The lookup fails if more than one Condition List matches.",
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -23,20 +23,20 @@ func dataSourceAbpConditionList() *schema.Resource {
 				ValidateFunc: validation.IsUUID,
 			},
 			"name": {
-				Description:  "Name of the condition list to look up.",
+				Description:  "Name of the Condition List to look up.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"managed": {
-				Description: "Whether the matched condition list is managed (Imperva-owned). " +
-					"Always `false`: the API only ever exposes managed conditions as literal " +
-					"conditions, so there are no managed condition lists to look up.",
+				Description: "Whether the matched Condition List is managed (Imperva-owned). " +
+					"Always `false`: the API only ever exposes managed Conditions as literal " +
+					"Conditions, so there are no managed Condition Lists to look up.",
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
 			"description": {
-				Description: "Description of the condition list.",
+				Description: "Description of the Condition List.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},

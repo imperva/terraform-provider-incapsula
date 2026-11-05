@@ -3,13 +3,13 @@ subcategory: "Advanced Bot Protection"
 layout: "incapsula"
 page_title: "incapsula_abp_condition_list"
 description: |-
-  Looks up an ABP Condition List by name. Names are case-sensitive and matched exactly. The lookup fails if more than one condition list matches.
+  Looks up an ABP Condition List by name. Names are case-sensitive and matched exactly. The lookup fails if more than one Condition List matches.
 ---
 
 
 # incapsula_abp_condition_list
 
-Looks up an ABP Condition List by name. Names are case-sensitive and matched exactly. The lookup fails if more than one condition list matches.
+Looks up an ABP Condition List by name. Names are case-sensitive and matched exactly. The lookup fails if more than one Condition List matches.
 
 ## Example Usage
 
@@ -26,12 +26,12 @@ data "incapsula_abp_condition_list" "sample_condition_list_lookup" {
 ### Required
 
 - `account_id` (String) ABP account UUID to search within.
-- `name` (String) Name of the condition list to look up.
+- `name` (String) Name of the Condition List to look up.
 
 ### Read-Only
 
 - `created_at` (String) RFC3339 timestamp at which the Condition List was created.
-- `description` (String) Description of the condition list.
+- `description` (String) Description of the Condition List.
 - `id` (String) The ID of this resource.
-- `managed` (Boolean) Whether the matched condition list is managed (Imperva-owned). Always `false`: the API only ever exposes managed conditions as literal conditions, so there are no managed condition lists to look up.
+- `managed` (Boolean) Whether the matched Condition List is managed (Imperva-owned). Always `false`: the API only ever exposes managed Conditions as literal Conditions, so there are no managed Condition Lists to look up.
 - `modified_at` (String) RFC3339 timestamp at which the Condition List was last modified.

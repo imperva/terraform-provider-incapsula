@@ -3,24 +3,24 @@ subcategory: "Advanced Bot Protection"
 layout: "incapsula"
 page_title: "incapsula_abp_condition"
 description: |-
-  Looks up a literal ABP Condition by name. Names are case-sensitive and matched exactly. The lookup fails if more than one condition matches. Use incapsula_abp_conditions to retrieve every literal Condition of an account instead.
+  Looks up a literal ABP Condition by name. Names are case-sensitive and matched exactly. The lookup fails if more than one Condition matches. Use incapsula_abp_conditions to retrieve every literal Condition of an account instead.
 ---
 
 
 # incapsula_abp_condition
 
-Looks up a literal ABP Condition by name. Names are case-sensitive and matched exactly. The lookup fails if more than one condition matches. Use `incapsula_abp_conditions` to retrieve every literal Condition of an account instead.
+Looks up a literal ABP Condition by name. Names are case-sensitive and matched exactly. The lookup fails if more than one Condition matches. Use `incapsula_abp_conditions` to retrieve every literal Condition of an account instead.
 
 ## Example Usage
 
 ```terraform
-# Look up an account-owned condition by name.
+# Look up an account-owned Condition by name.
 data "incapsula_abp_condition" "specific_visitor_lookup" {
   account_id = var.account_id
   name       = incapsula_abp_condition.specific_visitor.name
 }
 
-# Look up a managed (Imperva-provided) condition.
+# Look up a managed (Imperva-provided) Condition.
 data "incapsula_abp_condition" "managed_monitoring_tools" {
   account_id = var.account_id
   name       = "Monitoring Tools"
@@ -33,20 +33,20 @@ data "incapsula_abp_condition" "managed_monitoring_tools" {
 
 ### Required
 
-- `account_id` (String) ABP account UUID to search within. Managed conditions are visible from any account.
-- `name` (String) Name of the literal condition to look up.
+- `account_id` (String) ABP account UUID to search within. Managed Conditions are visible from any account.
+- `name` (String) Name of the literal Condition to look up.
 
 ### Optional
 
-- `managed` (Boolean) If `true`, the lookup is restricted to managed (Imperva-owned) conditions. If `false` or unset, **both** managed and account-owned conditions are matched — it does not restrict the lookup to account-owned ones, and there is no way to do so. A lookup therefore fails when an account-owned condition shares its name with a managed one. Note that `managed` on the `incapsula_abp_conditions` data source means something different: there, `false` lists only account-owned conditions. Reflects whether the matched condition is managed.
+- `managed` (Boolean) If `true`, the lookup is restricted to managed (Imperva-owned) Conditions. If `false` or unset, **both** managed and account-owned Conditions are matched — it does not restrict the lookup to account-owned ones, and there is no way to do so. A lookup therefore fails when an account-owned Condition shares its name with a managed one. Note that `managed` on the `incapsula_abp_conditions` data source means something different: there, `false` lists only account-owned Conditions. Reflects whether the matched Condition is managed.
 
 ### Read-Only
 
 - `code` (String) Server-side normalized MOI expression. The API does not expose the expression of managed Conditions, so this is always empty for them.
 - `created_at` (String) RFC3339 timestamp at which the Condition was created. Managed Conditions report the Unix epoch (`1970-01-01T00:00:00Z`), as the API does not track it for them.
-- `description` (String) Description of the condition.
+- `description` (String) Description of the Condition.
 - `id` (String) The ID of this resource.
-- `last_change_by` (String) Identifier of the user who last changed this condition. Always empty for managed Conditions.
+- `last_change_by` (String) Identifier of the user who last changed this Condition. Always empty for managed Conditions.
 - `modified_at` (String) RFC3339 timestamp at which the Condition was last modified. Managed Conditions report the Unix epoch (`1970-01-01T00:00:00Z`), as the API does not track it for them.
 - `recommended_directives` (List of String) Directive actions this Condition is recommended for, as advertised by the API. Empty for account-owned Conditions.
-- `template` (String) Editor template the server uses to validate `code`. Open enumeration; `custom` for conditions that do not use a specific editor template. Always empty for managed Conditions.
+- `template` (String) Editor template the server uses to validate `code`. Open enumeration; `custom` for Conditions that do not use a specific editor template. Always empty for managed Conditions.

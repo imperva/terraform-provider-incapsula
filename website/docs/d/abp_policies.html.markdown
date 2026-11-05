@@ -4,7 +4,7 @@ layout: "incapsula"
 page_title: "incapsula_abp_policies"
 description: |-
   Lists the ABP Policies of an account, ordered by name. Use incapsula_abp_policy to look up a single Policy by name or id instead.
-  Note what the list contains: the account global policy is not included (use incapsula_abp_policy with account_global = true for it), while the "<site> Default" policies the API creates for every Site are — on a busy account those outnumber hand-written policies, and nothing in the returned data distinguishes them beyond their name.
+  Note what the list contains: the account global Policy is not included (use incapsula_abp_policy with account_global = true for it), while the "<site> Default" Policies the API creates for every Site are — on a busy account those outnumber hand-written Policies, and nothing in the returned data distinguishes them beyond their name.
 ---
 
 
@@ -12,12 +12,12 @@ description: |-
 
 Lists the ABP Policies of an account, ordered by name. Use `incapsula_abp_policy` to look up a single Policy by name or id instead.
 
-Note what the list contains: the account global policy is **not** included (use `incapsula_abp_policy` with `account_global = true` for it), while the `"<site> Default"` policies the API creates for every Site **are** — on a busy account those outnumber hand-written policies, and nothing in the returned data distinguishes them beyond their name.
+Note what the list contains: the account global Policy is **not** included (use `incapsula_abp_policy` with `account_global = true` for it), while the `"<site> Default"` Policies the API creates for every Site **are** — on a busy account those outnumber hand-written Policies, and nothing in the returned data distinguishes them beyond their name.
 
 ## Example Usage
 
 ```terraform
-# List every policy of the account.
+# List every Policy of the account.
 data "incapsula_abp_policies" "all" {
   account_id = var.account_id
 }
@@ -37,7 +37,7 @@ output "policy_names" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `policies` (List of Object) The Policies belonging to the account, except the account global policy. (see [below for nested schema](#nestedatt--policies))
+- `policies` (List of Object) The Policies belonging to the account, except the account global Policy. (see [below for nested schema](#nestedatt--policies))
 
 <a id="nestedatt--policies"></a>
 ### Nested Schema for `policies`

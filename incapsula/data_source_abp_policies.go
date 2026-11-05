@@ -31,10 +31,10 @@ func dataSourceAbpPolicies() *schema.Resource {
 
 		Description: "Lists the ABP Policies of an account, ordered by name. Use " +
 			"`incapsula_abp_policy` to look up a single Policy by name or id instead.\n\n" +
-			"Note what the list contains: the account global policy is **not** included (use " +
+			"Note what the list contains: the account global Policy is **not** included (use " +
 			"`incapsula_abp_policy` with `account_global = true` for it), while the `\"<site> " +
-			"Default\"` policies the API creates for every Site **are** — on a busy account " +
-			"those outnumber hand-written policies, and nothing in the returned data " +
+			"Default\"` Policies the API creates for every Site **are** — on a busy account " +
+			"those outnumber hand-written Policies, and nothing in the returned data " +
 			"distinguishes them beyond their name.",
 
 		Schema: map[string]*schema.Schema{
@@ -45,7 +45,7 @@ func dataSourceAbpPolicies() *schema.Resource {
 				ValidateFunc: validation.IsUUID,
 			},
 			"policies": {
-				Description: "The Policies belonging to the account, except the account global policy.",
+				Description: "The Policies belonging to the account, except the account global Policy.",
 				Type:        schema.TypeList,
 				Computed:    true,
 				Elem: &schema.Resource{

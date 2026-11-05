@@ -24,7 +24,7 @@ func resourceAbpProofOfWorkConfiguration() *schema.Resource {
 
 		Description: `Provides an ABP Proof Of Work Configuration resource. A Proof Of Work
 configuration tunes the cost of the proof-of-work challenge that clients must
-complete to earn credits. It is referenced from policy directives whose action
+complete to earn credits. It is referenced from Policy Directives whose action
 is "proof_of_work".`,
 
 		Schema: map[string]*schema.Schema{

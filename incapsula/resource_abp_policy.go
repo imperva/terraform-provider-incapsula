@@ -44,31 +44,31 @@ func resourceAbpPolicy() *schema.Resource {
 		CustomizeDiff: resourceAbpPolicyCustomizeDiff,
 
 		Description: `Provides an ABP Policy resource. A Policy is an ordered collection of
-directives, each pairing an action with the conditions that trigger it, applied
+Directives, each pairing an action with the Conditions that trigger it, applied
 to traffic that a Site's selector maps to this Policy.
 
 All ` + "`directive`" + ` blocks must be specified explicitly. Conditions are attached to
-a directive with ` + "`incapsula_abp_condition_list_entry`" + `, using the directive's
-condition list as the entry's ` + "`parent_condition_list_id`" + `. Look that condition
-list up with the ` + "`incapsula_abp_directive`" + ` data source, which addresses a
-directive by its ` + "`action`" + ` (see the example below).
+a Directive with ` + "`incapsula_abp_condition_list_entry`" + `, using the Directive's
+Condition List as the entry's ` + "`parent_condition_list_id`" + `. Look that
+Condition List up with the ` + "`incapsula_abp_directive`" + ` data source, which
+addresses a Directive by its ` + "`action`" + ` (see the example below).
 
 Do not read ` + "`directive[i].condition_list_id`" + ` off this resource instead. A list
-index is not a stable handle on a directive, and on the apply that adds, removes
-or reorders directives those nested ids are still reported at their old
-positions, so conditions can be attached to the wrong directive or the apply can
+index is not a stable handle on a Directive, and on the apply that adds, removes
+or reorders Directives those nested ids are still reported at their old
+positions, so Conditions can be attached to the wrong Directive or the apply can
 fail outright. The data source re-reads them from the API and is unaffected.
 
-A directive is identified by its ` + "`action`" + `, which is how the backend-owned
-condition lists are kept attached to the right directive when directives are
-added, removed or reordered. Two directives in the same policy therefore must
+A Directive is identified by its ` + "`action`" + `, which is how the backend-owned
+Condition Lists are kept attached to the right Directive when Directives are
+added, removed or reordered. Two Directives in the same Policy therefore must
 not share an ` + "`action`" + `.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
 				Description: "ABP account UUID this Policy belongs to. Changing it replaces the " +
-					"Policy — Terraform deletes the existing one, together with its directives' " +
-					"condition lists, and creates a new one — because the API cannot move a Policy " +
+					"Policy — Terraform deletes the existing one, together with its Directives' " +
+					"Condition Lists, and creates a new one — because the API cannot move a Policy " +
 					"to another account.",
 				Type:         schema.TypeString,
 				Required:     true,
@@ -82,20 +82,20 @@ not share an ` + "`action`" + `.`,
 				ValidateFunc: validation.All(validation.StringLenBetween(1, 100), validateAbpName),
 			},
 			"description": {
-				Description: "Description of the policy. Optional: the API stores no description " +
+				Description: "Description of the Policy. Optional: the API stores no description " +
 					"when it is omitted, which is reflected in state as the empty string.",
 				Type:     schema.TypeString,
 				Optional: true,
 			},
 			"directive": {
-				Description: "Ordered list of directives evaluated top-down for this policy. A policy must have at least one directive, and no two directives may share an `action`.",
+				Description: "Ordered list of Directives evaluated top-down for this Policy. A Policy must have at least one Directive, and no two Directives may share an `action`.",
 				Type:        schema.TypeList,
 				Required:    true,
 				MinItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"action": {
-							Description: "Action to take when this directive matches. Must be snake_case, 1..100 characters.",
+							Description: "Action to take when this Directive matches. Must be snake_case, 1..100 characters.",
 							Type:        schema.TypeString,
 							Required:    true,
 							ValidateFunc: validation.All(
@@ -132,12 +132,12 @@ not share an ` + "`action`" + `.`,
 						// immune to both problems. Prefer it over these
 						// attributes in docs and examples.
 						"condition_list_id": {
-							Description: "Condition list containing conditions for this directive.",
+							Description: "Condition List containing Conditions for this Directive.",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
 						"skip_condition_list_id": {
-							Description: "Condition list whose matches skip this directive. Only meaningful when `action` is `proof_of_work`.",
+							Description: "Condition List whose matches skip this Directive. Only meaningful when `action` is `proof_of_work`.",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},

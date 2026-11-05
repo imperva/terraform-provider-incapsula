@@ -38,7 +38,7 @@ resource "incapsula_abp_site" "sample_site" {
   default_max_requests_per_session = 600
   default_max_session_length       = "2h"
 
-  # Match by path prefix and apply a specific policy.
+  # Match by path prefix and apply a specific Policy.
   selector {
     purpose   = "login"
     policy_id = incapsula_abp_policy.policy_with_custom_directives.id
@@ -109,7 +109,7 @@ Required:
 
 Optional:
 
-- `policy_id` (String) Policy applied when this Selector matches. Omit to apply no policy (e.g. for static assets).
+- `policy_id` (String) Policy applied when this Selector matches. Omit to apply no Policy (e.g. for static assets).
 - `purpose` (String) What this Selector matches, e.g. the user flow or endpoint kind. Informational metadata, unused by the runtime. One of: login, signup, password_reset, mfa, search, browse, cart, checkout, payment, form_submission, booking, backend_api, unknown, other. `unknown` means "explicitly not known", which is distinct from omitting the attribute.
 
 Read-Only:

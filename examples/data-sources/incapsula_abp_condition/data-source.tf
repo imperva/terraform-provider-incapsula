@@ -1,10 +1,10 @@
-# Look up an account-owned condition by name.
+# Look up an account-owned Condition by name.
 data "incapsula_abp_condition" "specific_visitor_lookup" {
   account_id = var.account_id
   name       = incapsula_abp_condition.specific_visitor.name
 }
 
-# Look up a managed (Imperva-provided) condition.
+# Look up a managed (Imperva-provided) Condition.
 data "incapsula_abp_condition" "managed_monitoring_tools" {
   account_id = var.account_id
   name       = "Monitoring Tools"

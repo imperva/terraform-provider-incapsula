@@ -1,11 +1,11 @@
-# Reference a directive by its action. Preferred over indexing into
+# Reference a Directive by its action. Preferred over indexing into
 # `incapsula_abp_policy.<name>.directive[i]` as it is more predictable.
 data "incapsula_abp_directive" "policy_block" {
   policy_id = incapsula_abp_policy.policy_with_custom_directives.id
   action    = "block"
 }
 
-# Reference a directive of the account global policy.
+# Reference a Directive of the account global Policy.
 data "incapsula_abp_directive" "account_global_allow" {
   account_id            = var.account_id
   account_global_policy = true

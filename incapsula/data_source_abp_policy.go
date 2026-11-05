@@ -20,11 +20,11 @@ func dataSourceAbpPolicy() *schema.Resource {
 			ValidateFunc: validation.IsUUID,
 		},
 		"name": {
-			Description: "Name of the policy to look up. Mutually exclusive with `id` and " +
+			Description: "Name of the Policy to look up. Mutually exclusive with `id` and " +
 				"`account_global`. This is a search argument, not an output: a lookup by `id` " +
-				"leaves it empty instead of reporting the policy's name. Note that names are " +
+				"leaves it empty instead of reporting the Policy's name. Note that names are " +
 				"not unique in practice, because the API generates a `\"<site> Default\"` " +
-				"policy per Site.",
+				"Policy per Site.",
 			Type:         schema.TypeString,
 			Optional:     true,
 			ValidateFunc: validation.StringIsNotWhiteSpace,
@@ -32,7 +32,7 @@ func dataSourceAbpPolicy() *schema.Resource {
 			RequiredWith: []string{"account_id"},
 		},
 		"id": {
-			Description:  "ID of the policy to look up. Mutually exclusive with `name` and `account_global`.",
+			Description:  "ID of the Policy to look up. Mutually exclusive with `name` and `account_global`.",
 			Type:         schema.TypeString,
 			Optional:     true,
 			Computed:     true,
@@ -40,13 +40,13 @@ func dataSourceAbpPolicy() *schema.Resource {
 			ExactlyOneOf: []string{"name", "id", "account_global"},
 		},
 		"account_global": {
-			Description: "If true, look up the account global policy. Requires `account_id` and " +
+			Description: "If true, look up the account global Policy. Requires `account_id` and " +
 				"is mutually exclusive with `name` and `id`. Only ever write `true`: writing " +
 				"`false` explicitly — including from a variable — is rejected with an " +
 				"\"exactly one of ...\" error, because the attribute counts as set even when its " +
-				"value is the default. Omit it instead. The account global policy has no name " +
+				"value is the default. Omit it instead. The account global Policy has no name " +
 				"and no description of its own, so `name` is empty and `description` is `\"\"`, " +
-				"and the `id` it returns cannot be used to reference the policy elsewhere (use " +
+				"and the `id` it returns cannot be used to reference the Policy elsewhere (use " +
 				"`account_global_policy = true` on `incapsula_abp_directive`).",
 			Type:         schema.TypeBool,
 			Optional:     true,
@@ -61,10 +61,10 @@ func dataSourceAbpPolicy() *schema.Resource {
 		ReadContext: dataSourceAbpPolicyRead,
 
 		Description: "Looks up an ABP Policy by name, id, or by selecting the account global " +
-			"policy. Exactly one of `name`, `id`, or `account_global` must be set — and must be " +
+			"Policy. Exactly one of `name`, `id`, or `account_global` must be set — and must be " +
 			"set by being present at all, so do not write `account_global = false` to mean " +
 			"\"look up by name or id\". Names are case-sensitive and matched exactly; the lookup " +
-			"fails if more than one policy matches. A lookup by `id` returns the policy's " +
+			"fails if more than one Policy matches. A lookup by `id` returns the Policy's " +
 			"contents but leaves the search arguments `name` and `account_id` empty. " +
 			"Use `incapsula_abp_policies` to retrieve every Policy of an account instead.",
 
@@ -78,28 +78,28 @@ func dataSourceAbpPolicy() *schema.Resource {
 func abpPolicyReadOnlyAttributes() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"description": {
-			Description: "Description of the policy.",
+			Description: "Description of the Policy.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
 		"directive": {
-			Description: "Ordered list of directives evaluated top-down for this policy.",
+			Description: "Ordered list of Directives evaluated top-down for this Policy.",
 			Type:        schema.TypeList,
 			Computed:    true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"action": {
-						Description: "Action taken when this directive matches.",
+						Description: "Action taken when this Directive matches.",
 						Type:        schema.TypeString,
 						Computed:    true,
 					},
 					"condition_list_id": {
-						Description: "Condition list containing conditions for this directive.",
+						Description: "Condition List containing Conditions for this Directive.",
 						Type:        schema.TypeString,
 						Computed:    true,
 					},
 					"skip_condition_list_id": {
-						Description: "Condition list whose matches skip this directive. Only set when `action` is `proof_of_work`.",
+						Description: "Condition List whose matches skip this Directive. Only set when `action` is `proof_of_work`.",
 						Type:        schema.TypeString,
 						Computed:    true,
 					},

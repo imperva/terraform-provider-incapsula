@@ -29,7 +29,7 @@ func dataSourceAbpConditions() *schema.Resource {
 			Computed:    true,
 		},
 		"managed": {
-			Description: "Whether the condition is managed rather than account-owned.",
+			Description: "Whether the Condition is managed rather than account-owned.",
 			Type:        schema.TypeBool,
 			Computed:    true,
 		},
@@ -40,7 +40,7 @@ func dataSourceAbpConditions() *schema.Resource {
 		ReadContext: dataSourceAbpConditionsRead,
 
 		Description: "Lists the literal ABP Conditions of an account, ordered by name. " +
-			"Condition lists and condition list entries are not included. Use " +
+			"Condition Lists and Condition List Entries are not included. Use " +
 			"`incapsula_abp_condition` to look up a single Condition by name instead.\n\n" +
 			"Note: with `managed = true` the list also contains managed Conditions that are " +
 			"deprecated or hidden in the UI, and the API offers no way to tell them apart " +
@@ -54,10 +54,10 @@ func dataSourceAbpConditions() *schema.Resource {
 				ValidateFunc: validation.IsUUID,
 			},
 			"managed": {
-				Description: "If `true`, only managed (Imperva-owned) conditions are listed; if " +
-					"`false`, only account-owned conditions are listed. Defaults to `false`. Note " +
+				Description: "If `true`, only managed (Imperva-owned) Conditions are listed; if " +
+					"`false`, only account-owned Conditions are listed. Defaults to `false`. Note " +
 					"that `managed` on the singular `incapsula_abp_condition` data source means " +
-					"something different: there, `false` matches managed conditions as well.",
+					"something different: there, `false` matches managed Conditions as well.",
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,

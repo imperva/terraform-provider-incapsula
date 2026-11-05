@@ -102,7 +102,7 @@ read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 							Computed:    true,
 						},
 						"policy_id": {
-							Description:  "Policy applied when this Selector matches. Omit to apply no policy (e.g. for static assets).",
+							Description:  "Policy applied when this Selector matches. Omit to apply no Policy (e.g. for static assets).",
 							Type:         schema.TypeString,
 							Optional:     true,
 							ValidateFunc: validation.IsUUID,

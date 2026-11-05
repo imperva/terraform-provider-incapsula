@@ -3,55 +3,56 @@ subcategory: "Advanced Bot Protection"
 layout: "incapsula"
 page_title: "incapsula_abp_condition_list_entry"
 description: |-
-  Provides an ABP Condition List Entry resource. A condition list entry
-  attaches a literal condition (condition_id) or a nested condition list
-  (condition_list_id) to a parent condition list, with tags and an active
-  state. The lifecycle of the entry is independent of the referenced condition,
+  Provides an ABP Condition List Entry resource. A Condition List Entry
+  attaches a literal Condition (condition_id) or a nested Condition List
+  (condition_list_id) to a parent Condition List, with tags and an active
+  state. The lifecycle of the entry is independent of the referenced Condition,
   which is owned by its own resource.
-  This is also how conditions are added to a policy: a directive exposes a
-  condition_list_id (and, for proof_of_work directives, a
+  This is also how Conditions are added to a Policy: a Directive exposes a
+  condition_list_id (and, for proof_of_work Directives, a
   skip_condition_list_id), which can be used as the parent_condition_list_id
-  of an entry to attach a condition to that directive. Obtain those IDs from the
-  incapsula_abp_directive data source, which addresses a directive by its
+  of an entry to attach a Condition to that Directive. Obtain those IDs from the
+  incapsula_abp_directive data source, which addresses a Directive by its
   action; reading them off the incapsula_abp_policy resource by list index is
-  unreliable when directives are added, removed or reordered.
+  unreliable when Directives are added, removed or reordered.
   NOTE: an entry cannot be re-pointed in place. Changing account_id,
   parent_condition_list_id, condition_id or
   condition_list_id replaces the entry: Terraform deletes this entry and
   creates a new one with the new values. Only the link is recreated — neither the
-  parent list nor the referenced condition is affected — but the entry is briefly
-  absent, so the condition does not apply until the new entry is created.
+  parent list nor the referenced Condition is affected — but the entry is briefly
+  absent, so the Condition does not apply until the new entry is created.
 ---
 
 
 # incapsula_abp_condition_list_entry
 
-Provides an ABP Condition List Entry resource. A condition list entry
-attaches a literal condition (`condition_id`) or a nested condition list
-(`condition_list_id`) to a parent condition list, with tags and an active
-state. The lifecycle of the entry is independent of the referenced condition,
+Provides an ABP Condition List Entry resource. A Condition List Entry
+attaches a literal Condition (`condition_id`) or a nested Condition List
+(`condition_list_id`) to a parent Condition List, with tags and an active
+state. The lifecycle of the entry is independent of the referenced Condition,
 which is owned by its own resource.
 
-This is also how conditions are added to a policy: a directive exposes a
-`condition_list_id` (and, for `proof_of_work` directives, a
+This is also how Conditions are added to a Policy: a Directive exposes a
+`condition_list_id` (and, for `proof_of_work` Directives, a
 `skip_condition_list_id`), which can be used as the `parent_condition_list_id`
-of an entry to attach a condition to that directive. Obtain those IDs from the
-`incapsula_abp_directive` data source, which addresses a directive by its
+of an entry to attach a Condition to that Directive. Obtain those IDs from the
+`incapsula_abp_directive` data source, which addresses a Directive by its
 `action`; reading them off the `incapsula_abp_policy` resource by list index is
-unreliable when directives are added, removed or reordered.
+unreliable when Directives are added, removed or reordered.
 
 NOTE: an entry cannot be re-pointed in place. Changing `account_id`,
 `parent_condition_list_id`, `condition_id` or
 `condition_list_id` replaces the entry: Terraform deletes this entry and
 creates a new one with the new values. Only the link is recreated — neither the
-parent list nor the referenced condition is affected — but the entry is briefly
-absent, so the condition does not apply until the new entry is created.
+parent list nor the referenced Condition is affected — but the entry is briefly
+absent, so the Condition does not apply until the new entry is created.
 
 ## Example Usage
 
 ```terraform
-# Attach a condition to a condition list. The parent list can be a standalone
-# `incapsula_abp_condition_list`, or a directive's condition/skip-condition list.
+# Attach a Condition to a Condition List. The parent list can be a standalone
+# `incapsula_abp_condition_list`, or a Directive's Condition List or skip
+# Condition List.
 resource "incapsula_abp_condition_list_entry" "sample_condition_list_okhttp" {
   account_id               = var.account_id
   parent_condition_list_id = incapsula_abp_condition_list.sample_condition_list.id
@@ -67,13 +68,13 @@ resource "incapsula_abp_condition_list_entry" "sample_condition_list_okhttp" {
 ### Required
 
 - `account_id` (String) ABP account UUID this Condition List Entry belongs to. Changing it replaces the entry (see the note above).
-- `parent_condition_list_id` (String) UUID of the parent condition list that this entry is attached to. Changing it replaces the entry (see the note above).
+- `parent_condition_list_id` (String) UUID of the parent Condition List that this entry is attached to. Changing it replaces the entry (see the note above).
 - `state` (String) Whether the entry is evaluated. One of: `inactive` (skipped), `monitor` (evaluated, logged only), `active` (evaluated and may trigger an action).
 
 ### Optional
 
-- `condition_id` (String) UUID of a literal condition referenced by this entry. Mutually exclusive with `condition_list_id`. Changing it replaces the entry (see the note above).
-- `condition_list_id` (String) UUID of a condition list referenced by this entry. Mutually exclusive with `condition_id`. Changing it replaces the entry (see the note above).
+- `condition_id` (String) UUID of a literal Condition referenced by this entry. Mutually exclusive with `condition_list_id`. Changing it replaces the entry (see the note above).
+- `condition_list_id` (String) UUID of a Condition List referenced by this entry. Mutually exclusive with `condition_id`. Changing it replaces the entry (see the note above).
 - `tags` (Set of String) Snake_case tags applied to the entry. Each tag matches `^[_a-z][_a-z0-9]*$`.
 
 ### Read-Only

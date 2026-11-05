@@ -13,26 +13,26 @@ import (
 func dataSourceAbpCondition() *schema.Resource {
 	conditionSchema := map[string]*schema.Schema{
 		"account_id": {
-			Description:  "ABP account UUID to search within. Managed conditions are visible from any account.",
+			Description:  "ABP account UUID to search within. Managed Conditions are visible from any account.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.IsUUID,
 		},
 		"name": {
-			Description:  "Name of the literal condition to look up.",
+			Description:  "Name of the literal Condition to look up.",
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validation.StringIsNotWhiteSpace,
 		},
 		"managed": {
 			Description: "If `true`, the lookup is restricted to managed (Imperva-owned) " +
-				"conditions. If `false` or unset, **both** managed and account-owned " +
-				"conditions are matched — it does not restrict the lookup to account-owned " +
+				"Conditions. If `false` or unset, **both** managed and account-owned " +
+				"Conditions are matched — it does not restrict the lookup to account-owned " +
 				"ones, and there is no way to do so. A lookup therefore fails when an " +
-				"account-owned condition shares its name with a managed one. Note that " +
+				"account-owned Condition shares its name with a managed one. Note that " +
 				"`managed` on the `incapsula_abp_conditions` data source means something " +
-				"different: there, `false` lists only account-owned conditions. " +
-				"Reflects whether the matched condition is managed.",
+				"different: there, `false` lists only account-owned Conditions. " +
+				"Reflects whether the matched Condition is managed.",
 			Type:     schema.TypeBool,
 			Optional: true,
 			Computed: true,
@@ -44,7 +44,7 @@ func dataSourceAbpCondition() *schema.Resource {
 		ReadContext: dataSourceAbpConditionRead,
 
 		Description: "Looks up a literal ABP Condition by name. Names are case-sensitive " +
-			"and matched exactly. The lookup fails if more than one condition matches. " +
+			"and matched exactly. The lookup fails if more than one Condition matches. " +
 			"Use `incapsula_abp_conditions` to retrieve every literal Condition of an " +
 			"account instead.",
 
@@ -58,7 +58,7 @@ func dataSourceAbpCondition() *schema.Resource {
 func abpConditionReadOnlyAttributes() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"description": {
-			Description: "Description of the condition.",
+			Description: "Description of the Condition.",
 			Type:        schema.TypeString,
 			Computed:    true,
 		},
@@ -70,13 +70,13 @@ func abpConditionReadOnlyAttributes() map[string]*schema.Schema {
 		},
 		"template": {
 			Description: "Editor template the server uses to validate `code`. Open enumeration; " +
-				"`custom` for conditions that do not use a specific editor template. Always " +
+				"`custom` for Conditions that do not use a specific editor template. Always " +
 				"empty for managed Conditions.",
 			Type:     schema.TypeString,
 			Computed: true,
 		},
 		"last_change_by": {
-			Description: "Identifier of the user who last changed this condition. Always empty " +
+			Description: "Identifier of the user who last changed this Condition. Always empty " +
 				"for managed Conditions.",
 			Type:     schema.TypeString,
 			Computed: true,

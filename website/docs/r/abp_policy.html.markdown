@@ -4,21 +4,21 @@ layout: "incapsula"
 page_title: "incapsula_abp_policy"
 description: |-
   Provides an ABP Policy resource. A Policy is an ordered collection of
-  directives, each pairing an action with the conditions that trigger it, applied
+  Directives, each pairing an action with the Conditions that trigger it, applied
   to traffic that a Site's selector maps to this Policy.
   All directive blocks must be specified explicitly. Conditions are attached to
-  a directive with incapsula_abp_condition_list_entry, using the directive's
-  condition list as the entry's parent_condition_list_id. Look that condition
-  list up with the incapsula_abp_directive data source, which addresses a
-  directive by its action (see the example below).
+  a Directive with incapsula_abp_condition_list_entry, using the Directive's
+  Condition List as the entry's parent_condition_list_id. Look that
+  Condition List up with the incapsula_abp_directive data source, which
+  addresses a Directive by its action (see the example below).
   Do not read directive[i].condition_list_id off this resource instead. A list
-  index is not a stable handle on a directive, and on the apply that adds, removes
-  or reorders directives those nested ids are still reported at their old
-  positions, so conditions can be attached to the wrong directive or the apply can
+  index is not a stable handle on a Directive, and on the apply that adds, removes
+  or reorders Directives those nested ids are still reported at their old
+  positions, so Conditions can be attached to the wrong Directive or the apply can
   fail outright. The data source re-reads them from the API and is unaffected.
-  A directive is identified by its action, which is how the backend-owned
-  condition lists are kept attached to the right directive when directives are
-  added, removed or reordered. Two directives in the same policy therefore must
+  A Directive is identified by its action, which is how the backend-owned
+  Condition Lists are kept attached to the right Directive when Directives are
+  added, removed or reordered. Two Directives in the same Policy therefore must
   not share an action.
 ---
 
@@ -26,30 +26,30 @@ description: |-
 # incapsula_abp_policy
 
 Provides an ABP Policy resource. A Policy is an ordered collection of
-directives, each pairing an action with the conditions that trigger it, applied
+Directives, each pairing an action with the Conditions that trigger it, applied
 to traffic that a Site's selector maps to this Policy.
 
 All `directive` blocks must be specified explicitly. Conditions are attached to
-a directive with `incapsula_abp_condition_list_entry`, using the directive's
-condition list as the entry's `parent_condition_list_id`. Look that condition
-list up with the `incapsula_abp_directive` data source, which addresses a
-directive by its `action` (see the example below).
+a Directive with `incapsula_abp_condition_list_entry`, using the Directive's
+Condition List as the entry's `parent_condition_list_id`. Look that
+Condition List up with the `incapsula_abp_directive` data source, which
+addresses a Directive by its `action` (see the example below).
 
 Do not read `directive[i].condition_list_id` off this resource instead. A list
-index is not a stable handle on a directive, and on the apply that adds, removes
-or reorders directives those nested ids are still reported at their old
-positions, so conditions can be attached to the wrong directive or the apply can
+index is not a stable handle on a Directive, and on the apply that adds, removes
+or reorders Directives those nested ids are still reported at their old
+positions, so Conditions can be attached to the wrong Directive or the apply can
 fail outright. The data source re-reads them from the API and is unaffected.
 
-A directive is identified by its `action`, which is how the backend-owned
-condition lists are kept attached to the right directive when directives are
-added, removed or reordered. Two directives in the same policy therefore must
+A Directive is identified by its `action`, which is how the backend-owned
+Condition Lists are kept attached to the right Directive when Directives are
+added, removed or reordered. Two Directives in the same Policy therefore must
 not share an `action`.
 
 ## Example Usage
 
 ```terraform
-# Policy with explicit directives.
+# Policy with explicit Directives.
 resource "incapsula_abp_policy" "policy_with_custom_directives" {
   account_id  = var.account_id
   name        = "Policy with custom directives"
@@ -69,9 +69,9 @@ resource "incapsula_abp_policy" "policy_with_custom_directives" {
   }
 }
 
-# Conditions are attached to a directive's condition list. Address the directive
+# Conditions are attached to a Directive's Condition List. Address the Directive
 # by its action with the `incapsula_abp_directive` data source -- never by its
-# index in the `directive` list, which moves when directives are added, removed
+# index in the `directive` list, which moves when Directives are added, removed
 # or reordered.
 data "incapsula_abp_directive" "block" {
   policy_id = incapsula_abp_policy.policy_with_custom_directives.id
@@ -85,8 +85,8 @@ resource "incapsula_abp_condition_list_entry" "block_bad_bots" {
   state                    = "active"
 }
 
-# A `proof_of_work` directive also has a skip condition list: matches there
-# bypass the directive.
+# A `proof_of_work` Directive also has a skip Condition List: matches there
+# bypass the Directive.
 data "incapsula_abp_directive" "pow" {
   policy_id = incapsula_abp_policy.policy_with_custom_directives.id
   action    = "proof_of_work"
@@ -105,13 +105,13 @@ resource "incapsula_abp_condition_list_entry" "pow_skip_monitoring" {
 
 ### Required
 
-- `account_id` (String) ABP account UUID this Policy belongs to. Changing it replaces the Policy — Terraform deletes the existing one, together with its directives' condition lists, and creates a new one — because the API cannot move a Policy to another account.
-- `directive` (Block List, Min: 1) Ordered list of directives evaluated top-down for this policy. A policy must have at least one directive, and no two directives may share an `action`. (see [below for nested schema](#nestedblock--directive))
+- `account_id` (String) ABP account UUID this Policy belongs to. Changing it replaces the Policy — Terraform deletes the existing one, together with its Directives' Condition Lists, and creates a new one — because the API cannot move a Policy to another account.
+- `directive` (Block List, Min: 1) Ordered list of Directives evaluated top-down for this Policy. A Policy must have at least one Directive, and no two Directives may share an `action`. (see [below for nested schema](#nestedblock--directive))
 - `name` (String) Policy name. 1..100 characters, without leading or trailing whitespace.
 
 ### Optional
 
-- `description` (String) Description of the policy. Optional: the API stores no description when it is omitted, which is reflected in state as the empty string.
+- `description` (String) Description of the Policy. Optional: the API stores no description when it is omitted, which is reflected in state as the empty string.
 
 ### Read-Only
 
@@ -122,7 +122,7 @@ resource "incapsula_abp_condition_list_entry" "pow_skip_monitoring" {
 
 Required:
 
-- `action` (String) Action to take when this directive matches. Must be snake_case, 1..100 characters.
+- `action` (String) Action to take when this Directive matches. Must be snake_case, 1..100 characters.
 
 Optional:
 
@@ -130,8 +130,8 @@ Optional:
 
 Read-Only:
 
-- `condition_list_id` (String) Condition list containing conditions for this directive.
-- `skip_condition_list_id` (String) Condition list whose matches skip this directive. Only meaningful when `action` is `proof_of_work`.
+- `condition_list_id` (String) Condition List containing Conditions for this Directive.
+- `skip_condition_list_id` (String) Condition List whose matches skip this Directive. Only meaningful when `action` is `proof_of_work`.
 
 ## Import
 

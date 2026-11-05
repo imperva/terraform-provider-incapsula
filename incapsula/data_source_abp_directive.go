@@ -12,29 +12,29 @@ func dataSourceAbpDirective() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceAbpDirectiveRead,
 
-		Description: "Looks up a single directive within an ABP Policy by its action. " +
-			"The lookup fails if more than one directive in the policy has the given action.",
+		Description: "Looks up a single Directive within an ABP Policy by its action. " +
+			"The lookup fails if more than one Directive in the Policy has the given action.",
 
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Description: "Artificial identifier for this data source. Directives have no " +
-					"stable ID in the API, so this is synthesized from the policy and action " +
+					"stable ID in the API, so this is synthesized from the Policy and action " +
 					"(`<policy_id>:<action>`, or `global:<account_id>:<action>` for the account " +
-					"global policy) and is not a real API identifier.",
+					"global Policy) and is not a real API identifier.",
 				Type:     schema.TypeString,
 				Computed: true,
 			},
 			"policy_id": {
 				Description: "ID of the ABP Policy to search within. Mutually exclusive with " +
 					"`account_global_policy`. This is a search argument, not an output: it stays " +
-					"empty when the directive is looked up in the account global policy.",
+					"empty when the Directive is looked up in the account global Policy.",
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.IsUUID,
 				ExactlyOneOf: []string{"policy_id", "account_global_policy"},
 			},
 			"account_global_policy": {
-				Description: "If true, look up a directive within the account global policy. " +
+				Description: "If true, look up a Directive within the account global Policy. " +
 					"Requires `account_id` and is mutually exclusive with `policy_id`. Only ever " +
 					"write `true`: writing `false` explicitly — including from a variable — is " +
 					"rejected with an \"exactly one of ...\" error, because the attribute counts as " +
@@ -52,18 +52,18 @@ func dataSourceAbpDirective() *schema.Resource {
 				ValidateFunc: validation.IsUUID,
 			},
 			"action": {
-				Description:  "Action of the directive to look up.",
+				Description:  "Action of the Directive to look up.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"condition_list_id": {
-				Description: "Condition list containing conditions for this directive.",
+				Description: "Condition List containing Conditions for this Directive.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
 			"skip_condition_list_id": {
-				Description: "Condition list whose matches skip this directive. Only set when `action` is `proof_of_work`; an empty string otherwise, never null.",
+				Description: "Condition List whose matches skip this Directive. Only set when `action` is `proof_of_work`; an empty string otherwise, never null.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},

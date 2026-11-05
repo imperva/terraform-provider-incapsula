@@ -3,10 +3,10 @@ subcategory: "Advanced Bot Protection"
 layout: "incapsula"
 page_title: "incapsula_abp_condition"
 description: |-
-  Provides an ABP Condition resource. A condition contains MOI expression
-  evaluated against incoming requests. Conditions are referenced from policies
-  (directly or via condition lists) to drive directive actions.
-  NOTE: the API stores and returns a formatted and optimized form of the condition
+  Provides an ABP Condition resource. A Condition contains MOI expression
+  evaluated against incoming requests. Conditions are referenced from Policies
+  (directly or via Condition Lists) to drive Directive actions.
+  NOTE: the API stores and returns a formatted and optimized form of the Condition
   code, so the provider keeps the code you wrote and exposes the
   server's form separately as code_normalized. This has two
   consequences. A code change made outside Terraform (for example in the UI) is
@@ -22,11 +22,11 @@ description: |-
 
 # incapsula_abp_condition
 
-Provides an ABP Condition resource. A condition contains MOI expression
-evaluated against incoming requests. Conditions are referenced from policies
-(directly or via condition lists) to drive directive actions.
+Provides an ABP Condition resource. A Condition contains MOI expression
+evaluated against incoming requests. Conditions are referenced from Policies
+(directly or via Condition Lists) to drive Directive actions.
 
-NOTE: the API stores and returns a formatted and optimized form of the condition
+NOTE: the API stores and returns a formatted and optimized form of the Condition
 code, so the provider keeps the `code` you wrote and exposes the
 server's form separately as `code_normalized`. This has two
 consequences. A code change made outside Terraform (for example in the UI) is
@@ -50,7 +50,7 @@ resource "incapsula_abp_condition" "specific_visitor" {
 }
 
 # When a template other than "custom" is set, `code` must follow that
-# template's expected structure or the condition will fail to create.
+# template's expected structure or the Condition will fail to create.
 resource "incapsula_abp_condition" "rate_limit" {
   account_id  = var.account_id
   name        = "Too many requests"
@@ -67,8 +67,8 @@ resource "incapsula_abp_condition" "rate_limit" {
 
 - `account_id` (String) ABP account UUID this Condition belongs to. Changing it replaces the Condition — Terraform deletes the existing one and creates a new one — because the API cannot move a Condition to another account.
 - `code` (String) MOI expression evaluated against the request. The server stores a normalized form internally; see `code_normalized` for the server's view. Out-of-band edits to this field (via the UI or API) are not detected as drift, and the next update of this resource — whatever it changes — overwrites them with the value configured here.
-- `description` (String) Description of the condition. Required; pass an empty string for no description.
-- `name` (String) Human-readable name of the condition. 1..100 characters.
+- `description` (String) Description of the Condition. Required; pass an empty string for no description.
+- `name` (String) Human-readable name of the Condition. 1..100 characters.
 
 ### Optional
 
@@ -90,16 +90,16 @@ Currently available values:
 
 Omitting `template` is the same as setting `custom`.
 
-**WARNING:** for any value other than `custom`, the server requires `code` to match that template's expected structure. Mismatched `code` makes condition create/update fail.
+**WARNING:** for any value other than `custom`, the server requires `code` to match that template's expected structure. Mismatched `code` makes Condition create/update fail.
 
-**WARNING:** the template is fixed when the condition is created. The API ignores a new value on update, so changing it appears to succeed while nothing changes and the next plan shows the same change again. To change the template, recreate the condition, for example with `terraform apply -replace=incapsula_abp_condition.<name>`.
+**WARNING:** the template is fixed when the Condition is created. The API ignores a new value on update, so changing it appears to succeed while nothing changes and the next plan shows the same change again. To change the template, recreate the Condition, for example with `terraform apply -replace=incapsula_abp_condition.<name>`.
 
 ### Read-Only
 
 - `code_normalized` (String) Server-side normalized/optimized form of `code`. Useful for diagnostics and for seeding `.tf` after `terraform import`.
 - `created_at` (String) RFC3339 timestamp at which the Condition was created.
 - `id` (String) The ID of this resource.
-- `last_change_by` (String) Identifier of the user who last changed this condition.
+- `last_change_by` (String) Identifier of the user who last changed this Condition.
 - `modified_at` (String) RFC3339 timestamp at which the Condition was last modified.
 
 ## Import

@@ -3,24 +3,24 @@ subcategory: "Advanced Bot Protection"
 layout: "incapsula"
 page_title: "incapsula_abp_policy"
 description: |-
-  Looks up an ABP Policy by name, id, or by selecting the account global policy. Exactly one of name, id, or account_global must be set — and must be set by being present at all, so do not write account_global = false to mean "look up by name or id". Names are case-sensitive and matched exactly; the lookup fails if more than one policy matches. A lookup by id returns the policy's contents but leaves the search arguments name and account_id empty. Use incapsula_abp_policies to retrieve every Policy of an account instead.
+  Looks up an ABP Policy by name, id, or by selecting the account global Policy. Exactly one of name, id, or account_global must be set — and must be set by being present at all, so do not write account_global = false to mean "look up by name or id". Names are case-sensitive and matched exactly; the lookup fails if more than one Policy matches. A lookup by id returns the Policy's contents but leaves the search arguments name and account_id empty. Use incapsula_abp_policies to retrieve every Policy of an account instead.
 ---
 
 
 # incapsula_abp_policy
 
-Looks up an ABP Policy by name, id, or by selecting the account global policy. Exactly one of `name`, `id`, or `account_global` must be set — and must be set by being present at all, so do not write `account_global = false` to mean "look up by name or id". Names are case-sensitive and matched exactly; the lookup fails if more than one policy matches. A lookup by `id` returns the policy's contents but leaves the search arguments `name` and `account_id` empty. Use `incapsula_abp_policies` to retrieve every Policy of an account instead.
+Looks up an ABP Policy by name, id, or by selecting the account global Policy. Exactly one of `name`, `id`, or `account_global` must be set — and must be set by being present at all, so do not write `account_global = false` to mean "look up by name or id". Names are case-sensitive and matched exactly; the lookup fails if more than one Policy matches. A lookup by `id` returns the Policy's contents but leaves the search arguments `name` and `account_id` empty. Use `incapsula_abp_policies` to retrieve every Policy of an account instead.
 
 ## Example Usage
 
 ```terraform
-# Look up a policy by name.
+# Look up a Policy by name.
 data "incapsula_abp_policy" "policy_lookup" {
   account_id = var.account_id
   name       = incapsula_abp_policy.policy_with_custom_directives.name
 }
 
-# Look up the account global policy. Note: the global policy can't be referenced
+# Look up the account global Policy. Note: the global Policy can't be referenced
 # by its returned id elsewhere (e.g. in `incapsula_abp_directive.policy_id`);
 # use `account_global_policy = true` on `incapsula_abp_directive` instead.
 data "incapsula_abp_policy" "account_global" {
@@ -28,8 +28,8 @@ data "incapsula_abp_policy" "account_global" {
   account_global = true
 }
 
-# Look up a site's default policy via its default selector. The default selector
-# is indexed with `[0]` even though a site has exactly one.
+# Look up a Site's default Policy via its default Selector. The default Selector
+# is indexed with `[0]` even though a Site has exactly one.
 data "incapsula_abp_policy" "default_policy" {
   id = incapsula_abp_site.sample_site.default_selector[0].policy_id
 }
@@ -40,16 +40,16 @@ data "incapsula_abp_policy" "default_policy" {
 
 ### Optional
 
-- `account_global` (Boolean) If true, look up the account global policy. Requires `account_id` and is mutually exclusive with `name` and `id`. Only ever write `true`: writing `false` explicitly — including from a variable — is rejected with an "exactly one of ..." error, because the attribute counts as set even when its value is the default. Omit it instead. The account global policy has no name and no description of its own, so `name` is empty and `description` is `""`, and the `id` it returns cannot be used to reference the policy elsewhere (use `account_global_policy = true` on `incapsula_abp_directive`).
+- `account_global` (Boolean) If true, look up the account global Policy. Requires `account_id` and is mutually exclusive with `name` and `id`. Only ever write `true`: writing `false` explicitly — including from a variable — is rejected with an "exactly one of ..." error, because the attribute counts as set even when its value is the default. Omit it instead. The account global Policy has no name and no description of its own, so `name` is empty and `description` is `""`, and the `id` it returns cannot be used to reference the Policy elsewhere (use `account_global_policy = true` on `incapsula_abp_directive`).
 - `account_id` (String) ABP account UUID to search within. Required when looking up by `name` or `account_global`, and ignored (not returned) when looking up by `id`.
-- `id` (String) ID of the policy to look up. Mutually exclusive with `name` and `account_global`.
-- `name` (String) Name of the policy to look up. Mutually exclusive with `id` and `account_global`. This is a search argument, not an output: a lookup by `id` leaves it empty instead of reporting the policy's name. Note that names are not unique in practice, because the API generates a `"<site> Default"` policy per Site.
+- `id` (String) ID of the Policy to look up. Mutually exclusive with `name` and `account_global`.
+- `name` (String) Name of the Policy to look up. Mutually exclusive with `id` and `account_global`. This is a search argument, not an output: a lookup by `id` leaves it empty instead of reporting the Policy's name. Note that names are not unique in practice, because the API generates a `"<site> Default"` Policy per Site.
 
 ### Read-Only
 
 - `created_at` (String) RFC3339 timestamp at which the Policy was created.
-- `description` (String) Description of the policy.
-- `directive` (List of Object) Ordered list of directives evaluated top-down for this policy. (see [below for nested schema](#nestedatt--directive))
+- `description` (String) Description of the Policy.
+- `directive` (List of Object) Ordered list of Directives evaluated top-down for this Policy. (see [below for nested schema](#nestedatt--directive))
 - `modified_at` (String) RFC3339 timestamp at which the Policy was last modified.
 
 <a id="nestedatt--directive"></a>

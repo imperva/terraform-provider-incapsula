@@ -5,7 +5,7 @@ page_title: "incapsula_abp_proof_of_work_configuration"
 description: |-
   Provides an ABP Proof Of Work Configuration resource. A Proof Of Work
   configuration tunes the cost of the proof-of-work challenge that clients must
-  complete to earn credits. It is referenced from policy directives whose action
+  complete to earn credits. It is referenced from Policy Directives whose action
   is "proof_of_work".
 ---
 
@@ -14,7 +14,7 @@ description: |-
 
 Provides an ABP Proof Of Work Configuration resource. A Proof Of Work
 configuration tunes the cost of the proof-of-work challenge that clients must
-complete to earn credits. It is referenced from policy directives whose action
+complete to earn credits. It is referenced from Policy Directives whose action
 is "proof_of_work".
 
 ## Example Usage

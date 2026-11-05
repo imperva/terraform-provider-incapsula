@@ -1,9 +1,9 @@
-# List the account-owned conditions.
+# List the account-owned Conditions.
 data "incapsula_abp_conditions" "account" {
   account_id = var.account_id
 }
 
-# List the managed (Imperva-provided) conditions.
+# List the managed (Imperva-provided) Conditions.
 data "incapsula_abp_conditions" "managed" {
   account_id = var.account_id
   managed    = true

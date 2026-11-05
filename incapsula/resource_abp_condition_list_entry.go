@@ -33,26 +33,26 @@ func resourceAbpConditionListEntry() *schema.Resource {
 			StateContext: resourceAbpConditionListEntryImport,
 		},
 
-		Description: `Provides an ABP Condition List Entry resource. A condition list entry
-attaches a literal condition (` + "`condition_id`" + `) or a nested condition list
-(` + "`condition_list_id`" + `) to a parent condition list, with tags and an active
-state. The lifecycle of the entry is independent of the referenced condition,
+		Description: `Provides an ABP Condition List Entry resource. A Condition List Entry
+attaches a literal Condition (` + "`condition_id`" + `) or a nested Condition List
+(` + "`condition_list_id`" + `) to a parent Condition List, with tags and an active
+state. The lifecycle of the entry is independent of the referenced Condition,
 which is owned by its own resource.
 
-This is also how conditions are added to a policy: a directive exposes a
-` + "`condition_list_id`" + ` (and, for ` + "`proof_of_work`" + ` directives, a
+This is also how Conditions are added to a Policy: a Directive exposes a
+` + "`condition_list_id`" + ` (and, for ` + "`proof_of_work`" + ` Directives, a
 ` + "`skip_condition_list_id`" + `), which can be used as the ` + "`parent_condition_list_id`" + `
-of an entry to attach a condition to that directive. Obtain those IDs from the
-` + "`incapsula_abp_directive`" + ` data source, which addresses a directive by its
+of an entry to attach a Condition to that Directive. Obtain those IDs from the
+` + "`incapsula_abp_directive`" + ` data source, which addresses a Directive by its
 ` + "`action`" + `; reading them off the ` + "`incapsula_abp_policy`" + ` resource by list index is
-unreliable when directives are added, removed or reordered.
+unreliable when Directives are added, removed or reordered.
 
 NOTE: an entry cannot be re-pointed in place. Changing ` + "`account_id`" + `,
 ` + "`parent_condition_list_id`" + `, ` + "`condition_id`" + ` or
 ` + "`condition_list_id`" + ` replaces the entry: Terraform deletes this entry and
 creates a new one with the new values. Only the link is recreated — neither the
-parent list nor the referenced condition is affected — but the entry is briefly
-absent, so the condition does not apply until the new entry is created.`,
+parent list nor the referenced Condition is affected — but the entry is briefly
+absent, so the Condition does not apply until the new entry is created.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -64,7 +64,7 @@ absent, so the condition does not apply until the new entry is created.`,
 				ValidateFunc: validation.IsUUID,
 			},
 			"parent_condition_list_id": {
-				Description: "UUID of the parent condition list that this entry is attached to. " +
+				Description: "UUID of the parent Condition List that this entry is attached to. " +
 					"Changing it replaces the entry (see the note above).",
 				Type:         schema.TypeString,
 				Required:     true,
@@ -72,7 +72,7 @@ absent, so the condition does not apply until the new entry is created.`,
 				ValidateFunc: validation.IsUUID,
 			},
 			"condition_id": {
-				Description: "UUID of a literal condition referenced by this entry. Mutually " +
+				Description: "UUID of a literal Condition referenced by this entry. Mutually " +
 					"exclusive with `condition_list_id`. Changing it replaces the entry (see the " +
 					"note above).",
 				Type:         schema.TypeString,
@@ -83,7 +83,7 @@ absent, so the condition does not apply until the new entry is created.`,
 				ExactlyOneOf: []string{"condition_id", "condition_list_id"},
 			},
 			"condition_list_id": {
-				Description: "UUID of a condition list referenced by this entry. Mutually " +
+				Description: "UUID of a Condition List referenced by this entry. Mutually " +
 					"exclusive with `condition_id`. Changing it replaces the entry (see the note " +
 					"above).",
 				Type:         schema.TypeString,
