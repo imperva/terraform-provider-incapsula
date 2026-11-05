@@ -34,6 +34,27 @@ resource "incapsula_abp_condition" "okhttp" {
   code        = "(all headers.user_agent? (matches headers.user_agent \"okhttp/4.12.0\"))"
 
 }
+
+#
+# Create a condition from an editor template
+#
+
+# `template` makes the server validate `code` against that template's expected
+# structure instead of accepting an arbitrary expression. Omitting it is the
+# same as `custom`.
+#
+# NOTE: the template is fixed when the condition is created. Changing it here
+# reports a successful apply while nothing changes on the server, so the plan
+# never converges; recreate the condition instead
+# (`terraform apply -replace=module.abp.incapsula_abp_condition.too_many_requests`).
+resource "incapsula_abp_condition" "too_many_requests" {
+  account_id  = var.account_id
+  name        = "Too many requests"
+  description = "Trip when a session exceeds 120 requests per minute"
+  template    = "rate_limiting"
+  code        = "(all (not flags.no_token) (requests_per_minute > 120))"
+}
+
 #
 # Lookup a managed condition to subsequently insert into a policy
 #
@@ -68,6 +89,25 @@ data "incapsula_abp_condition_list" "sample_condition_list_lookup" {
   name       = incapsula_abp_condition_list.sample_condition_list.name
 }
 
+#
+# List the conditions of the account
+#
+
+# Both the account-owned and the managed conditions, for discovery and for
+# building lookups. Note that `managed` means something different here than on
+# the singular `incapsula_abp_condition` data source: here it selects *only*
+# managed or *only* account-owned conditions, while there `managed = false`
+# matches either.
+data "incapsula_abp_conditions" "account_owned" {
+  account_id = var.account_id
+}
+
+# Managed conditions are maintained by Imperva. Deprecated and hidden ones are
+# listed too, with no attribute to tell them apart.
+data "incapsula_abp_conditions" "managed" {
+  account_id = var.account_id
+  managed    = true
+}
 
 #
 # Create a policy and populate it with conditions
@@ -168,6 +208,16 @@ data "incapsula_abp_policy" "policy2" {
   name       = incapsula_abp_policy.policy2.name
 }
 
+# List the policies of the account.
+#
+# Note the scope: the account global policy is not part of this list (look it up
+# with `incapsula_abp_policy` and `account_global = true`, as below), while the
+# `"<site> Default"` policies the backend creates for every site are, with no
+# attribute to tell them apart from the ones this configuration owns.
+data "incapsula_abp_policies" "all" {
+  account_id = var.account_id
+}
+
 # Address each directive by its action.
 #
 # WARNING: never index directives (`incapsula_abp_policy.foo.directive[0]`). The index
@@ -248,13 +298,20 @@ resource "incapsula_abp_condition_list_entry" "account_global_allow_okhttp" {
 #
 # Create a site and attach a policy to it
 #
+# NOTE: a site also gets default policies and conditions generated for it by
+# the backend. Destroying the site leaves them behind, so applying and
+# destroying this sample repeatedly eventually fails with "Maximum policy count
+# will be exceeded"; clean the leftovers up out of band when that happens.
+#
 
 data "incapsula_abp_site_analysis_settings" "login" {
-  rate_limiting = "per_site"
-  # `use_site_rate_limiting_parameters` defaults to true, which means the site
-  # defaults are used and max_requests_per_minute/_session and
-  # max_session_length are ignored. Set it to false to make them count.
-  max_requests_per_minute           = 100
+  rate_limiting           = "per_site"
+  max_requests_per_minute = 100
+
+  # Load-bearing: `use_site_rate_limiting_parameters` defaults to `true`, which
+  # makes the runtime use the site's `default_max_*` values and ignore the three
+  # per-selector overrides entirely — it is not a per-value fallback. An
+  # override next to the default would therefore be dead configuration.
   use_site_rate_limiting_parameters = false
 }
 
@@ -319,10 +376,38 @@ data "incapsula_abp_sites" "all" {
   account_id = var.account_id
 }
 
+# Look up a single site. Exactly one of `site_id` or `name` must be set; setting
+# both, or neither, is an error, and so is a name that matches no site or more
+# than one. Use this for sites this configuration does not manage.
+data "incapsula_abp_site" "site2_by_id" {
+  account_id = var.account_id
+  site_id    = incapsula_abp_site.site2.id
+}
+
+# The same site by name. The match is exact and case-sensitive.
+data "incapsula_abp_site" "site2_by_name" {
+  account_id = var.account_id
+  name       = incapsula_abp_site.site2.name
+}
+
 locals {
   managed_sites = [incapsula_abp_site.site2.id, incapsula_abp_site.sample_site.id]
 }
 
+# The site priority list must name *every* site of the account, so a literal
+# list breaks as soon as a site exists that it does not name — one created in
+# the UI, by another workspace, or by another module — with the opaque
+# `Wrong number of site IDs supplied`. Appending the sites this configuration
+# does not own, read from `incapsula_abp_sites`, is the form that survives that.
+#
+# Two caveats of this form:
+#   - `data.incapsula_abp_sites.all` is read before the apply, so the tail only
+#     covers pre-existing sites. Every site this module creates must therefore
+#     be listed in `local.managed_sites`; adding an `incapsula_abp_site` without
+#     adding it there fails the apply with the same error.
+#   - in the apply that destroys a managed site the stale data source still
+#     returns it, so `site_ids` keeps the dead id for one round and converges on
+#     the next apply.
 resource "incapsula_abp_account_site_priority" "accprio" {
   account_id = var.account_id
   # The list has to contain every site of the account, so the sites whose order
@@ -344,6 +429,9 @@ resource "incapsula_abp_account_site_priority" "accprio" {
 # Note that default selector is indexed with `[0]` even if it is not techically a list,
 # since every site can have only one default selector. This is limitation of
 # Terraform Plugin SDK v2
+#
+# Note also that `name` and `account_id` are treated as search arguments and are
+# left empty on a lookup by `id`, so they cannot be read back from here.
 data "incapsula_abp_policy" "default_policy" {
   id = incapsula_abp_site.sample_site.default_selector[0].policy_id
 }
@@ -377,14 +465,30 @@ resource "incapsula_abp_domain" "test_com" {
   cookie_mode             = "none_secure"
   enable_mitigation       = false
   enable_mobile_sdk_token = false
-  # `obfuscate_path` must start with `/`, an iframe src needs an explicit path
-  # (a bare origin must end with `/`), and `unmasked_headers` are compared
-  # case-insensitively, so no two entries may differ only in case
+
+  # These three must be given in the exact form the server stores, otherwise the
+  # plan never converges, because the server normalises the value and the
+  # provider compares the stored form against the configured one:
+  #   - `obfuscate_path` needs a leading `/` and no whitespace or fragment;
+  #   - `interstitial_inprogress_iframe_src` needs an absolute URL with an
+  #     explicit path (`http://www.example.com/` rather than
+  #     `http://www.example.com`);
+  #   - no two `unmasked_headers` entries may differ only in case.
   obfuscate_path                     = "/spooky-path"
   interstitial_inprogress_iframe_src = "http://www.example.com/iframe-src"
   divert_host                        = "www.example.com"
   unmasked_headers                   = ["content-length", "content-type"]
   proxy_flags                        = ["enable_referrer_fix", "inject_js_into_body"]
+
+  # Keeps common static asset paths out of ABP analysis.
+  #
+  # NOTE: this value is not applied when the domain is created, only by a later
+  # update, and a domain with no stored value behaves as if filtering were
+  # enabled. Note also that `false` is indistinguishable from an omitted value,
+  # so it is never sent and filtering cannot be turned off from here — which is
+  # why this sample sets `true`, the only value that actually reaches the
+  # server.
+  filter_out_static_assets = true
 
   no_js_injection_path {
     path_prefix = "/no-js-here"
@@ -432,6 +536,13 @@ resource "incapsula_abp_domain" "example_com" {
   criteria {
     prefix = "example.com"
   }
+
+  // The fourth `criteria` variant matches a CloudWAF site by its numeric id
+  // instead of by domain name. Commented out because it needs a CloudWAF site,
+  // which is not available locally:
+  # criteria {
+  #   cloudwaf_id = 12345678
+  # }
 }
 
 resource "incapsula_abp_domain" "dummy_com" {
@@ -460,6 +571,11 @@ resource "incapsula_abp_domain" "dummy_com" {
 # Define domain priority order
 #
 
+# The list must contain *every* Domain attached to the site, in priority order.
+# A Domain that is attached but missing from the list — including one created
+# outside Terraform — fails every apply with
+# `Wrong number of domain IDs supplied`, and the removal the plan offers is not
+# applicable, so extend this list whenever a Domain is added to the site.
 resource "incapsula_abp_site_domain_priority" "sample_site" {
   site_id    = incapsula_abp_site.sample_site.id
   domain_ids = [incapsula_abp_domain.example_com.id, incapsula_abp_domain.test_com.id, incapsula_abp_domain.dummy_com.id]
@@ -469,13 +585,15 @@ resource "incapsula_abp_site_domain_priority" "sample_site" {
 # Create encryption key for a domain
 #
 
+# NOTE: the key material is immutable, so changing `key` replaces the resource.
+# By default Terraform deletes the old key before creating the new one, which
+# leaves the domain without a key in between; `create_before_destroy` inverts
+# that order. The key is also stored in state in plaintext, so protect the
+# state accordingly.
 resource "incapsula_abp_domain_encryption_key" "test_com" {
   domain_id = incapsula_abp_domain.test_com.id
   key       = "U2VjcmV0IGtleSB1c2luZyBzdGF0ZS1vZi10aGUtYXJ0IGJhc2U2NCBlbmNyeXB0aW9u"
 
-  # Keys cannot be changed in place. Without this, rotating the key would delete
-  # the current one before creating its replacement, leaving the domain without
-  # a usable key until the new one is published.
   lifecycle {
     create_before_destroy = true
   }
