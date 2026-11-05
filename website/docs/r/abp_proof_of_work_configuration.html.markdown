@@ -35,7 +35,7 @@ resource "incapsula_abp_proof_of_work_configuration" "pow1" {
 
 - `account_id` (String) ABP account UUID this Proof Of Work Configuration belongs to.
 - `difficulty` (Number) Number of credits a client gets for completing a proof-of-work challenge. The amount of work performed by the client is proportional to this number. Must be >= 1.
-- `name` (String) Human-readable name of the Proof Of Work Configuration.
+- `name` (String) Human-readable name of the Proof Of Work Configuration. Must not have leading or trailing whitespace.
 
 ### Optional
 

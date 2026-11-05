@@ -27,8 +27,9 @@ domain names to a Site, and configures how requests are matched, captured, and
 analyzed.
 
 NOTE: ` + "`criteria`" + ` cannot be changed in-place; modifying it forces resource
-replacement. ` + "`obfuscate_path`" + ` is server-generated when omitted on create
-and is preserved on update.`,
+replacement, so a ` + "`criteria`" + ` value that does not meet the required format
+forces that replacement on every apply. ` + "`obfuscate_path`" + ` is
+server-generated when omitted on create and is preserved on update.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -53,21 +54,21 @@ and is preserved on update.`,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"exact": {
-							Description: "Match exactly this fully-qualified domain name.",
+							Description: "Match exactly this fully-qualified domain name. Must not have leading or trailing whitespace.",
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							ForceNew:    true,
 						},
 						"prefix": {
-							Description: "Match any domain name with this prefix.",
+							Description: "Match any domain name with this prefix. Must not have leading or trailing whitespace.",
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
 							ForceNew:    true,
 						},
 						"suffix": {
-							Description: "Match any domain name with this suffix.",
+							Description: "Match any domain name with this suffix. Must not have leading or trailing whitespace.",
 							Type:        schema.TypeString,
 							Optional:    true,
 							Computed:    true,
@@ -84,7 +85,7 @@ and is preserved on update.`,
 				},
 			},
 			"cookiescope": {
-				Description: "The Domain attribute of the Set-Cookie header set by the ABP JavaScript. Use `$suffix` as the TLD with prefix criteria.",
+				Description: "The Domain attribute of the Set-Cookie header set by the ABP JavaScript. Use `$suffix` as the TLD with prefix criteria. Must not have leading or trailing whitespace.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
@@ -119,7 +120,7 @@ and is preserved on update.`,
 				Optional:    true,
 			},
 			"obfuscate_path": {
-				Description: "Recommended path under which the ABP JavaScript is loaded. Server-generated when omitted on create.",
+				Description: "Recommended path under which the ABP JavaScript is loaded. Server-generated when omitted on create. Must start with `/`, with no leading or trailing whitespace and no `#` fragment.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
@@ -130,7 +131,7 @@ and is preserved on update.`,
 				Computed:    true,
 			},
 			"interstitial_inprogress_iframe_src": {
-				Description: "URL of the iframe used to display the PoW challenge in progress.",
+				Description: "URL of the iframe used to display the PoW challenge in progress. Must be an absolute URL with a scheme and an explicit path; write a bare origin with a trailing slash (`http://www.example.com/`).",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
@@ -140,7 +141,7 @@ and is preserved on update.`,
 				Optional:    true,
 			},
 			"unmasked_headers": {
-				Description: "Header names whose values should be visible to ABP (CloudWAF normally masks them). Compared case-insensitively.",
+				Description: "Header names whose values should be visible to ABP (CloudWAF normally masks them). Compared case-insensitively, so no two entries may differ only in case.",
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},

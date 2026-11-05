@@ -151,11 +151,11 @@ not share an ` + "`action`" + `.`,
 }
 
 // validateAbpPolicyName rejects a name the backend would not store verbatim.
-// It trims the whitespace around a policy name before storing it
-// (lens-core `Name::try_new`), so a padded name never matches the value read
-// back and every plan reports the same unconvergeable change. A whitespace-only
-// name is rejected for the same reason: it trims to the empty string, which the
-// API refuses. Failing at plan time names the offending argument instead.
+// It trims the whitespace around a policy name before storing it, so a padded
+// name never matches the value read back and every plan reports the same
+// unconvergeable change. A whitespace-only name is rejected for the same
+// reason: it trims to the empty string, which the API refuses. Failing at plan
+// time names the offending argument instead.
 func validateAbpPolicyName(i any, k string) ([]string, []error) {
 	v, ok := i.(string)
 	if !ok {

@@ -259,10 +259,11 @@ data "incapsula_abp_site_analysis_settings" "static" {
 }
 
 data "incapsula_abp_site_analysis_settings" "postback" {
-  rate_limiting                     = "custom_scope"
-  rate_limiting_custom_scope        = "my scope"
-  max_requests_per_minute           = 55
-  max_requests_per_session          = 555
+  rate_limiting              = "custom_scope"
+  rate_limiting_custom_scope = "my scope"
+  max_requests_per_minute    = 55
+  max_requests_per_session   = 555
+  # durations use the largest fitting units: "1h", not "60m"
   max_session_length                = "1h"
   use_site_rate_limiting_parameters = false
 }
@@ -368,8 +369,9 @@ resource "incapsula_abp_domain" "test_com" {
   cookie_mode             = "none_secure"
   enable_mitigation       = false
   enable_mobile_sdk_token = false
-  // Todo: backend auto-prefixes with `/` causing a perpetual change-detection if omitted on this field
-  // Other paths are validated enforcing path prefixing, we could do that in the tf-layer, backend, or not at all
+  # `obfuscate_path` must start with `/`, an iframe src needs an explicit path
+  # (a bare origin must end with `/`), and `unmasked_headers` are compared
+  # case-insensitively, so no two entries may differ only in case
   obfuscate_path                     = "/spooky-path"
   interstitial_inprogress_iframe_src = "http://www.example.com/iframe-src"
   divert_host                        = "www.example.com"

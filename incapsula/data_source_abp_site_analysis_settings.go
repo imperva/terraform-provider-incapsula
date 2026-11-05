@@ -45,7 +45,7 @@ selector. Pass the resulting ` + "`json`" + ` attribute to the selector's
 				ValidateFunc: validation.IntAtLeast(0),
 			},
 			"max_session_length": {
-				Description: "Override the site default for this selector. Moi duration format (e.g. \"2d1h\").",
+				Description: "Override the site default for this selector. Duration format, e.g. \"2d1h\". Use the largest fitting units and omit zero components: write \"2h\", not \"120m\".",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},

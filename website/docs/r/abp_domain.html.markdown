@@ -7,8 +7,9 @@ description: |-
   domain names to a Site, and configures how requests are matched, captured, and
   analyzed.
   NOTE: criteria cannot be changed in-place; modifying it forces resource
-  replacement. obfuscate_path is server-generated when omitted on create
-  and is preserved on update.
+  replacement, so a criteria value that does not meet the required format
+  forces that replacement on every apply. obfuscate_path is
+  server-generated when omitted on create and is preserved on update.
 ---
 
 
@@ -19,8 +20,9 @@ domain names to a Site, and configures how requests are matched, captured, and
 analyzed.
 
 NOTE: `criteria` cannot be changed in-place; modifying it forces resource
-replacement. `obfuscate_path` is server-generated when omitted on create
-and is preserved on update.
+replacement, so a `criteria` value that does not meet the required format
+forces that replacement on every apply. `obfuscate_path` is
+server-generated when omitted on create and is preserved on update.
 
 ## Example Usage
 
@@ -76,7 +78,7 @@ resource "incapsula_abp_domain" "test_com" {
 ### Required
 
 - `account_id` (String) ABP account UUID this Domain belongs to.
-- `cookiescope` (String) The Domain attribute of the Set-Cookie header set by the ABP JavaScript. Use `$suffix` as the TLD with prefix criteria.
+- `cookiescope` (String) The Domain attribute of the Set-Cookie header set by the ABP JavaScript. Use `$suffix` as the TLD with prefix criteria. Must not have leading or trailing whitespace.
 - `criteria` (Block List, Min: 1, Max: 1) Specifies which domain names this Domain matches. Exactly one of `exact`, `prefix`, `suffix`, `cloudwaf_id` must be set. (see [below for nested schema](#nestedblock--criteria))
 - `site_id` (String) Site (a.k.a. Website Group) UUID this Domain is attached to.
 
@@ -91,12 +93,12 @@ resource "incapsula_abp_domain" "test_com" {
 - `enable_mobile_sdk_token` (Boolean) Enable to allow mobile SDK tokens. Only enable if you use the ABP mobile SDK with this domain.
 - `encryption_key_id` (String) Existing encryption key to copy when creating this Domain. If unset, a copy of the account default key is used. Honoured on create only: the API consumes it once to clone the key material and never returns it, so later changes to it are ignored.
 - `filter_out_static_assets` (Boolean) CWAF only. Prevents common static asset paths from being analyzed by ABP.
-- `interstitial_inprogress_iframe_src` (String) URL of the iframe used to display the PoW challenge in progress.
+- `interstitial_inprogress_iframe_src` (String) URL of the iframe used to display the PoW challenge in progress. Must be an absolute URL with a scheme and an explicit path; write a bare origin with a trailing slash (`http://www.example.com/`).
 - `log_region` (String) Region in which ABP logs are stored. One of: apac, australia, eu, usa, india.
 - `no_js_injection_path` (Block List) Rules describing where the ABP JavaScript injection should not occur. Each block must set exactly one of `path_prefix`, `incap_rule`. (see [below for nested schema](#nestedblock--no_js_injection_path))
-- `obfuscate_path` (String) Recommended path under which the ABP JavaScript is loaded. Server-generated when omitted on create.
+- `obfuscate_path` (String) Recommended path under which the ABP JavaScript is loaded. Server-generated when omitted on create. Must start with `/`, with no leading or trailing whitespace and no `#` fragment.
 - `proxy_flags` (Set of String) CloudWAF configuration flags. Allowed values: enable_referrer_fix, dont_minify_post_resubmit_error_page, inject_js_into_body, set_shared_cookie_on_apex.
-- `unmasked_headers` (Set of String) Header names whose values should be visible to ABP (CloudWAF normally masks them). Compared case-insensitively.
+- `unmasked_headers` (Set of String) Header names whose values should be visible to ABP (CloudWAF normally masks them). Compared case-insensitively, so no two entries may differ only in case.
 
 ### Read-Only
 
@@ -111,9 +113,9 @@ resource "incapsula_abp_domain" "test_com" {
 Optional:
 
 - `cloudwaf_id` (Number) CloudWAF website ID; use this when onboarding CloudWAF domains.
-- `exact` (String) Match exactly this fully-qualified domain name.
-- `prefix` (String) Match any domain name with this prefix.
-- `suffix` (String) Match any domain name with this suffix.
+- `exact` (String) Match exactly this fully-qualified domain name. Must not have leading or trailing whitespace.
+- `prefix` (String) Match any domain name with this prefix. Must not have leading or trailing whitespace.
+- `suffix` (String) Match any domain name with this suffix. Must not have leading or trailing whitespace.
 
 
 <a id="nestedblock--analysis_ip_lookup_mode"></a>

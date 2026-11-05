@@ -54,7 +54,7 @@ data "incapsula_abp_site_analysis_settings" "postback" {
 
 - `max_requests_per_minute` (Number) Override the site default for this selector.
 - `max_requests_per_session` (Number) Override the site default for this selector.
-- `max_session_length` (String) Override the site default for this selector. Moi duration format (e.g. "2d1h").
+- `max_session_length` (String) Override the site default for this selector. Duration format, e.g. "2d1h". Use the largest fitting units and omit zero components: write "2h", not "120m".
 - `rate_limiting_custom_scope` (String) Custom scope name; required iff `rate_limiting = custom_scope`. Selectors sharing the same scope share rate-limit counters.
 - `use_site_rate_limiting_parameters` (Boolean) When true, fall back to the site-level defaults for rate-limiting parameters not set on this selector.
 

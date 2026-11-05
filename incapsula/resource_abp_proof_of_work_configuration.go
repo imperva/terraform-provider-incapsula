@@ -36,7 +36,7 @@ is "proof_of_work".`,
 				ValidateFunc: validation.IsUUID,
 			},
 			"name": {
-				Description:  "Human-readable name of the Proof Of Work Configuration.",
+				Description:  "Human-readable name of the Proof Of Work Configuration. Must not have leading or trailing whitespace.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
