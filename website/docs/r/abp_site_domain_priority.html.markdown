@@ -4,15 +4,13 @@ layout: "incapsula"
 page_title: "incapsula_abp_site_domain_priority"
 description: |-
   Manages the priority order of Domains within an ABP Site. The first ID in
-  domain_ids has the highest priority. The list must include every Domain
-  attached to the Site exactly once — including Domains created outside Terraform.
-  WARNING: if a Domain is attached to the Site but missing from
-  domain_ids, every apply fails with
-  Wrong number of domain IDs supplied until the list is completed, and
-  the plan is of no help: it shows the missing Domain as something to be removed
-  from the list, which the API does not allow. Whenever you add a Domain to the
-  Site, add it here too; the incapsula_abp_domain resources of the Site
-  are the complete list only if no one else creates Domains in it.
+  domain_ids has the highest priority.
+  domain_ids does not have to cover every Domain of the Site. The
+  Domains it lists become the highest priority ones, in the order given, and every
+  other Domain attached to the Site keeps its relative order behind them. A Domain
+  created elsewhere — in the ABP UI, by another workspace or by another module —
+  therefore becomes the lowest priority Domain of the Site and does not have to be
+  added here. effective_domain_ids reports the resulting full order.
   NOTE: this resource wraps a singleton property of the parent Site. Destroying
   it removes the priority from Terraform state but leaves the server-side order
   unchanged.
@@ -22,16 +20,14 @@ description: |-
 # incapsula_abp_site_domain_priority
 
 Manages the priority order of Domains within an ABP Site. The first ID in
-`domain_ids` has the highest priority. The list must include every Domain
-attached to the Site exactly once — including Domains created outside Terraform.
+`domain_ids` has the highest priority.
 
-WARNING: if a Domain is attached to the Site but missing from
-`domain_ids`, every apply fails with
-`Wrong number of domain IDs supplied` until the list is completed, and
-the plan is of no help: it shows the missing Domain as something to be removed
-from the list, which the API does not allow. Whenever you add a Domain to the
-Site, add it here too; the `incapsula_abp_domain` resources of the Site
-are the complete list only if no one else creates Domains in it.
+`domain_ids` does not have to cover every Domain of the Site. The
+Domains it lists become the highest priority ones, in the order given, and every
+other Domain attached to the Site keeps its relative order behind them. A Domain
+created elsewhere — in the ABP UI, by another workspace or by another module —
+therefore becomes the lowest priority Domain of the Site and does not have to be
+added here. `effective_domain_ids` reports the resulting full order.
 
 NOTE: this resource wraps a singleton property of the parent Site. Destroying
 it removes the priority from Terraform state but leaves the server-side order
@@ -42,12 +38,16 @@ unchanged.
 ```terraform
 # Defines the order in which a Site's Domains are matched. Domains are matched
 # top-down, so list more specific Domains before wildcard/catch-all ones.
+#
+# The list does not have to name every Domain of the Site. The Domains it names
+# are the highest priority ones, in this order; any other Domain attached to the
+# Site — including one created in the ABP UI or by another workspace — is
+# matched after them. Read `effective_domain_ids` to see the resulting order.
 resource "incapsula_abp_site_domain_priority" "sample_site" {
   site_id = incapsula_abp_site.sample_site.id
   domain_ids = [
     incapsula_abp_domain.example_com.id,
     incapsula_abp_domain.test_com.id,
-    incapsula_abp_domain.dummy_com.id,
   ]
 }
 ```
@@ -57,11 +57,12 @@ resource "incapsula_abp_site_domain_priority" "sample_site" {
 
 ### Required
 
-- `domain_ids` (List of String) Domain UUIDs in priority order (highest first). Must include every Domain attached to the Site exactly once, including Domains created outside Terraform.
+- `domain_ids` (List of String) Domain UUIDs in priority order (highest first). Every ID must belong to a Domain attached to the Site, but the list does not have to cover all of them: the Domains it leaves out keep their relative order behind the ones it lists.
 - `site_id` (String) Site UUID whose Domain priority order is being managed. Changing it replaces the resource: Terraform forgets the order of the old Site (leaving it unchanged on the server) and applies this order to the new Site.
 
 ### Read-Only
 
+- `effective_domain_ids` (List of String) Every Domain attached to the Site in the priority order the Site now has: the Domains listed in `domain_ids` first, then the ones this resource does not rank.
 - `id` (String) The ID of this resource.
 
 ## Import

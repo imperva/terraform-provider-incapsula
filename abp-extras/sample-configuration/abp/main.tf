@@ -573,14 +573,13 @@ resource "incapsula_abp_domain" "dummy_com" {
 # Define domain priority order
 #
 
-# The list must contain *every* Domain attached to the site, in priority order.
-# A Domain that is attached but missing from the list — including one created
-# outside Terraform — fails every apply with
-# `Wrong number of domain IDs supplied`, and the removal the plan offers is not
-# applicable, so extend this list whenever a Domain is added to the site.
+# The list does not have to contain every Domain attached to the site: the
+# Domains listed here are matched first, in this order, and any other Domain of
+# the site — `dummy_com` below, or one created outside Terraform — is matched
+# after them. `effective_domain_ids` reports the resulting full order.
 resource "incapsula_abp_site_domain_priority" "sample_site" {
   site_id    = incapsula_abp_site.sample_site.id
-  domain_ids = [incapsula_abp_domain.example_com.id, incapsula_abp_domain.test_com.id, incapsula_abp_domain.dummy_com.id]
+  domain_ids = [incapsula_abp_domain.example_com.id, incapsula_abp_domain.test_com.id]
 }
 
 #
