@@ -1,5 +1,5 @@
 ---
-subcategory: "Advanced Bot Protection"
+subcategory: "Deprecated"
 layout: "incapsula"
 page_title: "incapsula_abp_websites"
 description: |-
@@ -9,9 +9,14 @@ description: |-
 
 # incapsula_abp_websites
 
+-> DEPRECATED: incapsula_abp_websites
+
+This resource has been DEPRECATED. It will be removed in a future version.
+Please use the `incapsula_abp_site` resource instead.
+
 Provides an ABP (Advanced Bot Protection) website resource. Allows you to enable and configure ABP for given websites.
 
-This represents the canonical configuration of the ABP website groups and websites, if there are existing website groups or website, or they have different settings those will be removed or changed and not added as additional items.
+This represents the canonical configuration of the ABP Website Groups and websites, if there are existing Website Groups or website, or they have different settings those will be removed or changed and not added as additional items.
 
 NOTE: Due to limitations in ABP, the API key/id used to deploy this resource must match the `account_id` used in the resource (API key/id for a parent account do not work). All Incapsula sites associated with the resource must also be defined in that account.
 
@@ -72,8 +77,8 @@ resource "incapsula_abp_websites" "abp_websites" {
 
 ### Optional
 
-- `auto_publish` (Boolean) Whether to publish the changes automatically. Changes don't take take effect until they have been published.
-- `website_group` (Block List) List of website groups which are associated to ABP. Website groups are matched in a top-down fashion. If a more specific website group should take precedence over over a wild card entry then that should be higher in the list. (see [below for nested schema](#nestedblock--website_group))
+- `auto_publish` (Boolean) Whether to publish the changes automatically. Changes don't take effect until they have been published.
+- `website_group` (Block List) List of Website Groups which are associated to ABP. Website Groups are matched in a top-down fashion. If a more specific Website Group should take precedence over over a wild card entry then that should be higher in the list. (see [below for nested schema](#nestedblock--website_group))
 
 ### Read-Only
 
@@ -85,12 +90,12 @@ resource "incapsula_abp_websites" "abp_websites" {
 
 Required:
 
-- `name` (String) Name for the website group. Must be unique unless `name_id` is specified.
+- `name` (String) Name for the Website Group. Must be unique unless `name_id` is specified.
 
 Optional:
 
-- `name_id` (String) Unique user-defined identifier used to differentiate website groups whose `name` is identical
-- `website` (Block List) List of websites within the website group. Websites are matched in a top-down fashion. If a more specific website should take precedence over over a wild card entry then that should be higher in the list (see [below for nested schema](#nestedblock--website_group--website))
+- `name_id` (String) Unique user-defined identifier used to differentiate Website Groups whose `name` is identical
+- `website` (Block List) List of websites within the Website Group. Websites are matched in a top-down fashion. If a more specific website should take precedence over over a wild card entry then that should be higher in the list (see [below for nested schema](#nestedblock--website_group--website))
 
 Read-Only:
 
@@ -105,7 +110,7 @@ Required:
 
 Optional:
 
-- `enable_mitigation` (Boolean) Enables the ABP conditions for this website. Defaults to true.
+- `enable_mitigation` (Boolean) Enables the ABP Conditions for this website. Defaults to true.
 
 Read-Only:
 
