@@ -71,14 +71,22 @@ Read-Only:
 Read-Only:
 
 - `analysis_settings` (String)
-- `case_insensitive` (Boolean)
 - `created_at` (String)
 - `derived_id` (String)
 - `id` (String)
 - `modified_at` (String)
-- `path_prefix` (String)
+- `path_prefix` (List of Object) (see [below for nested schema](#nestedobjatt--sites--default_selector--path_prefix))
 - `policy_id` (String)
 - `purpose` (String)
+
+<a id="nestedobjatt--sites--default_selector--path_prefix"></a>
+### Nested Schema for `sites.default_selector.path_prefix`
+
+Read-Only:
+
+- `case_insensitive` (Boolean)
+- `value` (String)
+
 
 
 <a id="nestedobjatt--sites--selector"></a>
@@ -87,21 +95,45 @@ Read-Only:
 Read-Only:
 
 - `analysis_settings` (String)
+- `api_security_group` (List of Object) (see [below for nested schema](#nestedobjatt--sites--selector--api_security_group))
 - `created_at` (String)
 - `derived_id` (String)
 - `id` (String)
-- `kind` (List of Object) (see [below for nested schema](#nestedobjatt--sites--selector--kind))
 - `modified_at` (String)
+- `path_prefix` (List of Object) (see [below for nested schema](#nestedobjatt--sites--selector--path_prefix))
+- `path_regex` (List of Object) (see [below for nested schema](#nestedobjatt--sites--selector--path_regex))
 - `policy_id` (String)
+- `postback` (List of Object) (see [below for nested schema](#nestedobjatt--sites--selector--postback))
 - `purpose` (String)
 
-<a id="nestedobjatt--sites--selector--kind"></a>
-### Nested Schema for `sites.selector.kind`
+<a id="nestedobjatt--sites--selector--api_security_group"></a>
+### Nested Schema for `sites.selector.api_security_group`
 
 Read-Only:
 
-- `api_security_group` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--sites--selector--path_prefix"></a>
+### Nested Schema for `sites.selector.path_prefix`
+
+Read-Only:
+
 - `case_insensitive` (Boolean)
-- `path_prefix` (String)
-- `path_regex` (String)
-- `postback` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--sites--selector--path_regex"></a>
+### Nested Schema for `sites.selector.path_regex`
+
+Read-Only:
+
+- `value` (String)
+
+
+<a id="nestedobjatt--sites--selector--postback"></a>
+### Nested Schema for `sites.selector.postback`
+
+Read-Only:
+
+- `value` (String)

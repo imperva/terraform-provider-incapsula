@@ -28,12 +28,28 @@ var abpSelectorPurposes = []string{
 	"unknown", "other",
 }
 
+// abpSelectorPostbacks is the set of Postback request types a Selector can
+// match.
+var abpSelectorPostbacks = []string{
+	"web_interrogation", "ios_interrogation", "web_automation",
+	"android_interrogation",
+}
+
+// abpSelectorCriteriaBlocks are the blocks a Selector can match requests by,
+// one per criteria. Exactly one of them is written; each is a single-item
+// block so that removing it from the configuration actually removes the
+// criteria.
+var abpSelectorCriteriaBlocks = []string{
+	"path_prefix", "path_regex", "postback", "api_security_group",
+}
+
 func resourceAbpSite() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceAbpSiteCreate,
 		ReadContext:   resourceAbpSiteRead,
 		UpdateContext: resourceAbpSiteUpdate,
 		DeleteContext: resourceAbpSiteDelete,
+		CustomizeDiff: resourceAbpSiteCustomizeDiff,
 
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceAbpSiteImport,
@@ -41,10 +57,13 @@ func resourceAbpSite() *schema.Resource {
 
 		Description: `Provides an ABP Site (a.k.a. Website Group) resource. A Site groups one or
 more Domains together and maps incoming requests to Policies via an ordered
-list of Selectors.
+list of Selectors. Each Selector matches requests one way — by path prefix, by
+path regular expression, by Postback type or by API Security group — written as
+exactly one of the ` + "`path_prefix`" + `, ` + "`path_regex`" + `,
+` + "`postback`" + ` and ` + "`api_security_group`" + ` blocks.
 
-NOTE: The API automatically appends a default catch-all selector
-(` + "`path_prefix = \"/\"`" + `) at the lowest priority on create. You manage only
+NOTE: The API automatically appends a default catch-all selector (the path
+prefix ` + "`/`" + `) at the lowest priority on create. You manage only
 the user-defined selectors in the ` + "`selector`" + ` list; the default is exposed
 read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 
@@ -91,9 +110,12 @@ read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 				Computed:    true,
 			},
 			"selector": {
-				Description: "Ordered list of Selectors evaluated top-down for this Site. The first matching Selector decides which Policy is applied.",
-				Type:        schema.TypeList,
-				Optional:    true,
+				Description: "Ordered list of Selectors evaluated top-down for this Site. The " +
+					"first matching Selector decides which Policy is applied. Each Selector " +
+					"matches requests one way: write exactly one of the `path_prefix`, " +
+					"`path_regex`, `postback` and `api_security_group` blocks.",
+				Type:     schema.TypeList,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -113,43 +135,72 @@ read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 							Optional:     true,
 							ValidateFunc: validation.StringInSlice(abpSelectorPurposes, false),
 						},
-						"kind": {
-							Description: "Match criteria for this Selector. Exactly one of `path_prefix`, `path_regex`, `postback`, `api_security_group` must be set.",
+						"path_prefix": {
+							Description: "Match requests whose path begins with a prefix. Mutually exclusive with `path_regex`, `postback` and `api_security_group`.",
 							Type:        schema.TypeList,
-							Required:    true,
+							Optional:    true,
 							MaxItems:    1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
-									"path_prefix": {
-										Description: "Match requests whose path begins with this prefix. Mutually exclusive with `path_regex`, `postback` and `api_security_group`.",
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
+									"value": {
+										Description:  "The path prefix to match.",
+										Type:         schema.TypeString,
+										Required:     true,
+										ValidateFunc: validation.StringIsNotEmpty,
 									},
 									"case_insensitive": {
-										Description: "Match `path_prefix` without regard to case. Applies to `path_prefix` only.",
+										Description: "Match the prefix without regard to case.",
 										Type:        schema.TypeBool,
 										Optional:    true,
 										Default:     false,
 									},
-									"path_regex": {
-										Description: "Match requests whose path matches this regular expression. Mutually exclusive with `path_prefix`, `postback` and `api_security_group`.",
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
-									},
-									"postback": {
-										Description:  "Match a specific Postback request type. One of: web_interrogation, ios_interrogation, web_automation, android_interrogation. Mutually exclusive with `path_prefix`, `path_regex` and `api_security_group`.",
+								},
+							},
+						},
+						"path_regex": {
+							Description: "Match requests whose path matches a regular expression. Mutually exclusive with `path_prefix`, `postback` and `api_security_group`.",
+							Type:        schema.TypeList,
+							Optional:    true,
+							MaxItems:    1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"value": {
+										Description:  "The regular expression to match the path against.",
 										Type:         schema.TypeString,
-										Optional:     true,
-										Computed:     true,
-										ValidateFunc: validation.StringInSlice([]string{"web_interrogation", "ios_interrogation", "web_automation", "android_interrogation"}, false),
+										Required:     true,
+										ValidateFunc: validation.StringIsNotEmpty,
 									},
-									"api_security_group": {
-										Description: "Match requests belonging to this API Security group. Mutually exclusive with `path_prefix`, `path_regex` and `postback`.",
-										Type:        schema.TypeString,
-										Optional:    true,
-										Computed:    true,
+								},
+							},
+						},
+						"postback": {
+							Description: "Match a specific Postback request type. Mutually exclusive with `path_prefix`, `path_regex` and `api_security_group`.",
+							Type:        schema.TypeList,
+							Optional:    true,
+							MaxItems:    1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"value": {
+										Description:  "The Postback request type to match. One of: " + strings.Join(abpSelectorPostbacks, ", ") + ".",
+										Type:         schema.TypeString,
+										Required:     true,
+										ValidateFunc: validation.StringInSlice(abpSelectorPostbacks, false),
+									},
+								},
+							},
+						},
+						"api_security_group": {
+							Description: "Match requests belonging to an API Security group. Mutually exclusive with `path_prefix`, `path_regex` and `postback`.",
+							Type:        schema.TypeList,
+							Optional:    true,
+							MaxItems:    1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"value": {
+										Description:  "Name of the API Security group to match.",
+										Type:         schema.TypeString,
+										Required:     true,
+										ValidateFunc: validation.StringIsNotEmpty,
 									},
 								},
 							},
@@ -195,14 +246,23 @@ read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 							Computed:    true,
 						},
 						"path_prefix": {
-							Description: "Always `/`.",
-							Type:        schema.TypeString,
+							Description: "The path prefix the default Selector matches, always `/`.",
+							Type:        schema.TypeList,
 							Computed:    true,
-						},
-						"case_insensitive": {
-							Description: "Whether `path_prefix` is matched without regard to case.",
-							Type:        schema.TypeBool,
-							Computed:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"value": {
+										Description: "Always `/`.",
+										Type:        schema.TypeString,
+										Computed:    true,
+									},
+									"case_insensitive": {
+										Description: "Whether the prefix is matched without regard to case.",
+										Type:        schema.TypeBool,
+										Computed:    true,
+									},
+								},
+							},
 						},
 						"purpose": {
 							Description: "What this Selector matches. Unset for the generated default.",
@@ -246,33 +306,23 @@ read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 	}
 }
 
-// extractAbpSelector builds a selector from its config map. User-managed
-// selectors carry their criteria in a nested `kind` block (nestedKind=true);
-// the server-managed default selector keeps them flat (nestedKind=false).
-func extractAbpSelector(raw map[string]any, nestedKind bool) (AbpSelector, error) {
-	criteriaRaw := raw
-	if nestedKind {
-		kind, ok := raw["kind"].([]any)
-		if !ok || len(kind) != 1 {
-			return AbpSelector{}, fmt.Errorf("selector requires exactly one kind block")
-		}
-		criteriaRaw = kind[0].(map[string]any)
-	}
-	criteria, err := extractAbpSelectorCriteria(criteriaRaw)
-	if err != nil {
-		return AbpSelector{}, err
-	}
-
+// extractAbpSelector builds a selector from its config map. Which criteria
+// block the selector holds decides how it matches, so removing a block from
+// the configuration removes the criteria with it. The auto-managed default
+// selector has the same shape, with a `/` path prefix the backend owns.
+func extractAbpSelector(raw map[string]any) (AbpSelector, error) {
 	encoded, _ := raw["analysis_settings"].(string)
 	var settings AbpAnalysisSettings
 	if err := json.Unmarshal([]byte(encoded), &settings); err != nil {
 		return AbpSelector{}, fmt.Errorf("decoding analysis_settings: %w", err)
 	}
 
-	sel := AbpSelector{
-		Criteria:         criteria,
-		AnalysisSettings: settings,
+	criteria, err := extractAbpSelectorCriteria(raw)
+	if err != nil {
+		return AbpSelector{}, err
 	}
+
+	sel := AbpSelector{AnalysisSettings: settings, Criteria: criteria}
 	// Carry the server-assigned id when present (Update path) so backend
 	// preserves selector identity across the PUT. Empty on Create.
 	if id, ok := raw["id"].(string); ok && id != "" {
@@ -287,39 +337,71 @@ func extractAbpSelector(raw map[string]any, nestedKind bool) (AbpSelector, error
 	return sel, nil
 }
 
+// extractAbpSelectorCriteria reads the one criteria block a selector carries.
 func extractAbpSelectorCriteria(raw map[string]any) (AbpSelectorCriteria, error) {
-	prefix, _ := raw["path_prefix"].(string)
-	regex, _ := raw["path_regex"].(string)
-	postback, _ := raw["postback"].(string)
-	group, _ := raw["api_security_group"].(string)
-	caseInsensitive, _ := raw["case_insensitive"].(bool)
+	var found []string
+	var body map[string]any
+	for _, name := range abpSelectorCriteriaBlocks {
+		block, _ := raw[name].([]any)
+		if len(block) == 0 {
+			continue
+		}
+		found = append(found, name)
+		body, _ = block[0].(map[string]any)
+	}
+	if len(found) != 1 {
+		return AbpSelectorCriteria{}, abpSelectorCriteriaError(found)
+	}
+	value, _ := body["value"].(string)
 
-	set := 0
 	c := AbpSelectorCriteria{}
-	if prefix != "" {
-		c.PathPrefix = &prefix
-		c.CaseInsensitive = caseInsensitive
-		set++
-	}
-	if regex != "" {
-		c.PathRegex = &regex
-		set++
-	}
-	if postback != "" {
-		c.Postback = &postback
-		set++
-	}
-	if group != "" {
-		c.ApiSecurityGroup = &group
-		set++
-	}
-	if set != 1 {
-		return c, fmt.Errorf("selector requires exactly one of path_prefix, path_regex, postback, api_security_group (got %d)", set)
-	}
-	if caseInsensitive && prefix == "" {
-		return c, fmt.Errorf("case_insensitive applies to path_prefix only")
+	switch found[0] {
+	case "path_prefix":
+		c.PathPrefix = &value
+		c.CaseInsensitive, _ = body["case_insensitive"].(bool)
+	case "path_regex":
+		c.PathRegex = &value
+	case "postback":
+		c.Postback = &value
+	case "api_security_group":
+		c.ApiSecurityGroup = &value
 	}
 	return c, nil
+}
+
+// abpSelectorCriteriaError reports a selector that does not hold exactly one
+// criteria block, naming the blocks it does hold.
+func abpSelectorCriteriaError(found []string) error {
+	held := "none"
+	if len(found) > 1 {
+		held = strings.Join(found, " and ")
+	}
+	return fmt.Errorf("a selector requires exactly one of the %s blocks, but holds %s",
+		strings.Join(abpSelectorCriteriaBlocks, ", "), held)
+}
+
+// resourceAbpSiteCustomizeDiff rejects a selector that does not hold exactly
+// one criteria block, so that the configuration fails at plan time rather than
+// part-way through an apply. The blocks are counted through attribute paths
+// because a new selector's nested blocks are not yet readable as a whole from
+// the diff.
+func resourceAbpSiteCustomizeDiff(ctx context.Context, diff *schema.ResourceDiff, m any) error {
+	count, ok := diff.Get("selector.#").(int)
+	if !ok {
+		return nil
+	}
+	for i := range count {
+		var found []string
+		for _, name := range abpSelectorCriteriaBlocks {
+			if n, ok := diff.Get(fmt.Sprintf("selector.%d.%s.#", i, name)).(int); ok && n > 0 {
+				found = append(found, name)
+			}
+		}
+		if len(found) != 1 {
+			return fmt.Errorf("selector[%d]: %w", i, abpSelectorCriteriaError(found))
+		}
+	}
+	return nil
 }
 
 func extractAbpSite(data *schema.ResourceData) (AbpSite, error) {
@@ -347,7 +429,7 @@ func extractAbpSite(data *schema.ResourceData) (AbpSite, error) {
 	rawSelectors := data.Get("selector").([]any)
 	site.Selectors = make([]AbpSelector, 0, len(rawSelectors))
 	for i, item := range rawSelectors {
-		sel, err := extractAbpSelector(item.(map[string]any), true)
+		sel, err := extractAbpSelector(item.(map[string]any))
 		if err != nil {
 			return AbpSite{}, fmt.Errorf("selector[%d]: %w", i, err)
 		}
@@ -357,7 +439,7 @@ func extractAbpSite(data *schema.ResourceData) (AbpSite, error) {
 	// Carry the auto-managed default forward into the Update payload so
 	// backend preserves its id and policy. On Create this list is empty.
 	if rawDefault, ok := data.Get("default_selector").([]any); ok && len(rawDefault) == 1 {
-		def, err := extractAbpSelector(rawDefault[0].(map[string]any), false)
+		def, err := extractAbpSelector(rawDefault[0].(map[string]any))
 		if err != nil {
 			return AbpSite{}, fmt.Errorf("default_selector: %w", err)
 		}

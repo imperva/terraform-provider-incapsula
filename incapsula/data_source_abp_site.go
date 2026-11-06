@@ -3,6 +3,7 @@ package incapsula
 import (
 	"context"
 	"maps"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -76,9 +77,11 @@ func abpSiteReadOnlyAttributes() map[string]*schema.Schema {
 			Computed:    true,
 		},
 		"selector": {
-			Description: "Ordered list of user-defined Selectors for this Site.",
-			Type:        schema.TypeList,
-			Computed:    true,
+			Description: "Ordered list of user-defined Selectors for this Site. Each Selector " +
+				"matches requests one way: exactly one of the `path_prefix`, `path_regex`, " +
+				"`postback` and `api_security_group` blocks is present.",
+			Type:     schema.TypeList,
+			Computed: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"id": {
@@ -96,34 +99,61 @@ func abpSiteReadOnlyAttributes() map[string]*schema.Schema {
 						Type:        schema.TypeString,
 						Computed:    true,
 					},
-					"kind": {
-						Description: "Match criteria for this Selector. Will be one of `path_prefix`, `path_regex`, `postback`, `api_security_group`",
+					"path_prefix": {
+						Description: "Present when the Selector matches requests whose path begins with a prefix.",
 						Type:        schema.TypeList,
 						Computed:    true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
-								"path_prefix": {
-									Description: "Matches requests whose path begins with this prefix. Mutually exclusive with `path_regex`, `postback` and `api_security_group`.",
+								"value": {
+									Description: "The path prefix that is matched.",
 									Type:        schema.TypeString,
 									Computed:    true,
 								},
 								"case_insensitive": {
-									Description: "Whether `path_prefix` is matched without regard to case.",
+									Description: "Whether the prefix is matched without regard to case.",
 									Type:        schema.TypeBool,
 									Computed:    true,
 								},
-								"path_regex": {
-									Description: "Matches requests whose path matches this regular expression. Mutually exclusive with `path_prefix`, `postback` and `api_security_group`.",
+							},
+						},
+					},
+					"path_regex": {
+						Description: "Present when the Selector matches requests whose path matches a regular expression.",
+						Type:        schema.TypeList,
+						Computed:    true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"value": {
+									Description: "The regular expression the path is matched against.",
 									Type:        schema.TypeString,
 									Computed:    true,
 								},
-								"postback": {
-									Description: "Matches a specific Postback request type. One of: web_interrogation, ios_interrogation, web_automation, android_interrogation. Mutually exclusive with `path_prefix`, `path_regex` and `api_security_group`.",
+							},
+						},
+					},
+					"postback": {
+						Description: "Present when the Selector matches a Postback request type.",
+						Type:        schema.TypeList,
+						Computed:    true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"value": {
+									Description: "The Postback request type that is matched. One of: " + strings.Join(abpSelectorPostbacks, ", ") + ".",
 									Type:        schema.TypeString,
 									Computed:    true,
 								},
-								"api_security_group": {
-									Description: "Matches requests belonging to this API Security group. Mutually exclusive with `path_prefix`, `path_regex` and `postback`.",
+							},
+						},
+					},
+					"api_security_group": {
+						Description: "Present when the Selector matches requests belonging to an API Security group.",
+						Type:        schema.TypeList,
+						Computed:    true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"value": {
+									Description: "Name of the API Security group that is matched.",
 									Type:        schema.TypeString,
 									Computed:    true,
 								},
@@ -170,14 +200,23 @@ func abpSiteReadOnlyAttributes() map[string]*schema.Schema {
 						Computed:    true,
 					},
 					"path_prefix": {
-						Description: "Always `/`.",
-						Type:        schema.TypeString,
+						Description: "The path prefix the default Selector matches, always `/`.",
+						Type:        schema.TypeList,
 						Computed:    true,
-					},
-					"case_insensitive": {
-						Description: "Whether `path_prefix` is matched without regard to case.",
-						Type:        schema.TypeBool,
-						Computed:    true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"value": {
+									Description: "Always `/`.",
+									Type:        schema.TypeString,
+									Computed:    true,
+								},
+								"case_insensitive": {
+									Description: "Whether the prefix is matched without regard to case.",
+									Type:        schema.TypeBool,
+									Computed:    true,
+								},
+							},
+						},
 					},
 					"purpose": {
 						Description: "What this Selector matches. Unset for the generated default.",

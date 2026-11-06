@@ -45,7 +45,7 @@ data "incapsula_abp_site" "external_site" {
 - `id` (String) The ID of this resource.
 - `industry` (String) Industry the Site operates in. Informational metadata, unused by the runtime.
 - `modified_at` (String) RFC3339 timestamp at which the Site was last modified.
-- `selector` (List of Object) Ordered list of user-defined Selectors for this Site. (see [below for nested schema](#nestedatt--selector))
+- `selector` (List of Object) Ordered list of user-defined Selectors for this Site. Each Selector matches requests one way: exactly one of the `path_prefix`, `path_regex`, `postback` and `api_security_group` blocks is present. (see [below for nested schema](#nestedatt--selector))
 
 <a id="nestedatt--default_selector"></a>
 ### Nested Schema for `default_selector`
@@ -53,14 +53,22 @@ data "incapsula_abp_site" "external_site" {
 Read-Only:
 
 - `analysis_settings` (String)
-- `case_insensitive` (Boolean)
 - `created_at` (String)
 - `derived_id` (String)
 - `id` (String)
 - `modified_at` (String)
-- `path_prefix` (String)
+- `path_prefix` (List of Object) (see [below for nested schema](#nestedobjatt--default_selector--path_prefix))
 - `policy_id` (String)
 - `purpose` (String)
+
+<a id="nestedobjatt--default_selector--path_prefix"></a>
+### Nested Schema for `default_selector.path_prefix`
+
+Read-Only:
+
+- `case_insensitive` (Boolean)
+- `value` (String)
+
 
 
 <a id="nestedatt--selector"></a>
@@ -69,21 +77,45 @@ Read-Only:
 Read-Only:
 
 - `analysis_settings` (String)
+- `api_security_group` (List of Object) (see [below for nested schema](#nestedobjatt--selector--api_security_group))
 - `created_at` (String)
 - `derived_id` (String)
 - `id` (String)
-- `kind` (List of Object) (see [below for nested schema](#nestedobjatt--selector--kind))
 - `modified_at` (String)
+- `path_prefix` (List of Object) (see [below for nested schema](#nestedobjatt--selector--path_prefix))
+- `path_regex` (List of Object) (see [below for nested schema](#nestedobjatt--selector--path_regex))
 - `policy_id` (String)
+- `postback` (List of Object) (see [below for nested schema](#nestedobjatt--selector--postback))
 - `purpose` (String)
 
-<a id="nestedobjatt--selector--kind"></a>
-### Nested Schema for `selector.kind`
+<a id="nestedobjatt--selector--api_security_group"></a>
+### Nested Schema for `selector.api_security_group`
 
 Read-Only:
 
-- `api_security_group` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--selector--path_prefix"></a>
+### Nested Schema for `selector.path_prefix`
+
+Read-Only:
+
 - `case_insensitive` (Boolean)
-- `path_prefix` (String)
-- `path_regex` (String)
-- `postback` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--selector--path_regex"></a>
+### Nested Schema for `selector.path_regex`
+
+Read-Only:
+
+- `value` (String)
+
+
+<a id="nestedobjatt--selector--postback"></a>
+### Nested Schema for `selector.postback`
+
+Read-Only:
+
+- `value` (String)
