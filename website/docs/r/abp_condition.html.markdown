@@ -8,12 +8,13 @@ description: |-
   (directly or via Condition Lists) to drive Directive actions.
   NOTE: the API stores and returns a formatted and optimized form of the Condition
   code, so the provider keeps the code you wrote and exposes the
-  server's form separately as code_normalized. This has two
-  consequences. A code change made outside Terraform (for example in the UI) is
-  not reported by terraform plan. And the code from
-  your configuration is sent on every update, so any later change to this
-  resource — even to name alone — silently replaces the out-of-band
-  code with the configured one.
+  server's form separately as code_normalized. A code change made
+  outside Terraform (for example in the UI) is therefore not reported by
+  terraform plan, and Terraform will not undo it: an update that does
+  not change code leaves the stored expression alone, so only a
+  code change in the configuration replaces it. Comparing
+  code with code_normalized shows whether the two still
+  agree.
   It is therefore recommended to copy code_normalized into
   code after running terraform import, and to make all code
   changes through Terraform.
@@ -28,12 +29,13 @@ evaluated against incoming requests. Conditions are referenced from Policies
 
 NOTE: the API stores and returns a formatted and optimized form of the Condition
 code, so the provider keeps the `code` you wrote and exposes the
-server's form separately as `code_normalized`. This has two
-consequences. A code change made outside Terraform (for example in the UI) is
-**not** reported by `terraform plan`. And the `code` from
-your configuration is sent on every update, so any later change to this
-resource — even to `name` alone — silently replaces the out-of-band
-code with the configured one.
+server's form separately as `code_normalized`. A code change made
+outside Terraform (for example in the UI) is therefore **not** reported by
+`terraform plan`, and Terraform will not undo it: an update that does
+not change `code` leaves the stored expression alone, so only a
+`code` change in the configuration replaces it. Comparing
+`code` with `code_normalized` shows whether the two still
+agree.
 
 It is therefore recommended to copy `code_normalized` into
 `code` after running `terraform import`, and to make all code
@@ -66,7 +68,7 @@ resource "incapsula_abp_condition" "rate_limit" {
 ### Required
 
 - `account_id` (String) ABP account UUID this Condition belongs to. Changing it replaces the Condition — Terraform deletes the existing one and creates a new one — because the API cannot move a Condition to another account.
-- `code` (String) MOI expression evaluated against the request. The server stores a normalized form internally; see `code_normalized` for the server's view. Out-of-band edits to this field (via the UI or API) are not detected as drift, and the next update of this resource — whatever it changes — overwrites them with the value configured here.
+- `code` (String) MOI expression evaluated against the request. The server stores a normalized form internally; see `code_normalized` for the server's view. Out-of-band edits to this field (via the UI or API) are not detected as drift and are not reverted: they are replaced only when the expression configured here changes.
 - `description` (String) Description of the Condition. Required; pass an empty string for no description.
 - `name` (String) Human-readable name of the Condition. 1..100 characters.
 
@@ -96,7 +98,7 @@ Omitting `template` is the same as setting `custom`.
 
 ### Read-Only
 
-- `code_normalized` (String) Server-side normalized/optimized form of `code`. Useful for diagnostics and for seeding `.tf` after `terraform import`.
+- `code_normalized` (String) Server-side normalized/optimized form of `code`. This is the expression the server actually evaluates, so a value that no longer corresponds to `code` means the Condition was edited outside Terraform. Useful for diagnostics and for seeding `.tf` after `terraform import`.
 - `created_at` (String) RFC3339 timestamp at which the Condition was created.
 - `id` (String) The ID of this resource.
 - `last_change_by` (String) Identifier of the user who last changed this Condition.
