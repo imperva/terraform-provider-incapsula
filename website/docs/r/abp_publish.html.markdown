@@ -14,6 +14,10 @@ description: |-
   finish and does not track its outcome, so a publish that fails afterwards is not
   reported here and is not retried. Check the publish status in the UI or the API
   if it matters.
+  NOTE: if the preflight has become unusable by the time the publish runs — it was
+  deleted, or the account was published from elsewhere in the meantime — the apply
+  fails with an explanation. Running terraform apply again recovers:
+  the snapshot is taken anew and that one is published.
   NOTE: the resource's id is the ID of the published preflight, not
   of the publish itself. Destroying the resource only drops it from Terraform
   state: nothing is unpublished or rolled back, and a terraform destroy
@@ -38,6 +42,11 @@ succeeds as soon as it has been accepted; it does not wait for the publish to
 finish and does not track its outcome, so a publish that fails afterwards is not
 reported here and is not retried. Check the publish status in the UI or the API
 if it matters.
+
+NOTE: if the preflight has become unusable by the time the publish runs — it was
+deleted, or the account was published from elsewhere in the meantime — the apply
+fails with an explanation. Running `terraform apply` again recovers:
+the snapshot is taken anew and that one is published.
 
 NOTE: the resource's `id` is the ID of the published *preflight*, not
 of the publish itself. Destroying the resource only drops it from Terraform

@@ -19,17 +19,20 @@ description: |-
   resources reachable through that data source's depends_on take part
   in this, so every ABP resource must be listed there (most simply: keep them all
   in one module and depend on that module).
-  NOTE: this resource does not re-read the preflight from the server, so a
-  preflight that the server has invalidated or deleted still looks healthy in
-  state and terraform plan reports no changes. Warnings the server
-  attaches to a preflight — including the one saying that changes made after the
-  snapshot will not be published — are not surfaced either. If publishing starts
-  failing with "ABP preflight is not publishable", force a new one with
-  terraform apply -replace=incapsula_abp_preflight.<name>. Importing an
-  existing preflight is not supported, and terraform destroy only drops
-  it from state: nothing is deleted or published, so an account destroyed through
-  Terraform is left with the deleted objects still live until something publishes
-  again.
+  NOTE: a snapshot that can no longer be used is replaced automatically. On every
+  refresh the snapshot in state is re-read, and if it has been deleted by the
+  server, or can no longer be published because the account has been published
+  from elsewhere in the meantime, Terraform plans a new one — and a new publish
+  with it. So a publish that failed, or that someone else overtook, is recovered
+  by the next terraform apply instead of failing forever.
+  A snapshot that is merely outdated — the configuration changed after it was
+  taken — is deliberately kept, because changes Terraform does not manage do not
+  trigger a publish. Such a snapshot is reported as a warning when it is created,
+  and the reason is also available in warnings.
+  terraform destroy only drops the snapshot from state: nothing is
+  deleted or published, so an account destroyed through Terraform is left with the
+  deleted objects still live until something publishes again. Importing an
+  existing preflight is not supported.
 ---
 
 
@@ -54,17 +57,22 @@ resources reachable through that data source's `depends_on` take part
 in this, so every ABP resource must be listed there (most simply: keep them all
 in one module and depend on that module).
 
-NOTE: this resource does not re-read the preflight from the server, so a
-preflight that the server has invalidated or deleted still looks healthy in
-state and `terraform plan` reports no changes. Warnings the server
-attaches to a preflight — including the one saying that changes made after the
-snapshot will not be published — are not surfaced either. If publishing starts
-failing with "ABP preflight is not publishable", force a new one with
-`terraform apply -replace=incapsula_abp_preflight.<name>`. Importing an
-existing preflight is not supported, and `terraform destroy` only drops
-it from state: nothing is deleted or published, so an account destroyed through
-Terraform is left with the deleted objects still live until something publishes
-again.
+NOTE: a snapshot that can no longer be used is replaced automatically. On every
+refresh the snapshot in state is re-read, and if it has been deleted by the
+server, or can no longer be published because the account has been published
+from elsewhere in the meantime, Terraform plans a new one — and a new publish
+with it. So a publish that failed, or that someone else overtook, is recovered
+by the next `terraform apply` instead of failing forever.
+
+A snapshot that is merely *outdated* — the configuration changed after it was
+taken — is deliberately kept, because changes Terraform does not manage do not
+trigger a publish. Such a snapshot is reported as a warning when it is created,
+and the reason is also available in `warnings`.
+
+`terraform destroy` only drops the snapshot from state: nothing is
+deleted or published, so an account destroyed through Terraform is left with the
+deleted objects still live until something publishes again. Importing an
+existing preflight is not supported.
 
 ## Example Usage
 
@@ -96,4 +104,14 @@ resource "incapsula_abp_preflight" "current" {
 
 ### Read-Only
 
+- `created_at` (String) When the snapshot was taken.
 - `id` (String) The ID of this resource.
+- `warnings` (List of Object) Reasons why publishing this snapshot may not have the expected effect, as reported when it was taken. Each entry has a `type` and a human-readable `message`; an empty list means there is nothing to report. (see [below for nested schema](#nestedatt--warnings))
+
+<a id="nestedatt--warnings"></a>
+### Nested Schema for `warnings`
+
+Read-Only:
+
+- `message` (String)
+- `type` (String)

@@ -36,9 +36,10 @@ data "incapsula_abp_pending_changes" "current" {
 # `pending_hash` is optional, but it should always come from the data source
 # above: it both detects the changes and orders the preflight after them.
 #
-# A preflight is not re-read once created, so one that a failed publish left
-# unpublishable still looks healthy. Replace it to recover:
-# `terraform apply -replace=incapsula_abp_preflight.current`.
+# A snapshot that can no longer be published — because it was discarded, or
+# because the account was published from elsewhere — is detected and replaced
+# automatically on the next apply. A snapshot that is only outdated is kept, and
+# the reason is reported in `warnings`.
 resource "incapsula_abp_preflight" "current" {
   account_id   = data.incapsula_abp_account.current.id
   pending_hash = data.incapsula_abp_pending_changes.current.hash

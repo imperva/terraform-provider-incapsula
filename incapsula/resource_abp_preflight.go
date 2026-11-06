@@ -2,6 +2,7 @@ package incapsula
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -34,17 +35,22 @@ resources reachable through that data source's ` + "`depends_on`" + ` take part
 in this, so every ABP resource must be listed there (most simply: keep them all
 in one module and depend on that module).
 
-NOTE: this resource does not re-read the preflight from the server, so a
-preflight that the server has invalidated or deleted still looks healthy in
-state and ` + "`terraform plan`" + ` reports no changes. Warnings the server
-attaches to a preflight — including the one saying that changes made after the
-snapshot will not be published — are not surfaced either. If publishing starts
-failing with "ABP preflight is not publishable", force a new one with
-` + "`terraform apply -replace=incapsula_abp_preflight.<name>`" + `. Importing an
-existing preflight is not supported, and ` + "`terraform destroy`" + ` only drops
-it from state: nothing is deleted or published, so an account destroyed through
-Terraform is left with the deleted objects still live until something publishes
-again.`,
+NOTE: a snapshot that can no longer be used is replaced automatically. On every
+refresh the snapshot in state is re-read, and if it has been deleted by the
+server, or can no longer be published because the account has been published
+from elsewhere in the meantime, Terraform plans a new one — and a new publish
+with it. So a publish that failed, or that someone else overtook, is recovered
+by the next ` + "`terraform apply`" + ` instead of failing forever.
+
+A snapshot that is merely *outdated* — the configuration changed after it was
+taken — is deliberately kept, because changes Terraform does not manage do not
+trigger a publish. Such a snapshot is reported as a warning when it is created,
+and the reason is also available in ` + "`warnings`" + `.
+
+` + "`terraform destroy`" + ` only drops the snapshot from state: nothing is
+deleted or published, so an account destroyed through Terraform is left with the
+deleted objects still live until something publishes again. Importing an
+existing preflight is not supported.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -65,8 +71,74 @@ again.`,
 				Optional: true,
 				ForceNew: true,
 			},
+			"created_at": {
+				Description: "When the snapshot was taken.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"warnings": {
+				Description: "Reasons why publishing this snapshot may not have the expected " +
+					"effect, as reported when it was taken. Each entry has a `type` and a " +
+					"human-readable `message`; an empty list means there is nothing to report.",
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Description: "Short identifier of the warning, for example `outdated`.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"message": {
+							Description: "Explanation of the warning.",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+					},
+				},
+			},
 		},
 	}
+}
+
+func flattenAbpPreflightWarnings(warnings []AbpPreflightWarning) []any {
+	flattened := make([]any, 0, len(warnings))
+	for _, warning := range warnings {
+		flattened = append(flattened, map[string]any{
+			"type":    warning.Type,
+			"message": warning.Message,
+		})
+	}
+	return flattened
+}
+
+func setAbpPreflightAttributes(data *schema.ResourceData, preflight *AbpPreflight) diag.Diagnostics {
+	var diags diag.Diagnostics
+	for key, value := range map[string]any{
+		"account_id": preflight.AccountId,
+		"created_at": preflight.CreatedAt,
+		"warnings":   flattenAbpPreflightWarnings(preflight.Warnings),
+	} {
+		if err := data.Set(key, value); err != nil {
+			diags = append(diags, diag.FromErr(err)...)
+		}
+	}
+	return diags
+}
+
+// abpPreflightWarningDiagnostics surfaces what the service says about a
+// snapshot it has just taken. These are warnings rather than errors: the
+// snapshot is publishable, it just may not do everything the user expects.
+func abpPreflightWarningDiagnostics(preflight *AbpPreflight) diag.Diagnostics {
+	var diags diag.Diagnostics
+	for _, warning := range preflight.Warnings {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  fmt.Sprintf("ABP preflight %s was created with a warning: %s", preflight.Id, warning.Type),
+			Detail:   warning.Message,
+		})
+	}
+	return diags
 }
 
 func resourceAbpPreflightCreate(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
@@ -80,11 +152,34 @@ func resourceAbpPreflightCreate(ctx context.Context, data *schema.ResourceData, 
 
 	log.Printf("[INFO] Created ABP preflight %s for account %s", preflight.Id, accountId)
 	data.SetId(preflight.Id)
-	return diags
+	diags = append(diags, setAbpPreflightAttributes(data, preflight)...)
+	return append(diags, abpPreflightWarningDiagnostics(preflight)...)
 }
 
 func resourceAbpPreflightRead(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
-	return nil
+	client := m.(*Client)
+
+	preflight, diags := client.GetAbpPreflight(data.Id())
+	if diags.HasError() {
+		return diags
+	}
+
+	// A preflight that is gone, or that can no longer be published, is of no
+	// use to anyone: forget it so that a new one is planned instead of every
+	// later publish failing on this one.
+	if preflight == nil {
+		log.Printf("[INFO] ABP preflight %s no longer exists, a new one will be created", data.Id())
+		data.SetId("")
+		return diags
+	}
+
+	if !preflight.CanPublish() {
+		log.Printf("[INFO] ABP preflight %s can no longer be published, a new one will be created", data.Id())
+		data.SetId("")
+		return diags
+	}
+
+	return append(diags, setAbpPreflightAttributes(data, preflight)...)
 }
 
 func resourceAbpPreflightDelete(ctx context.Context, data *schema.ResourceData, m any) diag.Diagnostics {
