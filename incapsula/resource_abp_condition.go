@@ -28,12 +28,13 @@ evaluated against incoming requests. Conditions are referenced from Policies
 
 NOTE: the API stores and returns a formatted and optimized form of the Condition
 code, so the provider keeps the ` + "`code`" + ` you wrote and exposes the
-server's form separately as ` + "`code_normalized`" + `. This has two
-consequences. A code change made outside Terraform (for example in the UI) is
-**not** reported by ` + "`terraform plan`" + `. And the ` + "`code`" + ` from
-your configuration is sent on every update, so any later change to this
-resource — even to ` + "`name`" + ` alone — silently replaces the out-of-band
-code with the configured one.
+server's form separately as ` + "`code_normalized`" + `. A code change made
+outside Terraform (for example in the UI) is therefore **not** reported by
+` + "`terraform plan`" + `, and Terraform will not undo it: an update that does
+not change ` + "`code`" + ` leaves the stored expression alone, so only a
+` + "`code`" + ` change in the configuration replaces it. Comparing
+` + "`code`" + ` with ` + "`code_normalized`" + ` shows whether the two still
+agree.
 
 It is therefore recommended to copy ` + "`code_normalized`" + ` into
 ` + "`code`" + ` after running ` + "`terraform import`" + `, and to make all code
@@ -63,16 +64,18 @@ changes through Terraform.`,
 			"code": {
 				Description: "MOI expression evaluated against the request. The server stores a " +
 					"normalized form internally; see `code_normalized` for the server's view. " +
-					"Out-of-band edits to this field (via the UI or API) are not detected as drift, " +
-					"and the next update of this resource — whatever it changes — overwrites them " +
-					"with the value configured here.",
+					"Out-of-band edits to this field (via the UI or API) are not detected as drift " +
+					"and are not reverted: they are replaced only when the expression configured " +
+					"here changes.",
 				Type:         schema.TypeString,
 				Required:     true,
 				ValidateFunc: validation.StringIsNotWhiteSpace,
 			},
 			"code_normalized": {
-				Description: "Server-side normalized/optimized form of `code`. Useful for " +
-					"diagnostics and for seeding `.tf` after `terraform import`.",
+				Description: "Server-side normalized/optimized form of `code`. This is the " +
+					"expression the server actually evaluates, so a value that no longer " +
+					"corresponds to `code` means the Condition was edited outside Terraform. " +
+					"Useful for diagnostics and for seeding `.tf` after `terraform import`.",
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -132,6 +135,30 @@ func extractAbpCondition(data *schema.ResourceData) AbpCondition {
 		Code:        data.Get("code").(string),
 		Template:    data.Get("template").(string),
 	}
+}
+
+// extractAbpConditionForUpdate builds the body of an update. The API stores a
+// reformatted `code`, which the provider records in `code_normalized` rather
+// than in `code`, so an expression changed outside Terraform cannot be
+// reported as drift. Re-sending the configured expression on an update that
+// does not touch `code` would overwrite such a change without the plan
+// mentioning it, so an update that leaves `code` alone sends the recorded
+// expression back instead and keeps the stored one as it is.
+//
+// `code` cannot simply be left out of the body: its presence is what selects
+// the literal variant, so a body without it reads as a Condition List.
+//
+// `code_normalized` is as recent as the last read, which for a normal apply is
+// the refresh that preceded it. Applying without a refresh can therefore still
+// send a superseded expression.
+func extractAbpConditionForUpdate(data *schema.ResourceData) AbpCondition {
+	condition := extractAbpCondition(data)
+	if !data.HasChange("code") {
+		if recorded := data.Get("code_normalized").(string); recorded != "" {
+			condition.Code = recorded
+		}
+	}
+	return condition
 }
 
 func serializeAbpCondition(data *schema.ResourceData, condition *AbpCondition) error {
@@ -235,7 +262,7 @@ func resourceAbpConditionUpdate(ctx context.Context, data *schema.ResourceData, 
 	client := m.(*Client)
 	id := data.Id()
 
-	updated, err := client.UpdateAbpCondition(id, extractAbpCondition(data))
+	updated, err := client.UpdateAbpCondition(id, extractAbpConditionForUpdate(data))
 	if err != nil {
 		return diag.FromErr(err)
 	}
