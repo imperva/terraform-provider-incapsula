@@ -86,6 +86,26 @@ with installation command execution
 ./tf-provider-incap-orch.sh -i "youApiID" "youApiKey"
 ```
 
+Running the ABP Tests
+---------------------
+
+The `incapsula_abp_*` resources and data sources have their own test suite, which
+needs neither credentials nor a server: every test runs against an in-memory stand-in
+for the ABP API. Run all of it with
+
+```sh
+go test ./incapsula/ -run TestAbp -count=1 -timeout 30m
+```
+
+Add `-v` to see the individual test names.
+
+`-count=1` disables Go's test result cache, so the tests actually run instead of
+replaying an earlier `ok (cached)`. That matters here because the cache only tracks
+the Go package: it does not know about the `terraform` binary these tests drive, so a
+cached pass can outlive the change that broke things. `-timeout 30m` is for the same
+reason — driving a real `terraform` per test step takes longer than the 10 minute
+default allows.
+
 Mock Server for Testing
 -----------------------
 
