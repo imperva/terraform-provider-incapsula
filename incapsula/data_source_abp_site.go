@@ -184,7 +184,7 @@ func abpSiteReadOnlyAttributes() map[string]*schema.Schema {
 			},
 		},
 		"default_selector": {
-			Description: "Catch-all selector matching all request paths after all other selectors.",
+			Description: "Catch-all selector matching all request paths after all other selectors. A read cannot tell a Site's own last selector from the one the API appended when both match every path, so a trailing `/` selector is always reported here rather than in `selector`.",
 			Type:        schema.TypeList,
 			Computed:    true,
 			Elem: &schema.Resource{

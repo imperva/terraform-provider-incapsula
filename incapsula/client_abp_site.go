@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"reflect"
+	"slices"
 )
 
 const abpSiteResourceName = "ABP Site"
@@ -123,28 +124,82 @@ func (c *Client) abpSiteUrl(siteId string) string {
 	return fmt.Sprintf("%s/botmanagement/v1/site/%s", c.config.BaseURLAPI, siteId)
 }
 
+// abpSiteSelectorIdentity is what the provider already knows about a Site's
+// Selectors, taken from what it last recorded about them.
+type abpSiteSelectorIdentity struct {
+	// DefaultId is the catch-all Selector's id, empty when no catch-all is
+	// known.
+	DefaultId string
+	// OwnedIds are the ids of the Selectors the configuration manages.
+	OwnedIds []string
+}
+
 func isDefaultSelectorShape(s AbpSelector) bool {
 	return s.Criteria.PathPrefix != nil && *s.Criteria.PathPrefix == "/"
 }
 
-// splitDefaultSelector splits the default selector (if present) from others.
-// Whatever the user-managed selectors are, the backend will always append one
-// default at the bottom, so we trust the shape on the trailing entry and pop it
-// into `site.DefaultSelector`.
+// splitDefaultSelector moves the Site's catch-all Selector out of `Selectors`
+// into `DefaultSelector`.
 //
-// If the trailing selector doesn't match the default shape, that's a site the
-// user has explicitly cleared the default off. In that case we leave `Selectors`
-// untouched and `DefaultSelector` nil; subsequent updates won't re-add a default.
-func splitDefaultSelector(site *AbpSite) {
+// The API does not mark it, so it has to be recognised, and its `/` path
+// prefix is no help: a configuration may legitimately write a Selector that
+// matches every path. It is therefore recognised by its id, which `known`
+// carries. A catch-all the Site no longer holds is simply gone, and a trailing
+// Selector the configuration owns is left where it belongs.
+//
+// Only when nothing is known about the Site — an import, or a data source read
+// — is the catch-all guessed from the shape of the trailing Selector, which is
+// the rule the API itself applies when deciding which Selector serves the
+// paths no other one claims. The guess cannot tell a configuration's own
+// catch-all from the API's, which is why it is used nowhere an answer is
+// available.
+func splitDefaultSelector(site *AbpSite, known abpSiteSelectorIdentity) {
 	n := len(site.Selectors)
 	if n == 0 {
 		return
 	}
+
+	if known.DefaultId != "" {
+		for i, selector := range site.Selectors {
+			if selector.Id != known.DefaultId {
+				continue
+			}
+			found := site.Selectors[i]
+			site.DefaultSelector = &found
+			site.Selectors = slices.Delete(slices.Clone(site.Selectors), i, i+1)
+			return
+		}
+		return
+	}
+
 	last := site.Selectors[n-1]
+	if slices.Contains(known.OwnedIds, last.Id) {
+		return
+	}
 	if isDefaultSelectorShape(last) {
 		site.DefaultSelector = &last
 		site.Selectors = site.Selectors[:n-1]
 	}
+}
+
+// splitDefaultSelectorAfter moves whatever a write came back with beyond the
+// `sent` Selectors it submitted into `DefaultSelector`.
+//
+// A create has the API's catch-all appended to it — always, even when the
+// Selectors sent already end with one of their own — so the extra trailing
+// Selector of the response is it. An update carries the catch-all itself, so
+// there is nothing beyond what it sent; an update that carried none leaves the
+// Site without one, which is what a configuration whose own trailing Selector
+// matches every path gets: that Selector serves the paths no other one claims,
+// and the configuration owns it.
+func splitDefaultSelectorAfter(site *AbpSite, sent int) {
+	n := len(site.Selectors)
+	if n <= sent {
+		return
+	}
+	last := site.Selectors[n-1]
+	site.DefaultSelector = &last
+	site.Selectors = site.Selectors[:n-1]
 }
 
 func flattenAbpSelectors(selectors []AbpSelector) ([]any, error) {
@@ -268,7 +323,9 @@ func (c *Client) ListAbpSites(accountId string) ([]AbpSite, error) {
 	}
 
 	for i := range listResp.Items {
-		splitDefaultSelector(&listResp.Items[i])
+		// A listing knows nothing about any Site it returns, so every
+		// catch-all is the guess the API's own rule makes.
+		splitDefaultSelector(&listResp.Items[i], abpSiteSelectorIdentity{})
 	}
 	return listResp.Items, nil
 }
@@ -301,12 +358,12 @@ func (c *Client) CreateAbpSite(accountId string, site AbpSite) (*AbpSite, error)
 		return nil, fmt.Errorf("error parsing %s create response: %w; body: %s", abpSiteResourceName, err, string(responseBody))
 	}
 
-	splitDefaultSelector(&created)
+	splitDefaultSelectorAfter(&created, len(site.Selectors))
 
 	return &created, nil
 }
 
-func (c *Client) ReadAbpSite(siteId string) (*AbpSite, error) {
+func (c *Client) ReadAbpSite(siteId string, known abpSiteSelectorIdentity) (*AbpSite, error) {
 	log.Printf("[INFO] Reading %s with id %s", abpSiteResourceName, siteId)
 
 	resp, err := c.DoJsonRequestWithHeaders(http.MethodGet, c.abpSiteUrl(siteId), nil, ReadAbpSite)
@@ -333,7 +390,7 @@ func (c *Client) ReadAbpSite(siteId string) (*AbpSite, error) {
 		return nil, fmt.Errorf("error parsing %s read response: %w; body: %s", abpSiteResourceName, err, string(responseBody))
 	}
 
-	splitDefaultSelector(&site)
+	splitDefaultSelector(&site, known)
 
 	return &site, nil
 }
@@ -382,7 +439,7 @@ func (c *Client) UpdateAbpSite(siteId string, site AbpSite) (*AbpSite, error) {
 		return nil, fmt.Errorf("error parsing %s update response: %w; body: %s", abpSiteResourceName, err, string(responseBody))
 	}
 
-	splitDefaultSelector(&updated)
+	splitDefaultSelectorAfter(&updated, len(site.Selectors))
 
 	return &updated, nil
 }

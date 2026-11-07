@@ -29,7 +29,7 @@ type AbpDomain struct {
 	ProxyFlags                      []string               `json:"proxy_flags"`
 	FilterOutStaticAssets           *bool                  `json:"filter_out_static_assets,omitempty"`
 	EnableMitigation                bool                   `json:"enable_mitigation"`
-	EnableMobileSdkToken            *bool                  `json:"enable_mobile_sdk_token,omitempty"`
+	EnableMobileSdkToken            bool                   `json:"enable_mobile_sdk_token"`
 	InterstitialInprogressIframeSrc *string                `json:"interstitial_inprogress_iframe_src,omitempty"`
 	DivertHost                      *string                `json:"divert_host,omitempty"`
 	EncryptionKeyId                 *string                `json:"encryption_key_id,omitempty"`
@@ -365,7 +365,7 @@ type abpDomainUpdatePayload struct {
 	ProxyFlags                      []string               `json:"proxy_flags"`
 	FilterOutStaticAssets           *bool                  `json:"filter_out_static_assets,omitempty"`
 	EnableMitigation                bool                   `json:"enable_mitigation"`
-	EnableMobileSdkToken            *bool                  `json:"enable_mobile_sdk_token,omitempty"`
+	EnableMobileSdkToken            bool                   `json:"enable_mobile_sdk_token"`
 	InterstitialInprogressIframeSrc *string                `json:"interstitial_inprogress_iframe_src,omitempty"`
 	DivertHost                      *string                `json:"divert_host,omitempty"`
 }

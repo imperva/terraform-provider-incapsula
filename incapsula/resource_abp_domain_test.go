@@ -694,17 +694,17 @@ resource "incapsula_abp_domain_encryption_key" "test" {
 }
 
 // Known limitation: the API omits an optional field that has no value instead
-// of returning it as empty, and the provider only writes such a field into
-// state when the response carries it. Turning one off outside Terraform is
+// of returning it as empty, and the provider only writes such a string field
+// into state when the response carries it. Clearing one outside Terraform is
 // therefore invisible — the plan is empty while state and server disagree.
-// This pins the behaviour that exists today, not the one that is wanted.
+// This pins the behaviour that exists today, not the one that is wanted. The
+// two tri-state booleans are not affected: they are mirrored from the
+// response, so clearing them is reported and corrected.
 func TestAbpDomain_ClearedOptionalFieldsAreInvisible(t *testing.T) {
 	f := newAbpFake(t)
 	siteId := f.seedSite("invisible")
 	config := abpDomainConfig(siteId, `
   cookiescope                        = "invisible.example.com"
-  enable_mobile_sdk_token            = true
-  filter_out_static_assets           = true
   divert_host                        = "divert.example.com"
   interstitial_inprogress_iframe_src = "http://www.example.com/iframe"
 
@@ -721,8 +721,6 @@ func TestAbpDomain_ClearedOptionalFieldsAreInvisible(t *testing.T) {
 				Check: func(s *terraform.State) error {
 					f.mutate(t, abpFakeDomains, abpAttrs(t, s, abpDomainTestAddress)["id"], func(doc map[string]any) {
 						for _, key := range []string{
-							"enable_mobile_sdk_token",
-							"filter_out_static_assets",
 							"divert_host",
 							"interstitial_inprogress_iframe_src",
 						} {
@@ -737,7 +735,6 @@ func TestAbpDomain_ClearedOptionalFieldsAreInvisible(t *testing.T) {
 			{
 				Config: config,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(abpDomainTestAddress, "enable_mobile_sdk_token", "true"),
 					resource.TestCheckResourceAttr(abpDomainTestAddress, "divert_host", "divert.example.com"),
 					func(s *terraform.State) error {
 						if _, ok := abpDomainStored(t, f)["divert_host"]; ok {
@@ -751,61 +748,185 @@ func TestAbpDomain_ClearedOptionalFieldsAreInvisible(t *testing.T) {
 	})
 }
 
-// Known limitation: `enable_mobile_sdk_token` and `filter_out_static_assets`
-// are tri-state on the API (no value / true / false), and no value is
-// meaningful — for `filter_out_static_assets` it means enabled. Terraform
-// cannot express "no value": `false` is sent as `false`, and removing the
-// attribute is planned as `-> null` but sent as `false` too.
-func TestAbpDomain_OptionalBooleansAreSentAsFalse(t *testing.T) {
+// `filter_out_static_assets` is tri-state on the API — no value, `true` and
+// `false` — and no value is meaningful: it means enabled. Terraform has only
+// the two states, so the configuration decides between them: `false` is sent
+// as `false`, and removing the attribute leaves the value out of the request,
+// which clears what the API holds.
+func TestAbpDomain_FilterOutStaticAssetsIsTriState(t *testing.T) {
 	f := newAbpFake(t)
-	siteId := f.seedSite("booleans")
-	withFalse := abpDomainConfig(siteId, `
-  cookiescope              = "booleans.example.com"
-  enable_mobile_sdk_token  = false
-  filter_out_static_assets = false
+	siteId := f.seedSite("tri-state")
+	const key = "filter_out_static_assets"
+	withValue := func(value string) string {
+		return abpDomainConfig(siteId, fmt.Sprintf(`
+  cookiescope              = "tri-state.example.com"
+  filter_out_static_assets = %s
 
   criteria {
-    exact = "booleans.example.com"
+    exact = "tri-state.example.com"
   }
-`)
-	withoutThem := abpDomainMinimalConfig(siteId, "booleans.example.com")
+`, value))
+	}
+	withoutIt := abpDomainMinimalConfig(siteId, "tri-state.example.com")
 
-	storedBooleans := func(s *terraform.State) error {
-		stored := abpDomainStored(t, f)
-		for _, key := range []string{"enable_mobile_sdk_token", "filter_out_static_assets"} {
-			value, ok := stored[key]
+	// stored checks what the API was left holding: `nil` for the absence the
+	// attribute's removal asks for.
+	stored := func(want any) resource.TestCheckFunc {
+		return func(s *terraform.State) error {
+			value, ok := abpDomainStored(t, f)[key]
+			if want == nil {
+				if ok {
+					return fmt.Errorf("stored %s is %v, want it absent", key, value)
+				}
+				return nil
+			}
 			if !ok {
-				return fmt.Errorf("%s is absent from the stored Domain, want false", key)
+				return fmt.Errorf("%s is absent from the stored Domain, want %v", key, want)
 			}
-			if value != false {
-				return fmt.Errorf("stored %s is %v, want false", key, value)
+			if value != want {
+				return fmt.Errorf("stored %s is %v, want %v", key, value, want)
 			}
+			return nil
 		}
-		return nil
 	}
 
 	resource.Test(t, resource.TestCase{
 		ProviderFactories: f.providers(t),
 		Steps: []resource.TestStep{
 			{
-				Config: withFalse,
+				// `false` is a value of its own, not an omission.
+				Config: withValue("false"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(abpDomainTestAddress, "enable_mobile_sdk_token", "false"),
-					resource.TestCheckResourceAttr(abpDomainTestAddress, "filter_out_static_assets", "false"),
-					storedBooleans,
+					resource.TestCheckResourceAttr(abpDomainTestAddress, key, "false"),
+					stored(false),
 				),
 			},
-			{Config: withFalse, PlanOnly: true},
+			{Config: withValue("false"), PlanOnly: true},
 			{
-				// Removing them is planned as `-> null`, and stored as false.
-				Config: withoutThem,
+				Config: withValue("true"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(abpDomainTestAddress, "enable_mobile_sdk_token", "false"),
-					resource.TestCheckResourceAttr(abpDomainTestAddress, "filter_out_static_assets", "false"),
-					storedBooleans,
+					resource.TestCheckResourceAttr(abpDomainTestAddress, key, "true"),
+					stored(true),
 				),
 			},
-			{Config: withoutThem, PlanOnly: true},
+			{Config: withValue("true"), PlanOnly: true},
+			{
+				// Removing it clears what the API holds, and the cleared value
+				// reads back as the `false` Terraform has for it.
+				Config: withoutIt,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(abpDomainTestAddress, key, "false"),
+					stored(nil),
+				),
+			},
+			{Config: withoutIt, PlanOnly: true},
+		},
+	})
+}
+
+// `enable_mobile_sdk_token` is an ordinary boolean, so the API is always told
+// which of the two states it is in: omitting the attribute sends `false`
+// rather than leaving the Domain without a value.
+func TestAbpDomain_EnableMobileSdkTokenIsAnOrdinaryBoolean(t *testing.T) {
+	f := newAbpFake(t)
+	siteId := f.seedSite("mobile-sdk")
+	const key = "enable_mobile_sdk_token"
+	withValue := func(value string) string {
+		return abpDomainConfig(siteId, fmt.Sprintf(`
+  cookiescope             = "mobile-sdk.example.com"
+  enable_mobile_sdk_token = %s
+
+  criteria {
+    exact = "mobile-sdk.example.com"
+  }
+`, value))
+	}
+	withoutIt := abpDomainMinimalConfig(siteId, "mobile-sdk.example.com")
+
+	stored := func(want bool) resource.TestCheckFunc {
+		return func(s *terraform.State) error {
+			value, ok := abpDomainStored(t, f)[key]
+			if !ok {
+				return fmt.Errorf("%s is absent from the stored Domain, want %v", key, want)
+			}
+			if value != want {
+				return fmt.Errorf("stored %s is %v, want %v", key, value, want)
+			}
+			return nil
+		}
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: f.providers(t),
+		Steps: []resource.TestStep{
+			{
+				// The default reaches the API, rather than nothing reaching it.
+				Config: withoutIt,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(abpDomainTestAddress, key, "false"),
+					stored(false),
+				),
+			},
+			{Config: withoutIt, PlanOnly: true},
+			{
+				Config: withValue("true"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(abpDomainTestAddress, key, "true"),
+					stored(true),
+				),
+			},
+			{Config: withValue("true"), PlanOnly: true},
+			{
+				// And back, which is a plain `true -> false`.
+				Config: withValue("false"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(abpDomainTestAddress, key, "false"),
+					stored(false),
+				),
+			},
+			{Config: withValue("false"), PlanOnly: true},
+		},
+	})
+}
+
+// Clearing either boolean outside Terraform is reported and corrected,
+// because the provider mirrors the API's absence of a value as `false`.
+func TestAbpDomain_ClearedBooleanIsRestored(t *testing.T) {
+	f := newAbpFake(t)
+	siteId := f.seedSite("cleared-boolean")
+	config := abpDomainConfig(siteId, `
+  cookiescope             = "cleared-boolean.example.com"
+  enable_mobile_sdk_token = true
+
+  criteria {
+    exact = "cleared-boolean.example.com"
+  }
+`)
+
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: f.providers(t),
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: func(s *terraform.State) error {
+					f.mutate(t, abpFakeDomains, abpAttrs(t, s, abpDomainTestAddress)["id"], func(doc map[string]any) {
+						delete(doc, "enable_mobile_sdk_token")
+					})
+					return nil
+				},
+				// The refresh of the next step sees the cleared value.
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: config,
+				Check: func(s *terraform.State) error {
+					if value := abpDomainStored(t, f)["enable_mobile_sdk_token"]; value != true {
+						return fmt.Errorf("stored enable_mobile_sdk_token is %v, want it restored to true", value)
+					}
+					return nil
+				},
+			},
+			{Config: config, PlanOnly: true},
 		},
 	})
 }
@@ -1155,10 +1276,10 @@ func TestAbpDomain_InvalidValuesAreRejectedAtPlanTime(t *testing.T) {
 	resource.Test(t, resource.TestCase{ProviderFactories: f.providers(t), Steps: cases})
 }
 
-// Known limitation: the "exactly one of" rules live in the create and update
-// paths rather than in validation, so these configurations plan cleanly and
-// fail during apply. Nothing is created, because the checks run before the
-// request is sent.
+// Known limitation: the `criteria` and `captcha_settings` "exactly one of"
+// rules live in the create and update paths rather than in validation, so
+// these configurations plan cleanly and fail during apply. Nothing is created,
+// because the checks run before the request is sent.
 func TestAbpDomain_OneOfViolationsAreRejectedAtApplyTime(t *testing.T) {
 	f := newAbpFake(t)
 	siteId := f.seedSite("one-of")
@@ -1170,7 +1291,6 @@ func TestAbpDomain_OneOfViolationsAreRejectedAtApplyTime(t *testing.T) {
 		{"criteria {\n  }", `criteria requires exactly one of exact, prefix, suffix, cloudwaf_id \(got 0\)`},
 		{"criteria {\n    exact  = \"one-of.example.com\"\n    suffix = \"example.com\"\n  }", `criteria requires exactly one of exact, prefix, suffix, cloudwaf_id \(got 2\)`},
 		{"criteria {\n    exact = \"one-of.example.com\"\n  }\n\n  captcha_settings {\n    managed_geetest {\n      difficulty = \"easy\"\n    }\n    managed_hcaptcha {\n      difficulty = \"auto\"\n    }\n  }", `captcha_settings requires exactly one of geetest, managed_geetest, managed_hcaptcha \(got 2\)`},
-		{"criteria {\n    exact = \"one-of.example.com\"\n  }\n\n  no_js_injection_path {\n    path_prefix = \"/static\"\n    incap_rule  = \"URL == \\\"/admin\\\"\"\n  }", `no_js_injection_path\[0\]: exactly one of path_prefix, incap_rule must be set \(got 2\)`},
 	}
 
 	var steps []resource.TestStep
@@ -1195,19 +1315,59 @@ func TestAbpDomain_OneOfViolationsAreRejectedAtApplyTime(t *testing.T) {
 	}
 }
 
-// Provider bug: an empty `no_js_injection_path` block reaches the provider as a
-// nil element, and the extraction asserts it is a map, so the provider panics
-// instead of reporting the "exactly one of" error the other variants get. The
-// crash takes the whole provider process with it, so it is pinned here at the
-// function rather than through a configuration.
-func TestAbpDomain_EmptyNoJsInjectionPathPanics(t *testing.T) {
-	defer func() {
-		if recovered := recover(); recovered == nil {
-			t.Fatal("extractAbpNoJsInjectionPaths no longer panics on an empty block; assert the error instead")
+// A `no_js_injection_path` block must say where injection is disabled, exactly
+// one way. An empty block reaches the provider as a nil element rather than as
+// a map, so it used to crash the provider instead of being reported; both an
+// empty block and one setting both ways are now rejected when the
+// configuration is planned, before anything is sent.
+func TestAbpDomain_InvalidNoJsInjectionPathIsRejectedAtPlanTime(t *testing.T) {
+	f := newAbpFake(t)
+	siteId := f.seedSite("no-js")
+
+	blocks := []struct {
+		body  string
+		error string
+	}{
+		{"no_js_injection_path {}", `no_js_injection_path\[0\]: exactly one of path_prefix, incap_rule must be set \(got 0\)`},
+		{"no_js_injection_path {\n    path_prefix = \"/static\"\n    incap_rule  = \"URL == \\\"/admin\\\"\"\n  }", `no_js_injection_path\[0\]: exactly one of path_prefix, incap_rule must be set \(got 2\)`},
+	}
+
+	var steps []resource.TestStep
+	for _, block := range blocks {
+		steps = append(steps, resource.TestStep{
+			Config: abpDomainConfig(siteId, fmt.Sprintf(`
+  cookiescope = "no-js.example.com"
+
+  criteria {
+    exact = "no-js.example.com"
+  }
+
+  %s
+`, block.body)),
+			PlanOnly:    true,
+			ExpectError: regexp.MustCompile(block.error),
+		})
+	}
+
+	resource.Test(t, resource.TestCase{ProviderFactories: f.providers(t), Steps: steps})
+
+	if f.count(abpFakeDomains) != 0 {
+		t.Fatalf("a rejected configuration created %d Domains", f.count(abpFakeDomains))
+	}
+}
+
+// The extraction answers an empty block with the same error rather than with a
+// panic, whichever way it is reached.
+func TestAbpDomain_EmptyNoJsInjectionPathExtractionFails(t *testing.T) {
+	for _, raw := range [][]any{{nil}, {map[string]any{}}} {
+		paths, err := extractAbpNoJsInjectionPaths(raw)
+		if err == nil {
+			t.Fatalf("extracting %v returned %v, want an error", raw, paths)
 		}
-	}()
-	//nolint:errcheck // the call is expected to panic before it returns
-	_, _ = extractAbpNoJsInjectionPaths([]any{nil})
+		if want := "exactly one of path_prefix, incap_rule must be set (got 0)"; !strings.Contains(err.Error(), want) {
+			t.Errorf("extracting %v failed with %q, want it to contain %q", raw, err, want)
+		}
+	}
 }
 
 // A Domain whose Site does not exist is rejected by the API, with the message

@@ -9,10 +9,16 @@ description: |-
   path regular expression, by Postback type or by API Security group — written as
   exactly one of the path_prefix, path_regex,
   postback and api_security_group blocks.
-  NOTE: The API automatically appends a default catch-all selector (the path
-  prefix /) at the lowest priority on create. You manage only
-  the user-defined selectors in the selector list; the default is exposed
+  NOTE: The API appends a default catch-all selector (the path prefix
+  /) at the lowest priority when a Site is created. You manage only
+  the selectors in the selector list; the appended one is exposed
   read-only as default_selector and is preserved across updates.
+  A selector of your own may match every path too. It stays yours, and when it is
+  the last one it serves the paths no other selector claims, so a Site can have no
+  default_selector at all. On import the opposite holds: nothing says
+  which selector the API appended, so a trailing / selector is read as
+  that one and appears in default_selector — listing it under
+  selector as well creates a second one.
 ---
 
 
@@ -25,10 +31,17 @@ path regular expression, by Postback type or by API Security group — written a
 exactly one of the `path_prefix`, `path_regex`,
 `postback` and `api_security_group` blocks.
 
-NOTE: The API automatically appends a default catch-all selector (the path
-prefix `/`) at the lowest priority on create. You manage only
-the user-defined selectors in the `selector` list; the default is exposed
+NOTE: The API appends a default catch-all selector (the path prefix
+`/`) at the lowest priority when a Site is created. You manage only
+the selectors in the `selector` list; the appended one is exposed
 read-only as `default_selector` and is preserved across updates.
+
+A selector of your own may match every path too. It stays yours, and when it is
+the last one it serves the paths no other selector claims, so a Site can have no
+`default_selector` at all. On import the opposite holds: nothing says
+which selector the API appended, so a trailing `/` selector is read as
+that one and appears in `default_selector` — listing it under
+`selector` as well creates a second one.
 
 ## Example Usage
 
@@ -104,7 +117,7 @@ resource "incapsula_abp_site" "sample_site" {
 ### Read-Only
 
 - `created_at` (String) RFC3339 timestamp at which the Site was created.
-- `default_selector` (List of Object) Catch-all selector matching all request paths after all other selectors. Added automatically by the backend (see [below for nested schema](#nestedatt--default_selector))
+- `default_selector` (List of Object) Catch-all selector matching all request paths after all other selectors, appended by the API when the Site is created. Empty when the Site's own last selector already matches every path, since that selector serves those paths instead. (see [below for nested schema](#nestedatt--default_selector))
 - `id` (String) The ID of this resource.
 - `modified_at` (String) RFC3339 timestamp at which the Site was last modified.
 

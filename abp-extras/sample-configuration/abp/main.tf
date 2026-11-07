@@ -340,6 +340,12 @@ resource "incapsula_abp_site" "sample_site" {
 
   # Each selector matches requests one way, written as exactly one of the
   # path_prefix, path_regex, postback and api_security_group blocks.
+  #
+  # A selector may use a `/` path prefix, and so match every path, just as the
+  # catch-all the backend appends does. Such a selector stays this
+  # configuration's own — it is not mistaken for the catch-all — but it leaves
+  # the catch-all unreachable behind it, so `default_selector[0].policy_id`
+  # would then point at a policy nothing applies.
   selector {
     purpose = "login"
     path_prefix {
@@ -485,11 +491,10 @@ resource "incapsula_abp_domain" "test_com" {
   # Keeps common static asset paths out of ABP analysis.
   #
   # NOTE: this value is not applied when the domain is created, only by a later
-  # update, and a domain with no stored value behaves as if filtering were
-  # enabled. Note also that `false` is indistinguishable from an omitted value,
-  # so it is never sent and filtering cannot be turned off from here — which is
-  # why this sample sets `true`, the only value that actually reaches the
-  # server.
+  # update, so the first plan after creating a domain asks for that update. A
+  # domain with no stored value behaves as if filtering were enabled, which is
+  # why `false` looks like it has no effect; removing the attribute clears the
+  # stored value and brings the domain back to that state.
   filter_out_static_assets = true
 
   no_js_injection_path {

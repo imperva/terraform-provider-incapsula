@@ -724,17 +724,14 @@ func (f *abpFake) normalizeSelectors(site map[string]any) {
 	}
 }
 
-// addDefaultSelector appends the catch-all Selector the backend maintains,
-// unless the Site already ends with it. The catch-all points at the Policy the
-// backend creates along with the Site.
+// addDefaultSelector appends the catch-all Selector the API adds to every Site
+// it creates. It is appended unconditionally, as the real one is: a Site whose
+// Selectors already end with a `/` prefix gets a second one anyway. The
+// catch-all points at the Policy the API creates along with the Site.
+//
+// Only a create appends it. An update stores the Selectors it is given, so a
+// Site can be left without a catch-all, which is how the real API behaves.
 func (f *abpFake) addDefaultSelector(site map[string]any) {
-	selectors := abpFakeList(site["selectors"])
-	if len(selectors) > 0 {
-		last := abpFakeResolveCriteria(selectors[len(selectors)-1])
-		if abpFakeString(last["path_prefix"]) == "/" {
-			return
-		}
-	}
 	raw, _ := site["selectors"].([]any)
 	site["selectors"] = append(raw, map[string]any{
 		"criteria":          map[string]any{"path_prefix": "/"},
@@ -795,7 +792,6 @@ func (f *abpFake) updateSite(w http.ResponseWriter, stored, body map[string]any)
 	updated["created_at"] = stored["created_at"]
 	updated["modified_at"] = f.now()
 	f.normalizeSelectors(updated)
-	f.addDefaultSelector(updated)
 
 	f.replace(abpFakeSites, updated)
 	f.write(w, http.StatusOK, updated)

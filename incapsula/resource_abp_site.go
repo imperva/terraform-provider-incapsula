@@ -62,10 +62,17 @@ path regular expression, by Postback type or by API Security group — written a
 exactly one of the ` + "`path_prefix`" + `, ` + "`path_regex`" + `,
 ` + "`postback`" + ` and ` + "`api_security_group`" + ` blocks.
 
-NOTE: The API automatically appends a default catch-all selector (the path
-prefix ` + "`/`" + `) at the lowest priority on create. You manage only
-the user-defined selectors in the ` + "`selector`" + ` list; the default is exposed
-read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
+NOTE: The API appends a default catch-all selector (the path prefix
+` + "`/`" + `) at the lowest priority when a Site is created. You manage only
+the selectors in the ` + "`selector`" + ` list; the appended one is exposed
+read-only as ` + "`default_selector`" + ` and is preserved across updates.
+
+A selector of your own may match every path too. It stays yours, and when it is
+the last one it serves the paths no other selector claims, so a Site can have no
+` + "`default_selector`" + ` at all. On import the opposite holds: nothing says
+which selector the API appended, so a trailing ` + "`/`" + ` selector is read as
+that one and appears in ` + "`default_selector`" + ` — listing it under
+` + "`selector`" + ` as well creates a second one.`,
 
 		Schema: map[string]*schema.Schema{
 			"account_id": {
@@ -230,7 +237,7 @@ read-only as ` + "`default_selector`" + ` and is preserved across updates.`,
 				},
 			},
 			"default_selector": {
-				Description: "Catch-all selector matching all request paths after all other selectors. Added automatically by the backend",
+				Description: "Catch-all selector matching all request paths after all other selectors, appended by the API when the Site is created. Empty when the Site's own last selector already matches every path, since that selector serves those paths instead.",
 				Type:        schema.TypeList,
 				Computed:    true,
 				Elem: &schema.Resource{
@@ -448,6 +455,30 @@ func extractAbpSite(data *schema.ResourceData) (AbpSite, error) {
 	return site, nil
 }
 
+// abpSiteKnownSelectors reports what state records about the Site's
+// Selectors: which of them the configuration manages, and which one is the
+// catch-all the API maintains. A read has nothing else to tell the two apart,
+// because a configuration may write a Selector that matches every path just
+// as the catch-all does.
+func abpSiteKnownSelectors(data *schema.ResourceData) abpSiteSelectorIdentity {
+	known := abpSiteSelectorIdentity{}
+	if raw, ok := data.Get("default_selector").([]any); ok && len(raw) == 1 {
+		if selector, ok := raw[0].(map[string]any); ok {
+			known.DefaultId, _ = selector["id"].(string)
+		}
+	}
+	for _, item := range data.Get("selector").([]any) {
+		selector, ok := item.(map[string]any)
+		if !ok {
+			continue
+		}
+		if id, _ := selector["id"].(string); id != "" {
+			known.OwnedIds = append(known.OwnedIds, id)
+		}
+	}
+	return known
+}
+
 func serializeAbpSite(data *schema.ResourceData, site *AbpSite) error {
 	flat, err := flattenAbpSite(site)
 	if err != nil {
@@ -494,7 +525,7 @@ func resourceAbpSiteRead(ctx context.Context, data *schema.ResourceData, m any) 
 	client := m.(*Client)
 	id := data.Id()
 
-	site, err := client.ReadAbpSite(id)
+	site, err := client.ReadAbpSite(id, abpSiteKnownSelectors(data))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -555,7 +586,9 @@ func resourceAbpSiteImport(ctx context.Context, data *schema.ResourceData, m any
 	}
 
 	client := m.(*Client)
-	site, err := client.ReadAbpSite(id)
+	// An import starts from nothing, so the catch-all is whichever Selector
+	// the API's own rule would pick.
+	site, err := client.ReadAbpSite(id, abpSiteSelectorIdentity{})
 	if err != nil {
 		return nil, err
 	}

@@ -1155,12 +1155,13 @@ func TestAbpSiteImportOfAnUnknownIdFails(t *testing.T) {
 	})
 }
 
-// A Selector the configuration writes with the catch-all's own `path_prefix =
-// "/"` is read back as the Site's default Selector, so the configuration's
-// Selector list is never satisfied and the plan never empties. This is a
-// limitation of inferring the default Selector from the trailing Selector's
-// shape (ABP-REVIEW `incapsula_abp_site` issue 16), not an intention.
-func TestAbpSiteUserSelectorMatchingTheCatchAllNeverConverges(t *testing.T) {
+// A Selector the configuration writes with a `/` path prefix matches every
+// path, just as the catch-all does. It stays the configuration's own: the API
+// appends its catch-all behind it, the provider tells the two apart by id, and
+// the plan empties. Recognising the catch-all by its criteria instead used to
+// swallow such a Selector into `default_selector`, leaving the configuration's
+// Selector list one short and a plan that could never converge.
+func TestAbpSiteUserSelectorMatchingTheCatchAllConverges(t *testing.T) {
 	f := newAbpFake(t)
 	config := abpSiteConfig(abpSitePathPrefix("/", false))
 
@@ -1170,12 +1171,119 @@ func TestAbpSiteUserSelectorMatchingTheCatchAllNeverConverges(t *testing.T) {
 			{
 				Config: config,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(abpSiteAddress, "selector.#", "0"),
+					resource.TestCheckResourceAttr(abpSiteAddress, "selector.#", "1"),
+					resource.TestCheckResourceAttr(abpSiteAddress, "selector.0.path_prefix.0.value", "/"),
+					resource.TestCheckResourceAttr(abpSiteAddress, "default_selector.#", "1"),
 					resource.TestCheckResourceAttr(abpSiteAddress, "default_selector.0.path_prefix.0.value", "/"),
+					// The configuration's Selector and the appended catch-all
+					// are two different Selectors of the Site.
+					func(s *terraform.State) error {
+						attributes := abpAttrs(t, s, abpSiteAddress)
+						if own, appended := attributes["selector.0.id"], attributes["default_selector.0.id"]; own == appended {
+							return fmt.Errorf("the configuration's Selector and the catch-all are both %s", own)
+						}
+						return nil
+					},
+					abpSiteCheckDoc(t, f, func(site map[string]any) error {
+						if got := len(abpFakeList(site["selectors"])); got != 2 {
+							return fmt.Errorf("the site holds %d selectors, want the configuration's one plus the catch-all", got)
+						}
+						return nil
+					}),
 				),
+			},
+			{Config: config, PlanOnly: true},
+		},
+	})
+}
+
+// A Site that has no catch-all — one left that way through the API — can be
+// given one by the configuration: the trailing Selector matching every path
+// serves the paths no other Selector claims, so `default_selector` stays
+// empty and the Selector itself stays in `selector`. The first apply is
+// enough, and it adds exactly the one Selector the plan asked for. Reading the
+// catch-all off the trailing Selector's criteria used to adopt that Selector
+// as the catch-all instead, so the plan asked for it again and the second
+// apply left the Site with a duplicate.
+func TestAbpSiteConfiguredCatchAllOnASiteWithoutOne(t *testing.T) {
+	f := newAbpFake(t)
+	siteId := abpSiteSeedVerbatim(f, map[string]any{
+		"name":      "no-catch-all",
+		"selectors": []any{abpSiteSelectorDoc(map[string]any{"path_prefix": "/login"})},
+	})
+	config := abpSiteRawConfig("", abpFakeAccountId, "no-catch-all", "",
+		abpSitePathPrefix("/login", false),
+		abpSitePathPrefix("/", false),
+	)
+
+	selectorCount := func(want int) resource.TestCheckFunc {
+		return abpSiteCheckDoc(t, f, func(site map[string]any) error {
+			if got := len(abpFakeList(site["selectors"])); got != want {
+				return fmt.Errorf("the site holds %d selectors, want %d", got, want)
+			}
+			return nil
+		})
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: f.providers(t),
+		Steps: []resource.TestStep{
+			{
+				Config:             config,
+				ResourceName:       abpSiteAddress,
+				ImportState:        true,
+				ImportStateId:      siteId,
+				ImportStatePersist: true,
+			},
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(abpSiteAddress, "selector.#", "2"),
+					resource.TestCheckResourceAttr(abpSiteAddress, "selector.0.path_prefix.0.value", "/login"),
+					resource.TestCheckResourceAttr(abpSiteAddress, "selector.1.path_prefix.0.value", "/"),
+					resource.TestCheckResourceAttr(abpSiteAddress, "default_selector.#", "0"),
+					selectorCount(2),
+				),
+			},
+			{Config: config, PlanOnly: true},
+			// And the Site is still those two Selectors after another apply.
+			{Config: config, Check: selectorCount(2)},
+		},
+	})
+}
+
+// The catch-all is recognised by the id state recorded for it, so a Selector
+// added behind it out of band is reported as drift on the Site's own Selector
+// list rather than mistaken for the catch-all.
+func TestAbpSiteSelectorAppendedBehindTheCatchAllIsDrift(t *testing.T) {
+	f := newAbpFake(t)
+	config := abpSiteConfig(abpSitePathPrefix("/login", false))
+
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: f.providers(t),
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: func(s *terraform.State) error {
+					f.mutate(t, abpFakeSites, abpAttrs(t, s, abpSiteAddress)["id"], func(site map[string]any) {
+						selectors, _ := site["selectors"].([]any)
+						site["selectors"] = append(selectors,
+							abpSiteSelectorDoc(map[string]any{"path_regex": `\.png$`}))
+						f.normalizeSelectors(site)
+					})
+					return nil
+				},
 				ExpectNonEmptyPlan: true,
 			},
-			{Config: config, PlanOnly: true, ExpectNonEmptyPlan: true},
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(abpSiteAddress, "selector.#", "1"),
+					resource.TestCheckResourceAttr(abpSiteAddress, "selector.0.path_prefix.0.value", "/login"),
+					resource.TestCheckResourceAttr(abpSiteAddress, "default_selector.0.path_prefix.0.value", "/"),
+				),
+			},
+			{Config: config, PlanOnly: true},
 		},
 	})
 }
