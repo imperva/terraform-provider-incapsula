@@ -79,6 +79,15 @@ check-mock-server:
 testacc: fmtcheck
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
+# The ABP suite drives a real terraform binary per test step, which makes it far
+# slower than the rest, so `go test` skips it unless it is asked for with -abp.
+# Set ABPTESTS to run only part of it, for example
+#   make test-abp ABPTESTS=TestAbpPolicy
+ABPTESTS?=TestAbp
+
+test-abp:
+	go test ./$(PKG_NAME)/ -run '$(ABPTESTS)' -abp -count=1 -timeout 30m $(TESTARGS)
+
 vet:
 	@echo "go vet ."
 	@go vet $$(go list ./... | grep -v vendor/) ; if [ $$? -eq 1 ]; then \
@@ -133,5 +142,5 @@ endif
 abp-docs:
 	@FORCE=$(FORCE) ./scripts/gen-abp-docs.sh
 
-.PHONY: build install install-all test testacc vet fmt fmtcheck errcheck test-compile website website-test abp-docs server check-mock-server
+.PHONY: build install install-all test testacc test-abp vet fmt fmtcheck errcheck test-compile website website-test abp-docs server check-mock-server
 
