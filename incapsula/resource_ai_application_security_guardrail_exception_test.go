@@ -1,7 +1,10 @@
 package incapsula
 
 import (
+	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"regexp"
 	"strconv"
 	"strings"
@@ -187,6 +190,116 @@ func TestValidateGuardrailExceptionPatternLength(t *testing.T) {
 	emojis := strings.Repeat("😀", aiApplicationSecurityGuardrailExceptionPatternMaxLength/2+1)
 	if _, errs := validateGuardrailExceptionPatternLength(emojis, "exception_pattern"); len(errs) != 1 {
 		t.Errorf("an emoji counts as 2 characters, like the service")
+	}
+}
+
+// Read keeps type and phase when the exception's guardrail is no longer in the policy, instead of blanking the two
+// required fields - the next apply attaches the exception to the guardrail of that type and phase again.
+func TestGuardrailExceptionReadKeepsTypeAndPhaseWhenGuardrailIsGone(t *testing.T) {
+	restore := withShortRetries()
+	defer restore()
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		if strings.Contains(req.URL.Path, "/guardian-exceptions/") {
+			rw.Write([]byte(`{"data":{"id":"` + testGexID + `","guardianId":99,"exceptionPattern":"some allowed text","exceptionReason":"OTHER","active":true}}`))
+			return
+		}
+		rw.Write([]byte(`{"data":{"id":"` + testGexPolicyID + `","accountId":55,"request":[{"id":1,"guardrailType":"MODERATION","guardrailPhase":"PROMPT"}],"response":[]}}`))
+	}))
+	defer server.Close()
+
+	d := resourceAiApplicationSecurityGuardrailException().TestResourceData()
+	d.SetId(testGexID)
+	d.Set("account_id", 55)
+	d.Set("application_id", testGexAppID)
+	d.Set("policy_id", testGexPolicyID)
+	d.Set("guardrail_type", "PROMPT_INJECTION")
+	d.Set("phase", "PROMPT")
+
+	if diags := resourceAiApplicationSecurityGuardrailExceptionRead(context.Background(), d, testGexClient(server.URL)); diags.HasError() {
+		t.Fatalf("Read returned error: %+v", diags)
+	}
+	if got := d.Get("guardrail_type").(string); got != "PROMPT_INJECTION" {
+		t.Errorf("guardrail_type must keep its value, got %q", got)
+	}
+	if got := d.Get("phase").(string); got != "PROMPT" {
+		t.Errorf("phase must keep its value, got %q", got)
+	}
+	if got := d.Get("guardrail_id").(int); got != 99 {
+		t.Errorf("guardrail_id must show what the service returned, got %d", got)
+	}
+}
+
+// updated_by is planned as "known after apply" when the update changes something, and not at all when nothing
+// changes (otherwise every plan would show a change). Outer whitespace is no change: the service trims it.
+func TestGuardrailExceptionPlanMarksUpdatedByOnlyOnUpdate(t *testing.T) {
+	resourceSchema := resourceAiApplicationSecurityGuardrailException()
+	state := &terraform.InstanceState{ID: testGexID, Attributes: map[string]string{
+		"id": testGexID, "account_id": "55", "application_id": testGexAppID, "policy_id": testGexPolicyID,
+		"guardrail_type": "PROMPT_INJECTION", "phase": "PROMPT", "exception_pattern": "some allowed text",
+		"exception_reason": "OTHER", "note": "a note", "active": "true", "guardrail_id": "1", "author": "alice", "updated_by": "alice",
+	}}
+	plan := func(overrides map[string]interface{}) *terraform.InstanceDiff {
+		config := map[string]interface{}{
+			"account_id": 55, "application_id": testGexAppID, "policy_id": testGexPolicyID,
+			"guardrail_type": "PROMPT_INJECTION", "phase": "PROMPT", "exception_pattern": "some allowed text",
+			"exception_reason": "OTHER", "note": "a note", "active": true,
+		}
+		for k, v := range overrides {
+			config[k] = v
+		}
+		diff, err := resourceSchema.Diff(context.Background(), state, terraform.NewResourceConfigRaw(config), nil)
+		if err != nil {
+			t.Fatalf("Diff returned error: %v", err)
+		}
+		return diff
+	}
+	updatedByUnknown := func(diff *terraform.InstanceDiff) bool {
+		return diff != nil && diff.Attributes["updated_by"] != nil && diff.Attributes["updated_by"].NewComputed
+	}
+
+	if diff := plan(nil); diff != nil && !diff.Empty() {
+		t.Errorf("no change must give an empty plan, got %+v", diff.Attributes)
+	}
+	if diff := plan(map[string]interface{}{"exception_pattern": "some allowed text\n", "note": "  a note "}); diff != nil && !diff.Empty() {
+		t.Errorf("outer whitespace must give an empty plan, got %+v", diff.Attributes)
+	}
+	for name, overrides := range map[string]map[string]interface{}{
+		"note":              {"note": "another note"},
+		"exception_reason":  {"exception_reason": "FALSE_POSITIVE"},
+		"active":            {"active": false},
+		"exception_pattern": {"exception_pattern": "other allowed text"},
+	} {
+		if diff := plan(overrides); !updatedByUnknown(diff) {
+			t.Errorf("changing %s must plan updated_by as known after apply", name)
+		}
+	}
+	if diff := plan(map[string]interface{}{"phase": "RESPONSE"}); !updatedByUnknown(diff) || diff.Attributes["guardrail_id"] == nil || !diff.Attributes["guardrail_id"].NewComputed {
+		t.Errorf("moving the guardrail must plan updated_by and guardrail_id as known after apply")
+	}
+}
+
+// A trailing slash on the import ID is ignored.
+func TestGuardrailExceptionImportIgnoresTrailingSlash(t *testing.T) {
+	for _, id := range []string{
+		testGexAppID + "/" + testGexPolicyID + "/" + testGexID,
+		testGexAppID + "/" + testGexPolicyID + "/" + testGexID + "/",
+		"55/" + testGexAppID + "/" + testGexPolicyID + "/" + testGexID + "/",
+	} {
+		d := resourceAiApplicationSecurityGuardrailException().TestResourceData()
+		d.SetId(id)
+		if _, err := resourceAiApplicationSecurityGuardrailExceptionImport(context.Background(), d, nil); err != nil {
+			t.Errorf("import ID %q: unexpected error %v", id, err)
+			continue
+		}
+		if d.Id() != testGexID || d.Get("application_id") != testGexAppID || d.Get("policy_id") != testGexPolicyID {
+			t.Errorf("import ID %q: got id %q, application %q, policy %q", id, d.Id(), d.Get("application_id"), d.Get("policy_id"))
+		}
+	}
+	d := resourceAiApplicationSecurityGuardrailException().TestResourceData()
+	d.SetId(testGexAppID + "/" + testGexID)
+	if _, err := resourceAiApplicationSecurityGuardrailExceptionImport(context.Background(), d, nil); err == nil || !strings.Contains(err.Error(), "invalid import ID") {
+		t.Errorf("two parts must give the format error, got %v", err)
 	}
 }
 

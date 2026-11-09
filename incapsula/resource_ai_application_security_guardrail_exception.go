@@ -126,11 +126,27 @@ func aiApplicationSecurityGuardrailExceptionGuardrailTypes() []string {
 	return types
 }
 
-// resourceAiApplicationSecurityGuardrailExceptionCustomizeDiff marks guardrail_id as unknown when the guardrail changes,
-// so anything that reads it during the same apply gets the new id, not the old one.
+// resourceAiApplicationSecurityGuardrailExceptionCustomizeDiff marks the values the service fills in as unknown when
+// an update is planned, so anything that reads them during the same apply gets the new value, not the old one:
+// guardrail_id when the guardrail moves, updated_by (the service stamps the user of every update) on any change.
+// It must stay off when nothing changes, or every plan would show a change.
 func resourceAiApplicationSecurityGuardrailExceptionCustomizeDiff(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
-	if d.Id() != "" && (d.HasChange("guardrail_type") || d.HasChange("phase")) {
-		return d.SetNewComputed("guardrail_id")
+	if d.Id() == "" {
+		return nil
+	}
+	if d.HasChange("guardrail_type") || d.HasChange("phase") {
+		if err := d.SetNewComputed("guardrail_id"); err != nil {
+			return err
+		}
+	}
+	changed := d.HasChanges("guardrail_type", "phase", "exception_reason", "active")
+	for _, key := range []string{"exception_pattern", "note"} {
+		// the service trims these, so a difference in outer whitespace is no update (see suppressOuterWhitespaceDiff)
+		old, updated := d.GetChange(key)
+		changed = changed || strings.TrimSpace(old.(string)) != strings.TrimSpace(updated.(string))
+	}
+	if changed {
+		return d.SetNewComputed("updated_by")
 	}
 	return nil
 }
@@ -261,16 +277,18 @@ func resourceAiApplicationSecurityGuardrailExceptionRead(ctx context.Context, d 
 		return diag.Errorf("Failed to read AI Application Security guardrail exception %s: %s", d.Id(), err)
 	}
 	guardrailType, phase, found := guardrailTypeAndPhaseOf(policy, guardrailException.GuardrailId)
-	if !found {
-		// e.g. the policy's guardrails were recreated outside Terraform - the next apply attaches the exception again
+	if found {
+		d.Set("guardrail_type", guardrailType)
+		d.Set("phase", phase)
+	} else {
+		// e.g. the policy's guardrails were recreated outside Terraform. Type and phase keep their last values, so the
+		// next apply attaches the exception to the guardrail of that type and phase again.
 		log.Printf("[WARN] Guardrail %d of AI Application Security guardrail exception %s is no longer in its policy", guardrailException.GuardrailId, d.Id())
 	}
 
 	if d.Get("account_id").(int) == 0 && policy.AccountId != 0 {
 		d.Set("account_id", int(policy.AccountId))
 	}
-	d.Set("guardrail_type", guardrailType)
-	d.Set("phase", phase)
 	d.Set("guardrail_id", int(guardrailException.GuardrailId))
 	d.Set("exception_pattern", guardrailException.ExceptionPattern)
 	d.Set("exception_reason", guardrailException.ExceptionReason)
@@ -309,7 +327,8 @@ func resourceAiApplicationSecurityGuardrailExceptionDelete(ctx context.Context, 
 // resourceAiApplicationSecurityGuardrailExceptionImport takes '<application_id>/<policy_id>/<id>', optionally prefixed
 // with '<account_id>/' - the service finds a guardrail exception only within its policy.
 func resourceAiApplicationSecurityGuardrailExceptionImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	parts := strings.Split(strings.TrimSpace(d.Id()), "/")
+	// a trailing slash is harmless: 'app/policy/id/' is 'app/policy/id'
+	parts := strings.Split(strings.TrimSuffix(strings.TrimSpace(d.Id()), "/"), "/")
 	if len(parts) == 4 {
 		caid, err := strconv.Atoi(parts[0])
 		if err != nil {
