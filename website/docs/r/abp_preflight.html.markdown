@@ -1,0 +1,117 @@
+---
+subcategory: "Advanced Bot Protection"
+layout: "incapsula"
+page_title: "incapsula_abp_preflight"
+description: |-
+  Creates a new ABP preflight. A preflight is a snapshot of the entire
+  account configuration and is required in order to publish that configuration to
+  the Analysis Host (see incapsula_abp_publish).
+  A preflight may become invalid and be deleted by the server if the account
+  configuration or external dependent state changes, or if too much time has
+  passed since it was created. Publishing an older preflight can act as a
+  rollback as long as it is still consistent with any external state.
+  NOTE: pending_hash is what makes the whole pipeline work, even
+  though it is optional. It should always be set to
+  data.incapsula_abp_pending_changes.<name>.hash: that both triggers a
+  new preflight when the configuration changes and orders the preflight after the
+  resources it is supposed to snapshot. Omitting it means the preflight is created
+  once, in parallel with those resources, and is never refreshed again. Only the
+  resources reachable through that data source's depends_on take part
+  in this, so every ABP resource must be listed there (most simply: keep them all
+  in one module and depend on that module).
+  NOTE: a snapshot that can no longer be used is replaced automatically. On every
+  refresh the snapshot in state is re-read, and if it has been deleted by the
+  server, or can no longer be published because the account has been published
+  from elsewhere in the meantime, Terraform plans a new one — and a new publish
+  with it. So a publish that failed, or that someone else overtook, is recovered
+  by the next terraform apply instead of failing forever.
+  A snapshot that is merely outdated — the configuration changed after it was
+  taken — is deliberately kept, because changes Terraform does not manage do not
+  trigger a publish. Such a snapshot is reported as a warning when it is created,
+  and the reason is also available in warnings.
+  terraform destroy only drops the snapshot from state: nothing is
+  deleted or published, so an account destroyed through Terraform is left with the
+  deleted objects still live until something publishes again. Importing an
+  existing preflight is not supported.
+---
+
+
+# incapsula_abp_preflight
+
+Creates a new ABP preflight. A preflight is a snapshot of the entire
+account configuration and is required in order to publish that configuration to
+the Analysis Host (see `incapsula_abp_publish`).
+
+A preflight may become invalid and be deleted by the server if the account
+configuration or external dependent state changes, or if too much time has
+passed since it was created. Publishing an older preflight can act as a
+rollback as long as it is still consistent with any external state.
+
+NOTE: `pending_hash` is what makes the whole pipeline work, even
+though it is optional. It should always be set to
+`data.incapsula_abp_pending_changes.<name>.hash`: that both triggers a
+new preflight when the configuration changes and orders the preflight after the
+resources it is supposed to snapshot. Omitting it means the preflight is created
+once, in parallel with those resources, and is never refreshed again. Only the
+resources reachable through that data source's `depends_on` take part
+in this, so every ABP resource must be listed there (most simply: keep them all
+in one module and depend on that module).
+
+NOTE: a snapshot that can no longer be used is replaced automatically. On every
+refresh the snapshot in state is re-read, and if it has been deleted by the
+server, or can no longer be published because the account has been published
+from elsewhere in the meantime, Terraform plans a new one — and a new publish
+with it. So a publish that failed, or that someone else overtook, is recovered
+by the next `terraform apply` instead of failing forever.
+
+A snapshot that is merely *outdated* — the configuration changed after it was
+taken — is deliberately kept, because changes Terraform does not manage do not
+trigger a publish. Such a snapshot is reported as a warning when it is created,
+and the reason is also available in `warnings`.
+
+`terraform destroy` only drops the snapshot from state: nothing is
+deleted or published, so an account destroyed through Terraform is left with the
+deleted objects still live until something publishes again. Importing an
+existing preflight is not supported.
+
+## Example Usage
+
+```terraform
+# A preflight captures a snapshot (hash) of the account's pending configuration.
+# Publishing the preflight makes that configuration active. `pending_hash` comes
+# from the `incapsula_abp_pending_changes` data source, which should depend on
+# all the ABP resources you want included in the snapshot.
+data "incapsula_abp_pending_changes" "current" {
+  depends_on = [module.abp]
+}
+
+resource "incapsula_abp_preflight" "current" {
+  account_id   = var.account_id
+  pending_hash = data.incapsula_abp_pending_changes.current.hash
+}
+```
+
+<!-- schema generated by tfplugindocs -->
+## Schema
+
+### Required
+
+- `account_id` (String) ABP account UUID this preflight belongs to. Changing it replaces the resource: a preflight belongs to one account, so Terraform forgets this one (it stays on the server) and creates a preflight for the new account.
+
+### Optional
+
+- `pending_hash` (String) Change-detection value; set it to `data.incapsula_abp_pending_changes.<name>.hash`. Any change to it replaces the resource, which is how a new snapshot of the configuration is taken. Strongly recommended: see the notes above for what omitting it costs.
+
+### Read-Only
+
+- `created_at` (String) When the snapshot was taken.
+- `id` (String) The ID of this resource.
+- `warnings` (List of Object) Reasons why publishing this snapshot may not have the expected effect, as reported when it was taken. Each entry has a `type` and a human-readable `message`; an empty list means there is nothing to report. (see [below for nested schema](#nestedatt--warnings))
+
+<a id="nestedatt--warnings"></a>
+### Nested Schema for `warnings`
+
+Read-Only:
+
+- `message` (String)
+- `type` (String)

@@ -14,6 +14,9 @@ VERSION=3.42.0
 OS_ARCH=darwin_arm64
 # OS_ARCH=linux_amd64
 
+# All platforms handled by the install-all target
+ALL_OS_ARCH=darwin_amd64 darwin_arm64 linux_amd64
+
 default: install
 
 build: fmtcheck
@@ -28,6 +31,19 @@ build-github: fmtcheck
 install: build
 	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${PKG_NAME}/${VERSION}/${OS_ARCH}
 	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${PKG_NAME}/${VERSION}/${OS_ARCH}
+
+# Cross-compile and install the provider for every platform in ALL_OS_ARCH
+install-all: fmtcheck
+	export GO111MODULE="on"
+	go mod vendor
+	@for oa in $(ALL_OS_ARCH); do \
+		dest=~/.terraform.d/plugins/$(HOSTNAME)/$(NAMESPACE)/$(PKG_NAME)/$(VERSION)/$$oa; \
+		echo "==> Building $(BINARY) for $$oa"; \
+		GOOS=$${oa%_*} GOARCH=$${oa#*_} go build -o $(BINARY) || exit 1; \
+		mkdir -p $$dest; \
+		mv $(BINARY) $$dest/ || exit 1; \
+		echo "    installed to $$dest"; \
+	done
 
 MOCK_SERVER_PORT?=19443
 MOCK_SERVER_URL=http://localhost:$(MOCK_SERVER_PORT)
@@ -62,6 +78,15 @@ check-mock-server:
 
 testacc: fmtcheck
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
+
+# The ABP suite drives a real terraform binary per test step, which makes it far
+# slower than the rest, so `go test` skips it unless it is asked for with -abp.
+# Set ABPTESTS to run only part of it, for example
+#   make test-abp ABPTESTS=TestAbpPolicy
+ABPTESTS?=TestAbp
+
+test-abp:
+	go test ./$(PKG_NAME)/ -run '$(ABPTESTS)' -abp -count=1 -timeout 30m $(TESTARGS)
 
 vet:
 	@echo "go vet ."
@@ -110,5 +135,12 @@ ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
 endif
 	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider-test PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
 
-.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website website-test server check-mock-server
+# Generate docs for ABP resources/data sources only (via tfplugindocs) and
+# place them into the legacy website/ layout. See scripts/gen-abp-docs.sh.
+# Requires: go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
+# Use FORCE=1 to overwrite existing legacy docs.
+abp-docs:
+	@FORCE=$(FORCE) ./scripts/gen-abp-docs.sh
+
+.PHONY: build install install-all test testacc test-abp vet fmt fmtcheck errcheck test-compile website website-test abp-docs server check-mock-server
 

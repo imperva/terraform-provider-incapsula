@@ -66,11 +66,11 @@ In order to run the full suite of Acceptance tests, run `make testacc`.
 $ make testacc
 ```
 
-An automation script is provided for Mac darwin 64amd based developers that 
-encapsulates initial setups along make described commands. 
+An automation script is provided for Mac darwin 64amd based developers that
+encapsulates initial setups along make described commands.
 Please note that OS_ARCH=darwin_amd64 is uncommented in GNUmakefile for default Mac users, if needed for Linux users comment back and uncomment OS_ARCH=linux_amd64
 
-Brew is a pre-requisite for this script, as the main package manager to install 
+Brew is a pre-requisite for this script, as the main package manager to install
 the dependent libraries such as Golang, Terraform and Git.
 More details about this script is provided as inner code comments and description.
 
@@ -85,6 +85,33 @@ with installation command execution
 ```sh
 ./tf-provider-incap-orch.sh -i "youApiID" "youApiKey"
 ```
+
+Running the ABP Tests
+---------------------
+
+The `incapsula_abp_*` resources and data sources have their own test suite, which
+needs neither credentials nor a server: every test runs against an in-memory stand-in
+for the ABP API. Each test step still drives a real `terraform`, which makes the suite
+slow enough that it is skipped by default. Run all of it with
+
+```sh
+go test ./incapsula/ -run TestAbp -abp -count=1 -timeout 30m
+```
+
+or `make test-abp`, which is the same command. Without `-abp` the tests that need
+`terraform` are reported as skipped, so a plain `go test ./incapsula/` stays quick.
+`ABP_TF_TESTS=1` in the environment has the same effect as `-abp`, which is handier in
+CI and in a shell that runs the suite repeatedly. The ABP tests that do not drive
+`terraform` always run.
+
+Add `-v` to see the individual test names.
+
+`-count=1` disables Go's test result cache, so the tests actually run instead of
+replaying an earlier `ok (cached)`. That matters here because the cache only tracks
+the Go package: it does not know about the `terraform` binary these tests drive, so a
+cached pass can outlive the change that broke things. `-timeout 30m` is for the same
+reason — driving a real `terraform` per test step takes longer than the 10 minute
+default allows.
 
 Mock Server for Testing
 -----------------------
@@ -178,3 +205,25 @@ To add new endpoints to the mock server:
 3. Add tests in `mock_server_test.go`
 4. Update this documentation
 
+### Generating documentation using tfplugindocs (only for ABP at the moment)
+
+Prerequisite:
+
+    go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
+
+Make sure `$(go env GOPATH)/bin` is in your `$PATH`, then run:
+
+```sh
+# Generate docs for abp_* resources/data sources into website/docs/{r,d}.
+# Skips any resource that already has a hand-written doc.
+scripts/gen-abp-docs.sh
+
+# Overwrite existing legacy docs as well.
+FORCE=1 scripts/gen-abp-docs.sh
+```
+
+The script renders the full provider schema, keeps only the `abp_*` files, and
+converts them to the legacy `website/` layout (`.html.markdown` + `incapsula`
+front matter). Afterwards, review the generated
+`website/docs/{r,d}/abp_*.html.markdown` files and add sidebar entries in
+`website/incapsula.erb` if needed.

@@ -1,0 +1,1 @@
+terraform import incapsula_abp_condition_list_entry.sample_condition_list_okhttp 8a9c...condition-list-entry-uuid
