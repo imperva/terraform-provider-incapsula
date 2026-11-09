@@ -10,7 +10,7 @@ import (
 
 const incapsulaAccountRole = "incapsula_account_role"
 const terraformAccTestRole = "terraform_acc_test_role"
-const roleName = "terraform acc test role"
+const accountRolesTestRoleNamePrefix = "terraform acc test role "
 const incapsulaAccountRoles = "incapsula_account_roles"
 const terraformAccTestRoles = "terraform_acc_test_roles"
 const accountRolesDataSourceName = "data." + incapsulaAccountRoles + "." + terraformAccTestRoles
@@ -18,12 +18,16 @@ const defaultRoleAdministrator = "Administrator"
 const defaultRoleReader = "Reader"
 
 func TestAccIncapsulaDataSourceAccountRoles_Basic(t *testing.T) {
+	// Unique per test so a role leaked by a failed run cannot collide or
+	// break the "role doesn't exist before" check below.
+	roleName := accountRolesTestRoleNamePrefix + RandomLowLetterAndNumberString(8)
 	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccPreCheck(t) },
-		Providers: testAccProviders,
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testCheckIncapsulaAccountRoleDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckIncapsulaDataSourceAccountRolesConfigBasic(t),
+				Config: testAccCheckIncapsulaDataSourceAccountRolesConfigBasic(roleName),
 				Check: resource.ComposeTestCheckFunc(
 					// Check the map have at least 2 elements (Administrator, Reader)
 					resource.TestMatchResourceAttr(accountRolesDataSourceName, "map.%", regexp.MustCompile("^([2-9]\\d*|\\d{2,})$")),
@@ -34,7 +38,7 @@ func TestAccIncapsulaDataSourceAccountRoles_Basic(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckIncapsulaDataSourceAccountRolesConfigBasic(t),
+				Config: testAccCheckIncapsulaDataSourceAccountRolesConfigBasic(roleName),
 				Check: resource.ComposeTestCheckFunc(
 					// Check the map have at least 3 elements (Administrator, Reader and new created role)
 					resource.TestMatchResourceAttr(accountRolesDataSourceName, "map.%", regexp.MustCompile("^([3-9]\\d*|\\d{2,})$")),
@@ -52,8 +56,8 @@ func TestAccIncapsulaDataSourceAccountRoles_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckIncapsulaDataSourceAccountRolesConfigBasic(t *testing.T) string {
-	return testAccCheckIncapsulaSiteConfigBasic(GenerateTestDomain(t)) + fmt.Sprintf(`
+func testAccCheckIncapsulaDataSourceAccountRolesConfigBasic(roleName string) string {
+	return fmt.Sprintf(`
 data "%s" "%s" {}
 resource "%s" "%s" {
   account_id      = data.%s.%s.current_account
