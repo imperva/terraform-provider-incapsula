@@ -1,3 +1,24 @@
+## 3.43.0 (Nov 9, 2026)
+
+FEATURES:
+* **ABP Terraform Provider v2** — full resource/data-source coverage for Advanced Bot Protection configuration, including a preflight/publish workflow for applying pending changes ([#687](https://github.com/imperva/terraform-provider-incapsula/pull/687))
+  * **New Resources:** `incapsula_abp_condition`, `incapsula_abp_condition_list`, `incapsula_abp_condition_list_entry`, `incapsula_abp_policy`, `incapsula_abp_site`, `incapsula_abp_domain`, `incapsula_abp_domain_encryption_key`, `incapsula_abp_credential`, `incapsula_abp_proof_of_work_configuration`, `incapsula_abp_site_domain_priority`, `incapsula_abp_account_site_priority`, `incapsula_abp_preflight`, `incapsula_abp_publish`
+  * **New Data Sources:** `incapsula_abp_account`, `incapsula_abp_site`, `incapsula_abp_sites`, `incapsula_abp_site_analysis_settings`, `incapsula_abp_condition`, `incapsula_abp_conditions`, `incapsula_abp_condition_list`, `incapsula_abp_policy`, `incapsula_abp_policies`, `incapsula_abp_directive`, `incapsula_abp_proof_of_work_configuration`, `incapsula_abp_pending_changes`
+* **Support for Imperva for Google Cloud (IGC) sites** ([#695](https://github.com/imperva/terraform-provider-incapsula/pull/695))
+  * `incapsula_site_v3`: new `is_load_balancer_site` attribute and computed `authority_header`
+  * **New Data Sources:** `incapsula_gcp_domains`, `incapsula_gcp_regions`, `incapsula_gcp_psc_target`
+  * `incapsula_site` data source now returns `cloud_type`, `is_load_balancer_site` and `authority_header`
+  * New guides for Imperva for Google Cloud onboarding and security
+
+DEPRECATIONS:
+- `incapsula_abp_websites` is deprecated in favor of the new ABP v2 resources ([#687](https://github.com/imperva/terraform-provider-incapsula/pull/687))
+
+IMPROVEMENTS:
+- test(site): stop sending `domain_validation` in `TestAccIncapsulaSite_DeprecationFlagChangeAttributes` ([#705](https://github.com/imperva/terraform-provider-incapsula/pull/705))
+- Fix failing test case ([#707](https://github.com/imperva/terraform-provider-incapsula/pull/707))
+- Fix test case with `testAccProvider` only ([#708](https://github.com/imperva/terraform-provider-incapsula/pull/708))
+- Fix account tests ([#712](https://github.com/imperva/terraform-provider-incapsula/pull/712))
+
 
 ## 3.42.0 (Nov 3, 2026)
 
