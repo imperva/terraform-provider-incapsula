@@ -115,6 +115,7 @@ func resourceApplicationDelivery() *schema.Resource {
 				Description: "TCP connections that are opened for a client request remain open for a short time to handle additional requests that may arrive.",
 				Optional:    true,
 				Default:     true,
+				Deprecated:  "Self-service control of origin_connection_reuse is being phased out. Enabling it is unaffected; disabling it via Terraform is rejected by the API once your account is in the deprecation rollout. Contact Imperva support if you need this changed.",
 			},
 			"support_non_sni_clients": {
 				Type:        schema.TypeBool,
