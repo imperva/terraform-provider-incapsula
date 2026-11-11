@@ -44,7 +44,7 @@ Changing `guardrail_type`, `phase`, `exception_pattern`, `exception_reason`, `no
 exception in place - it keeps its ID, also when it moves to another guardrail of the policy.
 
 A policy can have at most 50 guardrail exceptions, enabled and disabled together. Creating one more fails with
-`This policy already has 50 guardian exceptions, which is the maximum. Delete an exception to add a new one.`
+`This policy already has 50 guardrail exceptions, which is the maximum. Delete an exception to add a new one.`
 Setting `active` on an existing exception is always allowed.
 
 ## Attributes Reference
