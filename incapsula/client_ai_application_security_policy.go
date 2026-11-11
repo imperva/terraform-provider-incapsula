@@ -24,6 +24,9 @@ const aiApplicationSecurityPolicyImportApplicationPlaceholder = "00000000-0000-0
 // the "type" discriminator required by the backend's polymorphic BaseGuardrailConfigDto
 // (@JsonTypeInfo(property="type")); the resource layer injects it on write and strips it on read.
 type AiApplicationSecurityGuardrail struct {
+	// Id is read-only: the service returns it (GuardrailDto.id) and never takes it on write - omitempty keeps it
+	// out of requests. The guardrail exception resource uses it to name its guardrail.
+	Id             int64           `json:"id,omitempty"`
 	GuardrailType  string          `json:"guardrailType"`
 	GuardrailMode  string          `json:"guardrailMode"`
 	GuardrailPhase string          `json:"guardrailPhase"`
