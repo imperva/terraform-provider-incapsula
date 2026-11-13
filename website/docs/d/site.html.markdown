@@ -47,5 +47,5 @@ output "authority_header" {
 
 ## Attributes Reference
 
-* `site_id` - The external ID of the site.
+* `id` - The external ID of the site.
 * `cname` - The CNAME record of the site.
