@@ -1,5 +1,5 @@
 ---
-subcategory: "Site Management"
+subcategory: "Cloud WAF - Site Management"
 layout: "incapsula"
 page_title: "Incapsula: site"
 description: |-
@@ -47,9 +47,5 @@ output "authority_header" {
 
 ## Attributes Reference
 
-* `site_id` - The external ID of the site.
+* `id` - The external ID of the site.
 * `cname` - The CNAME record of the site.
-* `type` - The type of the site.
-* `cloud_type` - The cloud provider type of the site, `AWS` or `GCP`. Empty for sites that are not `PUBLIC_CLOUD`.
-* `is_load_balancer_site` - Indicates whether the site is an Imperva for Google Cloud load balancer website. `false` for domain websites, legacy Imperva for Google Cloud default sites, and sites that are not part of Imperva for Google Cloud.
-* `authority_header` - The authority header assigned by Imperva for an Imperva for Google Cloud load balancer website. Available for load balancer websites and legacy Imperva for Google Cloud default sites. Empty for domain websites and sites that are not part of Imperva for Google Cloud.
