@@ -168,6 +168,8 @@ The following Data Center arguments are supported:
 
 * `name` - (Required) Data Center Name. Must be unique within a Site. 
 
+* `dc_id` - (Optional) The ID of an existing data center. Specify it only if a rule points to this data center and you want the ID to remain the same after you update the data center properties.
+
 * `ip_mode` - (Optional) Load-balancing mode. Possible values:
   * **SINGLE_IP** - Use it only when you need to support multiple ports. Allows a single active server listening on multiple ports, plus the option of a single standby server. Traffic is distributed across the server ports. **Note:** The server address must be a valid IP address (i.e. not host/domain name). **SINGLE_IP** is applicable only for datacenters, It may not be used when dataCenterMode = **‘SINGLE_SERVER’**.
   * **MULTIPLE_IP** – Allows one or more origin servers having a single webserver and listening port per server. Traffic is distributed across servers.
