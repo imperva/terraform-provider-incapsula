@@ -1,7 +1,10 @@
-## 3.44.0 (Nov 10, 2026)
+## 3.44.0 (Nov 15, 2026)
 
 FEATURES:
-* **New Resource:** `incapsula_ai_application_security_guardrail_exception` — manages an AI Application Security guardrail exception: a pattern that one guardrail of a policy lets through, with the guardrail chosen by type and phase
+* **New Resource:** `incapsula_ai_application_security_guardrail_exception` — manages an AI Application Security guardrail exception: a pattern that one guardrail of a policy lets through, with the guardrail chosen by type and phase ([#698](https://github.com/imperva/terraform-provider-incapsula/pull/698))
+
+BUG FIXES:
+- Fix subcategory section ([#714](https://github.com/imperva/terraform-provider-incapsula/pull/714))
 
 ## 3.43.0 (Nov 9, 2026)
 
