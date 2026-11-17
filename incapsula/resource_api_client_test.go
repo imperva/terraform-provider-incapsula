@@ -175,7 +175,8 @@ func testCheckIncapsulaApiClientConfigUpdate(t *testing.T) string {
 			name = "%s"
 			description = "%s"
 			enabled = %v
+			expiration_date = "%s"
 		}`,
-		resourceApiClientType, resourceApiClientName, apiClientNameUpdated, apiClientDescUpdated, false,
+		resourceApiClientType, resourceApiClientName, apiClientNameUpdated, apiClientDescUpdated, false, apiClientExpPeriod,
 	)
 }
