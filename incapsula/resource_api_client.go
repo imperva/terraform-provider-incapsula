@@ -65,8 +65,7 @@ func resourceApiClient() *schema.Resource {
 			},
 			"expiration_date": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 				Description: "Expiration date of the API key (YYYY-MM-DD format only). Must be a future date. Changing this value will cause regeneration of the key.",
 			},
 		},
