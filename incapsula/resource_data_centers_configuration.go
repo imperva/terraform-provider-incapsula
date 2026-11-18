@@ -98,6 +98,7 @@ func resourceDataCentersConfiguration() *schema.Resource {
 							Type:        schema.TypeInt,
 							Description: "Internal Data Center id.",
 							Computed:    true,
+							Optional:    true,
 						},
 
 						"ip_mode": {
