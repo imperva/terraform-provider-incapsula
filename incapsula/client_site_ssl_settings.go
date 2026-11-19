@@ -29,6 +29,7 @@ type SSLSettingsDTO struct {
 	HstsConfiguration               *HSTSConfiguration               `json:"hstsConfiguration,omitempty"`
 	InboundTLSSettingsConfiguration *InboundTLSSettingsConfiguration `json:"inboundTlsSettings,omitempty"`
 	DisablePQCSupport               bool                             `json:"disablePQCSupport"`
+	OriginPQCEnabled                *bool                            `json:"originPQCEnabled,omitempty"`
 }
 
 type SSLSettingsResponse struct {

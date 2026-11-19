@@ -1,0 +1,18 @@
+{
+  "version": "1.0",
+  "storyKey": "CWMS-7806",
+  "projectPath": "/Users/avishay.pelach/workspace/terraform-provider-incapsula",
+  "spec": {
+    "path": ".claude/specs/CWMS-7806.md",
+    "approved": true,
+    "modifiedByUser": false,
+    "lastModified": "2026-11-19T12:09:52Z",
+    "jiraSnapshotHash": "3ee4f738ce500e39029e70bc5b6f2c404e0ddc1a16cc874abdcbaffb121fe26b"
+  },
+  "status": "pending",
+  "metadata": {
+    "createdAt": "2026-11-19T12:09:52Z",
+    "lastUpdatedAt": "2026-11-19T12:09:52Z",
+    "createdBy": "spec-story"
+  }
+}
