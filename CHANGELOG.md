@@ -1,3 +1,8 @@
+## 3.44.1 (Nov 22, 2026)
+
+IMPROVEMENTS:
+- Make dc_id of data_centers_configuration settable (optional) ([#715](https://github.com/imperva/terraform-provider-incapsula/pull/715))
+
 ## 3.44.0 (Nov 15, 2026)
 
 FEATURES:
