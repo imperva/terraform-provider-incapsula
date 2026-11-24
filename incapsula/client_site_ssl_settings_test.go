@@ -2,6 +2,7 @@ package incapsula
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -268,6 +269,110 @@ func TestReadSiteSSLSettingsSuccess(t *testing.T) {
 
 	if statusCode != 200 {
 		t.Errorf("Status code should be 200")
+	}
+}
+
+func TestUpdateSiteSSLSettingsOriginPQCEnabledTrueIncludedInRequest(t *testing.T) {
+	// arrange
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := 42
+	accountID := 0
+
+	var capturedRequestBody string
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		bodyBytes, _ := ioutil.ReadAll(req.Body)
+		capturedRequestBody = string(bodyBytes)
+		rw.WriteHeader(200)
+		rw.Write([]byte(getValidJSONResponse()))
+	}))
+	defer server.Close()
+
+	config := getClientTestConfig(apiID, apiKey, server)
+	client := &Client{config: config, httpClient: &http.Client{}}
+	originPQCEnabled := true
+	dto := SSLSettingsResponse{Data: []SSLSettingsDTO{{OriginPQCEnabled: &originPQCEnabled}}}
+
+	// act
+	_, err := client.UpdateSiteSSLSettings(siteID, accountID, dto)
+
+	// assert
+	if err != nil {
+		t.Errorf("Should not have received an error: %s", err)
+	}
+
+	if !strings.Contains(capturedRequestBody, `"originPQCEnabled":true`) {
+		t.Errorf("Request body should have included an explicit originPQCEnabled:true, got: %s", capturedRequestBody)
+	}
+}
+
+func TestUpdateSiteSSLSettingsOriginPQCEnabledOmittedWhenNil(t *testing.T) {
+	// arrange
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := 42
+	accountID := 0
+
+	var capturedRequestBody string
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		bodyBytes, _ := ioutil.ReadAll(req.Body)
+		capturedRequestBody = string(bodyBytes)
+		rw.WriteHeader(200)
+		rw.Write([]byte(getValidJSONResponse()))
+	}))
+	defer server.Close()
+
+	config := getClientTestConfig(apiID, apiKey, server)
+	client := &Client{config: config, httpClient: &http.Client{}}
+	dto := SSLSettingsResponse{Data: []SSLSettingsDTO{{}}}
+
+	// act
+	_, err := client.UpdateSiteSSLSettings(siteID, accountID, dto)
+
+	// assert
+	if err != nil {
+		t.Errorf("Should not have received an error: %s", err)
+	}
+
+	if strings.Contains(capturedRequestBody, "originPQCEnabled") {
+		t.Errorf("Request body should have omitted originPQCEnabled entirely when unset, got: %s", capturedRequestBody)
+	}
+}
+
+func TestReadSiteSSLSettingsParsesOriginPQCEnabled(t *testing.T) {
+	// arrange
+	apiID := "foo"
+	apiKey := "bar"
+	siteID := 42
+	accountID := 0
+
+	validResponse := `{
+			"data":[
+				{
+					"originPQCEnabled": true
+				}
+			]
+		}`
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(200)
+		rw.Write([]byte(validResponse))
+	}))
+	defer server.Close()
+
+	config := getClientTestConfig(apiID, apiKey, server)
+	client := &Client{config: config, httpClient: &http.Client{}}
+
+	// act
+	res, _, err := client.ReadSiteSSLSettings(siteID, accountID)
+
+	// assert
+	if err != nil {
+		t.Errorf("Should not have received an error: %s", err)
+	}
+
+	if res.Data[0].OriginPQCEnabled == nil || *res.Data[0].OriginPQCEnabled != true {
+		t.Errorf("Expected OriginPQCEnabled to be parsed as true, got: %v", res.Data[0].OriginPQCEnabled)
 	}
 }
 

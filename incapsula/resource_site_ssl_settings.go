@@ -133,6 +133,12 @@ func resourceSiteSSLSettings() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"origin_pqc_enabled": {
+				Description: "Controls whether connections between Imperva and the origin server use Post-Quantum Cryptography. Newly created sites have this enabled by default. Omit this attribute to leave the current server-side setting untouched.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -173,6 +179,7 @@ func resourceSiteSSLSettingsRead(d *schema.ResourceData, m interface{}) error {
 	mapHSTSResponseToHSTSResource(d, settingsData)
 	mapInboundTLSSettingsResponseToResource(d, settingsData)
 	d.Set("disable_pqc_support", settingsData.Data[0].DisablePQCSupport)
+	mapOriginPQCResponseToResource(d, settingsData)
 	// map other settings here
 
 	return nil
@@ -280,6 +287,28 @@ func mapInboundTLSSettingsResponseToResource(d *schema.ResourceData, settingsDat
 
 }
 
+func mapOriginPQCResponseToResource(d *schema.ResourceData, settingsData *SSLSettingsResponse) {
+	// API represents "disabled" as null, never false.
+	originPQCEnabledFromServer := settingsData.Data[0].OriginPQCEnabled
+
+	if originPQCEnabledFromServer == nil {
+		d.Set("origin_pqc_enabled", false)
+		return
+	}
+
+	d.Set("origin_pqc_enabled", *originPQCEnabledFromServer)
+}
+
+func mapOriginPQCResourceToDTO(d *schema.ResourceData) *bool {
+	// GetOkExists distinguishes "omitted from config" from "explicitly false", which a plain Get cannot.
+	if _, ok := d.GetOkExists("origin_pqc_enabled"); !ok {
+		return nil
+	}
+
+	originPQCEnabled := d.Get("origin_pqc_enabled").(bool)
+	return &originPQCEnabled
+}
+
 func mapInboundTLSSettingsResourceToDTO(resourceData *schema.ResourceData) *InboundTLSSettingsConfiguration {
 	inboundTLSSettings, ok := resourceData.Get("inbound_tls_settings").(*schema.Set)
 	if !ok || inboundTLSSettings.Len() == 0 {
@@ -335,6 +364,7 @@ func getSSLSettingsDTO(d *schema.ResourceData) SSLSettingsResponse {
 	hstsSettings := mapHSTSResourceToHSTSDTO(d)
 	// setup inbound TLS settings structure
 	inboundTLSSettings := mapInboundTLSSettingsResourceToDTO(d)
+	originPQCEnabled := mapOriginPQCResourceToDTO(d)
 	// scale - add other structures here...
 
 	return SSLSettingsResponse{
@@ -343,6 +373,8 @@ func getSSLSettingsDTO(d *schema.ResourceData) SSLSettingsResponse {
 				HstsConfiguration:               hstsSettings,
 				InboundTLSSettingsConfiguration: inboundTLSSettings,
 				DisablePQCSupport:               d.Get("disable_pqc_support").(bool),
+				OriginPQCEnabled:                originPQCEnabled,
+				// add more setting types here
 			},
 		},
 	}

@@ -10,10 +10,12 @@ description: |-
 Provides an Incapsula Site SSL Settings resource.
 
 In this resource you can configure:
-- HSTS: A security mechanism enabling websites to announce themselves as accessible only via HTTPS. 
+- HSTS: A security mechanism enabling websites to announce themselves as accessible only via HTTPS.
 For more information about HSTS, click [here](https://www.imperva.com/blog/hsts-strict-transport-security/).
-- TLS settings: Define the supported TLS version and cipher suites used for encryption of the TLS handshake between client and Imperva. 
+- TLS settings: Define the supported TLS version and cipher suites used for encryption of the TLS handshake between client and Imperva.
 For more information about supported TLS versions and ciphers, click [here](https://docs.imperva.com/bundle/cloud-application-security/page/cipher-suites.htm).
+- Origin PQC: Controls whether connections between Imperva and the origin server use Post-Quantum Cryptography. This setting is
+independent of SNI/client-to-Imperva PQC support, which is not configurable through this resource.
 
 If you run the SSL settings resource from a site for which SSL is not yet enabled and the SSL certificate is not approved, it will result in the following error response:
 - `status:` 406 
@@ -52,8 +54,10 @@ resource "incapsula_site_ssl_settings" "example"  {
         "TLS_AES_256_GCM_SHA384",
       ]
     }
-  },
-  disable_pqc_support: false
+  }
+
+  disable_pqc_support = false
+  origin_pqc_enabled  = true
 }
 ```
 
@@ -70,6 +74,8 @@ The following arguments are supported:
 * `disable_pqc_support` - (Optional): Disable Post-Quantum Cryptography support for SNI traffic.
     - Type: `bool`
     - Default: `false`
+* `origin_pqc_enabled` - (Optional): Controls whether connections between Imperva and the origin server use Post-Quantum Cryptography. Newly created sites have this enabled by default. Omitting this attribute leaves the current server-side setting untouched; this is distinct from the SNI/client-to-Imperva PQC setting, which is not configurable through this resource.
+    - Type: `bool`
 
 ## Schema of `hsts_config` resource
 
